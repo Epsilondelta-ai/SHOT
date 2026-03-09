@@ -30,6 +30,7 @@
 	let timeLeft = $state(12);
 	let phase: Phase = $state('aiming');
 	let selectedTargetId: string | null = $state(null);
+	let isLogOpen = $state(false);
 
 	let players: GamePlayerData[] = $state([
 		{ id: 'p1', name: 'Sheriff_Buck', hp: 3, maxHp: 3, alive: true },
@@ -177,10 +178,10 @@
 	<title>{m.game_title()}</title>
 </svelte:head>
 
-<div class="flex min-h-screen flex-col bg-background-dark font-display text-white">
+<div class="flex h-screen flex-col overflow-hidden bg-background-dark font-display text-white">
 	<GameHeader {round} {timeLeft} {totalTime} />
 
-	<main class="mx-auto w-full max-w-2xl flex-1 space-y-5 p-4">
+	<main class="mx-auto w-full max-w-2xl flex-1 overflow-hidden space-y-5 p-4">
 		<!-- Spectating banner -->
 		{#if !amAlive && !isFinished}
 			<div
@@ -260,11 +261,10 @@
 			</section>
 		{/if}
 
-		<!-- Battle Log -->
-		<section class="pb-6">
-			<GameLog {logs} />
-		</section>
 	</main>
+
+	<!-- GameLog Bottom Sheet Overlay -->
+	<GameLog {logs} isOpen={isLogOpen} ontoggle={() => (isLogOpen = !isLogOpen)} />
 </div>
 
 <!-- Game Result Overlay -->
