@@ -147,5 +147,19 @@
 	"admin_assistant_preview": "Preview",
 	"admin_assistant_created": "Created",
 	"admin_assistant_updated": "Updated",
-	"admin_tab_assistant": "Assistant"
+	"admin_tab_assistant": "Assistant",
+	"config_title": "Settings - SHOT!",
+	"config_tab_assistant": "AI Assistant",
+	"config_tab_bot": "OpenClaw Bot",
+	"config_add_assistant": "Add Assistant",
+	"config_bot": "OpenClaw Bot",
+	"config_bot_name": "Bot Name",
+	"config_bot_api_key": "API Key / Token",
+	"config_bot_api_key_placeholder": "API key or token (sk-... format)",
+	"config_bot_webhook_url": "Webhook URL",
+	"config_bot_webhook_placeholder": "https://example.com/webhook",
+	"config_bot_active": "Active",
+	"config_bot_inactive": "Inactive",
+	"config_add_bot": "Add Bot",
+	"config_bot_empty": "No bots registered yet. Add your first bot!"
 }

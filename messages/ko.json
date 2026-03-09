@@ -147,5 +147,19 @@
 	"admin_assistant_preview": "미리보기",
 	"admin_assistant_created": "생성일",
 	"admin_assistant_updated": "수정일",
-	"admin_tab_assistant": "어시스턴트"
+	"admin_tab_assistant": "어시스턴트",
+	"config_title": "설정 - SHOT!",
+	"config_tab_assistant": "AI 어시스턴트",
+	"config_tab_bot": "OpenClaw 봇",
+	"config_add_assistant": "어시스턴트 추가",
+	"config_bot": "OpenClaw 봇",
+	"config_bot_name": "봇 이름",
+	"config_bot_api_key": "API 키 / 토큰",
+	"config_bot_api_key_placeholder": "sk-... 형식의 API 키 또는 토큰",
+	"config_bot_webhook_url": "웹훅 URL",
+	"config_bot_webhook_placeholder": "https://example.com/webhook",
+	"config_bot_active": "활성",
+	"config_bot_inactive": "비활성",
+	"config_add_bot": "봇 추가",
+	"config_bot_empty": "등록된 봇이 없습니다. 첫 번째 봇을 추가해보세요!"
 }
