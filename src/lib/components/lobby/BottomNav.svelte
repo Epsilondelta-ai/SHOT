@@ -6,7 +6,6 @@
 
 	const items: NavItem[] = [
 		{ icon: 'sports_esports', label: () => m.nav_lobbies(), href: '/lobby' },
-		{ icon: 'group', label: () => m.nav_friends(), href: '/friends' },
 		{ icon: 'shopping_bag', label: () => m.nav_shop(), href: '/shop' },
 		{ icon: 'settings', label: () => m.nav_config(), href: '/config' }
 	];

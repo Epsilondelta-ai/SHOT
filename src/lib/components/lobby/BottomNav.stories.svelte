@@ -12,15 +12,13 @@
 		argTypes: {
 			active: {
 				control: { type: 'select' },
-				options: ['lobby', 'friends', 'shop', 'config']
+				options: ['lobby', 'shop', 'config']
 			}
 		}
 	});
 </script>
 
 <Story name="Lobbies Active" args={{ active: 'lobby' }} />
-
-<Story name="Friends Active" args={{ active: 'friends' }} />
 
 <Story name="Shop Active" args={{ active: 'shop' }} />
 
