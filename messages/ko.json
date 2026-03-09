@@ -1,4 +1,27 @@
 {
 	"$schema": "https://inlang.com/schema/inlang-message-format",
-	"hello_world": "Hello, {name} from ko!"
+	"app_title": "SHOT!",
+	"login_title": "로그인 - SHOT!",
+	"login_subtitle": "",
+	"login_email_label": "이메일",
+	"login_email_placeholder": "hero@example.com",
+	"login_password_label": "비밀번호",
+	"login_password_placeholder": "••••••••",
+	"login_forgot": "찾기",
+	"login_button": "로그인",
+	"login_or": "또는",
+	"login_create_identity": "회원가입",
+	"signup_title": "회원가입 - SHOT!",
+	"signup_subtitle": "나만의 정체성 만들기",
+	"signup_name_label": "이름",
+	"signup_name_placeholder": "히어로 이름",
+	"signup_email_label": "이메일",
+	"signup_email_placeholder": "hero@example.com",
+	"signup_password_label": "비밀번호",
+	"signup_password_placeholder": "••••••••",
+	"signup_confirm_password_label": "비밀번호 확인",
+	"signup_confirm_password_placeholder": "••••••••",
+	"signup_button": "회원가입",
+	"signup_or": "또는",
+	"signup_back_to_login": "로그인으로 돌아가기"
 }

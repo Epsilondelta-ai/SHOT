@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { m } from '$lib/paraglide/messages';
+	import { localizeHref } from '$lib/paraglide/runtime';
 	import LoginHeader from '$lib/components/login/LoginHeader.svelte';
 	import ComicInput from '$lib/components/login/ComicInput.svelte';
 	import ComicButton from '$lib/components/login/ComicButton.svelte';
@@ -8,7 +10,7 @@
 </script>
 
 <svelte:head>
-	<title>Login - SHOT!</title>
+	<title>{m.login_title()}</title>
 </svelte:head>
 
 <div
@@ -17,37 +19,37 @@
 	<div
 		class="comic-border relative w-full max-w-md space-y-8 overflow-hidden rounded-xl bg-white p-8"
 	>
-		<LoginHeader />
+		<LoginHeader subtitle={m.login_subtitle()} />
 
 		<form class="space-y-6">
 			<ComicInput
-				label="Email"
+				label={m.login_email_label()}
 				type="email"
-				placeholder="hero@example.com"
+				placeholder={m.login_email_placeholder()}
 				icon="alternate_email"
 			/>
 
 			<ComicInput
-				label="Password"
+				label={m.login_password_label()}
 				type={showPassword ? 'text' : 'password'}
-				placeholder="••••••••"
+				placeholder={m.login_password_placeholder()}
 				icon={showPassword ? 'visibility_off' : 'visibility'}
 				onIconClick={() => (showPassword = !showPassword)}
 			>
 				{#snippet trailing()}
 					<button type="button" class="text-xs font-bold text-primary underline underline-offset-2">
-						Forgot?
+						{m.login_forgot()}
 					</button>
 				{/snippet}
 			</ComicInput>
 
 			<div class="space-y-4 pt-4">
-				<ComicButton type="submit" icon="login">Login</ComicButton>
+				<ComicButton type="submit" icon="login">{m.login_button()}</ComicButton>
 
-				<OrDivider />
+				<OrDivider text={m.login_or()} />
 
-				<a href="/signup">
-					<ComicButton type="button" variant="secondary">Create Identity</ComicButton>
+				<a href={localizeHref('/signup')}>
+					<ComicButton type="button" variant="secondary">{m.login_create_identity()}</ComicButton>
 				</a>
 			</div>
 		</form>
