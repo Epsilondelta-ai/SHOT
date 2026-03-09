@@ -162,8 +162,9 @@
 	"config_bot_empty": "No bots registered yet. Add your first bot!",
 	"home_title": "SHOT!",
 	"home_subtitle": "Welcome to the Wild West Showdown",
-	"home_description": "Compete in online duels against other players or enjoy games with your AI assistant.",
-	"home_play_now": "Play Now",
-	"home_my_profile": "My Profile",
-	"home_settings": "Settings"
+	"home_play_now": "Login and Play",
+	"home_game_intro_title": "About the Game",
+	"home_game_intro_p1": "SHOT! is a turn-based game where you compete in gunfights against other players online.",
+	"home_game_intro_p2": "Each round, select your target and shoot. The last player standing wins.",
+	"home_game_intro_p3": "Develop strategies with your AI assistant and compete against other players in the lobby!"
 }
