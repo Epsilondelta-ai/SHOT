@@ -1,3 +1,28 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@theme {
+	--color-primary: #d47311;
+	--color-background-light: #f8f7f6;
+	--color-background-dark: #221910;
+	--font-display: 'Plus Jakarta Sans', sans-serif;
+	--radius: 1rem;
+	--radius-lg: 2rem;
+	--radius-xl: 3rem;
+}
+
+.comic-border {
+	border: 3px solid #221910;
+	box-shadow: 4px 4px 0px #221910;
+}
+
+.comic-border-sm {
+	border: 2px solid #221910;
+	box-shadow: 2px 2px 0px #221910;
+}
+
+.comic-button:active {
+	transform: translate(2px, 2px);
+	box-shadow: 0px 0px 0px #221910;
+}
