@@ -5,7 +5,6 @@
 	const { Story } = defineMeta({
 		title: 'Pages/Home',
 		component: HomePage,
-		tags: ['autodocs'],
 		parameters: {
 			layout: 'fullscreen'
 		}
