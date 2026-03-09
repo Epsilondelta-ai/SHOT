@@ -38,5 +38,20 @@
 	"nav_lobbies": "Lobbies",
 	"nav_friends": "Friends",
 	"nav_shop": "Shop",
-	"nav_config": "Config"
+	"nav_config": "Config",
+	"mypage_title": "My Page - SHOT!",
+	"mypage_level": "Level",
+	"mypage_edit_profile": "Edit Profile",
+	"mypage_stats_title": "Battle Stats",
+	"mypage_stats_games": "Games",
+	"mypage_stats_wins": "Wins",
+	"mypage_stats_win_rate": "Win Rate",
+	"mypage_stats_streak": "Best Streak",
+	"mypage_recent_title": "Recent Matches",
+	"mypage_match_win": "Victory",
+	"mypage_match_loss": "Defeat",
+	"mypage_settings_title": "Settings",
+	"mypage_settings_language": "Language",
+	"mypage_settings_notifications": "Notifications",
+	"mypage_sign_out": "Sign Out"
 }

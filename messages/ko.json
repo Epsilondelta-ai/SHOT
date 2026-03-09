@@ -38,5 +38,20 @@
 	"nav_lobbies": "로비",
 	"nav_friends": "친구",
 	"nav_shop": "상점",
-	"nav_config": "설정"
+	"nav_config": "설정",
+	"mypage_title": "마이페이지 - SHOT!",
+	"mypage_level": "레벨",
+	"mypage_edit_profile": "프로필 편집",
+	"mypage_stats_title": "전투 통계",
+	"mypage_stats_games": "게임",
+	"mypage_stats_wins": "승리",
+	"mypage_stats_win_rate": "승률",
+	"mypage_stats_streak": "최고 연승",
+	"mypage_recent_title": "최근 전적",
+	"mypage_match_win": "승리",
+	"mypage_match_loss": "패배",
+	"mypage_settings_title": "설정",
+	"mypage_settings_language": "언어",
+	"mypage_settings_notifications": "알림",
+	"mypage_sign_out": "로그아웃"
 }
