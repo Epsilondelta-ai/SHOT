@@ -11,12 +11,11 @@
 		},
 		argTypes: {
 			username: { control: 'text' },
-			level: { control: 'number' },
 			avatarSrc: { control: 'text' }
 		}
 	});
 </script>
 
-<Story name="Default" args={{ username: 'Sheriff_Buck', level: 42 }} />
+<Story name="Default" args={{ username: 'Sheriff_Buck' }} />
 
-<Story name="With Avatar" args={{ username: 'Bandit_Jane', level: 15, avatarSrc: '' }} />
+<Story name="With Avatar" args={{ username: 'Bandit_Jane', avatarSrc: '' }} />

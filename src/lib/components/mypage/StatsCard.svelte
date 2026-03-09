@@ -18,7 +18,7 @@
 </script>
 
 <div class="comic-border rounded-xl bg-white p-5">
-	<h3 class="mb-4 text-sm font-black uppercase tracking-widest text-slate-500">
+	<h3 class="mb-4 text-sm font-black tracking-widest text-slate-500 uppercase">
 		{m.mypage_stats_title()}
 	</h3>
 	<div class="grid grid-cols-4 gap-2">
@@ -26,7 +26,7 @@
 			<div class="flex flex-col items-center gap-1 rounded-lg bg-background-light p-3">
 				<span class="material-symbols-outlined text-2xl text-primary">{stat.icon}</span>
 				<span class="text-xl font-black text-slate-900">{stat.value}</span>
-				<span class="text-center text-[10px] font-bold uppercase text-slate-500">{stat.label}</span>
+				<span class="text-center text-[10px] font-bold text-slate-500 uppercase">{stat.label}</span>
 			</div>
 		{/each}
 	</div>

@@ -41,10 +41,10 @@
 </svelte:head>
 
 <div class="flex min-h-screen flex-col bg-background-light font-display text-slate-900">
-	<LobbyHeader username="Sheriff_Buck" level={42} />
+	<LobbyHeader username="Sheriff_Buck" />
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-28">
-		<ProfileCard username="Sheriff_Buck" level={42} xp={7800} maxXp={10000} />
+		<ProfileCard username="Sheriff_Buck" />
 
 		<StatsCard games={128} wins={87} streak={9} />
 

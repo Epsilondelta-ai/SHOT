@@ -13,7 +13,7 @@
 </script>
 
 <div class="comic-border rounded-xl bg-white p-5">
-	<h3 class="mb-4 text-sm font-black uppercase tracking-widest text-slate-500">
+	<h3 class="mb-4 text-sm font-black tracking-widest text-slate-500 uppercase">
 		{m.mypage_settings_title()}
 	</h3>
 	<div class="divide-y divide-slate-100">
