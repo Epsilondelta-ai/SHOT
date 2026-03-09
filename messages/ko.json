@@ -53,5 +53,22 @@
 	"mypage_settings_title": "설정",
 	"mypage_settings_language": "언어",
 	"mypage_settings_notifications": "알림",
-	"mypage_sign_out": "로그아웃"
+	"mypage_sign_out": "로그아웃",
+	"room_title": "대기방 - SHOT!",
+	"room_back": "돌아가기",
+	"room_code": "방 코드",
+	"room_players": "플레이어",
+	"room_host": "방장",
+	"room_ready": "준비 완료",
+	"room_not_ready": "준비",
+	"room_cancel_ready": "준비 취소",
+	"room_start_game": "게임 시작",
+	"room_waiting_host": "방장이 게임을 시작할 때까지 대기 중...",
+	"room_waiting_players": "더 많은 플레이어를 기다리는 중...",
+	"room_all_ready": "모든 플레이어가 준비 완료!",
+	"room_chat_placeholder": "메시지를 입력하세요...",
+	"room_chat_send": "보내기",
+	"room_leave": "나가기",
+	"room_kick": "추방",
+	"room_empty_slot": "빈 자리"
 }

@@ -53,5 +53,22 @@
 	"mypage_settings_title": "Settings",
 	"mypage_settings_language": "Language",
 	"mypage_settings_notifications": "Notifications",
-	"mypage_sign_out": "Sign Out"
+	"mypage_sign_out": "Sign Out",
+	"room_title": "Waiting Room - SHOT!",
+	"room_back": "Back",
+	"room_code": "Room Code",
+	"room_players": "Players",
+	"room_host": "Host",
+	"room_ready": "Ready",
+	"room_not_ready": "Ready Up",
+	"room_cancel_ready": "Cancel",
+	"room_start_game": "Start Game",
+	"room_waiting_host": "Waiting for the host to start...",
+	"room_waiting_players": "Waiting for more players...",
+	"room_all_ready": "All players are ready!",
+	"room_chat_placeholder": "Type a message...",
+	"room_chat_send": "Send",
+	"room_leave": "Leave",
+	"room_kick": "Kick",
+	"room_empty_slot": "Empty Slot"
 }
