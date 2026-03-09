@@ -5,15 +5,12 @@
 		id: string;
 		name: string;
 		apiKey: string;
-		webhookUrl: string;
 		active: boolean;
 		created: string;
 		updated: string;
 	};
 
 	let { bots = [], onedit, ondelete }: { bots?: Bot[]; onedit?: (bot: Bot) => void; ondelete?: (botId: string) => void } = $props();
-
-	let expandedId: string | null = $state(null);
 
 	function maskApiKey(apiKey: string): string {
 		if (apiKey.length <= 8) return '•'.repeat(apiKey.length);
@@ -71,24 +68,6 @@
 					<p class="font-mono text-sm font-bold text-slate-700">{maskApiKey(bot.apiKey)}</p>
 				</div>
 
-				<!-- Webhook URL Section (if present) -->
-				{#if bot.webhookUrl}
-					<div class="mb-2 space-y-1 text-sm">
-						<p class="text-xs font-black uppercase text-slate-500">{m.config_bot_webhook_url()}</p>
-						<button
-							class="break-all text-left font-mono text-xs text-blue-600 hover:underline"
-							onclick={() => (expandedId = expandedId === bot.id ? null : bot.id)}
-						>
-							{#if expandedId === bot.id}
-								{bot.webhookUrl}
-								<span class="material-symbols-outlined text-sm">unfold_less</span>
-							{:else}
-								{bot.webhookUrl.slice(0, 30)}...
-								<span class="material-symbols-outlined text-sm">unfold_more</span>
-							{/if}
-						</button>
-					</div>
-				{/if}
 
 				<!-- Metadata -->
 				<div class="mt-3 border-t border-slate-200 pt-2 text-xs text-slate-500">

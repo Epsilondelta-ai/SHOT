@@ -22,7 +22,6 @@
 		id: string;
 		name: string;
 		apiKey: string;
-		webhookUrl: string;
 		active: boolean;
 		created: string;
 		updated: string;
@@ -59,7 +58,6 @@
 			id: 'b1',
 			name: 'Discord Bot',
 			apiKey: 'MTk4NjIyNDgzNDU5Mjk1MDcy...',
-			webhookUrl: 'https://discord.com/api/webhooks/...',
 			active: true,
 			created: '2025-02-15',
 			updated: '2025-03-08'

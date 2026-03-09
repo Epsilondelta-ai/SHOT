@@ -5,7 +5,6 @@
 		id: string;
 		name: string;
 		apiKey: string;
-		webhookUrl: string;
 		active: boolean;
 		created: string;
 		updated: string;
@@ -25,36 +24,31 @@
 
 	let name = $state('');
 	let apiKey = $state('');
-	let webhookUrl = $state('');
 	let active = $state(true);
 
 	$effect(() => {
 		if (editingBot) {
 			name = editingBot.name;
 			apiKey = editingBot.apiKey;
-			webhookUrl = editingBot.webhookUrl;
 			active = editingBot.active;
 		} else {
 			name = '';
 			apiKey = '';
-			webhookUrl = '';
 			active = true;
 		}
 	});
 
 	function handleSave() {
 		if (!name.trim() || !apiKey.trim()) return;
-		onsave?.({ name, apiKey, webhookUrl, active });
+		onsave?.({ name, apiKey, active });
 		name = '';
 		apiKey = '';
-		webhookUrl = '';
 		active = true;
 	}
 
 	function handleCancel() {
 		name = '';
 		apiKey = '';
-		webhookUrl = '';
 		active = true;
 		oncancel?.();
 	}
@@ -93,20 +87,6 @@
 						placeholder={m.config_bot_api_key_placeholder()}
 						type="password"
 						bind:value={apiKey}
-					/>
-				</div>
-
-				<!-- Webhook URL Input -->
-				<div>
-					<label class="mb-1 text-xs font-black text-slate-500 uppercase" for="webhook-url">
-						{m.config_bot_webhook_url()} <span class="text-xs text-slate-400">(선택)</span>
-					</label>
-					<input
-						id="webhook-url"
-						class="comic-border-sm w-full rounded-lg bg-white px-3 py-2 text-sm font-bold placeholder:text-slate-400"
-						placeholder={m.config_bot_webhook_placeholder()}
-						type="url"
-						bind:value={webhookUrl}
 					/>
 				</div>
 
