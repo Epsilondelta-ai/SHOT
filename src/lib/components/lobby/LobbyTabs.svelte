@@ -14,12 +14,10 @@
 </script>
 
 <div class="comic-border flex gap-2 rounded-xl border-none bg-slate-200 p-1">
-	{#each tabs as tab}
+	{#each tabs as tab (tab.key)}
 		<button
-			class="flex-1 rounded-lg px-2 py-3 text-sm font-bold uppercase tracking-wider
-				{active === tab.key
-				? 'bg-primary text-white shadow-sm'
-				: 'text-slate-600 hover:bg-white/50'}"
+			class="flex-1 rounded-lg px-2 py-3 text-sm font-bold tracking-wider uppercase
+				{active === tab.key ? 'bg-primary text-white shadow-sm' : 'text-slate-600 hover:bg-white/50'}"
 			onclick={() => onchange?.(tab.key)}
 		>
 			{tab.label()}

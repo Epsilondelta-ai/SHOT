@@ -69,7 +69,7 @@
 
 		<!-- Bottom Graphic -->
 		<div
-			class="absolute -bottom-6 -right-6 -z-10 h-24 w-24 rounded-full border-4 border-primary/40 bg-primary/20"
+			class="absolute -right-6 -bottom-6 -z-10 h-24 w-24 rounded-full border-4 border-primary/40 bg-primary/20"
 		></div>
 	</div>
 

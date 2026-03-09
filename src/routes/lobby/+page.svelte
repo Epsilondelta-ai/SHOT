@@ -58,7 +58,7 @@
 		<div class="flex flex-col gap-4 sm:flex-row">
 			<div class="relative flex-1">
 				<span
-					class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+					class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2 text-slate-400"
 					>search</span
 				>
 				<input
@@ -68,7 +68,7 @@
 				/>
 			</div>
 			<button
-				class="comic-button flex items-center justify-center gap-2 whitespace-nowrap rounded-xl border-3 border-slate-900 bg-primary px-6 py-4 font-black uppercase italic text-white shadow-[3px_3px_0px_#221910]"
+				class="comic-button flex items-center justify-center gap-2 rounded-xl border-3 border-slate-900 bg-primary px-6 py-4 font-black whitespace-nowrap text-white uppercase italic shadow-[3px_3px_0px_#221910]"
 			>
 				<span class="material-symbols-outlined font-bold">add_circle</span>
 				{m.lobby_create()}
@@ -77,7 +77,7 @@
 
 		<!-- Lobby List -->
 		<div class="space-y-4 pb-24">
-			{#each filteredLobbies as lobby}
+			{#each filteredLobbies as lobby (lobby.name)}
 				<LobbyCard
 					name={lobby.name}
 					icon={lobby.icon}

@@ -6,7 +6,6 @@
 	import ComicButton from '$lib/components/login/ComicButton.svelte';
 	import OrDivider from '$lib/components/login/OrDivider.svelte';
 
-
 	let showPassword = $state(false);
 </script>
 

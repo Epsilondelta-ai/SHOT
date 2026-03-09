@@ -20,16 +20,16 @@ SHOT! is an online strategy card game where players are divided into the Agent T
 
 ### Composition by Player Count
 
-| Total Players | Spies | Agent Team (Captain + Agents) | Note |
-|---------------|-------|-------------------------------|------|
-| 5 | 1 | 4 (1+3) | Disadvantage for Spy |
-| 6 | 2 | 4 (1+3) | |
-| 7 | 2 | 5 (1+4) | |
-| 8 | 2~3 | 5~6 (1+4~5) | |
-| 9 | 3 | 6 (1+5) | Recommended |
-| 10 | 3 | 7 (1+6) | |
-| 11 | 3~4 | 7~8 (1+6~7) | |
-| 12 | 4 | 8 (1+7) | |
+| Total Players | Spies | Agent Team (Captain + Agents) | Note                 |
+| ------------- | ----- | ----------------------------- | -------------------- |
+| 5             | 1     | 4 (1+3)                       | Disadvantage for Spy |
+| 6             | 2     | 4 (1+3)                       |                      |
+| 7             | 2     | 5 (1+4)                       |                      |
+| 8             | 2~3   | 5~6 (1+4~5)                   |                      |
+| 9             | 3     | 6 (1+5)                       | Recommended          |
+| 10            | 3     | 7 (1+6)                       |                      |
+| 11            | 3~4   | 7~8 (1+6~7)                   |                      |
+| 12            | 4     | 8 (1+7)                       |                      |
 
 ---
 
@@ -50,12 +50,12 @@ SHOT! is an online strategy card game where players are divided into the Agent T
 
 ### Card Types
 
-| Card | Effect | Deck Quantity | Holding Limit | Note |
-|------|--------|---------------|---------------|------|
-| Attack | Deal 1 damage to the target | Players × 5 | 6 | |
-| Heal | Restore target's HP by 1 (cannot exceed max HP) | Players × 2 | 2 | Can be used on self or others |
-| Jail | Seal target's attack for 1 turn | Players × 1 | 1 | Cannot be used on Captain, no duplicates |
-| Inspect | Verify target's identity | Spies × 1 | Unlimited | Cannot be used on confirmed identities |
+| Card    | Effect                                          | Deck Quantity | Holding Limit | Note                                     |
+| ------- | ----------------------------------------------- | ------------- | ------------- | ---------------------------------------- |
+| Attack  | Deal 1 damage to the target                     | Players × 5   | 6             |                                          |
+| Heal    | Restore target's HP by 1 (cannot exceed max HP) | Players × 2   | 2             | Can be used on self or others            |
+| Jail    | Seal target's attack for 1 turn                 | Players × 1   | 1             | Cannot be used on Captain, no duplicates |
+| Inspect | Verify target's identity                        | Spies × 1     | Unlimited     | Cannot be used on confirmed identities   |
 
 - All held cards are revealed to everyone.
 - Cards exceeding the holding limit are automatically discarded.
@@ -144,14 +144,14 @@ If the Agent Team (Captain/Agent) or a hidden Spy kills an Agent, they enter the
 
 ## 10. Key Summary
 
-| Item | Description |
-|------|-------------|
-| Players | 5~12 |
-| HP | Captain 5 / Agent 3 / Spy 3 |
-| Initial Hand | 2 cards |
-| Draw per Turn | 2 cards |
-| Card Usage Limit per Turn | None (Unlimited) |
-| Card Usage Method | Sequentially one by one |
-| Card Visibility | All held cards are revealed |
-| Turn Order | Clockwise from Captain |
-| Victory Conditions | Agent Team: All Spies eliminated / Spy Team: Captain dies or all Agents eliminated |
+| Item                      | Description                                                                        |
+| ------------------------- | ---------------------------------------------------------------------------------- |
+| Players                   | 5~12                                                                               |
+| HP                        | Captain 5 / Agent 3 / Spy 3                                                        |
+| Initial Hand              | 2 cards                                                                            |
+| Draw per Turn             | 2 cards                                                                            |
+| Card Usage Limit per Turn | None (Unlimited)                                                                   |
+| Card Usage Method         | Sequentially one by one                                                            |
+| Card Visibility           | All held cards are revealed                                                        |
+| Turn Order                | Clockwise from Captain                                                             |
+| Victory Conditions        | Agent Team: All Spies eliminated / Spy Team: Captain dies or all Agents eliminated |

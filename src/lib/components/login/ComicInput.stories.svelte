@@ -20,7 +20,12 @@
 
 <Story
 	name="Email"
-	args={{ label: 'Email Address', type: 'email', placeholder: 'hero@example.com', icon: 'alternate_email' }}
+	args={{
+		label: 'Email Address',
+		type: 'email',
+		placeholder: 'hero@example.com',
+		icon: 'alternate_email'
+	}}
 />
 
 <Story

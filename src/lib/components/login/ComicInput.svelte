@@ -28,10 +28,10 @@
 			{#if onIconClick}
 				<button
 					type="button"
-					class="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer flex items-center justify-center"
+					class="absolute top-1/2 right-4 flex -translate-y-1/2 cursor-pointer items-center justify-center"
 					onclick={onIconClick}
 				>
-					<span class="material-symbols-outlined text-stone-400 leading-none">{icon}</span>
+					<span class="material-symbols-outlined leading-none text-stone-400">{icon}</span>
 				</button>
 			{:else}
 				<span
