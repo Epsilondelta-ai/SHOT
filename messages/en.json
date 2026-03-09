@@ -41,6 +41,8 @@
 	"nav_config": "Config",
 	"mypage_title": "My Page - SHOT!",
 	"mypage_edit_profile": "Edit Profile",
+	"mypage_save_profile": "Save",
+	"mypage_cancel": "Cancel",
 	"mypage_stats_title": "Battle Stats",
 	"mypage_stats_games": "Games",
 	"mypage_stats_wins": "Wins",

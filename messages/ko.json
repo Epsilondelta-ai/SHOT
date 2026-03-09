@@ -41,6 +41,8 @@
 	"nav_config": "설정",
 	"mypage_title": "마이페이지 - SHOT!",
 	"mypage_edit_profile": "프로필 편집",
+	"mypage_save_profile": "저장",
+	"mypage_cancel": "취소",
 	"mypage_stats_title": "전투 통계",
 	"mypage_stats_games": "게임",
 	"mypage_stats_wins": "승리",
