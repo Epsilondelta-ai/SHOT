@@ -6,6 +6,8 @@
 	--color-primary: #d47311;
 	--color-background-light: #f8f7f6;
 	--color-background-dark: #221910;
+	--color-accent-brown: #5d4037;
+	--color-accent-beige: #d7ccc8;
 	--font-display: 'Plus Jakarta Sans', sans-serif;
 	--radius: 1rem;
 	--radius-lg: 2rem;
@@ -25,4 +27,13 @@
 .comic-button:active {
 	transform: translate(2px, 2px);
 	box-shadow: 0px 0px 0px #221910;
+}
+
+.comic-card {
+	transition: all 0.1s ease;
+}
+
+.comic-card:hover {
+	transform: translate(-2px, -2px);
+	box-shadow: 6px 6px 0px #221910;
 }

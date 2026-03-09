@@ -23,5 +23,20 @@
 	"signup_confirm_password_placeholder": "••••••••",
 	"signup_button": "Sign Up",
 	"signup_or": "OR",
-	"signup_back_to_login": "Back to Login"
+	"signup_back_to_login": "Back to Login",
+	"lobby_title": "Lobbies - SHOT!",
+	"lobby_tab_all": "All Lobbies",
+	"lobby_tab_in_progress": "In Progress",
+	"lobby_tab_waiting": "Waiting",
+	"lobby_search_placeholder": "Search for a showdown...",
+	"lobby_create": "Create Lobby",
+	"lobby_join": "Join",
+	"lobby_status_waiting": "Waiting",
+	"lobby_status_full": "Full",
+	"lobby_status_starting_soon": "Starting Soon",
+	"lobby_status_in_progress": "In Progress",
+	"nav_lobbies": "Lobbies",
+	"nav_friends": "Friends",
+	"nav_shop": "Shop",
+	"nav_config": "Config"
 }
