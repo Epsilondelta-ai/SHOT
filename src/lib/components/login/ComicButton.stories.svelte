@@ -21,19 +21,19 @@
 </script>
 
 <Story name="Primary" args={{ variant: 'primary', icon: 'login' }}>
-	{#snippet children(args)}
-		<ComicButton {...args}>Login</ComicButton>
+	{#snippet children()}
+		Login
 	{/snippet}
 </Story>
 
 <Story name="Secondary" args={{ variant: 'secondary' }}>
-	{#snippet children(args)}
-		<ComicButton {...args}>Create Identity</ComicButton>
+	{#snippet children()}
+		Create Identity
 	{/snippet}
 </Story>
 
 <Story name="With Icon" args={{ variant: 'primary', icon: 'rocket_launch' }}>
-	{#snippet children(args)}
-		<ComicButton {...args}>Launch</ComicButton>
+	{#snippet children()}
+		Launch
 	{/snippet}
 </Story>
