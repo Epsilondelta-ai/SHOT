@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import { localizeHref } from '$lib/paraglide/runtime';
+	import { resolve } from '$app/paths';
 	import LoginHeader from '$lib/components/login/LoginHeader.svelte';
 	import ComicInput from '$lib/components/login/ComicInput.svelte';
 	import ComicButton from '$lib/components/login/ComicButton.svelte';
@@ -58,8 +58,11 @@
 
 				<OrDivider text={m.signup_or()} />
 
-				<a href={localizeHref('/login')}>
-					<ComicButton type="button" variant="secondary">{m.signup_back_to_login()}</ComicButton>
+				<a
+					href={resolve('/login')}
+					class="comic-button comic-border-sm flex w-full items-center justify-center gap-2 rounded-lg bg-white py-4 text-lg font-black tracking-widest text-slate-900 uppercase"
+				>
+					{m.signup_back_to_login()}
 				</a>
 			</div>
 		</form>

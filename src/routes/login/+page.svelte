@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import { localizeHref } from '$lib/paraglide/runtime';
+	import { resolve } from '$app/paths';
 	import LoginHeader from '$lib/components/login/LoginHeader.svelte';
 	import ComicInput from '$lib/components/login/ComicInput.svelte';
 	import ComicButton from '$lib/components/login/ComicButton.svelte';
 	import OrDivider from '$lib/components/login/OrDivider.svelte';
+
 
 	let showPassword = $state(false);
 </script>
@@ -48,8 +49,11 @@
 
 				<OrDivider text={m.login_or()} />
 
-				<a href={localizeHref('/signup')}>
-					<ComicButton type="button" variant="secondary">{m.login_create_identity()}</ComicButton>
+				<a
+					href={resolve('/signup')}
+					class="comic-button comic-border-sm flex w-full items-center justify-center gap-2 rounded-lg bg-white py-4 text-lg font-black tracking-widest text-slate-900 uppercase"
+				>
+					{m.login_create_identity()}
 				</a>
 			</div>
 		</form>
