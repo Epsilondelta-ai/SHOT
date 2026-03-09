@@ -159,5 +159,11 @@
 	"config_bot_active": "활성",
 	"config_bot_inactive": "비활성",
 	"config_add_bot": "봇 추가",
-	"config_bot_empty": "등록된 봇이 없습니다. 첫 번째 봇을 추가해보세요!"
+	"config_bot_empty": "등록된 봇이 없습니다. 첫 번째 봇을 추가해보세요!",
+	"home_title": "SHOT!",
+	"home_subtitle": "서부 총잡이의 세계에 오신 것을 환영합니다",
+	"home_description": "다른 플레이어들과 온라인 대결을 펼치거나 AI 어시스턴트와 함께 게임을 즐기세요.",
+	"home_play_now": "지금 플레이하기",
+	"home_my_profile": "내 프로필",
+	"home_settings": "설정"
 }

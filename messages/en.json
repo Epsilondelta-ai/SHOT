@@ -159,5 +159,11 @@
 	"config_bot_active": "Active",
 	"config_bot_inactive": "Inactive",
 	"config_add_bot": "Add Bot",
-	"config_bot_empty": "No bots registered yet. Add your first bot!"
+	"config_bot_empty": "No bots registered yet. Add your first bot!",
+	"home_title": "SHOT!",
+	"home_subtitle": "Welcome to the Wild West Showdown",
+	"home_description": "Compete in online duels against other players or enjoy games with your AI assistant.",
+	"home_play_now": "Play Now",
+	"home_my_profile": "My Profile",
+	"home_settings": "Settings"
 }
