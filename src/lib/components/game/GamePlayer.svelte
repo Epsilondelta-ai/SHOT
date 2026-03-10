@@ -67,7 +67,7 @@
 </script>
 
 <button
-	class="relative flex flex-col items-center gap-2 rounded-xl border-3 p-3 transition-all
+	class="relative flex flex-col items-center gap-2 overflow-hidden rounded-xl border-3 p-3 transition-all
 		{!alive ? 'opacity-40 grayscale' : ''}
 		{selected ? 'border-red-500 bg-red-50 ring-4 ring-red-500' : roleColor}
 		{selectable && alive && !isMe ? 'cursor-pointer hover:scale-105' : ''}
@@ -155,10 +155,10 @@
 
 	<!-- HP Hearts -->
 	{#if alive}
-		<div class="flex justify-center gap-0.5">
+		<div class="flex justify-center gap-0.5 overflow-hidden">
 			{#each Array.from({ length: maxHp }) as _, i (i)}
 				<span
-					class="material-symbols-outlined text-sm {i < hp ? 'text-red-500' : 'text-slate-300'}"
+					class="material-symbols-outlined text-xs {i < hp ? 'text-red-500' : 'text-slate-300'}"
 					style="font-variation-settings: 'FILL' {i < hp ? 1 : 0}"
 				>
 					favorite
@@ -169,15 +169,17 @@
 		<!-- Attacks & Cards -->
 		<div class="w-full space-y-1">
 			<!-- Attacks -->
-			<div class="flex items-center justify-center gap-1 rounded bg-slate-100 px-2 py-1">
+			<div
+				class="flex items-center justify-center gap-0.5 overflow-hidden rounded bg-slate-100 px-2 py-1"
+			>
 				{#each Array.from({ length: attacks }) as _, i (i)}
-					<img src={favicon} alt="attack" class="size-3.5" />
+					<img src={favicon} alt="attack" class="size-2" />
 				{/each}
 			</div>
 
 			<!-- Cards -->
 			{#if cards.length > 0}
-				<div class="flex items-center justify-center gap-0.5">
+				<div class="flex flex-wrap items-center justify-center gap-0.5">
 					{#each cards as card, i (i)}
 						<div
 							class="flex size-6 items-center justify-center rounded border border-blue-300 bg-blue-100"
