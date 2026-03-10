@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { BACKEND_URL } from '$lib/config';
 
 	type BanRecord = {
 		id: string;
@@ -29,7 +30,7 @@
 	$effect(() => {
 		if (isOpen && userId) {
 			loading = true;
-			fetch(`/api/admin/ban-history/${userId}`)
+			fetch(`${BACKEND_URL}/api/admin/ban-history/${userId}`, { credentials: 'include' })
 				.then((r) => r.json())
 				.then((data) => {
 					history = data;

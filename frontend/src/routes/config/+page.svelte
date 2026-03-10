@@ -10,6 +10,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import AddButton from '$lib/components/common/AddButton.svelte';
 	import ConfirmModal from '$lib/components/common/ConfirmModal.svelte';
+	import { apiPost, apiPut, apiDelete } from '$lib/api';
 
 	let { data } = $props();
 
@@ -58,16 +59,10 @@
 	}
 
 	async function saveAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
-		const formData = new FormData();
-		formData.set('name', assistant.name);
-		formData.set('prompt', assistant.prompt);
-		formData.set('active', String(assistant.active));
-
 		if (editingAssistant) {
-			formData.set('id', editingAssistant.id);
-			await fetch('?/updateAssistant', { method: 'POST', body: formData });
+			await apiPut(`/api/config/assistants/${editingAssistant.id}`, assistant);
 		} else {
-			await fetch('?/createAssistant', { method: 'POST', body: formData });
+			await apiPost('/api/config/assistants', assistant);
 		}
 
 		await invalidateAll();
@@ -82,9 +77,7 @@
 
 	function deleteAssistant(assistantId: string) {
 		openConfirm(async () => {
-			const formData = new FormData();
-			formData.set('id', assistantId);
-			await fetch('?/deleteAssistant', { method: 'POST', body: formData });
+			await apiDelete(`/api/config/assistants/${assistantId}`);
 			await invalidateAll();
 		});
 	}
@@ -95,16 +88,10 @@
 	}
 
 	async function saveBot(bot: Omit<Bot, 'id' | 'created' | 'updated'>) {
-		const formData = new FormData();
-		formData.set('name', bot.name);
-		formData.set('apiKey', bot.apiKey);
-		formData.set('active', String(bot.active));
-
 		if (editingBot) {
-			formData.set('id', editingBot.id);
-			await fetch('?/updateBot', { method: 'POST', body: formData });
+			await apiPut(`/api/config/bots/${editingBot.id}`, bot);
 		} else {
-			await fetch('?/createBot', { method: 'POST', body: formData });
+			await apiPost('/api/config/bots', bot);
 		}
 
 		await invalidateAll();
@@ -119,9 +106,7 @@
 
 	function deleteBot(botId: string) {
 		openConfirm(async () => {
-			const formData = new FormData();
-			formData.set('id', botId);
-			await fetch('?/deleteBot', { method: 'POST', body: formData });
+			await apiDelete(`/api/config/bots/${botId}`);
 			await invalidateAll();
 		});
 	}

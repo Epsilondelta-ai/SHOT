@@ -1,15 +1,55 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { resolve } from '$app/paths';
-	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
+	import { BACKEND_URL } from '$lib/config';
 	import LoginHeader from '$lib/components/login/LoginHeader.svelte';
 	import ComicInput from '$lib/components/login/ComicInput.svelte';
 	import ComicButton from '$lib/components/login/ComicButton.svelte';
 	import OrDivider from '$lib/components/login/OrDivider.svelte';
 
-	let { form } = $props();
 	let showPassword = $state(false);
 	let showConfirmPassword = $state(false);
+	let error = $state('');
+
+	async function handleSubmit(e: SubmitEvent) {
+		e.preventDefault();
+		error = '';
+		const fd = new FormData(e.target as HTMLFormElement);
+		const name = fd.get('name') as string;
+		const email = fd.get('email') as string;
+		const password = fd.get('password') as string;
+		const confirmPassword = fd.get('confirmPassword') as string;
+
+		if (!name || !email || !password || !confirmPassword) {
+			error = '모든 항목을 입력해주세요.';
+			return;
+		}
+
+		if (password !== confirmPassword) {
+			error = '비밀번호가 일치하지 않습니다.';
+			return;
+		}
+
+		try {
+			const res = await fetch(`${BACKEND_URL}/api/auth/sign-up/email`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				credentials: 'include',
+				body: JSON.stringify({ name, email, password })
+			});
+
+			if (!res.ok) {
+				const body = await res.json().catch(() => ({}));
+				error = body?.message ?? '회원가입에 실패했습니다.';
+				return;
+			}
+
+			goto('/lobby');
+		} catch {
+			error = '회원가입에 실패했습니다.';
+		}
+	}
 </script>
 
 <svelte:head>
@@ -24,10 +64,10 @@
 	>
 		<LoginHeader subtitle={m.signup_subtitle()} />
 
-		<form method="POST" class="space-y-6" use:enhance>
-			{#if form?.error}
+		<form class="space-y-6" onsubmit={handleSubmit}>
+			{#if error}
 				<div class="comic-border-sm rounded-lg bg-red-50 px-4 py-3 text-sm font-bold text-red-600">
-					{form.error}
+					{error}
 				</div>
 			{/if}
 

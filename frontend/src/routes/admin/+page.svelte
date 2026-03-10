@@ -13,6 +13,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import AddButton from '$lib/components/common/AddButton.svelte';
 	import ConfirmModal from '$lib/components/common/ConfirmModal.svelte';
+	import { apiPost, apiPut, apiDelete } from '$lib/api';
 
 	let { data } = $props();
 
@@ -63,10 +64,7 @@
 		provider: 'anthropic' | 'openai' | 'google' | 'xai',
 		apiKey: string
 	) {
-		const fd = new FormData();
-		fd.set('provider', provider);
-		fd.set('apiKey', apiKey);
-		await fetch('?/saveLlmApiKey', { method: 'POST', body: fd });
+		await apiPost('/api/admin/llm-providers/save-key', { provider, apiKey });
 		await invalidateAll();
 	}
 
@@ -74,10 +72,7 @@
 		provider: 'anthropic' | 'openai' | 'google' | 'xai',
 		active: boolean
 	) {
-		const fd = new FormData();
-		fd.set('provider', provider);
-		fd.set('active', String(active));
-		await fetch('?/toggleLlmProvider', { method: 'POST', body: fd });
+		await apiPost('/api/admin/llm-providers/toggle', { provider, active });
 		await invalidateAll();
 	}
 
@@ -86,37 +81,24 @@
 		apiModelName: string,
 		displayName: string
 	) {
-		const fd = new FormData();
-		fd.set('provider', provider);
-		fd.set('apiModelName', apiModelName);
-		fd.set('displayName', displayName);
-		await fetch('?/addLlmModel', { method: 'POST', body: fd });
+		await apiPost('/api/admin/llm-models', { provider, apiModelName, displayName });
 		await invalidateAll();
 	}
 
 	async function updateLlmModel(id: string, apiModelName: string, displayName: string) {
-		const fd = new FormData();
-		fd.set('id', id);
-		fd.set('apiModelName', apiModelName);
-		fd.set('displayName', displayName);
-		await fetch('?/updateLlmModel', { method: 'POST', body: fd });
+		await apiPut(`/api/admin/llm-models/${id}`, { apiModelName, displayName });
 		await invalidateAll();
 	}
 
 	function deleteLlmModel(id: string) {
 		openConfirm(async () => {
-			const fd = new FormData();
-			fd.set('id', id);
-			await fetch('?/deleteLlmModel', { method: 'POST', body: fd });
+			await apiDelete(`/api/admin/llm-models/${id}`);
 			await invalidateAll();
 		});
 	}
 
 	async function toggleLlmModel(id: string, active: boolean) {
-		const fd = new FormData();
-		fd.set('id', id);
-		fd.set('active', String(active));
-		await fetch('?/toggleLlmModel', { method: 'POST', body: fd });
+		await apiPost(`/api/admin/llm-models/${id}/toggle`, { active });
 		await invalidateAll();
 	}
 
@@ -132,12 +114,7 @@
 	}
 
 	async function submitBan(banData: { startAt: string; endAt: string; reason: string }) {
-		const fd = new FormData();
-		fd.set('id', banningUserId);
-		fd.set('startAt', banData.startAt);
-		fd.set('endAt', banData.endAt);
-		fd.set('reason', banData.reason);
-		await fetch('?/banUser', { method: 'POST', body: fd });
+		await apiPost(`/api/admin/users/${banningUserId}/ban`, banData);
 		await invalidateAll();
 		showBanModal = false;
 		banningUserId = '';
@@ -149,28 +126,20 @@
 	}
 
 	async function submitUnban(reason: string) {
-		const fd = new FormData();
-		fd.set('id', unbanningUserId);
-		fd.set('reason', reason);
-		await fetch('?/unbanUser', { method: 'POST', body: fd });
+		await apiPost(`/api/admin/users/${unbanningUserId}/unban`, { reason });
 		await invalidateAll();
 		showUnbanModal = false;
 		unbanningUserId = '';
 	}
 
 	async function setRole(userId: string, role: 'admin' | 'user') {
-		const fd = new FormData();
-		fd.set('userId', userId);
-		fd.set('role', role);
-		await fetch('?/setRole', { method: 'POST', body: fd });
+		await apiPost(`/api/admin/users/${userId}/role`, { role });
 		await invalidateAll();
 	}
 
 	function closeRoom(roomId: string) {
 		openConfirm(async () => {
-			const fd = new FormData();
-			fd.set('id', roomId);
-			await fetch('?/closeRoom', { method: 'POST', body: fd });
+			await apiPost(`/api/admin/rooms/${roomId}/close`);
 			await invalidateAll();
 		});
 	}
@@ -181,16 +150,10 @@
 	}
 
 	async function saveAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
-		const fd = new FormData();
-		fd.set('name', assistant.name);
-		fd.set('prompt', assistant.prompt);
-		fd.set('active', String(assistant.active));
-
 		if (editingAssistant) {
-			fd.set('id', editingAssistant.id);
-			await fetch('?/updateAssistant', { method: 'POST', body: fd });
+			await apiPut(`/api/admin/assistants/${editingAssistant.id}`, assistant);
 		} else {
-			await fetch('?/createAssistant', { method: 'POST', body: fd });
+			await apiPost('/api/admin/assistants', assistant);
 		}
 
 		await invalidateAll();
@@ -200,9 +163,7 @@
 
 	function deleteAssistant(assistantId: string) {
 		openConfirm(async () => {
-			const fd = new FormData();
-			fd.set('id', assistantId);
-			await fetch('?/deleteAssistant', { method: 'POST', body: fd });
+			await apiDelete(`/api/admin/assistants/${assistantId}`);
 			await invalidateAll();
 		});
 	}
@@ -224,7 +185,7 @@
 		{#if activeTab === 'dashboard'}
 			<AdminStats
 				totalUsers={data.users.length}
-				activeNow={data.users.filter((u) => !u.banned).length}
+				activeNow={data.users.filter((u: { banned: boolean }) => !u.banned).length}
 				activeRooms={data.rooms.length}
 				gamesToday={0}
 			/>

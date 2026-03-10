@@ -178,9 +178,6 @@
 <Story name="Dashboard" asChild>
 	<AdminPage
 		data={{
-			isAdmin: true,
-			username: 'Sheriff_Buck',
-			avatarSrc: '',
 			users: mockUsers,
 			rooms: mockRooms,
 			assistants: mockAssistants,
@@ -193,9 +190,6 @@
 <Story name="Empty State" asChild>
 	<AdminPage
 		data={{
-			isAdmin: true,
-			username: 'Admin',
-			avatarSrc: '',
 			users: [],
 			rooms: [],
 			assistants: [],

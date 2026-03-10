@@ -7,6 +7,7 @@
 	import LobbyCreateModal from '$lib/components/lobby/LobbyCreateModal.svelte';
 	import { goto, invalidateAll } from '$app/navigation';
 	import { onDestroy } from 'svelte';
+	import { apiPost } from '$lib/api';
 
 	type Tab = 'all' | 'in_progress' | 'waiting';
 
@@ -15,26 +16,14 @@
 	let showCreateModal = $state(false);
 
 	async function createRoom(roomData: { name: string; icon: string; maxPlayers: number }) {
-		const fd = new FormData();
-		fd.set('name', roomData.name);
-		fd.set('icon', roomData.icon);
-		fd.set('maxPlayers', String(roomData.maxPlayers));
-		const res = await fetch('?/createRoom', { method: 'POST', body: fd });
-		const result = await res.json();
+		const result = await apiPost<{ id: string }>('/api/rooms', roomData);
 		showCreateModal = false;
-		if (result.type === 'redirect') {
-			goto(result.location);
-		}
+		goto(`/room/${result.id}`);
 	}
 
 	async function joinRoom(roomId: string) {
-		const fd = new FormData();
-		fd.set('roomId', roomId);
-		const res = await fetch('?/joinRoom', { method: 'POST', body: fd });
-		const result = await res.json();
-		if (result.type === 'redirect') {
-			goto(result.location);
-		}
+		await apiPost('/api/rooms/' + roomId + '/join');
+		goto(`/room/${roomId}`);
 	}
 
 	const interval = setInterval(() => invalidateAll(), 5000);
@@ -46,8 +35,8 @@
 		activeTab === 'all'
 			? data.lobbies
 			: activeTab === 'in_progress'
-				? data.lobbies.filter((l) => l.status === 'in_progress' || l.status === 'starting_soon')
-				: data.lobbies.filter((l) => l.status === 'waiting')
+				? data.lobbies.filter((l: { status: string }) => l.status === 'in_progress' || l.status === 'starting_soon')
+				: data.lobbies.filter((l: { status: string }) => l.status === 'waiting')
 	);
 </script>
 

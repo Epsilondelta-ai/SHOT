@@ -1,8 +1,17 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
+	import { BACKEND_URL } from '$lib/config';
 
 	let { data } = $props();
+
+	async function signOut() {
+		await fetch(`${BACKEND_URL}/api/auth/sign-out`, {
+			method: 'POST',
+			credentials: 'include'
+		});
+		goto('/login');
+	}
 </script>
 
 <svelte:head>
@@ -63,15 +72,14 @@
 				</div>
 			</div>
 
-			<form method="POST" action="?/signout" use:enhance class="mt-6">
-				<button
-					type="submit"
-					class="comic-button w-full rounded-xl border-3 border-slate-900 bg-slate-800 py-3 font-black text-white uppercase"
-				>
-					<span class="material-symbols-outlined mr-1 align-middle text-sm">logout</span>
-					{m.banned_logout()}
-				</button>
-			</form>
+			<button
+				type="button"
+				onclick={signOut}
+				class="comic-button mt-6 w-full rounded-xl border-3 border-slate-900 bg-slate-800 py-3 font-black text-white uppercase"
+			>
+				<span class="material-symbols-outlined mr-1 align-middle text-sm">logout</span>
+				{m.banned_logout()}
+			</button>
 		</div>
 	</div>
 </div>
