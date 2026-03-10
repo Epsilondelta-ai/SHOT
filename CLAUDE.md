@@ -1,31 +1,39 @@
+# SHOT - Monorepo
+
+## Structure
+
+```
+SHOT/
+├── frontend/   # SvelteKit (static adapter) — UI only
+└── backend/    # Elysia (Bun) — API, WebSocket, Auth, DB
+```
+
 ## Project Configuration
 
 - **Language**: TypeScript
 - **Package Manager**: bun
-- **Add-ons**: prettier, eslint, tailwindcss, sveltekit-adapter, drizzle, better-auth, paraglide, storybook, mcp
+- **Frontend**: SvelteKit + `@sveltejs/adapter-static`
+- **Backend**: Elysia (Bun-native)
 
----
+## Working in sub-projects
 
-You are able to use the Svelte MCP server, where you have access to comprehensive Svelte 5 and SvelteKit documentation. Here's how to use the available tools effectively:
+Always `cd` into the relevant sub-directory before running commands:
 
-## Available MCP Tools:
+```bash
+cd frontend && bun dev      # SvelteKit dev server
+cd backend && bun dev       # Elysia dev server
+```
 
-### 1. list-sections
+## Frontend (`frontend/`)
 
-Use this FIRST to discover all available documentation sections. Returns a structured list with titles, use_cases, and paths.
-When asked about Svelte or SvelteKit topics, ALWAYS use this tool at the start of the chat to find relevant sections.
+See `frontend/CLAUDE.md` for full frontend configuration.
 
-### 2. get-documentation
+Add-ons: prettier, eslint, tailwindcss, drizzle (read-only queries), better-auth (client), paraglide, storybook, mcp
 
-Retrieves full documentation content for specific sections. Accepts single or multiple sections.
-After calling the list-sections tool, you MUST analyze the returned documentation sections (especially the use_cases field) and then use the get-documentation tool to fetch ALL documentation sections that are relevant for the user's task.
+## Backend (`backend/`)
 
-### 3. svelte-autofixer
-
-Analyzes Svelte code and returns issues and suggestions.
-You MUST use this tool whenever writing Svelte code before sending it to the user. Keep calling it until no issues or suggestions are returned.
-
-### 4. playground-link
-
-Generates a Svelte Playground link with the provided code.
-After completing the code, ask the user if they want a playground link. Only call this tool after user confirmation and NEVER if code was written to files in their project.
+- **Framework**: Elysia
+- **Auth**: better-auth
+- **Database**: Drizzle ORM + SQLite (via `bun:sqlite`)
+- **WebSocket**: Elysia native WS
+- **Port**: 3001 (frontend proxies `/api` and `/ws` to this)
