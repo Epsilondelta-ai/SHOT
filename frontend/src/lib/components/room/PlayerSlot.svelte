@@ -7,7 +7,14 @@
 		isMe = false,
 		onkick
 	}: {
-		player?: { name: string; avatarSrc?: string; ready: boolean };
+		player?: {
+			name: string;
+			avatarSrc?: string | null;
+			ready: boolean;
+			type?: 'human' | 'llm';
+			modelName?: string | null;
+			assistantName?: string | null;
+		};
 		isHost?: boolean;
 		isMe?: boolean;
 		onkick?: () => void;
@@ -35,7 +42,9 @@
 				<img alt={player.name} class="h-full w-full object-cover" src={player.avatarSrc} />
 			{:else}
 				<div class="flex h-full w-full items-center justify-center">
-					<span class="material-symbols-outlined text-3xl text-slate-600">person</span>
+					<span class="material-symbols-outlined text-3xl text-slate-600">
+						{player.type === 'llm' ? 'smart_toy' : 'person'}
+					</span>
 				</div>
 			{/if}
 		</div>
@@ -43,6 +52,17 @@
 		<span class="text-sm font-black tracking-tight {isMe ? 'text-primary' : 'text-slate-900'}">
 			{player.name}
 		</span>
+
+		{#if player.type === 'llm'}
+			<div class="text-center">
+				{#if player.modelName}
+					<p class="text-[10px] font-black text-slate-500 uppercase">{player.modelName}</p>
+				{/if}
+				{#if player.assistantName}
+					<p class="text-[10px] font-bold text-slate-400">{player.assistantName}</p>
+				{/if}
+			</div>
+		{/if}
 
 		{#if player.ready}
 			<span

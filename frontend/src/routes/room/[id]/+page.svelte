@@ -7,12 +7,19 @@
 	import RoomHeader from '$lib/components/room/RoomHeader.svelte';
 	import PlayerSlot from '$lib/components/room/PlayerSlot.svelte';
 	import RoomChat from '$lib/components/room/RoomChat.svelte';
+	import RoomLlmPlayerPanel from '$lib/components/room/RoomLlmPlayerPanel.svelte';
 
 	type Player = {
 		id: string;
+		userId: string;
 		name: string;
-		avatarSrc?: string;
+		avatarSrc?: string | null;
 		ready: boolean;
+		type: 'human' | 'llm';
+		assistantId: string | null;
+		assistantName: string | null;
+		llmModelId: string | null;
+		modelName: string | null;
 	};
 
 	type ChatMessage = {
@@ -43,17 +50,19 @@
 	$effect(() => {
 		const socket = createRoomSocket(data.roomId, {
 			onPlayers: (wsPlayers) => {
-				players = wsPlayers.map((p) => ({
-					id: p.userId,
-					name: p.name,
-					ready: players.find((existing) => existing.id === p.userId)?.ready ?? false
+				players = wsPlayers.map((player) => ({
+					...player,
+					ready:
+						player.type === 'llm'
+							? true
+							: players.find((existing) => existing.id === player.id)?.ready ?? false
 				}));
 			},
 			onChat: (msg) => {
 				chatMessages = [...chatMessages, msg];
 			},
-			onKicked: (userId) => {
-				if (userId === data.myId) {
+			onKicked: ({ playerId, userId }) => {
+				if (userId === data.myId || myPlayer?.id === playerId) {
 					goto('/lobby');
 				}
 			}
@@ -66,12 +75,13 @@
 		};
 	});
 
-	const isHost = $derived(data.myId === data.hostId);
-	const myPlayer = $derived(players.find((p) => p.id === data.myId));
+	const isHost = $derived((players.find((player) => player.userId === data.myId)?.id ?? '') === data.hostId);
+	const myPlayer = $derived(players.find((player) => player.userId === data.myId));
 	const amReady = $derived(myPlayer?.ready ?? false);
-	const readyCount = $derived(players.filter((p) => p.ready).length);
+	const readyCount = $derived(players.filter((player) => player.id === data.hostId || player.ready).length);
 	const allReady = $derived(readyCount === players.length);
 	const canStart = $derived(isHost && allReady && players.length >= 2);
+	const isRoomFull = $derived(players.length >= data.maxPlayers);
 
 	const slots = $derived.by<(Player | undefined)[]>(() => {
 		const result: (Player | undefined)[] = [...players];
@@ -82,7 +92,9 @@
 	});
 
 	function toggleReady() {
-		players = players.map((p) => (p.id === data.myId ? { ...p, ready: !p.ready } : p));
+		players = players.map((player) =>
+			player.userId === data.myId ? { ...player, ready: !player.ready } : player
+		);
 	}
 
 	function kickPlayer(playerId: string) {
@@ -97,6 +109,11 @@
 	async function leaveRoom() {
 		await apiPost(`/api/rooms/${data.roomId}/leave`);
 		goto('/lobby');
+	}
+
+	async function addLlmPlayer(payload: { assistantId: string; llmModelId: string }) {
+		const result = await apiPost<{ player: Player }>(`/api/rooms/${data.roomId}/llm-players`, payload);
+		players = players.some((player) => player.id === result.player.id) ? players : [...players, result.player];
 	}
 
 	function startGame() {
@@ -139,7 +156,7 @@
 					: players.length < 2
 						? m.room_waiting_players()
 						: isHost
-							? m.room_all_ready()
+							? m.room_waiting_players()
 							: m.room_waiting_host()}
 			</span>
 			<span class="text-sm font-bold">
@@ -158,14 +175,23 @@
 					<PlayerSlot
 						{player}
 						isHost={player?.id === data.hostId}
-						isMe={player?.id === data.myId}
-						onkick={isHost && player && player.id !== data.myId
+						isMe={player?.userId === data.myId}
+						onkick={isHost && player && player.userId !== data.myId
 							? () => kickPlayer(player.id)
 							: undefined}
 					/>
 				{/each}
 			</div>
 		</section>
+
+		{#if isHost}
+			<RoomLlmPlayerPanel
+				assistants={data.assistants}
+				llmModels={data.llmModels}
+				disabled={isRoomFull}
+				onadd={addLlmPlayer}
+			/>
+		{/if}
 
 		<!-- Chat -->
 		<section>

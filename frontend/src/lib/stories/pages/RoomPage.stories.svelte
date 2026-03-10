@@ -3,9 +3,60 @@
 	import RoomPage from '../../../routes/room/[id]/+page.svelte';
 
 	const mockPlayers = [
-		{ id: 'p1', name: 'Sheriff_Buck', ready: true },
-		{ id: 'p2', name: 'Outlaw_Jane', ready: false },
-		{ id: 'p3', name: 'Doc_Holiday', ready: true }
+		{
+			id: 'rp1',
+			userId: 'p1',
+			name: 'Sheriff_Buck',
+			avatarSrc: null,
+			ready: true,
+			type: 'human',
+			assistantId: null,
+			assistantName: null,
+			llmModelId: null,
+			modelName: null
+		},
+		{
+			id: 'rp2',
+			userId: 'p2',
+			name: 'Outlaw_Jane',
+			avatarSrc: null,
+			ready: false,
+			type: 'human',
+			assistantId: null,
+			assistantName: null,
+			llmModelId: null,
+			modelName: null
+		},
+		{
+			id: 'rp3',
+			userId: 'p3',
+			name: 'Doc_Holiday',
+			avatarSrc: null,
+			ready: true,
+			type: 'human',
+			assistantId: null,
+			assistantName: null,
+			llmModelId: null,
+			modelName: null
+		}
+	];
+
+	const mockAssistants = [
+		{
+			id: 'assistant-1',
+			name: '냉철한 전략가',
+			prompt: '상황을 냉정하게 분석하고 승률이 높은 선택지를 제안합니다.',
+			scope: 'personal'
+		}
+	];
+
+	const mockModels = [
+		{
+			id: 'model-1',
+			provider: 'openai',
+			apiModelName: 'gpt-4.1',
+			displayName: 'GPT-4.1'
+		}
 	];
 
 	const mockChatMessages = [
@@ -35,9 +86,11 @@
 			roomCode: 'ABCD',
 			maxPlayers: 4,
 			myId: 'p1',
-			hostId: 'p1',
+			hostId: 'rp1',
 			players: mockPlayers,
-			chatMessages: mockChatMessages
+			chatMessages: mockChatMessages,
+			assistants: mockAssistants,
+			llmModels: mockModels
 		}}
 	/>
 </Story>
@@ -53,9 +106,11 @@
 			roomCode: 'ABCD',
 			maxPlayers: 4,
 			myId: 'p2',
-			hostId: 'p1',
+			hostId: 'rp1',
 			players: mockPlayers,
-			chatMessages: mockChatMessages
+			chatMessages: mockChatMessages,
+			assistants: mockAssistants,
+			llmModels: mockModels
 		}}
 	/>
 </Story>
@@ -71,12 +126,36 @@
 			roomCode: 'XY12',
 			maxPlayers: 4,
 			myId: 'p1',
-			hostId: 'p1',
+			hostId: 'rp1',
 			players: [
-				{ id: 'p1', name: 'Sheriff_Buck', ready: true },
-				{ id: 'p2', name: 'Outlaw_Jane', ready: true }
+				{
+					id: 'rp1',
+					userId: 'p1',
+					name: 'Sheriff_Buck',
+					avatarSrc: null,
+					ready: true,
+					type: 'human',
+					assistantId: null,
+					assistantName: null,
+					llmModelId: null,
+					modelName: null
+				},
+				{
+					id: 'rp2',
+					userId: 'p2',
+					name: 'Outlaw_Jane',
+					avatarSrc: null,
+					ready: true,
+					type: 'human',
+					assistantId: null,
+					assistantName: null,
+					llmModelId: null,
+					modelName: null
+				}
 			],
-			chatMessages: []
+			chatMessages: [],
+			assistants: mockAssistants,
+			llmModels: mockModels
 		}}
 	/>
 </Story>

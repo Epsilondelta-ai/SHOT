@@ -57,10 +57,39 @@ describe('createRoomSocket', () => {
 
 		const ws = MockWebSocket.instances[0];
 		ws.onmessage?.({
-			data: JSON.stringify({ type: 'players', players: [{ id: '1', userId: 'u1', name: 'Alice', image: null }] })
+			data: JSON.stringify({
+				type: 'players',
+				players: [
+					{
+						id: '1',
+						userId: 'u1',
+						name: 'Alice',
+						avatarSrc: null,
+						type: 'human',
+						assistantId: null,
+						assistantName: null,
+						llmModelId: null,
+						modelName: null,
+						ready: false
+					}
+				]
+			})
 		} as MessageEvent);
 
-		expect(onPlayers).toHaveBeenCalledWith([{ id: '1', userId: 'u1', name: 'Alice', image: null }]);
+		expect(onPlayers).toHaveBeenCalledWith([
+			{
+				id: '1',
+				userId: 'u1',
+				name: 'Alice',
+				avatarSrc: null,
+				type: 'human',
+				assistantId: null,
+				assistantName: null,
+				llmModelId: null,
+				modelName: null,
+				ready: false
+			}
+		]);
 	});
 
 	it('calls onChat callback when chat message received', () => {
@@ -85,10 +114,10 @@ describe('createRoomSocket', () => {
 
 		const ws = MockWebSocket.instances[0];
 		ws.onmessage?.({
-			data: JSON.stringify({ type: 'kicked', userId: 'u2' })
+			data: JSON.stringify({ type: 'kicked', playerId: 'player-2', userId: 'u2' })
 		} as MessageEvent);
 
-		expect(onKicked).toHaveBeenCalledWith('u2');
+		expect(onKicked).toHaveBeenCalledWith({ playerId: 'player-2', userId: 'u2' });
 	});
 
 	it('ignores malformed JSON messages', () => {
@@ -112,8 +141,8 @@ describe('createRoomSocket', () => {
 		const socket = createRoomSocket('room-1', {});
 		const ws = MockWebSocket.instances[0];
 
-		socket.sendKick('user-99');
-		expect(ws.sent).toContain(JSON.stringify({ type: 'kick', targetUserId: 'user-99' }));
+		socket.sendKick('player-99');
+		expect(ws.sent).toContain(JSON.stringify({ type: 'kick', targetPlayerId: 'player-99' }));
 	});
 
 	it('does not send when WS is not open', () => {

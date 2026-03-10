@@ -4,7 +4,13 @@ type Player = {
 	id: string;
 	userId: string;
 	name: string;
-	image: string | null;
+	avatarSrc: string | null;
+	type: 'human' | 'llm';
+	assistantId: string | null;
+	assistantName: string | null;
+	llmModelId: string | null;
+	modelName: string | null;
+	ready: boolean;
 };
 
 type ChatMessage = {
@@ -17,7 +23,7 @@ type ChatMessage = {
 type RoomSocketCallbacks = {
 	onPlayers?: (players: Player[]) => void;
 	onChat?: (message: ChatMessage) => void;
-	onKicked?: (userId: string) => void;
+	onKicked?: (payload: { playerId: string; userId: string }) => void;
 };
 
 export function createRoomSocket(roomId: string, callbacks: RoomSocketCallbacks) {
@@ -38,7 +44,7 @@ export function createRoomSocket(roomId: string, callbacks: RoomSocketCallbacks)
 						text: ` ${msg.text}`
 					});
 				} else if (msg.type === 'kicked') {
-					callbacks.onKicked?.(msg.userId);
+					callbacks.onKicked?.({ playerId: msg.playerId, userId: msg.userId });
 				}
 			} catch {
 				// ignore parse errors
@@ -60,8 +66,8 @@ export function createRoomSocket(roomId: string, callbacks: RoomSocketCallbacks)
 		send({ type: 'chat', text });
 	}
 
-	function sendKick(targetUserId: string) {
-		send({ type: 'kick', targetUserId });
+	function sendKick(targetPlayerId: string) {
+		send({ type: 'kick', targetPlayerId });
 	}
 
 	function close() {

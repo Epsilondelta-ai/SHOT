@@ -1,8 +1,54 @@
 import Elysia from 'elysia';
 import { db } from '../db';
-import { eq, and, count } from 'drizzle-orm';
-import { room, roomPlayer, user } from '../db/schema';
+import { eq, and, count, inArray, isNull, or } from 'drizzle-orm';
+import { assistant, llmModel, llmProvider, room, roomPlayer } from '../db/schema';
 import { getUser } from '../lib/getUser';
+import { getSerializedRoomPlayers } from '../lib/roomPlayers';
+import { broadcastPlayers } from '../ws/roomWs';
+
+async function getRoomOptions(userId: string) {
+	const activeProviders = await db
+		.select({ provider: llmProvider.provider })
+		.from(llmProvider)
+		.where(eq(llmProvider.active, true));
+
+	const providerKeys = activeProviders.map((provider) => provider.provider);
+
+	const [assistants, models] = await Promise.all([
+		db
+			.select({
+				id: assistant.id,
+				name: assistant.name,
+				prompt: assistant.prompt,
+				userId: assistant.userId
+			})
+			.from(assistant)
+			.where(and(eq(assistant.active, true), or(eq(assistant.userId, userId), isNull(assistant.userId))))
+			.orderBy(assistant.createdAt),
+		providerKeys.length === 0
+			? Promise.resolve([])
+			: db
+					.select({
+						id: llmModel.id,
+						provider: llmModel.provider,
+						apiModelName: llmModel.apiModelName,
+						displayName: llmModel.displayName
+					})
+					.from(llmModel)
+					.where(and(eq(llmModel.active, true), inArray(llmModel.provider, providerKeys)))
+					.orderBy(llmModel.createdAt)
+	]);
+
+	return {
+		assistants: assistants.map((entry) => ({
+			id: entry.id,
+			name: entry.name,
+			prompt: entry.prompt,
+			scope: entry.userId === userId ? 'personal' : 'global'
+		})),
+		llmModels: models
+	};
+}
 
 export const roomRoutes = new Elysia()
 	.get('/api/rooms', async () => {
@@ -63,28 +109,24 @@ export const roomRoutes = new Elysia()
 			return { error: 'Room not found' };
 		}
 
-		const playerRecords = await db
-			.select({ userId: roomPlayer.userId, name: user.name, image: user.image })
-			.from(roomPlayer)
-			.innerJoin(user, eq(roomPlayer.userId, user.id))
-			.where(eq(roomPlayer.roomId, params.id));
+		const playerRecords = await db.query.roomPlayer.findMany({
+			where: eq(roomPlayer.roomId, params.id)
+		});
 
-		const isInRoom = playerRecords.some((p) => p.userId === u.id);
+		const isInRoom = playerRecords.some((player) => player.playerType === 'human' && player.userId === u.id);
 		if (!isInRoom) {
 			if (playerRecords.length >= roomData.maxPlayers) {
 				set.status = 403;
 				return { error: 'Room is full' };
 			}
-			await db.insert(roomPlayer).values({ roomId: params.id, userId: u.id });
-			playerRecords.push({ userId: u.id, name: u.name, image: u.image ?? null });
+			await db.insert(roomPlayer).values({ roomId: params.id, userId: u.id, playerType: 'human' });
 		}
 
-		const players = playerRecords.map((p) => ({
-			id: p.userId,
-			name: p.name,
-			image: p.image,
-			ready: false
-		}));
+		const [players, roomOptions] = await Promise.all([
+			getSerializedRoomPlayers(params.id),
+			getRoomOptions(u.id)
+		]);
+		const hostPlayer = players.find((player) => player.type === 'human') ?? players[0];
 
 		return {
 			roomId: roomData.id,
@@ -92,9 +134,10 @@ export const roomRoutes = new Elysia()
 			roomCode: roomData.id.slice(0, 6).toUpperCase(),
 			maxPlayers: roomData.maxPlayers,
 			myId: u.id,
-			hostId: players[0]?.id ?? '',
+			hostId: hostPlayer?.id ?? '',
 			players,
-			chatMessages: []
+			chatMessages: [],
+			...roomOptions
 		};
 	})
 
@@ -109,12 +152,11 @@ export const roomRoutes = new Elysia()
 			.delete(roomPlayer)
 			.where(and(eq(roomPlayer.roomId, params.id), eq(roomPlayer.userId, u.id)));
 
-		const [{ remaining }] = await db
-			.select({ remaining: count(roomPlayer.id) })
-			.from(roomPlayer)
-			.where(eq(roomPlayer.roomId, params.id));
+		const remainingPlayers = await db.query.roomPlayer.findMany({
+			where: eq(roomPlayer.roomId, params.id)
+		});
 
-		if (remaining === 0) {
+		if (!remainingPlayers.some((player) => player.playerType === 'human')) {
 			await db.delete(room).where(eq(room.id, params.id));
 		}
 
@@ -154,4 +196,99 @@ export const roomRoutes = new Elysia()
 		}
 
 		return { success: true, roomId: params.id };
+	})
+
+	.post('/api/rooms/:id/llm-players', async ({ params, request, set }) => {
+		const u = await getUser(request);
+		if (!u) {
+			set.status = 401;
+			return { error: 'Unauthorized' };
+		}
+
+		const [roomData] = await db.select().from(room).where(eq(room.id, params.id));
+		if (!roomData) {
+			set.status = 404;
+			return { error: 'Room not found' };
+		}
+
+		const playerRecords = await db.query.roomPlayer.findMany({
+			where: eq(roomPlayer.roomId, params.id)
+		});
+		const hostPlayer = playerRecords.find((player) => player.playerType === 'human') ?? playerRecords[0];
+		if (!hostPlayer || hostPlayer.userId !== u.id) {
+			set.status = 403;
+			return { error: 'Only the host can add LLM players' };
+		}
+		if (playerRecords.length >= roomData.maxPlayers) {
+			set.status = 403;
+			return { error: 'Room is full' };
+		}
+
+		const body = (await request.json()) as { assistantId?: string; llmModelId?: string };
+		if (!body.assistantId || !body.llmModelId) {
+			set.status = 400;
+			return { error: 'Assistant and model are required' };
+		}
+
+		const [selectedAssistant, selectedModel] = await Promise.all([
+			db.query.assistant.findFirst({
+				where: and(
+					eq(assistant.id, body.assistantId),
+					eq(assistant.active, true),
+					or(eq(assistant.userId, u.id), isNull(assistant.userId))
+				),
+				columns: { id: true, name: true }
+			}),
+			db
+				.select({
+					id: llmModel.id,
+					displayName: llmModel.displayName
+				})
+				.from(llmModel)
+				.innerJoin(llmProvider, eq(llmModel.provider, llmProvider.provider))
+				.where(
+					and(
+						eq(llmModel.id, body.llmModelId),
+						eq(llmModel.active, true),
+						eq(llmProvider.active, true)
+					)
+				)
+				.then((rows) => rows[0] ?? null)
+		]);
+
+		if (!selectedAssistant || !selectedModel) {
+			set.status = 400;
+			return { error: 'Invalid assistant or model' };
+		}
+
+		const displayName = `${selectedAssistant.name} (${selectedModel.displayName})`;
+		const [newPlayer] = await db
+			.insert(roomPlayer)
+			.values({
+				roomId: params.id,
+				userId: `llm:${crypto.randomUUID()}`,
+				playerType: 'llm',
+				displayName,
+				assistantId: selectedAssistant.id,
+				llmModelId: selectedModel.id
+			})
+			.returning();
+
+		await broadcastPlayers(params.id);
+
+		return {
+			success: true,
+			player: {
+				id: newPlayer.id,
+				userId: newPlayer.userId,
+				name: displayName,
+				avatarSrc: null,
+				type: 'llm',
+				assistantId: selectedAssistant.id,
+				assistantName: selectedAssistant.name,
+				llmModelId: selectedModel.id,
+				modelName: selectedModel.displayName,
+				ready: true
+			}
+		};
 	});

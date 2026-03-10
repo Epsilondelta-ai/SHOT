@@ -31,7 +31,11 @@ export const roomPlayer = sqliteTable('room_player', {
 	roomId: text('room_id')
 		.notNull()
 		.references(() => room.id, { onDelete: 'cascade' }),
-	userId: text('user_id').notNull()
+	userId: text('user_id').notNull(),
+	playerType: text('player_type', { enum: ['human', 'llm'] }).notNull().default('human'),
+	displayName: text('display_name'),
+	assistantId: text('assistant_id').references(() => assistant.id, { onDelete: 'set null' }),
+	llmModelId: text('llm_model_id').references(() => llmModel.id, { onDelete: 'set null' })
 });
 
 export const roomRelations = relations(room, ({ many }) => ({

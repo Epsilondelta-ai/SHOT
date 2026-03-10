@@ -48,5 +48,6 @@ storybook-static
 
 # OMC / Tools
 .omc
+.omx
 flowbook-static
 coverage

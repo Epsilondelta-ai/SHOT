@@ -2,10 +2,11 @@ import Elysia from 'elysia';
 import { db } from '../db';
 import { eq, and } from 'drizzle-orm';
 import { room, roomPlayer, session } from '../db/schema';
+import { getSerializedRoomPlayers } from '../lib/roomPlayers';
 
 type RoomMessage =
 	| { type: 'chat'; text: string }
-	| { type: 'kick'; targetUserId: string };
+	| { type: 'kick'; targetPlayerId: string };
 
 // roomId → Set of ws ids
 const roomSockets = new Map<string, Set<string>>();
@@ -22,27 +23,13 @@ function broadcast(roomId: string, payload: unknown, excludeId?: string) {
 	}
 }
 
-async function broadcastPlayers(roomId: string) {
-	const players = await db.query.roomPlayer.findMany({
-		where: eq(roomPlayer.roomId, roomId)
-	});
+export async function broadcastPlayers(roomId: string) {
+	const players = await getSerializedRoomPlayers(roomId);
 	if (players.length === 0) return;
-
-	const userIds = players.map((p) => p.userId);
-	const users = await db.query.user.findMany({
-		where: (u, { inArray }) => inArray(u.id, userIds),
-		columns: { id: true, name: true, image: true }
-	});
-	const userMap = new Map(users.map((u) => [u.id, u]));
 
 	const payload = JSON.stringify({
 		type: 'players',
-		players: players.map((p) => ({
-			id: p.id,
-			userId: p.userId,
-			name: userMap.get(p.userId)?.name ?? 'Unknown',
-			image: userMap.get(p.userId)?.image ?? null
-		}))
+		players
 	});
 
 	const ids = roomSockets.get(roomId);
@@ -118,13 +105,12 @@ export const roomWsPlugin = new Elysia()
 				});
 				if (players[0]?.userId !== userId) return;
 
-				await db
-					.delete(roomPlayer)
-					.where(
-						and(eq(roomPlayer.roomId, roomId), eq(roomPlayer.userId, msg.targetUserId))
-					);
+				const [targetPlayer] = players.filter((player) => player.id === msg.targetPlayerId);
+				if (!targetPlayer) return;
 
-				broadcast(roomId, { type: 'kicked', userId: msg.targetUserId });
+				await db.delete(roomPlayer).where(and(eq(roomPlayer.roomId, roomId), eq(roomPlayer.id, msg.targetPlayerId)));
+
+				broadcast(roomId, { type: 'kicked', playerId: msg.targetPlayerId, userId: targetPlayer.userId });
 				await broadcastPlayers(roomId);
 			}
 		},
@@ -145,7 +131,7 @@ export const roomWsPlugin = new Elysia()
 				where: eq(roomPlayer.roomId, roomId)
 			});
 
-			if (remaining.length === 0) {
+			if (!remaining.some((player) => player.playerType === 'human')) {
 				await db.delete(room).where(eq(room.id, roomId));
 			} else {
 				await broadcastPlayers(roomId);
