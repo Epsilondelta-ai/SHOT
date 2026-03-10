@@ -1,37 +1,38 @@
 ---
-title: Layout Server Load — Auth Data
+title: SPA Layout — Client-side Auth Guard
 category: Authentication
-tags: [layout, auth, admin, role, username, avatar]
+tags: [layout, auth, admin, role, client-side, spa, guard]
 order: 20
-description: Root layout load function checks user role and passes username, avatar, and isAdmin flag to all pages
+description: Root layout load function (client-side) fetches session from backend and guards protected routes
 ---
 
 ```mermaid
 flowchart TD
-    A(["Every page request"]) --> B{{"event.locals.user set?"}}
-    B -->|No| C["Return empty username, avatarSrc='', isAdmin=false"]
-    B -->|Yes| D[("SELECT role FROM user WHERE id = userId")]
-    D --> E{{"role === 'admin'?"}}
-    E -->|Yes| F["isAdmin = true"]
-    E -->|No| G["isAdmin = false"]
-    F --> H["Return: username, avatarSrc, isAdmin=true"]
-    G --> I["Return: username, avatarSrc, isAdmin=false"]
-    C --> J["Layout renders with data"]
-    H --> J
-    I --> J
-    J --> K{{"isAdmin?"}}
-    K -->|Yes| L["Show admin nav link"]
-    K -->|No| M["Hide admin nav link"]
+    A(["Page navigation / initial load"]) --> B[["root +layout.ts load()"]]
+    B --> C[["GET /api/auth/get-session\n credentials: include"]]
+    C --> D{{"Response status"}}
+    D -->|"200 + user"| E["Store user in layout data"]
+    D -->|"401 / null"| F{{"Is protected route?"}}
+    F -->|Yes| G(["goto('/login')"])
+    F -->|No| H["Render page without user"]
+    E --> I{{"user.role === 'admin'?"}}
+    I -->|Yes| J["isAdmin = true\nShow admin nav link"]
+    I -->|No| K["isAdmin = false\nHide admin nav link"]
+    J --> L[/Render Layout + Page/]
+    K --> L
+    H --> L
 
     classDef entry fill:#6366f1,stroke:#818cf8,color:#fff
     classDef validation fill:#f59e0b,stroke:#fbbf24,color:#000
     classDef success fill:#10b981,stroke:#34d399,color:#fff
-    classDef data fill:#3b82f6,stroke:#60a5fa,color:#fff
-    classDef processing fill:#64748b,stroke:#94a3b8,color:#fff
+    classDef error fill:#ef4444,stroke:#f87171,color:#fff
+    classDef external fill:#8b5cf6,stroke:#a78bfa,color:#fff
+    classDef user fill:#06b6d4,stroke:#22d3ee,color:#fff
 
-    class A entry
-    class B,E,K validation
-    class F,H success
-    class D data
-    class C,G,I,J,L,M processing
+    class A,G entry
+    class D,F,I validation
+    class E,J,L success
+    class G error
+    class B,C external
+    class H,K,L user
 ```

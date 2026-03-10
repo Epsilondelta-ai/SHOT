@@ -1,24 +1,26 @@
 ---
-title: User Login
+title: User Login (SPA)
 category: Authentication
-tags: [auth, login, email, password, better-auth]
+tags: [auth, login, email, password, better-auth, spa, client-side]
 order: 1
-description: POST /login — validates credentials via Better Auth and redirects to lobby
+description: SPA login page — calls backend better-auth endpoint directly from the browser
 ---
 
 ```mermaid
 flowchart TD
-    A(["GET /login"]) --> B{{"Already logged in?"}}
-    B -->|Yes| C(["Redirect → /lobby"])
-    B -->|No| D[/Login Form UI/]
-    D --> E[/Submit email + password/]
-    E --> F{{"Fields empty?"}}
-    F -->|Yes| G[\"400 - 이메일과 비밀번호를 입력해주세요"\]
-    F -->|No| H[["auth.api.signInEmail()"]]
-    H --> I{{"Response OK?"}}
-    I -->|No| J[\"401/400 - Error message"\]
-    I -->|Yes| K["Set session cookie"]
-    K --> L(["Redirect → /lobby"])
+    A(["GET /login"]) --> B[["Load +page.ts"]]
+    B --> C[["GET /api/auth/get-session"]]
+    C --> D{{"Session active?"}}
+    D -->|Yes| E(["goto('/lobby')"])
+    D -->|No| F[/Login Form UI/]
+    F --> G[/Submit email + password/]
+    G --> H{{"Fields empty?"}}
+    H -->|Yes| I[\"Validation error message"\]
+    H -->|No| J[["POST /api/auth/sign-in/email\n credentials: include"]]
+    J --> K{{"Response OK?"}}
+    K -->|No| L[\"401/400 - Error message"\]
+    K -->|Yes| M["Cookie set by browser automatically"]
+    M --> N(["goto('/lobby')"])
 
     classDef entry fill:#6366f1,stroke:#818cf8,color:#fff
     classDef validation fill:#f59e0b,stroke:#fbbf24,color:#000
@@ -27,10 +29,10 @@ flowchart TD
     classDef external fill:#8b5cf6,stroke:#a78bfa,color:#fff
     classDef user fill:#06b6d4,stroke:#22d3ee,color:#fff
 
-    class A,C,L entry
-    class B,F validation
-    class K,L success
-    class G,J error
-    class H,I external
-    class D,E user
+    class A,E,N entry
+    class D,H,K validation
+    class M,N success
+    class I,L error
+    class B,C,J external
+    class F,G user
 ```

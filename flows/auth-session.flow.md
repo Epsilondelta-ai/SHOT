@@ -1,40 +1,42 @@
 ---
-title: Session Handling via Server Hooks
+title: Session Handling (SPA + Paraglide)
 category: Authentication
-tags: [auth, session, hooks, paraglide, i18n, middleware, better-auth]
+tags: [auth, session, hooks, paraglide, i18n, middleware, better-auth, spa]
 order: 3
-description: Every HTTP request passes through Paraglide i18n and Better Auth session middleware
+description: Every request passes through Paraglide i18n middleware — auth is handled client-side via backend API
 ---
 
 ```mermaid
 flowchart TD
-    A(["HTTP Request"]) --> B[["handleParaglide()"]]
-    B --> C[["paraglideMiddleware()"]]
-    C --> D["Detect locale from request"]
-    D --> E["Attach locale to request"]
-    E --> F[["handleBetterAuth()"]]
-    F --> G[["auth.api.getSession()"]]
-    G --> H{{"Session found?"}}
-    H -->|Yes| I["Set event.locals.session"]
-    I --> J["Set event.locals.user"]
-    H -->|No| K["locals remain empty"]
-    J --> L[["svelteKitHandler()"]]
-    K --> L
-    L --> M[["resolve(event)"]]
-    M --> N["transformPageChunk()"]
-    N --> O["Replace %paraglide.lang%"]
-    O --> P["Replace %paraglide.dir%"]
-    P --> Q(["HTTP Response"])
+    A(["HTTP Request to SvelteKit SPA"]) --> B[["hooks.server.ts"]]
+    B --> C[["handleParaglide()"]]
+    C --> D[["paraglideMiddleware()"]]
+    D --> E["Detect locale from request"]
+    E --> F["Attach locale to response headers"]
+    F --> G[["resolve(event)"]]
+    G --> H["transformPageChunk()"]
+    H --> I["Replace %paraglide.lang%"]
+    I --> J["Replace %paraglide.dir%"]
+    J --> K(["Serve static SPA HTML"])
+
+    K --> L["Browser loads SPA"]
+    L --> M[["+layout.ts load() — client side"]]
+    M --> N[["GET /api/auth/get-session"]]
+    N --> O{{"Session cookie valid?"}}
+    O -->|Yes| P["User data available in layout"]
+    O -->|No| Q(["SPA route guard → /login"])
 
     classDef entry fill:#6366f1,stroke:#818cf8,color:#fff
     classDef validation fill:#f59e0b,stroke:#fbbf24,color:#000
     classDef success fill:#10b981,stroke:#34d399,color:#fff
+    classDef error fill:#ef4444,stroke:#f87171,color:#fff
     classDef external fill:#8b5cf6,stroke:#a78bfa,color:#fff
     classDef processing fill:#64748b,stroke:#94a3b8,color:#fff
 
-    class A,Q entry
-    class H validation
-    class I,J success
-    class B,C,F,G,L external
-    class D,E,K,M,N,O,P processing
+    class A,K,Q entry
+    class O validation
+    class P success
+    class Q error
+    class B,C,D,G,M,N external
+    class E,F,H,I,J,L processing
 ```
