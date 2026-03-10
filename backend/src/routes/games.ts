@@ -62,6 +62,16 @@ export const gameRoutes = new Elysia()
         error: "Bots and LLM players are not yet supported for live games",
       };
     }
+    if (
+      players.some(
+        (player) => player.userId !== roomData.hostUserId && !player.ready,
+      )
+    ) {
+      set.status = 400;
+      return {
+        error: "All non-host players must be ready before starting",
+      };
+    }
 
     initializeGame(params.id, players);
     await db

@@ -7,7 +7,8 @@ import { getRoomById, syncRoomAfterHumanDeparture } from "../lib/roomState";
 
 type RoomMessage =
   | { type: "chat"; text: string }
-  | { type: "kick"; targetPlayerId: string };
+  | { type: "kick"; targetPlayerId: string }
+  | { type: "ready"; ready: boolean };
 
 // roomId → Set of ws ids
 const roomSockets = new Map<string, Set<string>>();
@@ -146,6 +147,19 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
         playerId: msg.targetPlayerId,
         userId: targetPlayer.userId,
       });
+      await broadcastPlayers(roomId);
+    } else if (msg.type === "ready") {
+      await db
+        .update(roomPlayer)
+        .set({ ready: msg.ready })
+        .where(
+          and(
+            eq(roomPlayer.roomId, roomId),
+            eq(roomPlayer.userId, userId),
+            eq(roomPlayer.playerType, "human"),
+          ),
+        );
+
       await broadcastPlayers(roomId);
     }
   },

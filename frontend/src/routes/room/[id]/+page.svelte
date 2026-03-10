@@ -139,9 +139,8 @@
 	});
 
 	function toggleReady() {
-		players = players.map((player) =>
-			player.userId === data.myId ? { ...player, ready: !player.ready } : player
-		);
+		if (!myPlayer) return;
+		socketRef?.sendReady(!myPlayer.ready);
 	}
 
 	function kickPlayer(playerId: string) {

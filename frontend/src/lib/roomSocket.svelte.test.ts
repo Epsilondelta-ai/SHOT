@@ -155,6 +155,14 @@ describe('createRoomSocket', () => {
 		expect(ws.sent).toContain(JSON.stringify({ type: 'kick', targetPlayerId: 'player-99' }));
 	});
 
+	it('sendReady sends correct message when WS is open', () => {
+		const socket = createRoomSocket('room-1', {});
+		const ws = MockWebSocket.instances[0];
+
+		socket.sendReady(true);
+		expect(ws.sent).toContain(JSON.stringify({ type: 'ready', ready: true }));
+	});
+
 	it('does not send when WS is not open', () => {
 		const socket = createRoomSocket('room-1', {});
 		const ws = MockWebSocket.instances[0];

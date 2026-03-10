@@ -75,6 +75,10 @@ export function createRoomSocket(roomId: string, callbacks: RoomSocketCallbacks)
 		send({ type: 'kick', targetPlayerId });
 	}
 
+	function sendReady(ready: boolean) {
+		send({ type: 'ready', ready });
+	}
+
 	function close() {
 		ws?.close();
 		ws = null;
@@ -85,6 +89,7 @@ export function createRoomSocket(roomId: string, callbacks: RoomSocketCallbacks)
 	return {
 		sendChat,
 		sendKick,
+		sendReady,
 		close
 	};
 }
