@@ -5,6 +5,9 @@ import { svelteKitHandler } from 'better-auth/svelte-kit';
 import { type Handle, redirect } from '@sveltejs/kit';
 import { getTextDirection } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
+import { db } from '$lib/server/db';
+import { user } from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
 
 const handleParaglide: Handle = ({ event, resolve }) =>
 	paraglideMiddleware(event.request, ({ request, locale }) => {
@@ -29,6 +32,26 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	return svelteKitHandler({ event, resolve, auth, building });
 };
 
+const handleBanCheck: Handle = async ({ event, resolve }) => {
+	if (event.locals.user) {
+		const pathname = event.url.pathname;
+		const isExempt =
+			pathname.startsWith('/banned') ||
+			pathname.startsWith('/api/auth') ||
+			pathname.startsWith('/login');
+		if (!isExempt) {
+			const [dbUser] = await db
+				.select({ banEnd: user.banEnd })
+				.from(user)
+				.where(eq(user.id, event.locals.user.id));
+			if (dbUser?.banEnd && dbUser.banEnd > new Date()) {
+				redirect(302, '/banned');
+			}
+		}
+	}
+	return resolve(event);
+};
+
 const handleNotFound: Handle = async ({ event, resolve }) => {
 	const response = await resolve(event);
 	if (response.status === 404) {
@@ -37,4 +60,9 @@ const handleNotFound: Handle = async ({ event, resolve }) => {
 	return response;
 };
 
-export const handle: Handle = sequence(handleParaglide, handleBetterAuth, handleNotFound);
+export const handle: Handle = sequence(
+	handleParaglide,
+	handleBetterAuth,
+	handleBanCheck,
+	handleNotFound
+);

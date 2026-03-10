@@ -7,6 +7,7 @@
 	import AdminLLMConfig from '$lib/components/admin/AdminLLMConfig.svelte';
 	import AdminAssistantList from '$lib/components/admin/AdminAssistantList.svelte';
 	import AdminAssistantForm from '$lib/components/admin/AdminAssistantForm.svelte';
+	import AdminBanModal from '$lib/components/admin/AdminBanModal.svelte';
 	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
@@ -43,6 +44,8 @@
 	let activeTab: Tab = $state('dashboard');
 	let showAssistantForm = $state(false);
 	let editingAssistant: Assistant | null = $state(null);
+	let showBanModal = $state(false);
+	let banningUserId = $state('');
 
 	// LLM config has no DB backing — client state only
 	// eslint-disable-next-line svelte/prefer-writable-derived
@@ -56,11 +59,21 @@
 		llmModels = data.llmModels;
 	});
 
-	async function banUser(userId: string) {
+	function openBanModal(userId: string) {
+		banningUserId = userId;
+		showBanModal = true;
+	}
+
+	async function submitBan(banData: { startAt: string; endAt: string; reason: string }) {
 		const fd = new FormData();
-		fd.set('id', userId);
+		fd.set('id', banningUserId);
+		fd.set('startAt', banData.startAt);
+		fd.set('endAt', banData.endAt);
+		fd.set('reason', banData.reason);
 		await fetch('?/banUser', { method: 'POST', body: fd });
 		await invalidateAll();
+		showBanModal = false;
+		banningUserId = '';
 	}
 
 	async function unbanUser(userId: string) {
@@ -158,7 +171,7 @@
 					<span class="material-symbols-outlined text-primary">group</span>
 					{m.admin_users()}
 				</h2>
-				<AdminUserList users={data.users} onban={banUser} onunban={unbanUser} />
+				<AdminUserList users={data.users} onban={openBanModal} onunban={unbanUser} />
 			</section>
 
 			<section>
@@ -177,7 +190,7 @@
 				<span class="material-symbols-outlined text-primary">group</span>
 				{m.admin_users()}
 			</h2>
-			<AdminUserList users={data.users} onban={banUser} onunban={unbanUser} />
+			<AdminUserList users={data.users} onban={openBanModal} onunban={unbanUser} />
 		{:else if activeTab === 'rooms'}
 			<h2
 				class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
@@ -237,3 +250,12 @@
 		{/if}
 	</main>
 </div>
+
+<AdminBanModal
+	isOpen={showBanModal}
+	onsave={submitBan}
+	oncancel={() => {
+		showBanModal = false;
+		banningUserId = '';
+	}}
+/>

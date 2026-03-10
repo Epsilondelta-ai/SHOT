@@ -9,6 +9,8 @@
 		games: number;
 		joined: string;
 		banned: boolean;
+		banEnd?: string | null;
+		banReason?: string | null;
 	};
 
 	let {
@@ -99,6 +101,14 @@
 							<span class="truncate">{user.email}</span>
 							<span>{m.admin_user_games()}: {user.games}</span>
 						</div>
+						{#if user.banned && user.banEnd}
+							<div class="mt-1 text-[11px] font-bold text-red-400">
+								{m.admin_ban_until()}: {user.banEnd}
+								{#if user.banReason}
+									— {user.banReason}
+								{/if}
+							</div>
+						{/if}
 					</div>
 				</div>
 

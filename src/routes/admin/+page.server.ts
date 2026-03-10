@@ -28,7 +28,9 @@ export const load: PageServerLoad = async (event) => {
 			email: user.email,
 			role: user.role,
 			createdAt: user.createdAt,
-			banned: user.banned
+			banStart: user.banStart,
+			banEnd: user.banEnd,
+			banReason: user.banReason
 		})
 		.from(user)
 		.orderBy(user.createdAt);
@@ -55,7 +57,9 @@ export const load: PageServerLoad = async (event) => {
 			role: u.role,
 			games: 0,
 			joined: u.createdAt.toISOString().split('T')[0],
-			banned: u.banned
+			banned: u.banEnd !== null && u.banEnd !== undefined && u.banEnd > new Date(),
+			banEnd: u.banEnd?.toISOString().split('T')[0] ?? null,
+			banReason: u.banReason ?? null
 		})),
 		rooms: rooms.map((r) => ({
 			id: r.id,
@@ -118,8 +122,18 @@ export const actions: Actions = {
 	banUser: async ({ request }) => {
 		const data = await request.formData();
 		const id = data.get('id') as string;
-		if (!id) return fail(400, { error: 'Missing id' });
-		await db.update(user).set({ banned: true }).where(eq(user.id, id));
+		const startAt = data.get('startAt') as string;
+		const endAt = data.get('endAt') as string;
+		const reason = data.get('reason') as string;
+		if (!id || !endAt || !reason) return fail(400, { error: 'Missing fields' });
+		await db
+			.update(user)
+			.set({
+				banStart: startAt ? new Date(startAt) : new Date(),
+				banEnd: new Date(endAt),
+				banReason: reason
+			})
+			.where(eq(user.id, id));
 		return { success: true };
 	},
 
@@ -127,7 +141,10 @@ export const actions: Actions = {
 		const data = await request.formData();
 		const id = data.get('id') as string;
 		if (!id) return fail(400, { error: 'Missing id' });
-		await db.update(user).set({ banned: false }).where(eq(user.id, id));
+		await db
+			.update(user)
+			.set({ banStart: null, banEnd: null, banReason: null })
+			.where(eq(user.id, id));
 		return { success: true };
 	},
 
