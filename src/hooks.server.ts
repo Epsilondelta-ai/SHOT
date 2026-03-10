@@ -2,7 +2,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { building } from '$app/environment';
 import { auth } from '$lib/server/auth';
 import { svelteKitHandler } from 'better-auth/svelte-kit';
-import type { Handle } from '@sveltejs/kit';
+import { type Handle, redirect } from '@sveltejs/kit';
 import { getTextDirection } from '$lib/paraglide/runtime';
 import { paraglideMiddleware } from '$lib/paraglide/server';
 
@@ -29,4 +29,12 @@ const handleBetterAuth: Handle = async ({ event, resolve }) => {
 	return svelteKitHandler({ event, resolve, auth, building });
 };
 
-export const handle: Handle = sequence(handleParaglide, handleBetterAuth);
+const handleNotFound: Handle = async ({ event, resolve }) => {
+	const response = await resolve(event);
+	if (response.status === 404) {
+		throw redirect(302, '/');
+	}
+	return response;
+};
+
+export const handle: Handle = sequence(handleParaglide, handleBetterAuth, handleNotFound);
