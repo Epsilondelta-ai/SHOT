@@ -16,7 +16,8 @@
 			<div class="mr-2 hidden flex-col items-end sm:flex">
 				<span class="text-sm font-bold">{username}</span>
 			</div>
-			<button
+			<a
+				href="/mypage"
 				class="size-12 overflow-hidden rounded-full border-2 border-slate-900 bg-accent-beige"
 			>
 				{#if avatarSrc}
@@ -24,7 +25,7 @@
 				{:else}
 					<span class="material-symbols-outlined text-2xl text-slate-600">person</span>
 				{/if}
-			</button>
+			</a>
 		</div>
 	</div>
 </header>
