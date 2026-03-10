@@ -1,4 +1,4 @@
-import { redirect, error, fail } from '@sveltejs/kit';
+import { redirect, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { user, room, roomPlayer, assistant } from '$lib/server/db/schema';
 import { count, eq } from 'drizzle-orm';
@@ -13,7 +13,7 @@ async function getAdminUser(locals: App.Locals) {
 		.from(user)
 		.where(eq(user.id, locals.user.id));
 
-	if (!dbUser || dbUser.role !== 'admin') error(403, '접근 권한이 없습니다.');
+	if (!dbUser || dbUser.role !== 'admin') redirect(303, '/');
 
 	return locals.user;
 }
