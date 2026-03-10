@@ -27,6 +27,9 @@
 <Story name="As Host" asChild>
 	<RoomPage
 		data={{
+			isAdmin: false,
+			username: 'Sheriff_Buck',
+			avatarSrc: '',
 			roomName: 'Wild West Duel',
 			roomCode: 'ABCD',
 			maxPlayers: 4,
@@ -41,6 +44,9 @@
 <Story name="As Player" asChild>
 	<RoomPage
 		data={{
+			isAdmin: false,
+			username: 'Outlaw_Jane',
+			avatarSrc: '',
 			roomName: 'Wild West Duel',
 			roomCode: 'ABCD',
 			maxPlayers: 4,
@@ -55,6 +61,9 @@
 <Story name="All Ready" asChild>
 	<RoomPage
 		data={{
+			isAdmin: false,
+			username: 'Sheriff_Buck',
+			avatarSrc: '',
 			roomName: 'Gold Rush Heist',
 			roomCode: 'XY12',
 			maxPlayers: 4,

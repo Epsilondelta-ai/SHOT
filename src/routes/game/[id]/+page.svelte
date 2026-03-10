@@ -3,6 +3,7 @@
 	import GameHeader from '$lib/components/game/GameHeader.svelte';
 	import GamePlayer from '$lib/components/game/GamePlayer.svelte';
 	import GameLog from '$lib/components/game/GameLog.svelte';
+	import GameChat from '$lib/components/game/GameChat.svelte';
 	import GameResult from '$lib/components/game/GameResult.svelte';
 
 	type Card = 'heal' | 'jail' | 'verify';
@@ -51,6 +52,29 @@
 	let selectedTargetId: string | null = $state(null);
 	let selectedCard: Card | null = $state(null);
 	let isLogOpen = $state(false);
+	let isChatOpen = $state(false);
+
+	type ChatMessage = {
+		id: string;
+		playerId: string;
+		playerName: string;
+		text: string;
+	};
+
+	let chatMessages: ChatMessage[] = $state([]);
+
+	function sendChat(text: string) {
+		const me = players.find((p) => p.id === myId);
+		chatMessages = [
+			...chatMessages,
+			{
+				id: crypto.randomUUID(),
+				playerId: myId,
+				playerName: me?.name ?? 'Me',
+				text
+			}
+		];
+	}
 
 	// eslint-disable-next-line svelte/prefer-writable-derived
 	let players: GamePlayerData[] = $state(initialPlayers ?? []);
@@ -327,6 +351,15 @@
 
 	<!-- GameLog Bottom Sheet Overlay -->
 	<GameLog {logs} isOpen={isLogOpen} ontoggle={() => (isLogOpen = !isLogOpen)} />
+
+	<!-- GameChat Bottom Sheet Overlay -->
+	<GameChat
+		messages={chatMessages}
+		{myId}
+		isOpen={isChatOpen}
+		ontoggle={() => (isChatOpen = !isChatOpen)}
+		onsend={sendChat}
+	/>
 </div>
 
 <!-- Game Result Overlay -->

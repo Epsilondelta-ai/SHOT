@@ -2,8 +2,8 @@ import { redirect, error } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { room, roomPlayer } from '$lib/server/db/schema';
 import { user } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
-import type { PageServerLoad } from './$types';
+import { and, count, eq } from 'drizzle-orm';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
@@ -38,4 +38,27 @@ export const load: PageServerLoad = async (event) => {
 		players,
 		chatMessages: [] as { id: string; sender: string; text: string; isSystem?: boolean }[]
 	};
+};
+
+export const actions: Actions = {
+	leaveRoom: async (event) => {
+		if (!event.locals.user) redirect(303, '/login');
+
+		const { id } = event.params;
+
+		await db
+			.delete(roomPlayer)
+			.where(and(eq(roomPlayer.roomId, id), eq(roomPlayer.userId, event.locals.user.id)));
+
+		const [{ remaining }] = await db
+			.select({ remaining: count(roomPlayer.id) })
+			.from(roomPlayer)
+			.where(eq(roomPlayer.roomId, id));
+
+		if (remaining === 0) {
+			await db.delete(room).where(eq(room.id, id));
+		}
+
+		redirect(303, '/lobby');
+	}
 };

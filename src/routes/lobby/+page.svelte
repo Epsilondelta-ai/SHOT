@@ -26,6 +26,16 @@
 		}
 	}
 
+	async function joinRoom(roomId: string) {
+		const fd = new FormData();
+		fd.set('roomId', roomId);
+		const res = await fetch('?/joinRoom', { method: 'POST', body: fd });
+		const result = await res.json();
+		if (result.type === 'redirect') {
+			goto(result.location);
+		}
+	}
+
 	let activeTab: Tab = $state('all');
 
 	const filteredLobbies = $derived(
@@ -78,6 +88,7 @@
 					currentPlayers={lobby.currentPlayers}
 					maxPlayers={lobby.maxPlayers}
 					status={lobby.status}
+					onjoin={() => joinRoom(lobby.id)}
 				/>
 			{/each}
 			{#if filteredLobbies.length === 0}

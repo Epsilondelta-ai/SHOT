@@ -1,7 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { room, roomPlayer } from '$lib/server/db/schema';
-import { count, eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import type { Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -46,5 +46,25 @@ export const actions: Actions = {
 		await db.insert(roomPlayer).values({ roomId: newRoom.id, userId: event.locals.user.id });
 
 		redirect(303, `/room/${newRoom.id}`);
+	},
+
+	joinRoom: async (event) => {
+		if (!event.locals.user) redirect(303, '/login');
+
+		const data = await event.request.formData();
+		const roomId = data.get('roomId') as string;
+
+		if (!roomId) return fail(400, { error: 'Room ID is required' });
+
+		const [existing] = await db
+			.select()
+			.from(roomPlayer)
+			.where(and(eq(roomPlayer.roomId, roomId), eq(roomPlayer.userId, event.locals.user.id)));
+
+		if (!existing) {
+			await db.insert(roomPlayer).values({ roomId, userId: event.locals.user.id });
+		}
+
+		redirect(303, `/room/${roomId}`);
 	}
 };

@@ -1,4 +1,4 @@
-<script module>
+<script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import AdminPage from '../../../routes/admin/+page.svelte';
 
@@ -7,45 +7,71 @@
 			id: 'u1',
 			name: 'Sheriff_Buck',
 			email: 'buck@shot.com',
+			role: 'admin',
 			games: 128,
 			joined: '2025-01-15',
-			banned: false
+			banned: false,
+			banEnd: null,
+			banReason: null,
+			banHistoryCount: 0,
+			online: true
 		},
 		{
 			id: 'u2',
 			name: 'Outlaw_Jane',
 			email: 'jane@shot.com',
+			role: 'user',
 			games: 95,
 			joined: '2025-02-03',
-			banned: false
+			banned: false,
+			banEnd: null,
+			banReason: null,
+			banHistoryCount: 0,
+			online: false
 		},
 		{
 			id: 'u3',
 			name: 'Doc_Holiday',
 			email: 'doc@shot.com',
+			role: 'user',
 			games: 67,
 			joined: '2025-02-20',
-			banned: false
+			banned: false,
+			banEnd: null,
+			banReason: null,
+			banHistoryCount: 1,
+			online: false
 		},
 		{
 			id: 'u4',
 			name: 'Calamity_Sue',
 			email: 'sue@shot.com',
+			role: 'user',
 			games: 12,
 			joined: '2025-03-01',
-			banned: true
+			banned: true,
+			banEnd: '2025-04-01',
+			banReason: 'Toxic behavior',
+			banHistoryCount: 2,
+			online: false
 		},
 		{
 			id: 'u5',
 			name: 'Whiskey_Pete',
 			email: 'pete@shot.com',
+			role: 'user',
 			games: 44,
 			joined: '2025-03-05',
-			banned: false
+			banned: false,
+			banEnd: null,
+			banReason: null,
+			banHistoryCount: 0,
+			online: true
 		}
 	];
 
-	const mockRooms = [
+	type RoomStatus = 'waiting' | 'full' | 'starting_soon' | 'in_progress';
+	const mockRooms: { id: string; name: string; host: string; currentPlayers: number; maxPlayers: number; status: RoomStatus }[] = [
 		{
 			id: 'r1',
 			name: 'Wild West Duel',
@@ -103,65 +129,40 @@
 	];
 
 	const mockLLMProviders = [
-		{
-			id: 'p1',
-			name: 'Anthropic',
-			baseUrl: 'https://api.anthropic.com',
-			apiKey: '••••••••••••',
-			active: true
-		},
-		{
-			id: 'p2',
-			name: 'OpenAI',
-			baseUrl: 'https://api.openai.com',
-			apiKey: '••••••••••••',
-			active: true
-		},
-		{
-			id: 'p3',
-			name: 'Gemini',
-			baseUrl: 'https://generativelanguage.googleapis.com',
-			apiKey: '••••••••••••',
-			active: false
-		}
+		{ provider: 'anthropic' as const, apiKey: '••••••••••••', active: true },
+		{ provider: 'openai' as const, apiKey: '••••••••••••', active: true },
+		{ provider: 'google' as const, apiKey: '••••••••••••', active: false },
+		{ provider: 'xai' as const, apiKey: '', active: false }
 	];
 
 	const mockLLMModels = [
 		{
 			id: 'm1',
-			providerId: 'p1',
-			name: 'Claude 3.5 Sonnet',
-			contextWindow: 200000,
-			costInput: 0.003,
-			costOutput: 0.015,
-			enabled: true
+			provider: 'anthropic' as const,
+			apiModelName: 'claude-3-5-sonnet-20241022',
+			displayName: 'Claude 3.5 Sonnet',
+			active: true
 		},
 		{
 			id: 'm2',
-			providerId: 'p1',
-			name: 'Claude 3 Opus',
-			contextWindow: 200000,
-			costInput: 0.015,
-			costOutput: 0.075,
-			enabled: true
+			provider: 'anthropic' as const,
+			apiModelName: 'claude-3-opus-20240229',
+			displayName: 'Claude 3 Opus',
+			active: true
 		},
 		{
 			id: 'm3',
-			providerId: 'p2',
-			name: 'GPT-4 Turbo',
-			contextWindow: 128000,
-			costInput: 0.01,
-			costOutput: 0.03,
-			enabled: false
+			provider: 'openai' as const,
+			apiModelName: 'gpt-4-turbo',
+			displayName: 'GPT-4 Turbo',
+			active: false
 		},
 		{
 			id: 'm4',
-			providerId: 'p2',
-			name: 'GPT-4o',
-			contextWindow: 128000,
-			costInput: 0.005,
-			costOutput: 0.015,
-			enabled: true
+			provider: 'openai' as const,
+			apiModelName: 'gpt-4o',
+			displayName: 'GPT-4o',
+			active: true
 		}
 	];
 
@@ -177,6 +178,9 @@
 <Story name="Dashboard" asChild>
 	<AdminPage
 		data={{
+			isAdmin: true,
+			username: 'Sheriff_Buck',
+			avatarSrc: '',
 			users: mockUsers,
 			rooms: mockRooms,
 			assistants: mockAssistants,
@@ -189,6 +193,9 @@
 <Story name="Empty State" asChild>
 	<AdminPage
 		data={{
+			isAdmin: true,
+			username: 'Admin',
+			avatarSrc: '',
 			users: [],
 			rooms: [],
 			assistants: [],

@@ -1,4 +1,4 @@
-<script module>
+<script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import GamePage from '../../../routes/game/[id]/+page.svelte';
 
@@ -10,7 +10,21 @@
 		}
 	});
 
-	const basePlayers = [
+	type Card = 'heal' | 'jail' | 'verify';
+	type Role = 'normal' | 'spy' | 'leader' | 'revealed';
+	type GamePlayerData = {
+		id: string;
+		name: string;
+		hp: number;
+		maxHp: number;
+		alive: boolean;
+		isJailed?: boolean;
+		attacks?: number;
+		cards?: Card[];
+		role?: Role;
+	};
+
+	const basePlayers: GamePlayerData[] = [
 		{
 			id: 'p1',
 			name: 'Sheriff_Buck',
@@ -135,7 +149,7 @@
 	];
 
 	const fullHandPlayers = basePlayers.map((p) =>
-		p.id === 'p2' ? { ...p, cards: ['heal', 'heal', 'jail', 'verify'] } : p
+		p.id === 'p2' ? { ...p, cards: ['heal', 'heal', 'jail', 'verify'] as ('heal' | 'jail' | 'verify')[] } : p
 	);
 
 	const gameOverPlayers = basePlayers.map((p) =>
@@ -144,7 +158,7 @@
 			: p
 	);
 
-	const baseLogs = [
+	const baseLogs: { id: string; text: string; type: 'shot' | 'eliminated' | 'round' | 'result' }[] = [
 		{ id: '1', text: 'Round 1 started', type: 'round' },
 		{ id: '2', text: 'Sheriff_Buck shot Doc_Holiday', type: 'shot' },
 		{ id: '3', text: 'Doc_Holiday shot Calamity_Sue', type: 'shot' },

@@ -1,8 +1,8 @@
-<script module>
+<script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import MypagePage from '../../../routes/mypage/+page.svelte';
 
-	const mockRecentMatches = [
+	const mockRecentMatches: { id: string; name: string; result: 'win' | 'loss'; score: string; date: string }[] = [
 		{ id: '1', name: 'Wild West Duel', result: 'win', score: '3:1', date: 'Today' },
 		{ id: '2', name: 'Gold Rush Heist', result: 'win', score: '2:1', date: 'Today' },
 		{ id: '3', name: 'Saloon Brawl', result: 'loss', score: '1:3', date: 'Yesterday' },
@@ -22,6 +22,7 @@
 <Story name="With Match History" asChild>
 	<MypagePage
 		data={{
+			isAdmin: false,
 			username: 'Sheriff_Buck',
 			avatarSrc: '',
 			recentMatches: mockRecentMatches,
@@ -33,6 +34,7 @@
 <Story name="Empty State" asChild>
 	<MypagePage
 		data={{
+			isAdmin: false,
 			username: 'NewPlayer',
 			avatarSrc: '',
 			recentMatches: [],

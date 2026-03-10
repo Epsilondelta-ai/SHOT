@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 
-	type RoomStatus = 'waiting' | 'in_progress';
+	type RoomStatus = 'waiting' | 'full' | 'starting_soon' | 'in_progress';
 
 	type Room = {
 		id: string;
@@ -26,6 +26,16 @@
 				color: 'text-green-600',
 				dotColor: 'bg-green-500',
 				label: () => m.lobby_status_waiting()
+			},
+			full: {
+				color: 'text-orange-600',
+				dotColor: 'bg-orange-500',
+				label: () => 'Full'
+			},
+			starting_soon: {
+				color: 'text-yellow-600',
+				dotColor: 'bg-yellow-500',
+				label: () => 'Starting Soon'
 			},
 			in_progress: {
 				color: 'text-blue-600',
