@@ -209,19 +209,20 @@
 		<!-- Opponents -->
 		<section>
 			<div class="grid grid-cols-6 gap-2">
-				{#each opponents as player (player.id)}
+				{#each players as player (player.id)}
 					<GamePlayer
 						name={player.name}
 						hp={player.hp}
 						maxHp={player.maxHp}
 						alive={player.alive}
 						selected={selectedTargetId === player.id}
-						selectable={phase === 'aiming' && amAlive}
+						selectable={phase === "aiming" && amAlive && player.id !== myId}
 						onselect={() => selectTarget(player.id)}
 						isJailed={player.isJailed}
 						attacks={player.attacks}
 						cards={player.cards}
 						role={player.role}
+					isMe={player.id === myId}
 					/>
 				{/each}
 			</div>
@@ -264,24 +265,34 @@
 			{/if}
 		</section>
 
-		<!-- My Player -->
-		{#if myPlayer}
-			<section>
-				<div class="mx-auto max-w-[200px]">
-					<GamePlayer
-						name={myPlayer.name}
-						hp={myPlayer.hp}
-						maxHp={myPlayer.maxHp}
-						alive={myPlayer.alive}
-						isMe={true}
-						isJailed={myPlayer.isJailed}
-						attacks={myPlayer.attacks}
-						cards={myPlayer.cards}
-						role={myPlayer.role}
-					/>
-				</div>
-			</section>
-		{/if}
+
+	<!-- My Card Hand -->
+	{#if myPlayer}
+		<section class="border-t-4 border-slate-600 pt-4">
+			<h3 class="mb-3 text-sm font-black uppercase text-slate-300">My Cards</h3>
+			<div class="flex flex-wrap items-center justify-center gap-3">
+				{#if myPlayer.cards && myPlayer.cards.length > 0}
+					{#each myPlayer.cards as card, idx}
+						<button
+							class="group relative flex flex-col items-center gap-2 rounded-lg border-2 border-slate-400 bg-gradient-to-b from-slate-700 to-slate-800 px-4 py-3 transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/50"
+							title={`Play ${card}`}
+						>
+							<!-- Card icon -->
+							<span class="material-symbols-outlined text-2xl text-primary transition-transform group-hover:scale-110">
+								{card === 'heal' ? 'local_hospital' : card === 'jail' ? 'gavel' : 'warning'}
+							</span>
+							<!-- Card label -->
+							<span class="text-xs font-bold uppercase text-slate-300 transition-colors group-hover:text-primary">
+								{card}
+							</span>
+						</button>
+					{/each}
+				{:else}
+					<p class="text-sm font-bold text-slate-500">No cards in hand</p>
+				{/if}
+			</div>
+		</section>
+	{/if}
 
 	</main>
 
