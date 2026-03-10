@@ -3,11 +3,11 @@
 	import MypagePage from '../../../routes/mypage/+page.svelte';
 
 	const mockRecentMatches = [
-		{ id: '1', name: 'Wild West Duel', result: 'win' as const, score: '3:1', date: 'Today' },
-		{ id: '2', name: 'Gold Rush Heist', result: 'win' as const, score: '2:1', date: 'Today' },
-		{ id: '3', name: 'Saloon Brawl', result: 'loss' as const, score: '1:3', date: 'Yesterday' },
-		{ id: '4', name: 'Train Robbery', result: 'win' as const, score: '3:0', date: 'Yesterday' },
-		{ id: '5', name: 'Desert Showdown', result: 'loss' as const, score: '0:3', date: '2 days ago' }
+		{ id: '1', name: 'Wild West Duel', result: 'win', score: '3:1', date: 'Today' },
+		{ id: '2', name: 'Gold Rush Heist', result: 'win', score: '2:1', date: 'Today' },
+		{ id: '3', name: 'Saloon Brawl', result: 'loss', score: '1:3', date: 'Yesterday' },
+		{ id: '4', name: 'Train Robbery', result: 'win', score: '3:0', date: 'Yesterday' },
+		{ id: '5', name: 'Desert Showdown', result: 'loss', score: '0:3', date: '2 days ago' }
 	];
 
 	const { Story } = defineMeta({

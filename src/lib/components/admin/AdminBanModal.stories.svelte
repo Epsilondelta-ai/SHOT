@@ -1,0 +1,32 @@
+<script module>
+	import { defineMeta } from '@storybook/addon-svelte-csf';
+	import AdminBanModal from './AdminBanModal.svelte';
+	import { fn } from 'storybook/test';
+
+	const { Story } = defineMeta({
+		title: 'Admin/AdminBanModal',
+		component: AdminBanModal,
+		tags: ['autodocs'],
+		parameters: {
+			layout: 'centered'
+		},
+		args: {
+			onsave: fn(),
+			oncancel: fn()
+		}
+	});
+</script>
+
+<Story
+	name="Open"
+	args={{
+		isOpen: true
+	}}
+/>
+
+<Story
+	name="Closed"
+	args={{
+		isOpen: false
+	}}
+/>

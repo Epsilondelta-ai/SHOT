@@ -52,7 +52,7 @@
 			host: 'Sheriff_Buck',
 			currentPlayers: 3,
 			maxPlayers: 4,
-			status: 'waiting' as const
+			status: 'waiting'
 		},
 		{
 			id: 'r2',
@@ -60,7 +60,7 @@
 			host: 'Outlaw_Jane',
 			currentPlayers: 4,
 			maxPlayers: 4,
-			status: 'in_progress' as const
+			status: 'in_progress'
 		},
 		{
 			id: 'r3',
@@ -68,7 +68,7 @@
 			host: 'Whiskey_Pete',
 			currentPlayers: 2,
 			maxPlayers: 8,
-			status: 'waiting' as const
+			status: 'waiting'
 		}
 	];
 
