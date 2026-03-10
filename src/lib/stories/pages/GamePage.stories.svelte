@@ -155,27 +155,16 @@
 </script>
 
 <!-- Default: 여러 카드를 보유한 상태 -->
-<Story name="Full Hand - With Cards">
-	<svelte:fragment let:args>
-		<GamePage {...args} initialPlayers={fullHandPlayers} initialLogs={baseLogs} />
-	</svelte:fragment>
+<Story name="Full Hand - With Cards" asChild>
+	<GamePage initialPlayers={fullHandPlayers} initialLogs={baseLogs} />
 </Story>
 
 <!-- 카드가 없는 경우 -->
-<Story name="Empty Hand - No Cards">
-	<svelte:fragment let:args>
-		<GamePage {...args} initialPlayers={basePlayers} initialLogs={baseLogs} />
-	</svelte:fragment>
+<Story name="Empty Hand - No Cards" asChild>
+	<GamePage initialPlayers={basePlayers} initialLogs={baseLogs} />
 </Story>
 
 <!-- 게임 종료 상태 -->
-<Story name="Game Over">
-	<svelte:fragment let:args>
-		<GamePage
-			{...args}
-			initialPhase="finished"
-			initialPlayers={gameOverPlayers}
-			initialLogs={baseLogs}
-		/>
-	</svelte:fragment>
+<Story name="Game Over" asChild>
+	<GamePage initialPhase="died" initialPlayers={gameOverPlayers} initialLogs={baseLogs} />
 </Story>
