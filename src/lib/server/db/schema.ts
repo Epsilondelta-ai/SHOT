@@ -81,4 +81,19 @@ export const llmProvider = sqliteTable('llm_provider', {
 		.notNull()
 });
 
+export const llmModel = sqliteTable('llm_model', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => crypto.randomUUID()),
+	provider: text('provider', { enum: ['anthropic', 'openai', 'google', 'xai'] })
+		.notNull()
+		.references(() => llmProvider.provider, { onDelete: 'cascade' }),
+	apiModelName: text('api_model_name').notNull(),
+	displayName: text('display_name').notNull(),
+	active: integer('active', { mode: 'boolean' }).notNull().default(true),
+	createdAt: integer('created_at', { mode: 'timestamp_ms' })
+		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+		.notNull()
+});
+
 export * from './auth.schema';

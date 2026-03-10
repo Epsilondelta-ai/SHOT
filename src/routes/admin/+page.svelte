@@ -38,6 +38,7 @@
 	let historyUserName = $state('');
 
 	const llmProviders = $derived(data.llmProviders);
+	const llmModels = $derived(data.llmModels);
 
 	async function saveLlmApiKey(
 		provider: 'anthropic' | 'openai' | 'google' | 'xai',
@@ -58,6 +59,43 @@
 		fd.set('provider', provider);
 		fd.set('active', String(active));
 		await fetch('?/toggleLlmProvider', { method: 'POST', body: fd });
+		await invalidateAll();
+	}
+
+	async function addLlmModel(
+		provider: 'anthropic' | 'openai' | 'google' | 'xai',
+		apiModelName: string,
+		displayName: string
+	) {
+		const fd = new FormData();
+		fd.set('provider', provider);
+		fd.set('apiModelName', apiModelName);
+		fd.set('displayName', displayName);
+		await fetch('?/addLlmModel', { method: 'POST', body: fd });
+		await invalidateAll();
+	}
+
+	async function updateLlmModel(id: string, apiModelName: string, displayName: string) {
+		const fd = new FormData();
+		fd.set('id', id);
+		fd.set('apiModelName', apiModelName);
+		fd.set('displayName', displayName);
+		await fetch('?/updateLlmModel', { method: 'POST', body: fd });
+		await invalidateAll();
+	}
+
+	async function deleteLlmModel(id: string) {
+		const fd = new FormData();
+		fd.set('id', id);
+		await fetch('?/deleteLlmModel', { method: 'POST', body: fd });
+		await invalidateAll();
+	}
+
+	async function toggleLlmModel(id: string, active: boolean) {
+		const fd = new FormData();
+		fd.set('id', id);
+		fd.set('active', String(active));
+		await fetch('?/toggleLlmModel', { method: 'POST', body: fd });
 		await invalidateAll();
 	}
 
@@ -223,8 +261,13 @@
 			</h2>
 			<AdminLLMConfig
 				providers={llmProviders}
+				models={llmModels}
 				onsave={saveLlmApiKey}
 				ontoggle={toggleLlmProvider}
+				onaddmodel={addLlmModel}
+				onupdatemodel={updateLlmModel}
+				ondeletemodel={deleteLlmModel}
+				ontogglemodel={toggleLlmModel}
 			/>
 		{:else if activeTab === 'assistant'}
 			<div class="flex items-center justify-between">

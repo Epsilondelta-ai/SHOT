@@ -1,6 +1,14 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { user, room, roomPlayer, assistant, banHistory, llmProvider } from '$lib/server/db/schema';
+import {
+	user,
+	room,
+	roomPlayer,
+	assistant,
+	banHistory,
+	llmProvider,
+	llmModel
+} from '$lib/server/db/schema';
 import { count, eq, desc } from 'drizzle-orm';
 import type { Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -57,6 +65,7 @@ export const load: PageServerLoad = async (event) => {
 	const banCountMap = Object.fromEntries(banCounts.map((b) => [b.userId, b.total]));
 
 	const llmProviderRows = await db.select().from(llmProvider);
+	const llmModelRows = await db.select().from(llmModel).orderBy(llmModel.createdAt);
 
 	const PROVIDERS = ['anthropic', 'openai', 'google', 'xai'] as const;
 	const llmProviderMap = Object.fromEntries(llmProviderRows.map((p) => [p.provider, p]));
@@ -98,6 +107,13 @@ export const load: PageServerLoad = async (event) => {
 			provider: p,
 			apiKey: llmProviderMap[p]?.apiKey ?? '',
 			active: llmProviderMap[p]?.active ?? false
+		})),
+		llmModels: llmModelRows.map((m) => ({
+			id: m.id,
+			provider: m.provider,
+			apiModelName: m.apiModelName,
+			displayName: m.displayName,
+			active: m.active
 		}))
 	};
 };
@@ -248,6 +264,53 @@ export const actions: Actions = {
 				active
 			})
 			.onConflictDoUpdate({ target: llmProvider.provider, set: { active, updatedAt: new Date() } });
+		return { success: true };
+	},
+
+	addLlmModel: async (event) => {
+		await getAdminUser(event.locals);
+		const data = await event.request.formData();
+		const provider = data.get('provider') as string;
+		const apiModelName = data.get('apiModelName') as string;
+		const displayName = data.get('displayName') as string;
+		if (!provider || !apiModelName || !displayName) return fail(400, { error: 'Missing fields' });
+		if (!['anthropic', 'openai', 'google', 'xai'].includes(provider))
+			return fail(400, { error: 'Invalid provider' });
+		await db.insert(llmModel).values({
+			provider: provider as 'anthropic' | 'openai' | 'google' | 'xai',
+			apiModelName,
+			displayName
+		});
+		return { success: true };
+	},
+
+	updateLlmModel: async (event) => {
+		await getAdminUser(event.locals);
+		const data = await event.request.formData();
+		const id = data.get('id') as string;
+		const apiModelName = data.get('apiModelName') as string;
+		const displayName = data.get('displayName') as string;
+		if (!id || !apiModelName || !displayName) return fail(400, { error: 'Missing fields' });
+		await db.update(llmModel).set({ apiModelName, displayName }).where(eq(llmModel.id, id));
+		return { success: true };
+	},
+
+	deleteLlmModel: async (event) => {
+		await getAdminUser(event.locals);
+		const data = await event.request.formData();
+		const id = data.get('id') as string;
+		if (!id) return fail(400, { error: 'Missing id' });
+		await db.delete(llmModel).where(eq(llmModel.id, id));
+		return { success: true };
+	},
+
+	toggleLlmModel: async (event) => {
+		await getAdminUser(event.locals);
+		const data = await event.request.formData();
+		const id = data.get('id') as string;
+		const active = data.get('active') === 'true';
+		if (!id) return fail(400, { error: 'Missing id' });
+		await db.update(llmModel).set({ active }).where(eq(llmModel.id, id));
 		return { success: true };
 	}
 };
