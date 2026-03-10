@@ -83,6 +83,14 @@
 		await invalidateAll();
 	}
 
+	async function setRole(userId: string, role: 'admin' | 'user') {
+		const fd = new FormData();
+		fd.set('userId', userId);
+		fd.set('role', role);
+		await fetch('?/setRole', { method: 'POST', body: fd });
+		await invalidateAll();
+	}
+
 	async function closeRoom(roomId: string) {
 		const fd = new FormData();
 		fd.set('id', roomId);
@@ -171,7 +179,12 @@
 					<span class="material-symbols-outlined text-primary">group</span>
 					{m.admin_users()}
 				</h2>
-				<AdminUserList users={data.users} onban={openBanModal} onunban={unbanUser} />
+				<AdminUserList
+					users={data.users}
+					onban={openBanModal}
+					onunban={unbanUser}
+					onrole={setRole}
+				/>
 			</section>
 
 			<section>
@@ -190,7 +203,7 @@
 				<span class="material-symbols-outlined text-primary">group</span>
 				{m.admin_users()}
 			</h2>
-			<AdminUserList users={data.users} onban={openBanModal} onunban={unbanUser} />
+			<AdminUserList users={data.users} onban={openBanModal} onunban={unbanUser} onrole={setRole} />
 		{:else if activeTab === 'rooms'}
 			<h2
 				class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
