@@ -6,7 +6,7 @@ import Elysia from 'elysia';
 const mockUser = { id: 'u1', name: 'Alice', email: 'alice@test.com', role: 'user', image: null };
 
 const mockGetUser = mock(async (): Promise<typeof mockUser | null> => mockUser);
-const mockGetSerializedRoomPlayers = mock(async () => []);
+const mockGetSerializedRoomPlayers = mock(async (): Promise<unknown[]> => []);
 const mockBroadcastPlayers = mock(async () => {});
 const mockGetRoomById = mock(async (): Promise<unknown | null> => null);
 const mockGetHumanRoomPlayer = mock(async (): Promise<unknown | null> => null);
