@@ -50,8 +50,10 @@
 		role="dialog"
 		aria-modal="true"
 	>
-		<div class="comic-border w-full max-w-lg rounded-2xl bg-white p-6"
-			onclick={(e) => e.stopPropagation()}>
+		<div
+			class="comic-border w-full max-w-lg rounded-2xl bg-white p-6"
+			onclick={(e) => e.stopPropagation()}
+		>
 			<div class="mb-4 flex items-center justify-between">
 				<h2 class="flex items-center gap-2 text-lg font-black text-slate-900 uppercase">
 					<span class="material-symbols-outlined text-red-500">history</span>

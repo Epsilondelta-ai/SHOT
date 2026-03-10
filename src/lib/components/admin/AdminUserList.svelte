@@ -12,6 +12,7 @@
 		banEnd?: string | null;
 		banReason?: string | null;
 		banHistoryCount?: number;
+		online?: boolean;
 	};
 
 	let {
@@ -111,6 +112,12 @@
 									— {user.banReason}
 								{/if}
 							</div>
+						{/if}
+						{#if user.online}
+							<span class="flex items-center gap-1 text-[10px] font-black text-emerald-500">
+								<span class="inline-block size-1.5 rounded-full bg-emerald-500"></span>
+								Online
+							</span>
 						{/if}
 					</div>
 				</div>

@@ -234,7 +234,13 @@
 					<span class="material-symbols-outlined text-primary">psychology</span>
 					{m.admin_assistant()}
 				</h2>
-				<AddButton label={m.admin_add_assistant()} onclick={() => { editingAssistant = null; showAssistantForm = true; }} />
+				<AddButton
+					label={m.admin_add_assistant()}
+					onclick={() => {
+						editingAssistant = null;
+						showAssistantForm = true;
+					}}
+				/>
 			</div>
 			<AdminAssistantList
 				assistants={data.assistants}

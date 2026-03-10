@@ -120,7 +120,13 @@
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-24">
 		{#if activeTab === 'assistant'}
 			<div class="flex justify-end">
-				<AddButton label={m.config_add_assistant()} onclick={() => { editingAssistant = null; showAssistantForm = true; }} />
+				<AddButton
+					label={m.config_add_assistant()}
+					onclick={() => {
+						editingAssistant = null;
+						showAssistantForm = true;
+					}}
+				/>
 			</div>
 			<AdminAssistantList
 				assistants={data.assistants}
@@ -137,7 +143,13 @@
 			{/if}
 		{:else if activeTab === 'bot'}
 			<div class="flex justify-end">
-				<AddButton label={m.config_add_bot()} onclick={() => { editingBot = null; showBotForm = true; }} />
+				<AddButton
+					label={m.config_add_bot()}
+					onclick={() => {
+						editingBot = null;
+						showBotForm = true;
+					}}
+				/>
 			</div>
 			<ConfigBotList bots={data.bots} onedit={editBot} ondelete={deleteBot} />
 			{#if showBotForm}

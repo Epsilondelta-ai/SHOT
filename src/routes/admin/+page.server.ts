@@ -1,7 +1,15 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { user, room, roomPlayer, assistant, banHistory, llmProvider } from '$lib/server/db/schema';
-import { count, eq, desc } from 'drizzle-orm';
+import {
+	user,
+	room,
+	roomPlayer,
+	assistant,
+	banHistory,
+	llmProvider,
+	session
+} from '$lib/server/db/schema';
+import { count, eq, desc, gt } from 'drizzle-orm';
 import type { Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -55,6 +63,12 @@ export const load: PageServerLoad = async (event) => {
 		.groupBy(banHistory.userId);
 	const banCountMap = Object.fromEntries(banCounts.map((b) => [b.userId, b.total]));
 
+	const activeSessions = await db
+		.select({ userId: session.userId })
+		.from(session)
+		.where(gt(session.expiresAt, new Date()));
+	const onlineUserIds = new Set(activeSessions.map((s) => s.userId));
+
 	const llmProviderRows = await db.select().from(llmProvider);
 
 	const PROVIDERS = ['anthropic', 'openai', 'google', 'xai'] as const;
@@ -71,7 +85,8 @@ export const load: PageServerLoad = async (event) => {
 			banned: u.banEnd !== null && u.banEnd !== undefined && u.banEnd > new Date(),
 			banEnd: u.banEnd?.toISOString().split('T')[0] ?? null,
 			banReason: u.banReason ?? null,
-			banHistoryCount: banCountMap[u.id] ?? 0
+			banHistoryCount: banCountMap[u.id] ?? 0,
+			online: onlineUserIds.has(u.id)
 		})),
 		rooms: rooms.map((r) => ({
 			id: r.id,
