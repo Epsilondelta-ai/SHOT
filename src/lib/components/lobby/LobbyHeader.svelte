@@ -18,7 +18,7 @@
 			</div>
 			<a
 				href="/mypage"
-				class="size-12 overflow-hidden rounded-full border-2 border-slate-900 bg-accent-beige"
+				class="flex size-12 items-center justify-center overflow-hidden rounded-full border-2 border-slate-900 bg-accent-beige"
 			>
 				{#if avatarSrc}
 					<img alt="User Avatar" class="h-full w-full object-cover" src={avatarSrc} />

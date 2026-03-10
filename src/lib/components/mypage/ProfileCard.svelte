@@ -41,7 +41,7 @@
 	<div class="flex items-center gap-5">
 		<div class="relative shrink-0">
 			<button
-				class="relative flex size-24 items-center justify-center overflow-hidden rounded-full border-4 border-slate-900 bg-accent-beige {editing
+				class="relative flex size-32 items-center justify-center overflow-hidden rounded-full border-4 border-slate-900 bg-accent-beige {editing
 					? 'cursor-pointer'
 					: 'cursor-default'}"
 				onclick={() => editing && fileInput.click()}
@@ -55,7 +55,7 @@
 						src={editing ? draftAvatarSrc : avatarSrc}
 					/>
 				{:else}
-					<span class="material-symbols-outlined text-5xl text-slate-600">person</span>
+					<span class="material-symbols-outlined text-7xl text-slate-600">person</span>
 				{/if}
 				{#if editing}
 					<div class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
