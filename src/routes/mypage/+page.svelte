@@ -35,7 +35,7 @@
 </svelte:head>
 
 <div class="flex min-h-screen flex-col bg-background-light font-display text-slate-900">
-	<LobbyHeader username={data.username} avatarSrc={data.avatarSrc} />
+	<LobbyHeader username={data.username} avatarSrc={data.avatarSrc} isAdmin={data.isAdmin} />
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-28">
 		<ProfileCard username={data.username} avatarSrc={data.avatarSrc} />
