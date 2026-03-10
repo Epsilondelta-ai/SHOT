@@ -41,7 +41,7 @@
 
 	let players: GamePlayerData[] = $state([
 		{ id: 'p1', name: 'Sheriff_Buck', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
-		{ id: 'p2', name: 'Outlaw_Jane', hp: 3, maxHp: 3, alive: true, attacks: 2, cards: ['heal'], isJailed: false, role: 'normal' },
+		{ id: 'p2', name: 'Outlaw_Jane', hp: 3, maxHp: 3, alive: true, attacks: 6, cards: ['heal', 'heal', 'jail', 'verify'], isJailed: false, role: 'normal' },
 		{ id: 'p3', name: 'Doc_Holiday', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
 		{ id: 'p4', name: 'Calamity_Sue', hp: 0, maxHp: 3, alive: false, attacks: 1, cards: [], isJailed: false, role: 'normal' },
 		{ id: 'p5', name: 'Quick_Draw', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: ['verify'], isJailed: true, role: 'normal' },
