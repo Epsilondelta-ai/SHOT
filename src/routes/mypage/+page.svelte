@@ -7,6 +7,8 @@
 	import RecentMatches from '$lib/components/mypage/RecentMatches.svelte';
 	import SettingsSection from '$lib/components/mypage/SettingsSection.svelte';
 
+	let { data } = $props();
+
 	const recentMatches = [
 		{ id: '1', name: 'Wild West Duel', result: 'win' as const, score: '3:1', date: 'Today' },
 		{ id: '2', name: 'Gold Rush Heist', result: 'win' as const, score: '2:1', date: 'Today' },
@@ -41,10 +43,10 @@
 </svelte:head>
 
 <div class="flex min-h-screen flex-col bg-background-light font-display text-slate-900">
-	<LobbyHeader username="Sheriff_Buck" />
+	<LobbyHeader username={data.username} avatarSrc={data.avatarSrc} />
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-28">
-		<ProfileCard username="Sheriff_Buck" />
+		<ProfileCard username={data.username} avatarSrc={data.avatarSrc} />
 
 		<StatsCard games={128} wins={87} streak={9} />
 

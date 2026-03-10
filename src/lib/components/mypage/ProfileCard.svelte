@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { enhance } from '$app/forms';
 
 	let {
-		username = $bindable('Sheriff_Buck'),
-		avatarSrc = $bindable('')
+		username = '',
+		avatarSrc = ''
 	}: {
 		username?: string;
 		avatarSrc?: string;
@@ -20,12 +21,6 @@
 		editing = true;
 	}
 
-	function save() {
-		username = draftUsername;
-		avatarSrc = draftAvatarSrc;
-		editing = false;
-	}
-
 	function cancel() {
 		editing = false;
 	}
@@ -38,81 +33,101 @@
 </script>
 
 <div class="comic-border relative overflow-hidden rounded-xl bg-white p-6">
-	<div class="flex items-center gap-5">
-		<div class="relative shrink-0">
-			<button
-				class="relative flex size-24 items-center justify-center overflow-hidden rounded-full border-4 border-slate-900 bg-accent-beige {editing
-					? 'cursor-pointer'
-					: 'cursor-default'}"
-				onclick={() => editing && fileInput.click()}
-				type="button"
-				tabindex={editing ? 0 : -1}
-			>
-				{#if editing ? draftAvatarSrc : avatarSrc}
-					<img
-						alt="Avatar"
-						class="h-full w-full object-cover"
-						src={editing ? draftAvatarSrc : avatarSrc}
+	<form
+		method="POST"
+		action="?/updateProfile"
+		enctype="multipart/form-data"
+		use:enhance={() => {
+			return async ({ result, update }) => {
+				if (result.type === 'success') {
+					editing = false;
+				}
+				await update();
+			};
+		}}
+	>
+		<div class="flex items-center gap-5">
+			<div class="relative shrink-0">
+				<button
+					class="relative flex size-24 items-center justify-center overflow-hidden rounded-full border-4 border-slate-900 bg-accent-beige {editing
+						? 'cursor-pointer'
+						: 'cursor-default'}"
+					onclick={() => editing && fileInput.click()}
+					type="button"
+					tabindex={editing ? 0 : -1}
+				>
+					{#if editing ? draftAvatarSrc : avatarSrc}
+						<img
+							alt="Avatar"
+							class="h-full w-full object-cover"
+							src={editing ? draftAvatarSrc : avatarSrc}
+						/>
+					{:else}
+						<span class="material-symbols-outlined text-slate-600" style="font-size: 3.5rem;"
+							>person</span
+						>
+					{/if}
+					{#if editing}
+						<div class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
+							<span class="material-symbols-outlined text-2xl text-white">photo_camera</span>
+						</div>
+					{/if}
+				</button>
+				<input
+					bind:this={fileInput}
+					type="file"
+					name="image"
+					accept="image/*"
+					class="hidden"
+					onchange={onFileChange}
+				/>
+			</div>
+
+			<div class="min-w-0 flex-1">
+				{#if editing}
+					<input
+						type="text"
+						name="name"
+						bind:value={draftUsername}
+						class="comic-border-sm w-full rounded-lg px-3 py-2 text-xl font-black tracking-tight text-slate-900 uppercase outline-none focus:ring-2 focus:ring-primary"
 					/>
 				{:else}
-					<span class="material-symbols-outlined text-slate-600" style="font-size: 3.5rem;">person</span>
+					<h2 class="truncate text-2xl font-black tracking-tight text-slate-900 uppercase">
+						{username}
+					</h2>
 				{/if}
-				{#if editing}
-					<div class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
-						<span class="material-symbols-outlined text-2xl text-white">photo_camera</span>
-					</div>
-				{/if}
-			</button>
-			<input
-				bind:this={fileInput}
-				type="file"
-				accept="image/*"
-				class="hidden"
-				onchange={onFileChange}
-			/>
+			</div>
 		</div>
 
-		<div class="min-w-0 flex-1">
-			{#if editing}
-				<input
-					type="text"
-					bind:value={draftUsername}
-					class="comic-border-sm w-full rounded-lg px-3 py-2 text-xl font-black tracking-tight text-slate-900 uppercase outline-none focus:ring-2 focus:ring-primary"
-				/>
-			{:else}
-				<h2 class="truncate text-2xl font-black tracking-tight text-slate-900 uppercase">
-					{username}
-				</h2>
-			{/if}
-		</div>
-	</div>
-
-	{#if editing}
-		<div class="mt-4 flex gap-2">
+		{#if editing}
+			<div class="mt-4 flex gap-2">
+				<button
+					type="submit"
+					class="comic-button comic-border-sm flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm font-black tracking-wider text-white uppercase"
+				>
+					<span class="material-symbols-outlined text-base">check</span>
+					{m.mypage_save_profile()}
+				</button>
+				<button
+					type="button"
+					onclick={cancel}
+					class="comic-border-sm flex flex-1 items-center justify-center gap-2 rounded-lg bg-white py-3 text-sm font-black tracking-wider text-slate-900 uppercase"
+				>
+					<span class="material-symbols-outlined text-base">close</span>
+					{m.mypage_cancel()}
+				</button>
+			</div>
+		{:else}
 			<button
-				onclick={save}
-				class="comic-button comic-border-sm flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary py-3 text-sm font-black tracking-wider text-white uppercase"
+				type="button"
+				onclick={startEdit}
+				class="comic-button comic-border-sm mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-white py-3 text-sm font-black tracking-wider text-slate-900 uppercase"
 			>
-				<span class="material-symbols-outlined text-base">check</span>
-				{m.mypage_save_profile()}
+				<span class="material-symbols-outlined text-base">edit</span>
+				{m.mypage_edit_profile()}
 			</button>
-			<button
-				onclick={cancel}
-				class="comic-border-sm flex flex-1 items-center justify-center gap-2 rounded-lg bg-white py-3 text-sm font-black tracking-wider text-slate-900 uppercase"
-			>
-				<span class="material-symbols-outlined text-base">close</span>
-				{m.mypage_cancel()}
-			</button>
-		</div>
-	{:else}
-		<button
-			onclick={startEdit}
-			class="comic-button comic-border-sm mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-white py-3 text-sm font-black tracking-wider text-slate-900 uppercase"
-		>
-			<span class="material-symbols-outlined text-base">edit</span>
-			{m.mypage_edit_profile()}
-		</button>
-	{/if}
+		{/if}
+	</form>
 
 	<!-- Decorative circle -->
 	<div
