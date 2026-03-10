@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import favicon from '$lib/assets/favicon.png';
 
 	type Card = 'heal' | 'jail' | 'verify';
 	type Role = 'normal' | 'spy' | 'leader' | 'revealed';
@@ -144,7 +145,7 @@
 			<!-- Attacks -->
 			<div class="flex items-center justify-center gap-1 px-2 py-1 bg-slate-100 rounded">
 				{#each Array.from({length: attacks}) as _, i}
-					<span class="material-symbols-outlined text-xs text-yellow-600">bullet_point</span>
+					<img src={favicon} alt="attack" class="size-3.5" />
 				{/each}
 			</div>
 
