@@ -27,6 +27,44 @@
 		players = data.players;
 	});
 
+	$effect(() => {
+		const handleUnload = () => {
+			navigator.sendBeacon(`/room/${data.roomId}/leave`);
+		};
+		window.addEventListener('beforeunload', handleUnload);
+		return () => window.removeEventListener('beforeunload', handleUnload);
+	});
+
+	$effect(() => {
+		const sendHeartbeat = () => fetch(`/room/${data.roomId}/heartbeat`, { method: 'POST' });
+		sendHeartbeat();
+		const interval = setInterval(sendHeartbeat, 10_000);
+		return () => clearInterval(interval);
+	});
+
+	$effect(() => {
+		const es = new EventSource(`/room/${data.roomId}/events`);
+		es.onmessage = (e) => {
+			const msg = JSON.parse(e.data);
+			if (msg.type === 'players') {
+				players = (msg.players as { id: string; name: string }[]).map((p) => ({
+					...p,
+					ready: players.find((existing) => existing.id === p.id)?.ready ?? false
+				}));
+			} else if (msg.type === 'chat') {
+				const newMsgs = (
+					msg.messages as { id: string; userId: string; userName: string; text: string }[]
+				).map((m) => ({
+					id: m.id,
+					sender: m.userName,
+					text: ` ${m.text}`
+				}));
+				chatMessages = [...chatMessages, ...newMsgs];
+			}
+		};
+		return () => es.close();
+	});
+
 	// eslint-disable-next-line svelte/prefer-writable-derived
 	let chatMessages: ChatMessage[] = $state(data.chatMessages);
 	$effect(() => {
@@ -56,15 +94,10 @@
 		players = players.filter((p) => p.id !== playerId);
 	}
 
-	function handleChatSend(text: string) {
-		chatMessages = [
-			...chatMessages,
-			{
-				id: crypto.randomUUID(),
-				sender: myPlayer?.name ?? '',
-				text: ` ${text}`
-			}
-		];
+	async function handleChatSend(text: string) {
+		const fd = new FormData();
+		fd.set('text', text);
+		await fetch(`/room/${data.roomId}/chat`, { method: 'POST', body: fd });
 	}
 
 	function startGame() {

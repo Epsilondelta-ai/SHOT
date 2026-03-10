@@ -2,6 +2,7 @@ import { redirect, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { room, roomPlayer } from '$lib/server/db/schema';
 import { and, count, eq } from 'drizzle-orm';
+import { emitPlayers } from '$lib/server/roomEvents';
 import type { Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -63,6 +64,7 @@ export const actions: Actions = {
 
 		if (!existing) {
 			await db.insert(roomPlayer).values({ roomId, userId: event.locals.user.id });
+			await emitPlayers(roomId);
 		}
 
 		redirect(303, `/room/${roomId}`);

@@ -1,9 +1,10 @@
-import { redirect, error } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { room, roomPlayer } from '$lib/server/db/schema';
 import { user } from '$lib/server/db/schema';
 import { and, count, eq } from 'drizzle-orm';
 import type { Actions, PageServerLoad } from './$types';
+import { emitPlayers } from '$lib/server/roomEvents';
 
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
@@ -14,7 +15,7 @@ export const load: PageServerLoad = async (event) => {
 
 	const [roomData] = await db.select().from(room).where(eq(room.id, id));
 	if (!roomData) {
-		error(404, 'Room not found');
+		redirect(303, '/lobby');
 	}
 
 	const playerRecords = await db
@@ -23,6 +24,16 @@ export const load: PageServerLoad = async (event) => {
 		.innerJoin(user, eq(roomPlayer.userId, user.id))
 		.where(eq(roomPlayer.roomId, id));
 
+	const isInRoom = playerRecords.some((p) => p.userId === event.locals.user.id);
+	if (!isInRoom) {
+		if (playerRecords.length >= roomData.maxPlayers) {
+			redirect(303, '/lobby');
+		}
+		await db.insert(roomPlayer).values({ roomId: id, userId: event.locals.user.id });
+		await emitPlayers(id);
+		playerRecords.push({ userId: event.locals.user.id, name: event.locals.user.name });
+	}
+
 	const players = playerRecords.map((p) => ({
 		id: p.userId,
 		name: p.name,
@@ -30,6 +41,7 @@ export const load: PageServerLoad = async (event) => {
 	}));
 
 	return {
+		roomId: roomData.id,
 		roomName: roomData.name,
 		roomCode: roomData.id.slice(0, 6).toUpperCase(),
 		maxPlayers: roomData.maxPlayers,
@@ -57,6 +69,8 @@ export const actions: Actions = {
 
 		if (remaining === 0) {
 			await db.delete(room).where(eq(room.id, id));
+		} else {
+			await emitPlayers(id);
 		}
 
 		redirect(303, '/lobby');
