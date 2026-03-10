@@ -178,6 +178,7 @@
 					onban={openBanModal}
 					onunban={openUnbanModal}
 					onrole={setRole}
+					onhistory={openHistoryModal}
 				/>
 			</section>
 
