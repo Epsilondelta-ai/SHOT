@@ -75,7 +75,7 @@
 					...player,
 					ready:
 						player.type === 'human'
-							? players.find((existing) => existing.id === player.id)?.ready ?? false
+							? (players.find((existing) => existing.id === player.id)?.ready ?? false)
 							: true
 				}));
 				if (roomState) {
@@ -101,14 +101,21 @@
 		};
 	});
 
-	const myPlayer = $derived(players.find((player) => player.type === 'human' && player.userId === data.myId));
-	const hostId = $derived(players.find((player) => player.type === 'human' && player.userId === hostUserId)?.id ?? '');
+	const myPlayer = $derived(
+		players.find((player) => player.type === 'human' && player.userId === data.myId)
+	);
+	const hostId = $derived(
+		players.find((player) => player.type === 'human' && player.userId === hostUserId)?.id ?? ''
+	);
 	const isHost = $derived(data.myId === hostUserId);
 	const canManageBots = $derived(isHost || myPlayer?.canManageBots === true);
 	const amReady = $derived(myPlayer?.ready ?? false);
-	const readyCount = $derived(players.filter((player) => player.id === hostId || player.ready).length);
+	const readyCount = $derived(
+		players.filter((player) => player.id === hostId || player.ready).length
+	);
 	const allReady = $derived(readyCount === players.length);
-	const canStart = $derived(isHost && allReady && players.length >= 2);
+	const hasOnlyHumanPlayers = $derived(players.every((player) => player.type === 'human'));
+	const canStart = $derived(isHost && allReady && hasOnlyHumanPlayers && players.length >= 5);
 	const isRoomFull = $derived(players.length >= maxPlayers);
 	const humanMembers = $derived(
 		players.filter((player) => player.type === 'human' && player.userId !== hostUserId)
@@ -167,8 +174,9 @@
 		maxPlayers = capacityDraft;
 	}
 
-	function startGame() {
-		// TODO: implement game start
+	async function startGame() {
+		await apiPost(`/api/games/${data.roomId}/start`);
+		goto(`/game/${data.roomId}`);
 	}
 </script>
 
@@ -201,9 +209,9 @@
 						: 'schedule'}
 			</span>
 			<span class="text-sm font-black uppercase">
-				{allReady && players.length >= 2
+				{allReady && players.length >= 5
 					? m.room_all_ready()
-					: players.length < 2
+					: players.length < 5
 						? m.room_waiting_players()
 						: isHost
 							? m.room_waiting_players()
@@ -239,15 +247,21 @@
 					<span class="material-symbols-outlined text-primary">tune</span>
 					<div>
 						<h2 class="text-sm font-black tracking-wider text-slate-900 uppercase">Room Control</h2>
-						<p class="text-xs font-bold text-slate-400">방장 변경, 정원 변경, bot 권한 부여를 관리합니다.</p>
+						<p class="text-xs font-bold text-slate-400">
+							방장 변경, 정원 변경, bot 권한 부여를 관리합니다.
+						</p>
 					</div>
 				</div>
 
 				<div class="mt-4 rounded-xl bg-slate-50 p-4">
 					<div class="flex items-center justify-between gap-3">
 						<div>
-							<p class="text-[11px] font-black tracking-wider text-slate-500 uppercase">Room Size</p>
-							<p class="text-sm font-bold text-slate-700">현재 {maxPlayers}명, 변경 범위는 5~8명입니다.</p>
+							<p class="text-[11px] font-black tracking-wider text-slate-500 uppercase">
+								Room Size
+							</p>
+							<p class="text-sm font-bold text-slate-700">
+								현재 {maxPlayers}명, 변경 범위는 5~8명입니다.
+							</p>
 						</div>
 						<button
 							type="button"
@@ -279,7 +293,9 @@
 						</p>
 					{:else}
 						{#each humanMembers as player (player.id)}
-							<div class="comic-border-sm flex flex-col gap-3 rounded-xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+							<div
+								class="comic-border-sm flex flex-col gap-3 rounded-xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between"
+							>
 								<div>
 									<p class="text-sm font-black text-slate-900">{player.name}</p>
 									<p class="text-[11px] font-bold text-slate-500">
@@ -289,7 +305,9 @@
 								<div class="flex gap-2">
 									<button
 										type="button"
-										class="comic-button rounded-xl border-2 border-slate-900 px-3 py-2 text-[11px] font-black uppercase {player.canManageBots ? 'bg-white text-slate-700' : 'bg-blue-600 text-white'}"
+										class="comic-button rounded-xl border-2 border-slate-900 px-3 py-2 text-[11px] font-black uppercase {player.canManageBots
+											? 'bg-white text-slate-700'
+											: 'bg-blue-600 text-white'}"
 										onclick={() => setBotPermission(player.userId, !player.canManageBots)}
 									>
 										{player.canManageBots ? '권한 회수' : 'bot 권한 부여'}
@@ -326,7 +344,8 @@
 		{:else}
 			<section class="comic-border rounded-xl bg-white p-4">
 				<p class="text-sm font-bold text-slate-600">
-					LLM/OpenClaw 봇 추가 권한은 기본적으로 방장만 가지며, 다른 참가자는 방장이 따로 권한을 부여해야 합니다.
+					LLM/OpenClaw 봇 추가 권한은 기본적으로 방장만 가지며, 다른 참가자는 방장이 따로 권한을
+					부여해야 합니다.
 				</p>
 			</section>
 		{/if}

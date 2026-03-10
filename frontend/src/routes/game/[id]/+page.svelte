@@ -1,24 +1,28 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
-	import GameHeader from '$lib/components/game/GameHeader.svelte';
-	import GamePlayer from '$lib/components/game/GamePlayer.svelte';
-	import GameLog from '$lib/components/game/GameLog.svelte';
+	import { apiGet, apiPost } from '$lib/api';
 	import GameChat from '$lib/components/game/GameChat.svelte';
+	import GameHeader from '$lib/components/game/GameHeader.svelte';
+	import GameLog from '$lib/components/game/GameLog.svelte';
+	import GamePlayer from '$lib/components/game/GamePlayer.svelte';
 	import GameResult from '$lib/components/game/GameResult.svelte';
+	import { m } from '$lib/paraglide/messages';
 
-	type Card = 'heal' | 'jail' | 'verify';
+	type SpecialCard = 'heal' | 'jail' | 'verify';
+	type ActionCard = 'attack' | SpecialCard;
 	type Role = 'normal' | 'spy' | 'leader' | 'revealed';
+	type WinnerTeam = 'agents' | 'spies';
 
 	type GamePlayerData = {
 		id: string;
+		userId: string;
 		name: string;
 		hp: number;
 		maxHp: number;
 		alive: boolean;
-		isJailed?: boolean;
-		attacks?: number;
-		cards?: Card[];
-		role?: Role;
+		isJailed: boolean;
+		attacks: number;
+		cards: SpecialCard[];
+		role: Role;
 	};
 
 	type LogEntry = {
@@ -27,32 +31,6 @@
 		type: 'shot' | 'eliminated' | 'round' | 'result';
 	};
 
-	type Phase = 'chatting' | 'aiming' | 'waiting' | 'resolving' | 'finished' | 'died';
-
-	interface PageProps {
-		initialPhase?: Phase;
-		initialPlayers?: GamePlayerData[];
-		initialLogs?: LogEntry[];
-	}
-
-	// eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
-	let { initialPhase = 'aiming', initialPlayers, initialLogs }: PageProps = $props();
-
-	const myId: string = 'p2';
-	const totalTime = 15;
-	const actionCardPool: Card[] = ['heal', 'jail', 'verify'];
-
-	let round = $state(1);
-	let timeLeft = $state(12);
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let phase = $state<Phase>('aiming');
-	let selectedTargetId: string | null = $state(null);
-	let selectedCard: Card | null = $state(null);
-	let isLogOpen = $state(false);
-	let isChatOpen = $state(false);
-	let remainingChatTurns = $state(0);
-	let cardsDrawnThisTurn = $state(0);
-
 	type ChatMessage = {
 		id: string;
 		playerId: string;
@@ -60,209 +38,176 @@
 		text: string;
 	};
 
-	let chatMessages: ChatMessage[] = $state([]);
+	type GameSnapshot = {
+		roomId: string;
+		round: number;
+		currentTurnPlayerId: string;
+		myPlayerId: string;
+		myTeam: WinnerTeam;
+		phase: 'chatting' | 'acting' | 'finished';
+		remainingChatTurns: number;
+		canReveal: boolean;
+		winnerTeam: WinnerTeam | null;
+		players: GamePlayerData[];
+		logs: LogEntry[];
+		chatMessages: ChatMessage[];
+	};
 
-	function sendChat(text: string) {
-		if (phase !== 'chatting' || remainingChatTurns <= 0) return;
-		const me = players.find((p) => p.id === myId);
-		chatMessages = [
-			...chatMessages,
-			{
-				id: crypto.randomUUID(),
-				playerId: myId,
-				playerName: me?.name ?? 'Me',
-				text
-			}
-		];
+	const emptyGame: GameSnapshot = {
+		roomId: 'story-room',
+		round: 1,
+		currentTurnPlayerId: 'p2',
+		myPlayerId: 'p2',
+		myTeam: 'agents',
+		phase: 'acting',
+		remainingChatTurns: 0,
+		canReveal: false,
+		winnerTeam: null,
+		players: [],
+		logs: [],
+		chatMessages: []
+	};
 
-		remainingChatTurns -= 1;
-		if (remainingChatTurns <= 0) {
-			phase = 'aiming';
-			isChatOpen = false;
-		}
-	}
+	let { data } = $props();
 
-	function skipChatTurn() {
-		if (phase !== 'chatting') return;
-		remainingChatTurns = 0;
-		phase = 'aiming';
-		isChatOpen = false;
-	}
-
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let players = $state<GamePlayerData[]>([]);
+	let game = $state<GameSnapshot>(emptyGame);
+	let selectedCard = $state<ActionCard | null>(null);
+	let selectedTargetId = $state<string | null>(null);
+	let isLogOpen = $state(false);
+	let isChatOpen = $state(false);
+	let actionError = $state('');
+	let actionPending = $state(false);
+	let timeLeft = $state(15);
 
 	$effect(() => {
-		players = initialPlayers ?? [];
-		logs = initialLogs ?? [];
-		selectedTargetId = null;
-		selectedCard = null;
-		remainingChatTurns = 0;
-		cardsDrawnThisTurn = 0;
-		isChatOpen = false;
-		phase = initialPhase;
-		if ((initialPlayers?.length ?? 0) > 0 && initialPhase === 'aiming') {
-			queueMicrotask(() => startTurn());
-		}
+		game = data.game as GameSnapshot;
 	});
 
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let logs = $state<LogEntry[]>([]);
+	$effect(() => {
+		const timer = setInterval(() => {
+			void refreshGame();
+		}, 2000);
 
-	const myPlayer = $derived(players.find((p) => p.id === myId));
+		return () => clearInterval(timer);
+	});
+
+	$effect(() => {
+		timeLeft = 15;
+		game.round;
+		const timer = setInterval(() => {
+			timeLeft = Math.max(0, timeLeft - 1);
+		}, 1000);
+
+		return () => clearInterval(timer);
+	});
+
+	const myPlayer = $derived(game.players.find((player) => player.id === game.myPlayerId));
 	const amAlive = $derived(myPlayer?.alive ?? false);
-	const alivePlayers = $derived(players.filter((p) => p.alive));
-	const isFinished = $derived(phase === 'finished');
-	const canSendChat = $derived(phase === 'chatting' && remainingChatTurns > 0);
-	const isRevealedSpy = $derived(myPlayer?.role === 'revealed');
-	const winner = $derived.by(() => {
-		if (alivePlayers.length === 1) return alivePlayers[0];
-		return undefined;
+	const isMyTurn = $derived(game.currentTurnPlayerId === game.myPlayerId);
+	const isFinished = $derived(game.phase === 'finished');
+	const canSendChat = $derived(
+		isMyTurn && game.phase === 'chatting' && game.remainingChatTurns > 0
+	);
+	const canAct = $derived(isMyTurn && game.phase === 'acting' && amAlive);
+	const handOptions = $derived.by(() => {
+		if (!myPlayer) return [] as { card: ActionCard; count: number; icon: string; label: string }[];
+
+		const counts: Record<ActionCard, number> = {
+			attack: myPlayer.attacks,
+			heal: myPlayer.cards.filter((card) => card === 'heal').length,
+			jail: myPlayer.cards.filter((card) => card === 'jail').length,
+			verify: myPlayer.cards.filter((card) => card === 'verify').length
+		};
+
+		return (Object.entries(counts) as [ActionCard, number][])
+			.filter(([, count]) => count > 0)
+			.map(([card, count]) => ({
+				card,
+				count,
+				icon:
+					card === 'attack'
+						? 'local_fire_department'
+						: card === 'heal'
+							? 'local_hospital'
+							: card === 'jail'
+								? 'gavel'
+								: 'warning',
+				label: card.toUpperCase()
+			}));
 	});
 
-	function getRandomActionCard(): Card {
-		return actionCardPool[Math.floor(Math.random() * actionCardPool.length)] ?? 'verify';
-	}
-
-	function appendLog(text: string, type: LogEntry['type'] = 'round') {
-		logs = [...logs, { id: crypto.randomUUID(), text, type }];
-	}
-
-	function drawActionCards(count: number) {
-		const drawnCards = Array.from({ length: count }, () => getRandomActionCard());
-		cardsDrawnThisTurn += count;
-		players = players.map((player) =>
-			player.id === myId ? { ...player, cards: [...(player.cards ?? []), ...drawnCards] } : player
-		);
-		return drawnCards;
-	}
-
-	function startTurn() {
-		const me = players.find((player) => player.id === myId);
-		if (!me?.alive) return;
-
-		selectedTargetId = null;
-		selectedCard = null;
-		cardsDrawnThisTurn = 0;
-		remainingChatTurns = 0;
-
-		drawActionCards(2);
-		appendLog('You drew 2 action cards.');
-		remainingChatTurns = 1;
-
-		if (me.role === 'revealed') {
-			drawActionCards(2);
-			appendLog('Revealed spy bonus: drew 2 more action cards and gained 1 extra chat.');
-			remainingChatTurns += 1;
+	async function refreshGame() {
+		try {
+			game = await apiGet<GameSnapshot>(`/api/games/${game.roomId}`);
+		} catch {
+			// ignore transient refresh errors; action handlers surface blocking failures
 		}
+	}
 
-		phase = remainingChatTurns > 0 ? 'chatting' : 'aiming';
-		isChatOpen = remainingChatTurns > 0;
+	async function dispatchAction(
+		action:
+			| { type: 'chat'; text: string }
+			| { type: 'skip-chat' }
+			| { type: 'reveal' }
+			| { type: 'play-card'; card: ActionCard; targetId?: string }
+			| { type: 'end-turn' }
+	) {
+		if (actionPending) return;
+
+		actionPending = true;
+		actionError = '';
+
+		try {
+			game = await apiPost<GameSnapshot>(`/api/games/${game.roomId}/actions`, action);
+			selectedCard = null;
+			selectedTargetId = null;
+		} catch (error) {
+			actionError = error instanceof Error ? error.message : 'Action failed';
+			await refreshGame();
+		} finally {
+			actionPending = false;
+		}
 	}
 
 	function selectTarget(playerId: string) {
-		if (phase !== 'aiming' || !amAlive) return;
+		if (!canAct) return;
 		selectedTargetId = selectedTargetId === playerId ? null : playerId;
 	}
 
-	function shoot() {
-		if (!selectedTargetId || phase !== 'aiming') return;
-		const target = players.find((p) => p.id === selectedTargetId);
-		if (!target) return;
-
-		phase = 'waiting';
-
-		// Simulate round resolution after short delay
-		setTimeout(() => {
-			phase = 'resolving';
-
-			// My shot
-			logs = [
-				...logs,
-				{
-					id: crypto.randomUUID(),
-					text: m.game_you_shot({ target: target.name }),
-					type: 'shot'
-				}
-			];
-
-			players = players.map((p) => {
-				if (p.id === selectedTargetId) {
-					const newHp = Math.max(0, p.hp - 1);
-					return { ...p, hp: newHp, alive: newHp > 0 };
-				}
-				return p;
-			});
-
-			// Check elimination
-			const eliminated = players.find((p) => p.id === selectedTargetId && !p.alive);
-			if (eliminated) {
-				logs = [
-					...logs,
-					{
-						id: crypto.randomUUID(),
-						text: m.game_eliminated({ player: eliminated.name }),
-						type: 'eliminated'
-					}
-				];
-			}
-
-			// Simulate opponent shots at me
-			const shooters = alivePlayers.filter((p) => p.id !== myId && p.id !== selectedTargetId);
-			if (shooters.length > 0 && Math.random() > 0.5) {
-				const shooter = shooters[0];
-				logs = [
-					...logs,
-					{
-						id: crypto.randomUUID(),
-						text: m.game_shot_you({ shooter: shooter.name }),
-						type: 'shot'
-					}
-				];
-				players = players.map((p) => {
-					if (p.id === myId) {
-						const newHp = Math.max(0, p.hp - 1);
-						return { ...p, hp: newHp, alive: newHp > 0 };
-					}
-					return p;
-				});
-			}
-
-			selectedTargetId = null;
-
-			// Check game over
-			const aliveNow = players.filter((p) => p.alive);
-			if (aliveNow.length <= 1) {
-				phase = 'finished';
-				if (aliveNow.length === 1) {
-					logs = [
-						...logs,
-						{
-							id: crypto.randomUUID(),
-							text: m.game_winner({ player: aliveNow[0].name }),
-							type: 'result'
-						}
-					];
-				}
-			} else {
-				// Next round
-				setTimeout(() => {
-					const nextRound = round + 1;
-					round = nextRound;
-					timeLeft = totalTime;
-					logs = [
-						...logs,
-						{
-							id: crypto.randomUUID(),
-							text: m.game_round_start({ round: String(nextRound) }),
-							type: 'round'
-						}
-					];
-					startTurn();
-				}, 1500);
-			}
-		}, 1500);
+	function sendChat(text: string) {
+		void dispatchAction({ type: 'chat', text });
 	}
+
+	function skipChatTurn() {
+		void dispatchAction({ type: 'skip-chat' });
+	}
+
+	function revealIdentity() {
+		void dispatchAction({ type: 'reveal' });
+	}
+
+	function endTurn() {
+		void dispatchAction({ type: 'end-turn' });
+	}
+
+	function playSelectedCard() {
+		if (!selectedCard || !myPlayer) return;
+
+		const targetId =
+			selectedCard === 'heal' ? (selectedTargetId ?? myPlayer.id) : (selectedTargetId ?? undefined);
+
+		if (selectedCard !== 'heal' && !targetId) {
+			actionError = 'Select a target first.';
+			return;
+		}
+
+		void dispatchAction({ type: 'play-card', card: selectedCard, targetId });
+	}
+
+	const winnerLabel = $derived(
+		game.winnerTeam === 'agents' ? 'Agents' : game.winnerTeam === 'spies' ? 'Spies' : undefined
+	);
+	const isMyWin = $derived(game.winnerTeam !== null && game.winnerTeam === game.myTeam);
 </script>
 
 <svelte:head>
@@ -270,10 +215,25 @@
 </svelte:head>
 
 <div class="flex min-h-screen flex-col bg-background-dark font-display text-white">
-	<GameHeader {round} {timeLeft} {totalTime} />
+	<GameHeader round={game.round} {timeLeft} totalTime={15} />
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-5 p-4">
-		<!-- Spectating banner -->
+		<div class="comic-border-sm rounded-xl bg-slate-800 px-4 py-3 text-center">
+			<p class="text-xs font-black tracking-[0.25em] text-slate-400 uppercase">Current Turn</p>
+			<p class="mt-2 text-lg font-black text-white">
+				{game.players.find((player) => player.id === game.currentTurnPlayerId)?.name}
+			</p>
+			<p class="mt-1 text-sm font-bold text-slate-400">
+				{#if isFinished}
+					Game finished
+				{:else if isMyTurn}
+					Your turn
+				{:else}
+					Waiting for another player
+				{/if}
+			</p>
+		</div>
+
 		{#if !amAlive && !isFinished}
 			<div
 				class="comic-border-sm flex items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-3 text-slate-400"
@@ -283,156 +243,152 @@
 			</div>
 		{/if}
 
-		<!-- Opponents -->
 		<section>
-			<div class="grid grid-cols-6 gap-2">
-				{#each players as player (player.id)}
+			<div class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+				{#each game.players as player (player.id)}
 					<GamePlayer
 						name={player.name}
 						hp={player.hp}
 						maxHp={player.maxHp}
 						alive={player.alive}
 						selected={selectedTargetId === player.id}
-						selectable={phase === 'aiming' && amAlive && player.id !== myId}
+						selectable={canAct && player.id !== game.myPlayerId}
 						onselect={() => selectTarget(player.id)}
 						isJailed={player.isJailed}
 						attacks={player.attacks}
 						cards={player.cards}
 						role={player.role}
-						isMe={player.id === myId}
+						isMe={player.id === game.myPlayerId}
 					/>
 				{/each}
 			</div>
 		</section>
 
-		<!-- Action Area -->
-		{#if phase !== 'finished' && phase !== 'died'}
-			<section class="flex flex-col items-center gap-3">
-				{#if phase === 'chatting' && amAlive}
-					<div
-						class="comic-border-sm w-full max-w-xl rounded-2xl bg-slate-800/90 px-5 py-5 text-center"
-					>
-						<p class="text-xs font-black tracking-[0.25em] text-primary uppercase">Turn Start</p>
+		<section class="flex flex-col items-center gap-3">
+			{#if canSendChat}
+				<div class="comic-border-sm w-full rounded-2xl bg-slate-800/90 px-5 py-5 text-center">
+					<p class="text-sm font-black text-white">
+						You can chat {game.remainingChatTurns} more time{game.remainingChatTurns === 1
+							? ''
+							: 's'}
+						before acting.
+					</p>
+					<div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+						<button
+							class="comic-button rounded-xl border-2 border-slate-900 bg-primary px-5 py-3 text-sm font-black text-white uppercase"
+							onclick={() => (isChatOpen = true)}
+						>
+							Open Chat
+						</button>
+						<button
+							class="comic-button rounded-xl border-2 border-slate-900 bg-slate-600 px-5 py-3 text-sm font-black text-white uppercase"
+							onclick={skipChatTurn}
+						>
+							Skip Chat
+						</button>
+					</div>
+				</div>
+			{:else if canAct}
+				<div class="comic-border-sm w-full rounded-2xl bg-slate-800/90 px-5 py-5 text-center">
+					<p class="text-xs font-black tracking-[0.25em] text-primary uppercase">Action Phase</p>
+					{#if selectedCard}
 						<p class="mt-2 text-lg font-black text-white">
-							Drew {cardsDrawnThisTurn} action card{cardsDrawnThisTurn === 1 ? '' : 's'}
+							{selectedCard.toUpperCase()}
 						</p>
 						<p class="mt-2 text-sm font-bold text-slate-300">
-							You can chat {remainingChatTurns} more time{remainingChatTurns === 1 ? '' : 's'} before
-							acting.
+							Target:
+							{#if selectedTargetId}
+								{game.players.find((player) => player.id === selectedTargetId)?.name}
+							{:else if selectedCard === 'heal'}
+								{myPlayer?.name} (self)
+							{:else}
+								none
+							{/if}
 						</p>
-						{#if isRevealedSpy}
-							<p class="mt-2 text-xs font-black tracking-wide text-green-400 uppercase">
-								Revealed spy bonus active
-							</p>
-						{/if}
 						<div class="mt-4 flex flex-wrap items-center justify-center gap-3">
 							<button
-								class="comic-button rounded-xl border-2 border-slate-900 bg-primary px-5 py-3 text-sm font-black text-white uppercase"
-								onclick={() => (isChatOpen = true)}
+								class="comic-button rounded-xl border-2 border-slate-900 bg-red-600 px-5 py-3 text-sm font-black text-white uppercase disabled:opacity-50"
+								disabled={selectedCard !== 'heal' && !selectedTargetId}
+								onclick={playSelectedCard}
 							>
-								Open Chat
+								Play Card
 							</button>
 							<button
 								class="comic-button rounded-xl border-2 border-slate-900 bg-slate-600 px-5 py-3 text-sm font-black text-white uppercase"
-								onclick={skipChatTurn}
+								onclick={() => {
+									selectedCard = null;
+									selectedTargetId = null;
+								}}
 							>
-								Skip Chat
+								Clear Selection
 							</button>
 						</div>
-					</div>
-				{:else if phase === 'aiming' && amAlive}
-					{#if selectedCard}
-						<p class="text-sm font-bold tracking-wide text-slate-400 uppercase">
-							{#if selectedTargetId}
-								<span class="material-symbols-outlined align-middle text-red-500">gps_fixed</span>
-								{players.find((p) => p.id === selectedTargetId)?.name}
-							{:else}
-								{m.game_select_target()}
-							{/if}
-						</p>
-						<button
-							class="comic-button flex items-center justify-center gap-3 rounded-2xl border-3 border-slate-900 px-12 py-5 text-2xl font-extrabold uppercase italic shadow-[4px_4px_0px_#000] transition-all
-							{selectedTargetId
-								? 'bg-red-600 text-white hover:bg-red-700'
-								: 'cursor-not-allowed bg-slate-700 text-slate-500'}"
-							disabled={!selectedTargetId}
-							onclick={shoot}
-						>
-							<span class="material-symbols-outlined text-3xl">
-								{selectedCard === 'heal'
-									? 'local_hospital'
-									: selectedCard === 'jail'
-										? 'gavel'
-										: selectedCard === 'verify'
-											? 'warning'
-											: 'local_fire_department'}
-							</span>
-							{selectedCard === 'heal'
-								? 'HEAL'
-								: selectedCard === 'jail'
-									? 'JAIL'
-									: selectedCard === 'verify'
-										? 'VERIFY'
-										: 'SHOT'}
-						</button>
 					{:else}
-						<p class="text-sm font-bold tracking-wide text-slate-400 uppercase">
+						<p class="mt-2 text-sm font-bold tracking-wide text-slate-300 uppercase">
 							Select a card to act
 						</p>
 					{/if}
-				{:else if phase === 'waiting'}
-					<div class="flex flex-col items-center gap-3 py-4">
-						<div
-							class="size-10 animate-spin rounded-full border-4 border-slate-600 border-t-primary"
-						></div>
-						<p class="text-sm font-bold text-slate-400 uppercase">{m.game_waiting_others()}</p>
-					</div>
-				{:else if phase === 'resolving'}
-					<div class="flex flex-col items-center gap-2 py-4">
-						<span class="material-symbols-outlined animate-pulse text-5xl text-red-500"
-							>local_fire_department</span
-						>
-					</div>
-				{/if}
-			</section>
-		{/if}
 
-		<!-- My Card Hand -->
-		{#if myPlayer && phase !== 'finished' && phase !== 'died'}
+					<div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+						{#if game.canReveal}
+							<button
+								class="comic-button rounded-xl border-2 border-slate-900 bg-yellow-500 px-5 py-3 text-sm font-black text-slate-900 uppercase"
+								onclick={revealIdentity}
+							>
+								Reveal Identity
+							</button>
+						{/if}
+						<button
+							class="comic-button rounded-xl border-2 border-slate-900 bg-slate-200 px-5 py-3 text-sm font-black text-slate-900 uppercase"
+							onclick={endTurn}
+						>
+							End Turn
+						</button>
+					</div>
+				</div>
+			{:else if !isFinished}
+				<div class="flex flex-col items-center gap-3 py-4">
+					<div
+						class="size-10 animate-spin rounded-full border-4 border-slate-600 border-t-primary"
+					></div>
+					<p class="text-sm font-bold text-slate-400 uppercase">{m.game_waiting_others()}</p>
+				</div>
+			{/if}
+
+			{#if actionError}
+				<p class="text-sm font-bold text-red-400">{actionError}</p>
+			{/if}
+		</section>
+
+		{#if myPlayer}
 			<section class="border-t-4 border-slate-600 pt-4">
 				<h3 class="mb-3 text-sm font-black text-slate-300 uppercase">My Cards</h3>
 				<div class="flex flex-wrap items-center justify-center gap-3">
-					{#if myPlayer.cards && myPlayer.cards.length > 0}
-						{#each myPlayer.cards as card, i (i)}
+					{#if handOptions.length > 0}
+						{#each handOptions as option (option.card)}
 							<button
 								class="group relative flex flex-col items-center gap-2 rounded-lg border-2 px-4 py-3 transition-all"
-								class:border-primary={selectedCard === card}
-								class:border-slate-400={selectedCard !== card}
-								class:text-white={selectedCard === card}
-								style={selectedCard === card
-									? 'background: linear-gradient(to bottom, var(--color-primary)); box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.5));'
+								class:border-primary={selectedCard === option.card}
+								class:border-slate-400={selectedCard !== option.card}
+								class:text-white={selectedCard === option.card}
+								style={selectedCard === option.card
+									? 'background: linear-gradient(to bottom, var(--color-primary));'
 									: 'background: linear-gradient(to bottom, rgb(55, 65, 81), rgb(31, 41, 55))'}
-								title={`Play ${card}`}
-								onclick={() => (selectedCard = selectedCard === card ? null : card)}
+								onclick={() => {
+									selectedCard = selectedCard === option.card ? null : option.card;
+									selectedTargetId = null;
+								}}
 							>
-								<!-- Card icon -->
 								<span
 									class="material-symbols-outlined text-2xl transition-transform"
-									class:text-primary={selectedCard !== card}
-									class:text-white={selectedCard === card}
-									class:group-hover:scale-110={selectedCard !== card}
+									class:text-primary={selectedCard !== option.card}
+									class:text-white={selectedCard === option.card}
+									class:group-hover:scale-110={selectedCard !== option.card}
 								>
-									{card === 'heal' ? 'local_hospital' : card === 'jail' ? 'gavel' : 'warning'}
+									{option.icon}
 								</span>
-								<!-- Card label -->
-								<span
-									class="text-xs font-bold uppercase transition-colors"
-									class:text-slate-300={selectedCard !== card}
-									class:group-hover:text-primary={selectedCard !== card}
-									class:text-white={selectedCard === card}
-								>
-									{card}
-								</span>
+								<span class="text-xs font-bold uppercase">{option.label}</span>
+								<span class="text-[10px] font-black text-slate-300">x{option.count}</span>
 							</button>
 						{/each}
 					{:else}
@@ -443,13 +399,11 @@
 		{/if}
 	</main>
 
-	<!-- GameLog Bottom Sheet Overlay -->
-	<GameLog {logs} isOpen={isLogOpen} ontoggle={() => (isLogOpen = !isLogOpen)} />
+	<GameLog logs={game.logs} isOpen={isLogOpen} ontoggle={() => (isLogOpen = !isLogOpen)} />
 
-	<!-- GameChat Bottom Sheet Overlay -->
 	<GameChat
-		messages={chatMessages}
-		{myId}
+		messages={game.chatMessages}
+		myId={game.myPlayerId}
 		isOpen={isChatOpen}
 		canSend={canSendChat}
 		ontoggle={() => (isChatOpen = !isChatOpen)}
@@ -457,11 +411,6 @@
 	/>
 </div>
 
-<!-- Game Result Overlay -->
 {#if isFinished}
-	<GameResult
-		winner={winner?.name}
-		isMyWin={winner?.id === myId}
-		isDraw={alivePlayers.length === 0}
-	/>
+	<GameResult winner={winnerLabel} {isMyWin} isDraw={false} />
 {/if}
