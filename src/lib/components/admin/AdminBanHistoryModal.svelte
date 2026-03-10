@@ -46,10 +46,12 @@
 {#if isOpen}
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+		onclick={onclose}
 		role="dialog"
 		aria-modal="true"
 	>
-		<div class="comic-border w-full max-w-lg rounded-2xl bg-white p-6">
+		<div class="comic-border w-full max-w-lg rounded-2xl bg-white p-6"
+			onclick={(e) => e.stopPropagation()}>
 			<div class="mb-4 flex items-center justify-between">
 				<h2 class="flex items-center gap-2 text-lg font-black text-slate-900 uppercase">
 					<span class="material-symbols-outlined text-red-500">history</span>
