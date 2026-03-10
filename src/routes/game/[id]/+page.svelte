@@ -29,18 +29,25 @@
 
 	type Phase = 'aiming' | 'waiting' | 'resolving' | 'finished';
 
+	interface PageProps {
+		initialPhase?: Phase;
+		initialPlayers?: GamePlayerData[];
+	}
+
+	let { initialPhase = 'aiming', initialPlayers }: PageProps = $props();
+
 	const gameId = $derived($page.params.id);
 	const myId: string = 'p2';
 	const totalTime = 15;
 
 	let round = $state(1);
 	let timeLeft = $state(12);
-	let phase: Phase = $state('aiming');
+	let phase: Phase = $state(initialPhase);
 	let selectedTargetId: string | null = $state(null);
 	let selectedCard: Card | null = $state(null);
 	let isLogOpen = $state(false);
 
-	let players: GamePlayerData[] = $state([
+	const defaultPlayers: GamePlayerData[] = [
 		{ id: 'p1', name: 'Sheriff_Buck', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
 		{ id: 'p2', name: 'Outlaw_Jane', hp: 3, maxHp: 3, alive: true, attacks: 6, cards: ['heal', 'heal', 'jail', 'verify'], isJailed: false, role: 'normal' },
 		{ id: 'p3', name: 'Doc_Holiday', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
@@ -52,7 +59,9 @@
 		{ id: 'p9', name: 'Undercover_Max', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'spy' },
 		{ id: 'p10', name: 'Captain_Wilson', hp: 5, maxHp: 5, alive: true, attacks: 2, cards: [], isJailed: false, role: 'leader' },
 		{ id: 'p11', name: 'Agent_Green', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'revealed' }
-	]);
+	];
+
+	let players: GamePlayerData[] = $state(initialPlayers ? initialPlayers : defaultPlayers);
 
 	let logs: LogEntry[] = $state([
 		{ id: '1', text: m.game_round_start({ round: '1' }), type: 'round' },
