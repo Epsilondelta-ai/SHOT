@@ -20,7 +20,9 @@
 		"db:studio": "drizzle-kit studio",
 		"auth:schema": "better-auth generate --config src/lib/server/auth.ts --output src/lib/server/db/auth.schema.ts --yes",
 		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build"
+		"build-storybook": "storybook build",
+		"flowbook": "flowbook dev",
+		"build-flowbook": "flowbook build"
 	},
 	"devDependencies": {
 		"@better-auth/cli": "~1.4.21",
@@ -45,6 +47,7 @@
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-storybook": "^10.2.16",
 		"eslint-plugin-svelte": "^3.14.0",
+		"flowbook": "^0.3.0",
 		"globals": "^17.3.0",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.4.1",
