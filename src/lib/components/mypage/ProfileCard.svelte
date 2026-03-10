@@ -55,7 +55,7 @@
 						src={editing ? draftAvatarSrc : avatarSrc}
 					/>
 				{:else}
-					<span class="material-symbols-outlined text-7xl text-slate-600">person</span>
+					<span class="material-symbols-outlined text-slate-600" style="font-size: 5rem;">person</span>
 				{/if}
 				{#if editing}
 					<div class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40">
