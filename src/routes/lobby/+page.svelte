@@ -6,43 +6,19 @@
 	import BottomNav from '$lib/components/lobby/BottomNav.svelte';
 
 	type Tab = 'all' | 'in_progress' | 'waiting';
-	type LobbyStatus = 'waiting' | 'full' | 'starting_soon' | 'in_progress';
 
 	let { data } = $props();
 
 	let activeTab: Tab = $state('all');
 
-	const lobbies: {
-		name: string;
-		icon: string;
-		currentPlayers: number;
-		maxPlayers: number;
-		status: LobbyStatus;
-	}[] = [
-		{ name: 'Wild West Duel', icon: 'swords', currentPlayers: 3, maxPlayers: 4, status: 'waiting' },
-		{
-			name: 'Gold Rush Heist',
-			icon: 'local_activity',
-			currentPlayers: 4,
-			maxPlayers: 4,
-			status: 'full'
-		},
-		{ name: 'Saloon Brawl', icon: 'castle', currentPlayers: 1, maxPlayers: 8, status: 'waiting' },
-		{
-			name: 'Train Robbery',
-			icon: 'directions_run',
-			currentPlayers: 5,
-			maxPlayers: 6,
-			status: 'starting_soon'
-		}
-	];
-
 	const filteredLobbies = $derived(
 		activeTab === 'all'
-			? lobbies
+			? data.lobbies
 			: activeTab === 'in_progress'
-				? lobbies.filter((l) => l.status === 'in_progress' || l.status === 'starting_soon')
-				: lobbies.filter((l) => l.status === 'waiting')
+				? data.lobbies.filter(
+						(l) => l.status === 'in_progress' || l.status === 'starting_soon'
+					)
+				: data.lobbies.filter((l) => l.status === 'waiting')
 	);
 </script>
 
@@ -79,7 +55,7 @@
 
 		<!-- Lobby List -->
 		<div class="space-y-4 pb-24">
-			{#each filteredLobbies as lobby (lobby.name)}
+			{#each filteredLobbies as lobby (lobby.id)}
 				<LobbyCard
 					name={lobby.name}
 					icon={lobby.icon}
@@ -88,6 +64,12 @@
 					status={lobby.status}
 				/>
 			{/each}
+			{#if filteredLobbies.length === 0}
+				<div class="py-16 text-center text-slate-400">
+					<span class="material-symbols-outlined text-5xl">sports_esports</span>
+					<p class="mt-2 text-sm font-bold">{m.lobby_empty()}</p>
+				</div>
+			{/if}
 		</div>
 	</main>
 

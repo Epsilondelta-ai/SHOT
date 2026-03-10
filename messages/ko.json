@@ -35,6 +35,7 @@
 	"lobby_status_full": "만석",
 	"lobby_status_starting_soon": "곧 시작",
 	"lobby_status_in_progress": "진행 중",
+	"lobby_empty": "로비가 없습니다. 만들어보세요!",
 	"nav_lobbies": "로비",
 	"nav_shop": "상점",
 	"nav_config": "설정",

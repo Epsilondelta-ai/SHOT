@@ -35,6 +35,7 @@
 	"lobby_status_full": "Full",
 	"lobby_status_starting_soon": "Starting Soon",
 	"lobby_status_in_progress": "In Progress",
+	"lobby_empty": "No lobbies found. Create one!",
 	"nav_lobbies": "Lobbies",
 	"nav_shop": "Shop",
 	"nav_config": "Config",
