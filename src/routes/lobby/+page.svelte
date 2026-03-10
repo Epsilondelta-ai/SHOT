@@ -4,10 +4,27 @@
 	import LobbyTabs from '$lib/components/lobby/LobbyTabs.svelte';
 	import LobbyCard from '$lib/components/lobby/LobbyCard.svelte';
 	import BottomNav from '$lib/components/lobby/BottomNav.svelte';
+	import LobbyCreateModal from '$lib/components/lobby/LobbyCreateModal.svelte';
+	import { goto } from '$app/navigation';
 
 	type Tab = 'all' | 'in_progress' | 'waiting';
 
 	let { data } = $props();
+
+	let showCreateModal = $state(false);
+
+	async function createRoom(roomData: { name: string; icon: string; maxPlayers: number }) {
+		const fd = new FormData();
+		fd.set('name', roomData.name);
+		fd.set('icon', roomData.icon);
+		fd.set('maxPlayers', String(roomData.maxPlayers));
+		const res = await fetch('?/createRoom', { method: 'POST', body: fd });
+		const result = await res.json();
+		showCreateModal = false;
+		if (result.type === 'redirect') {
+			goto(result.location);
+		}
+	}
 
 	let activeTab: Tab = $state('all');
 
@@ -45,6 +62,7 @@
 			</div>
 			<button
 				class="comic-button flex items-center justify-center gap-2 rounded-xl border-3 border-slate-900 bg-primary px-6 py-4 font-black whitespace-nowrap text-white uppercase italic shadow-[3px_3px_0px_#221910]"
+				onclick={() => (showCreateModal = true)}
 			>
 				<span class="material-symbols-outlined font-bold">add_circle</span>
 				{m.lobby_create()}
@@ -73,3 +91,9 @@
 
 	<BottomNav active="lobby" />
 </div>
+
+<LobbyCreateModal
+	isOpen={showCreateModal}
+	oncreate={createRoom}
+	oncancel={() => (showCreateModal = false)}
+/>
