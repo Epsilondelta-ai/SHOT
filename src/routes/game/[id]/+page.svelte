@@ -7,6 +7,7 @@
 	import GameResult from '$lib/components/game/GameResult.svelte';
 
 	type Card = 'heal' | 'jail' | 'verify';
+	type Role = 'normal' | 'spy' | 'leader';
 
 	type GamePlayerData = {
 		id: string;
@@ -17,6 +18,7 @@
 		isJailed?: boolean;
 		attacks?: number;
 		cards?: Card[];
+		role?: Role;
 	};
 
 	type LogEntry = {
@@ -38,14 +40,16 @@
 	let isLogOpen = $state(false);
 
 	let players: GamePlayerData[] = $state([
-		{ id: 'p1', name: 'Sheriff_Buck', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false },
-		{ id: 'p2', name: 'Outlaw_Jane', hp: 3, maxHp: 3, alive: true, attacks: 2, cards: ['heal'], isJailed: false },
-		{ id: 'p3', name: 'Doc_Holiday', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false },
-		{ id: 'p4', name: 'Calamity_Sue', hp: 0, maxHp: 3, alive: false, attacks: 1, cards: [], isJailed: false },
-		{ id: 'p5', name: 'Quick_Draw', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: ['verify'], isJailed: true },
-		{ id: 'p6', name: 'Gunslinger_Kate', hp: 1, maxHp: 3, alive: true, attacks: 2, cards: ['heal', 'jail'], isJailed: false },
-		{ id: 'p7', name: 'Bandit_Bob', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false },
-		{ id: 'p8', name: 'Lawman_Tom', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: ['verify'], isJailed: false }
+		{ id: 'p1', name: 'Sheriff_Buck', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
+		{ id: 'p2', name: 'Outlaw_Jane', hp: 3, maxHp: 3, alive: true, attacks: 2, cards: ['heal'], isJailed: false, role: 'normal' },
+		{ id: 'p3', name: 'Doc_Holiday', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
+		{ id: 'p4', name: 'Calamity_Sue', hp: 0, maxHp: 3, alive: false, attacks: 1, cards: [], isJailed: false, role: 'normal' },
+		{ id: 'p5', name: 'Quick_Draw', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: ['verify'], isJailed: true, role: 'normal' },
+		{ id: 'p6', name: 'Gunslinger_Kate', hp: 1, maxHp: 3, alive: true, attacks: 2, cards: ['heal', 'jail'], isJailed: false, role: 'normal' },
+		{ id: 'p7', name: 'Bandit_Bob', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
+		{ id: 'p8', name: 'Lawman_Tom', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: ['verify'], isJailed: false, role: 'normal' },
+		{ id: 'p9', name: 'Undercover_Max', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'spy' },
+		{ id: 'p10', name: 'Captain_Wilson', hp: 5, maxHp: 5, alive: true, attacks: 2, cards: [], isJailed: false, role: 'leader' }
 	]);
 
 	let logs: LogEntry[] = $state([
@@ -203,7 +207,7 @@
 
 		<!-- Opponents -->
 		<section>
-			<div class="grid grid-cols-4 gap-2">
+			<div class="grid grid-cols-5 gap-2">
 				{#each opponents as player (player.id)}
 					<GamePlayer
 						name={player.name}
@@ -216,6 +220,7 @@
 						isJailed={player.isJailed}
 						attacks={player.attacks}
 						cards={player.cards}
+						role={player.role}
 					/>
 				{/each}
 			</div>
@@ -271,6 +276,7 @@
 						isJailed={myPlayer.isJailed}
 						attacks={myPlayer.attacks}
 						cards={myPlayer.cards}
+						role={myPlayer.role}
 					/>
 				</div>
 			</section>

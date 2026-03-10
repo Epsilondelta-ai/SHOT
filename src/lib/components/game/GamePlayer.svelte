@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 
 	type Card = 'heal' | 'jail' | 'verify';
+	type Role = 'normal' | 'spy' | 'leader';
 
 	let {
 		name,
@@ -14,7 +15,8 @@
 		onselect,
 		isJailed = false,
 		attacks = 1,
-		cards = []
+		cards = [],
+		role = 'normal'
 	}: {
 		name: string;
 		hp: number;
@@ -27,6 +29,7 @@
 		isJailed?: boolean;
 		attacks?: number;
 		cards?: Card[];
+		role?: Role;
 	} = $props();
 
 	const cardIcons: Record<Card, string> = {
@@ -34,14 +37,37 @@
 		jail: 'gavel',
 		verify: 'warning'
 	};
+
+	const roleColor = $derived.by(() => {
+		switch (role) {
+			case 'spy':
+				return 'bg-red-100 border-red-400';
+			case 'leader':
+				return 'bg-blue-100 border-blue-400';
+			default:
+				return 'bg-white border-slate-900';
+		}
+	});
+
+	const roleTextColor = $derived.by(() => {
+		switch (role) {
+			case 'spy':
+				return 'text-red-700';
+			case 'leader':
+				return 'text-blue-700';
+			default:
+				return 'text-slate-900';
+		}
+	});
 </script>
 
 <button
-	class="comic-border relative flex flex-col items-center gap-2 rounded-xl p-3 transition-all
+	class="relative flex flex-col items-center gap-2 rounded-xl p-3 transition-all border-3
 		{!alive ? 'opacity-40 grayscale' : ''}
-		{selected ? 'ring-4 ring-red-500 bg-red-50' : 'bg-white'}
-		{selectable && alive && !isMe ? 'cursor-pointer hover:bg-red-50 hover:scale-105' : ''}
-		{isMe ? 'ring-3 ring-primary bg-primary/5' : ''}"
+		{selected ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : roleColor}
+		{selectable && alive && !isMe ? 'cursor-pointer hover:scale-105' : ''}
+		{isMe ? 'ring-3 ring-primary' : ''}"
+	style="border-color: {selected ? '#ef4444' : role === 'spy' ? '#dc2626' : role === 'leader' ? '#2563eb' : '#0f172a'}"
 	disabled={!selectable || !alive || isMe}
 	onclick={onselect}
 >
@@ -77,13 +103,22 @@
 	</div>
 
 	<!-- Name -->
-	<span
-		class="max-w-full truncate text-xs font-black tracking-tight
-			{isMe ? 'text-primary' : 'text-slate-900'}"
-	>
-		{name}
-		{#if isMe}(ME){/if}
-	</span>
+	<div class="flex flex-col items-center gap-1 w-full">
+		<span
+			class="max-w-full truncate text-xs font-black tracking-tight
+				{isMe ? 'text-primary' : roleTextColor}"
+		>
+			{name}
+			{#if isMe}(ME){/if}
+		</span>
+
+		<!-- Role Badge -->
+		{#if role === 'spy'}
+			<span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-red-500 text-white uppercase">SPY</span>
+		{:else if role === 'leader'}
+			<span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-blue-500 text-white uppercase">LEADER</span>
+		{/if}
+	</div>
 
 	<!-- HP Hearts -->
 	{#if alive}
