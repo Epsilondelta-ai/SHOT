@@ -49,6 +49,12 @@ export const load: PageServerLoad = async (event) => {
 
 	const assistants = await db.select().from(assistant).orderBy(assistant.createdAt);
 
+	const banCounts = await db
+		.select({ userId: banHistory.userId, total: count(banHistory.id) })
+		.from(banHistory)
+		.groupBy(banHistory.userId);
+	const banCountMap = Object.fromEntries(banCounts.map((b) => [b.userId, b.total]));
+
 	const llmProviderRows = await db.select().from(llmProvider);
 
 	const PROVIDERS = ['anthropic', 'openai', 'google', 'xai'] as const;
@@ -64,7 +70,8 @@ export const load: PageServerLoad = async (event) => {
 			joined: u.createdAt.toISOString().split('T')[0],
 			banned: u.banEnd !== null && u.banEnd !== undefined && u.banEnd > new Date(),
 			banEnd: u.banEnd?.toISOString().split('T')[0] ?? null,
-			banReason: u.banReason ?? null
+			banReason: u.banReason ?? null,
+			banHistoryCount: banCountMap[u.id] ?? 0
 		})),
 		rooms: rooms.map((r) => ({
 			id: r.id,

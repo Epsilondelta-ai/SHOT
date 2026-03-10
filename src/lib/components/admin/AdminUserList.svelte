@@ -11,6 +11,7 @@
 		banned: boolean;
 		banEnd?: string | null;
 		banReason?: string | null;
+		banHistoryCount?: number;
 	};
 
 	let {
@@ -115,12 +116,14 @@
 				</div>
 
 				<div class="flex shrink-0 flex-col gap-1 sm:flex-row">
-					<button
-						class="comic-button rounded-lg border-2 border-slate-900 bg-slate-100 px-3 py-2 text-xs font-black text-slate-700 uppercase"
-						onclick={() => onhistory?.(user.id, user.name)}
-					>
-						<span class="material-symbols-outlined align-middle text-sm">history</span>
-					</button>
+					{#if (user.banHistoryCount ?? 0) > 0}
+						<button
+							class="comic-button rounded-lg border-2 border-slate-900 bg-slate-100 px-3 py-2 text-xs font-black text-slate-700 uppercase"
+							onclick={() => onhistory?.(user.id, user.name)}
+						>
+							<span class="material-symbols-outlined align-middle text-sm">history</span>
+						</button>
+					{/if}
 
 					{#if user.role === 'admin'}
 						<button
