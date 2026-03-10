@@ -12,12 +12,14 @@
 		messages = [],
 		myId,
 		isOpen = false,
+		canSend = true,
 		ontoggle,
 		onsend
 	}: {
 		messages?: ChatMessage[];
 		myId: string;
 		isOpen?: boolean;
+		canSend?: boolean;
 		ontoggle?: () => void;
 		onsend?: (text: string) => void;
 	} = $props();
@@ -26,7 +28,7 @@
 
 	function handleSend() {
 		const text = inputText.trim();
-		if (!text) return;
+		if (!text || !canSend) return;
 		onsend?.(text);
 		inputText = '';
 	}
@@ -111,13 +113,14 @@
 		<input
 			class="comic-border-sm min-w-0 flex-1 rounded-xl px-3 py-2 text-sm font-bold placeholder:text-slate-400 focus:outline-none"
 			type="text"
-			placeholder={m.game_chat_placeholder()}
+			placeholder={canSend ? m.game_chat_placeholder() : 'No chat available right now'}
 			bind:value={inputText}
+			disabled={!canSend}
 			onkeydown={handleKeydown}
 		/>
 		<button
 			class="comic-button shrink-0 rounded-xl border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase disabled:opacity-40"
-			disabled={!inputText.trim()}
+			disabled={!canSend || !inputText.trim()}
 			onclick={handleSend}
 		>
 			{m.game_chat_send()}
