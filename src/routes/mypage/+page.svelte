@@ -55,5 +55,5 @@
 		<SettingsSection items={settingsItems} />
 	</main>
 
-	<BottomNav active="config" />
+	<BottomNav active="mypage" />
 </div>
