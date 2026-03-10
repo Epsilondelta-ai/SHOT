@@ -41,7 +41,7 @@
 	<div class="flex items-center gap-5">
 		<div class="relative shrink-0">
 			<button
-				class="relative flex size-32 items-center justify-center overflow-hidden rounded-full border-4 border-slate-900 bg-accent-beige {editing
+				class="relative flex size-24 items-center justify-center overflow-hidden rounded-full border-4 border-slate-900 bg-accent-beige {editing
 					? 'cursor-pointer'
 					: 'cursor-default'}"
 				onclick={() => editing && fileInput.click()}
