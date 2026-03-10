@@ -142,13 +142,15 @@
 
 		<!-- Action Buttons -->
 		<div class="flex gap-3 pb-6">
-			<a
-				href="/lobby"
-				class="comic-button flex flex-1 items-center justify-center gap-2 rounded-xl border-3 border-slate-900 bg-slate-200 px-6 py-4 font-black uppercase"
-			>
-				<span class="material-symbols-outlined">logout</span>
-				{m.room_leave()}
-			</a>
+			<form method="POST" action="?/leaveRoom" class="flex flex-1">
+				<button
+					type="submit"
+					class="comic-button flex flex-1 items-center justify-center gap-2 rounded-xl border-3 border-slate-900 bg-slate-200 px-6 py-4 font-black uppercase"
+				>
+					<span class="material-symbols-outlined">logout</span>
+					{m.room_leave()}
+				</button>
+			</form>
 
 			{#if isHost}
 				<button
