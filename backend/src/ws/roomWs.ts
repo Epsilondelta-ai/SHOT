@@ -82,7 +82,7 @@ export const roomWsPlugin = new Elysia()
 		},
 
 		async message(ws, rawMessage) {
-			const { roomId, userId, userName } = ws.data as {
+			const { roomId, userId, userName } = ws.data as unknown as {
 				roomId: string;
 				userId: string;
 				userName: string;

@@ -149,7 +149,15 @@ describe('getRoomById', () => {
 	});
 
 	it('returns room when found', async () => {
-		const roomData = { id: 'r1', name: 'Room 1', maxPlayers: 5 };
+		const roomData = {
+			id: 'r1',
+			name: 'Room 1',
+			icon: 'swords',
+			maxPlayers: 5,
+			hostUserId: 'u1',
+			status: 'waiting' as const,
+			createdAt: new Date()
+		};
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({ where: () => Promise.resolve([roomData]) })
 		}));
@@ -168,7 +176,17 @@ describe('getHumanRoomPlayer', () => {
 	});
 
 	it('returns player when found', async () => {
-		const player = { id: 'p1', userId: 'u1', roomId: 'r1', playerType: 'human' };
+		const player = {
+			id: 'p1',
+			userId: 'u1',
+			roomId: 'r1',
+			playerType: 'human' as const,
+			displayName: null,
+			canManageBots: false,
+			assistantId: null,
+			llmModelId: null,
+			botId: null
+		};
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({ where: () => Promise.resolve([player]) })
 		}));
