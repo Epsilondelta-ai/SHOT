@@ -11,6 +11,7 @@
 	import AdminUnbanModal from '$lib/components/admin/AdminUnbanModal.svelte';
 	import AdminBanHistoryModal from '$lib/components/admin/AdminBanHistoryModal.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import AddButton from '$lib/components/common/AddButton.svelte';
 
 	let { data } = $props();
 
@@ -233,16 +234,7 @@
 					<span class="material-symbols-outlined text-primary">psychology</span>
 					{m.admin_assistant()}
 				</h2>
-				<button
-					class="comic-button rounded-lg border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase transition-colors hover:bg-primary/90"
-					onclick={() => {
-						editingAssistant = null;
-						showAssistantForm = true;
-					}}
-				>
-					<span class="material-symbols-outlined text-sm">add</span>
-					{m.admin_add_assistant()}
-				</button>
+				<AddButton label={m.admin_add_assistant()} onclick={() => { editingAssistant = null; showAssistantForm = true; }} />
 			</div>
 			<AdminAssistantList
 				assistants={data.assistants}

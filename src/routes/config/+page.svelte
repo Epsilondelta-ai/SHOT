@@ -8,6 +8,7 @@
 	import BottomNav from '$lib/components/lobby/BottomNav.svelte';
 	import LobbyHeader from '$lib/components/lobby/LobbyHeader.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import AddButton from '$lib/components/common/AddButton.svelte';
 
 	let { data } = $props();
 
@@ -119,16 +120,7 @@
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-24">
 		{#if activeTab === 'assistant'}
 			<div class="flex justify-end">
-				<button
-					class="comic-button inline-flex items-center gap-1 rounded-lg border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase transition-colors hover:bg-primary/90"
-					onclick={() => {
-						editingAssistant = null;
-						showAssistantForm = true;
-					}}
-				>
-					<span class="material-symbols-outlined text-sm">add</span>
-					{m.config_add_assistant()}
-				</button>
+				<AddButton label={m.config_add_assistant()} onclick={() => { editingAssistant = null; showAssistantForm = true; }} />
 			</div>
 			<AdminAssistantList
 				assistants={data.assistants}
@@ -145,16 +137,7 @@
 			{/if}
 		{:else if activeTab === 'bot'}
 			<div class="flex justify-end">
-				<button
-					class="comic-button inline-flex items-center gap-1 rounded-lg border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase transition-colors hover:bg-primary/90"
-					onclick={() => {
-						editingBot = null;
-						showBotForm = true;
-					}}
-				>
-					<span class="material-symbols-outlined text-sm">add</span>
-					{m.config_add_bot()}
-				</button>
+				<AddButton label={m.config_add_bot()} onclick={() => { editingBot = null; showBotForm = true; }} />
 			</div>
 			<ConfigBotList bots={data.bots} onedit={editBot} ondelete={deleteBot} />
 			{#if showBotForm}
