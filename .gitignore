@@ -8,6 +8,7 @@ backend/node_modules
 .vercel
 .netlify
 .wrangler
+.svelte-kit
 frontend/.svelte-kit
 frontend/build
 backend/dist
