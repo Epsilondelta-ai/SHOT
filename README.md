@@ -34,11 +34,10 @@
 ### 설치
 
 ```bash
-bun install
-cd frontend && bun install
-cd ../backend && bun install
-cd ..
+bun run setup
 ```
+
+직접 설치하려면 루트, `frontend`, `backend`에서 각각 `bun install`을 실행하면 됩니다. 현재 저장소는 Bun workspace 구성이 아니므로 루트 `bun install`만으로 서브패키지 의존성이 모두 설치되지는 않습니다.
 
 ### 환경 변수
 
@@ -72,9 +71,18 @@ bun run dev:backend
 
 ```bash
 bun run dev
+bun run build
+bun run build:frontend
+bun run build:backend
+bun run check
+bun run lint
 bun run test
 bun run test:frontend
 bun run test:backend
+bun run db:push
+bun run db:generate
+bun run db:migrate
+bun run db:studio
 bun run storybook
 bun run flowbook:frontend
 bun run flowbook:backend
@@ -104,14 +112,25 @@ bun run build
 
 ## 데이터베이스
 
-프론트엔드와 백엔드 모두 Drizzle 설정을 가지고 있습니다. 작업 중인 앱 기준으로 실행하면 됩니다.
+현재 실제 DB 운영 기준은 백엔드입니다. 루트의 `db:*` 스크립트는 모두 `backend` 패키지 명령으로 연결되어 있습니다.
 
 ```bash
-cd frontend && bun run db:push
-cd backend && bun run db:push
+bun run db:push
+bun run db:generate
+bun run db:migrate
+bun run db:studio
 ```
 
-스키마 생성/마이그레이션/스튜디오 명령도 각 패키지에서 동일한 방식으로 사용할 수 있습니다.
+직접 실행하려면 아래와 같습니다.
+
+```bash
+cd backend && bun run db:push
+cd backend && bun run db:generate
+cd backend && bun run db:migrate
+cd backend && bun run db:studio
+```
+
+`frontend`에도 과거 구조의 Drizzle 관련 파일이 남아 있지만, 현재 앱 동작과 인증 API 기준의 DB 소스 오브 트루스는 `backend/src/db/schema.ts` 입니다.
 
 ## 현재 주요 기능
 

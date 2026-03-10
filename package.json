@@ -1,14 +1,24 @@
 {
   "scripts": {
+    "setup": "bun install && cd frontend && bun install && cd ../backend && bun install",
     "dev": "concurrently \"cd frontend && bun dev\" \"cd backend && bun dev\"",
     "dev:frontend": "cd frontend && bun dev",
     "dev:backend": "cd backend && bun dev",
+    "build": "cd frontend && bun run build && cd ../backend && bun run build",
+    "build:frontend": "cd frontend && bun run build",
+    "build:backend": "cd backend && bun run build",
+    "check": "cd frontend && bun run check",
+    "lint": "cd frontend && bun run lint",
     "storybook": "cd frontend && bun run storybook",
     "flowbook:frontend": "cd frontend && bun run flowbook",
     "flowbook:backend": "cd backend && bun run flowbook",
     "test": "cd frontend && bun run test && cd ../backend && bun test",
     "test:frontend": "cd frontend && bun run test",
-    "test:backend": "cd backend && bun test"
+    "test:backend": "cd backend && bun test",
+    "db:push": "cd backend && bun run db:push",
+    "db:generate": "cd backend && bun run db:generate",
+    "db:migrate": "cd backend && bun run db:migrate",
+    "db:studio": "cd backend && bun run db:studio"
   },
   "devDependencies": {
     "concurrently": "^9.0.0"
