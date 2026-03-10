@@ -15,9 +15,7 @@
 		activeTab === 'all'
 			? data.lobbies
 			: activeTab === 'in_progress'
-				? data.lobbies.filter(
-						(l) => l.status === 'in_progress' || l.status === 'starting_soon'
-					)
+				? data.lobbies.filter((l) => l.status === 'in_progress' || l.status === 'starting_soon')
 				: data.lobbies.filter((l) => l.status === 'waiting')
 	);
 </script>

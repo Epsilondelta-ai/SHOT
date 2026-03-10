@@ -11,11 +11,46 @@
 	});
 
 	const mockLobbies = [
-		{ id: '1', name: 'Wild West Duel', icon: 'swords', currentPlayers: 3, maxPlayers: 4, status: 'waiting' },
-		{ id: '2', name: 'Gold Rush Heist', icon: 'local_activity', currentPlayers: 4, maxPlayers: 4, status: 'full' },
-		{ id: '3', name: 'Saloon Brawl', icon: 'castle', currentPlayers: 1, maxPlayers: 8, status: 'waiting' },
-		{ id: '4', name: 'Train Robbery', icon: 'directions_run', currentPlayers: 5, maxPlayers: 6, status: 'starting_soon' },
-		{ id: '5', name: 'Desert Showdown', icon: 'local_fire_department', currentPlayers: 2, maxPlayers: 4, status: 'in_progress' }
+		{
+			id: '1',
+			name: 'Wild West Duel',
+			icon: 'swords',
+			currentPlayers: 3,
+			maxPlayers: 4,
+			status: 'waiting'
+		},
+		{
+			id: '2',
+			name: 'Gold Rush Heist',
+			icon: 'local_activity',
+			currentPlayers: 4,
+			maxPlayers: 4,
+			status: 'full'
+		},
+		{
+			id: '3',
+			name: 'Saloon Brawl',
+			icon: 'castle',
+			currentPlayers: 1,
+			maxPlayers: 8,
+			status: 'waiting'
+		},
+		{
+			id: '4',
+			name: 'Train Robbery',
+			icon: 'directions_run',
+			currentPlayers: 5,
+			maxPlayers: 6,
+			status: 'starting_soon'
+		},
+		{
+			id: '5',
+			name: 'Desert Showdown',
+			icon: 'local_fire_department',
+			currentPlayers: 2,
+			maxPlayers: 4,
+			status: 'in_progress'
+		}
 	];
 </script>
 

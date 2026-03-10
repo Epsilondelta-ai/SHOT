@@ -174,15 +174,9 @@
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-24">
 		{#if activeTab === 'assistant'}
-			<div class="flex items-center justify-between">
-				<h2
-					class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
-				>
-					<span class="material-symbols-outlined text-primary">psychology</span>
-					{m.config_tab_assistant()}
-				</h2>
+			<div class="flex justify-end">
 				<button
-					class="comic-button rounded-lg border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase transition-colors hover:bg-primary/90"
+					class="comic-button inline-flex items-center gap-1 rounded-lg border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase transition-colors hover:bg-primary/90"
 					onclick={() => {
 						editingAssistant = null;
 						showAssistantForm = true;
@@ -202,15 +196,9 @@
 				/>
 			{/if}
 		{:else if activeTab === 'bot'}
-			<div class="flex items-center justify-between">
-				<h2
-					class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
-				>
-					<span class="material-symbols-outlined text-primary">smart_toy</span>
-					{m.config_tab_bot()}
-				</h2>
+			<div class="flex justify-end">
 				<button
-					class="comic-button rounded-lg border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase transition-colors hover:bg-primary/90"
+					class="comic-button inline-flex items-center gap-1 rounded-lg border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase transition-colors hover:bg-primary/90"
 					onclick={() => {
 						editingBot = null;
 						showBotForm = true;
