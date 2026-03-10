@@ -7,6 +7,9 @@
 	import AdminLLMConfig from '$lib/components/admin/AdminLLMConfig.svelte';
 	import AdminAssistantList from '$lib/components/admin/AdminAssistantList.svelte';
 	import AdminAssistantForm from '$lib/components/admin/AdminAssistantForm.svelte';
+	import { invalidateAll } from '$app/navigation';
+
+	let { data } = $props();
 
 	type Tab = 'dashboard' | 'users' | 'rooms' | 'llm' | 'assistant';
 
@@ -105,48 +108,7 @@
 		}
 	]);
 
-	let users = $state([
-		{
-			id: 'u1',
-			name: 'Sheriff_Buck',
-			email: 'buck@shot.com',
-			games: 128,
-			joined: '2025-01-15',
-			banned: false
-		},
-		{
-			id: 'u2',
-			name: 'Outlaw_Jane',
-			email: 'jane@shot.com',
-			games: 95,
-			joined: '2025-02-03',
-			banned: false
-		},
-		{
-			id: 'u3',
-			name: 'Doc_Holiday',
-			email: 'doc@shot.com',
-			games: 67,
-			joined: '2025-02-20',
-			banned: false
-		},
-		{
-			id: 'u4',
-			name: 'Calamity_Sue',
-			email: 'sue@shot.com',
-			games: 12,
-			joined: '2025-03-01',
-			banned: true
-		},
-		{
-			id: 'u5',
-			name: 'Whiskey_Pete',
-			email: 'pete@shot.com',
-			games: 44,
-			joined: '2025-03-05',
-			banned: false
-		}
-	]);
+	let users = $derived(data.users);
 
 	let rooms = $state([
 		{
@@ -205,12 +167,20 @@
 		}
 	]);
 
-	function banUser(userId: string) {
-		users = users.map((u) => (u.id === userId ? { ...u, banned: true } : u));
+	function banUser(_userId: string) {
+		// TODO: implement ban
 	}
 
-	function unbanUser(userId: string) {
-		users = users.map((u) => (u.id === userId ? { ...u, banned: false } : u));
+	function unbanUser(_userId: string) {
+		// TODO: implement unban
+	}
+
+	async function changeRole(userId: string, role: 'admin' | 'user') {
+		const formData = new FormData();
+		formData.set('userId', userId);
+		formData.set('role', role);
+		await fetch('?/setRole', { method: 'POST', body: formData });
+		await invalidateAll();
 	}
 
 	function closeRoom(roomId: string) {
@@ -311,7 +281,7 @@
 					<span class="material-symbols-outlined text-primary">group</span>
 					{m.admin_users()}
 				</h2>
-				<AdminUserList {users} onban={banUser} onunban={unbanUser} />
+				<AdminUserList {users} onban={banUser} onunban={unbanUser} onrole={changeRole} />
 			</section>
 
 			<section>
@@ -330,7 +300,7 @@
 				<span class="material-symbols-outlined text-primary">group</span>
 				{m.admin_users()}
 			</h2>
-			<AdminUserList {users} onban={banUser} onunban={unbanUser} />
+			<AdminUserList {users} onban={banUser} onunban={unbanUser} onrole={changeRole} />
 		{:else if activeTab === 'rooms'}
 			<h2
 				class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"

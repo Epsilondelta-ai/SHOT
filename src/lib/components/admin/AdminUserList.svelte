@@ -5,6 +5,7 @@
 		id: string;
 		name: string;
 		email: string;
+		role: string;
 		games: number;
 		joined: string;
 		banned: boolean;
@@ -13,11 +14,13 @@
 	let {
 		users,
 		onban,
-		onunban
+		onunban,
+		onrole
 	}: {
 		users: User[];
 		onban?: (userId: string) => void;
 		onunban?: (userId: string) => void;
+		onrole?: (userId: string, role: 'admin' | 'user') => void;
 	} = $props();
 
 	let search = $state('');
@@ -51,24 +54,31 @@
 	<div class="space-y-2">
 		{#each filtered as user (user.id)}
 			<div
-				class="comic-border flex items-center justify-between rounded-xl bg-white p-4
+				class="comic-border flex items-center justify-between gap-3 rounded-xl bg-white p-4
 					{user.banned ? 'opacity-60' : ''}"
 			>
-				<div class="flex items-center gap-3">
+				<div class="flex min-w-0 items-center gap-3">
 					<div
-						class="flex size-10 items-center justify-center rounded-full border-2 border-slate-900
-							{user.banned ? 'bg-red-100' : 'bg-accent-beige'}"
+						class="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-slate-900
+							{user.banned ? 'bg-red-100' : user.role === 'admin' ? 'bg-primary/20' : 'bg-accent-beige'}"
 					>
 						<span
 							class="material-symbols-outlined text-lg
-								{user.banned ? 'text-red-500' : 'text-slate-600'}"
+								{user.banned ? 'text-red-500' : user.role === 'admin' ? 'text-primary' : 'text-slate-600'}"
 						>
-							{user.banned ? 'block' : 'person'}
+							{user.banned ? 'block' : user.role === 'admin' ? 'shield_person' : 'person'}
 						</span>
 					</div>
-					<div>
-						<div class="flex items-center gap-2">
+					<div class="min-w-0">
+						<div class="flex flex-wrap items-center gap-2">
 							<span class="text-sm font-black text-slate-900">{user.name}</span>
+							{#if user.role === 'admin'}
+								<span
+									class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-black text-primary uppercase"
+								>
+									ADMIN
+								</span>
+							{/if}
 							{#if user.banned}
 								<span
 									class="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-black text-red-600 uppercase"
@@ -83,28 +93,46 @@
 								</span>
 							{/if}
 						</div>
-						<div class="mt-0.5 flex items-center gap-3 text-[11px] font-bold text-slate-400">
-							<span>{user.email}</span>
+						<div class="mt-0.5 flex flex-wrap items-center gap-3 text-[11px] font-bold text-slate-400">
+							<span class="truncate">{user.email}</span>
 							<span>{m.admin_user_games()}: {user.games}</span>
 						</div>
 					</div>
 				</div>
 
-				{#if user.banned}
-					<button
-						class="comic-button rounded-lg border-2 border-slate-900 bg-green-500 px-4 py-2 text-xs font-black text-white uppercase"
-						onclick={() => onunban?.(user.id)}
-					>
-						{m.admin_user_unban()}
-					</button>
-				{:else}
-					<button
-						class="comic-button rounded-lg border-2 border-slate-900 bg-red-500 px-4 py-2 text-xs font-black text-white uppercase"
-						onclick={() => onban?.(user.id)}
-					>
-						{m.admin_user_ban()}
-					</button>
-				{/if}
+				<div class="flex shrink-0 flex-col gap-1 sm:flex-row">
+					{#if user.role === 'admin'}
+						<button
+							class="comic-button rounded-lg border-2 border-slate-900 bg-slate-200 px-3 py-2 text-xs font-black text-slate-700 uppercase"
+							onclick={() => onrole?.(user.id, 'user')}
+						>
+							관리자 해제
+						</button>
+					{:else}
+						<button
+							class="comic-button rounded-lg border-2 border-slate-900 bg-primary px-3 py-2 text-xs font-black text-white uppercase"
+							onclick={() => onrole?.(user.id, 'admin')}
+						>
+							관리자 지정
+						</button>
+					{/if}
+
+					{#if user.banned}
+						<button
+							class="comic-button rounded-lg border-2 border-slate-900 bg-green-500 px-3 py-2 text-xs font-black text-white uppercase"
+							onclick={() => onunban?.(user.id)}
+						>
+							{m.admin_user_unban()}
+						</button>
+					{:else}
+						<button
+							class="comic-button rounded-lg border-2 border-slate-900 bg-red-500 px-3 py-2 text-xs font-black text-white uppercase"
+							onclick={() => onban?.(user.id)}
+						>
+							{m.admin_user_ban()}
+						</button>
+					{/if}
+				</div>
 			</div>
 		{/each}
 	</div>
