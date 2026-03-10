@@ -9,7 +9,7 @@ import {
 	llmProvider,
 	llmModel
 } from '$lib/server/db/schema';
-import { count, eq, desc } from 'drizzle-orm';
+import { count, eq, desc, isNull } from 'drizzle-orm';
 import type { Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -56,7 +56,11 @@ export const load: PageServerLoad = async (event) => {
 		.leftJoin(roomPlayer, eq(room.id, roomPlayer.roomId))
 		.groupBy(room.id);
 
-	const assistants = await db.select().from(assistant).orderBy(assistant.createdAt);
+	const assistants = await db
+		.select()
+		.from(assistant)
+		.where(isNull(assistant.userId))
+		.orderBy(assistant.createdAt);
 
 	const banCounts = await db
 		.select({ userId: banHistory.userId, total: count(banHistory.id) })

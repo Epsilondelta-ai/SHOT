@@ -10,7 +10,11 @@ export const load: PageServerLoad = async (event) => {
 		redirect(303, '/login');
 	}
 
-	const rawAssistants = await db.select().from(assistant).orderBy(assistant.createdAt);
+	const rawAssistants = await db
+		.select()
+		.from(assistant)
+		.where(eq(assistant.userId, event.locals.user.id))
+		.orderBy(assistant.createdAt);
 	const rawBots = await db.select().from(bot).orderBy(bot.createdAt);
 
 	return {
@@ -34,7 +38,8 @@ export const load: PageServerLoad = async (event) => {
 };
 
 export const actions: Actions = {
-	createAssistant: async ({ request }) => {
+	createAssistant: async ({ request, locals }) => {
+		if (!locals.user) redirect(303, '/login');
 		const data = await request.formData();
 		const name = data.get('name') as string;
 		const prompt = data.get('prompt') as string;
@@ -44,7 +49,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Name and prompt are required' });
 		}
 
-		await db.insert(assistant).values({ name, prompt, active });
+		await db.insert(assistant).values({ name, prompt, active, userId: locals.user.id });
 		return { success: true };
 	},
 

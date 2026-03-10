@@ -46,6 +46,7 @@ export const assistant = sqliteTable('assistant', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
+	userId: text('user_id'),
 	name: text('name').notNull(),
 	prompt: text('prompt').notNull(),
 	active: integer('active', { mode: 'boolean' }).notNull().default(true),
