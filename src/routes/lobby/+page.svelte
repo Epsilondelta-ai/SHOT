@@ -8,6 +8,8 @@
 	type Tab = 'all' | 'in_progress' | 'waiting';
 	type LobbyStatus = 'waiting' | 'full' | 'starting_soon' | 'in_progress';
 
+	let { data } = $props();
+
 	let activeTab: Tab = $state('all');
 
 	const lobbies: {
@@ -49,7 +51,7 @@
 </svelte:head>
 
 <div class="flex min-h-screen flex-col bg-background-light font-display text-slate-900">
-	<LobbyHeader />
+	<LobbyHeader username={data.username} avatarSrc={data.avatarSrc} />
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-6 p-4">
 		<LobbyTabs active={activeTab} onchange={(tab) => (activeTab = tab)} />

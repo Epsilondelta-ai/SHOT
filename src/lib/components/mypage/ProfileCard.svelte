@@ -89,10 +89,10 @@
 						type="text"
 						name="name"
 						bind:value={draftUsername}
-						class="comic-border-sm w-full rounded-lg px-3 py-2 text-xl font-black tracking-tight text-slate-900 uppercase outline-none focus:ring-2 focus:ring-primary"
+						class="comic-border-sm w-full rounded-lg px-3 py-2 text-xl font-black tracking-tight text-slate-900 outline-none focus:ring-2 focus:ring-primary"
 					/>
 				{:else}
-					<h2 class="truncate text-2xl font-black tracking-tight text-slate-900 uppercase">
+					<h2 class="truncate text-2xl font-black tracking-tight text-slate-900">
 						{username}
 					</h2>
 				{/if}
