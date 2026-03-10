@@ -108,7 +108,10 @@ export const actions: Actions = {
 			return fail(400, { error: '자신의 관리자 권한은 제거할 수 없습니다.' });
 		}
 
-		await db.update(user).set({ role: role as 'admin' | 'user' }).where(eq(user.id, userId));
+		await db
+			.update(user)
+			.set({ role: role as 'admin' | 'user' })
+			.where(eq(user.id, userId));
 		return { success: true };
 	},
 

@@ -93,7 +93,9 @@
 								</span>
 							{/if}
 						</div>
-						<div class="mt-0.5 flex flex-wrap items-center gap-3 text-[11px] font-bold text-slate-400">
+						<div
+							class="mt-0.5 flex flex-wrap items-center gap-3 text-[11px] font-bold text-slate-400"
+						>
 							<span class="truncate">{user.email}</span>
 							<span>{m.admin_user_games()}: {user.games}</span>
 						</div>

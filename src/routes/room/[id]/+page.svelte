@@ -12,28 +12,29 @@
 		ready: boolean;
 	};
 
-	// Mock data
-	const roomName = 'Wild West Duel';
-	const roomCode = 'ABCD';
-	const maxPlayers = 4;
-	const hostId: string = 'p1';
-	const myId: string = 'p2';
+	type ChatMessage = {
+		id: string;
+		sender: string;
+		text: string;
+		isSystem?: boolean;
+	};
 
-	let players: Player[] = $state([
-		{ id: 'p1', name: 'Sheriff_Buck', ready: true },
-		{ id: 'p2', name: 'Outlaw_Jane', ready: false },
-		{ id: 'p3', name: 'Doc_Holiday', ready: true }
-	]);
+	let { data } = $props();
 
-	let chatMessages = $state([
-		{ id: '1', sender: '', text: 'Sheriff_Buck 님이 방을 만들었습니다.', isSystem: true },
-		{ id: '2', sender: 'Sheriff_Buck', text: ' 반갑습니다!' },
-		{ id: '3', sender: '', text: 'Outlaw_Jane 님이 입장했습니다.', isSystem: true },
-		{ id: '4', sender: 'Doc_Holiday', text: ' 준비됐어요!' }
-	]);
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let players: Player[] = $state(data.players);
+	$effect(() => {
+		players = data.players;
+	});
 
-	const isHost = $derived(myId === hostId);
-	const myPlayer = $derived(players.find((p) => p.id === myId));
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let chatMessages: ChatMessage[] = $state(data.chatMessages);
+	$effect(() => {
+		chatMessages = data.chatMessages;
+	});
+
+	const isHost = $derived(data.myId === data.hostId);
+	const myPlayer = $derived(players.find((p) => p.id === data.myId));
 	const amReady = $derived(myPlayer?.ready ?? false);
 	const readyCount = $derived(players.filter((p) => p.ready).length);
 	const allReady = $derived(readyCount === players.length);
@@ -41,14 +42,14 @@
 
 	const slots = $derived.by<(Player | undefined)[]>(() => {
 		const result: (Player | undefined)[] = [...players];
-		while (result.length < maxPlayers) {
+		while (result.length < data.maxPlayers) {
 			result.push(undefined);
 		}
 		return result;
 	});
 
 	function toggleReady() {
-		players = players.map((p) => (p.id === myId ? { ...p, ready: !p.ready } : p));
+		players = players.map((p) => (p.id === data.myId ? { ...p, ready: !p.ready } : p));
 	}
 
 	function kickPlayer(playerId: string) {
@@ -76,7 +77,12 @@
 </svelte:head>
 
 <div class="flex min-h-screen flex-col bg-background-light font-display text-slate-900">
-	<RoomHeader {roomName} {roomCode} currentPlayers={players.length} {maxPlayers} />
+	<RoomHeader
+		roomName={data.roomName}
+		roomCode={data.roomCode}
+		currentPlayers={players.length}
+		maxPlayers={data.maxPlayers}
+	/>
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-6 p-4">
 		<!-- Status Banner -->
@@ -119,9 +125,9 @@
 				{#each slots as player, i (player?.id ?? `empty-${i}`)}
 					<PlayerSlot
 						{player}
-						isHost={player?.id === hostId}
-						isMe={player?.id === myId}
-						onkick={isHost && player && player.id !== myId
+						isHost={player?.id === data.hostId}
+						isMe={player?.id === data.myId}
+						onkick={isHost && player && player.id !== data.myId
 							? () => kickPlayer(player.id)
 							: undefined}
 					/>

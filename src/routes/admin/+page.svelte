@@ -44,147 +44,37 @@
 	let showAssistantForm = $state(false);
 	let editingAssistant: Assistant | null = $state(null);
 
-	// Mock data
-	let llmProviders: LLMProvider[] = $state([
-		{
-			id: 'p1',
-			name: 'Anthropic',
-			baseUrl: 'https://api.anthropic.com',
-			apiKey: '••••••••••••',
-			active: true
-		},
-		{
-			id: 'p2',
-			name: 'OpenAI',
-			baseUrl: 'https://api.openai.com',
-			apiKey: '••••••••••••',
-			active: true
-		},
-		{
-			id: 'p3',
-			name: 'Gemini',
-			baseUrl: 'https://generativelanguage.googleapis.com',
-			apiKey: '••••••••••••',
-			active: false
-		}
-	]);
+	// LLM config has no DB backing — client state only
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let llmProviders: LLMProvider[] = $state(data.llmProviders);
+	$effect(() => {
+		llmProviders = data.llmProviders;
+	});
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let llmModels: LLMModel[] = $state(data.llmModels);
+	$effect(() => {
+		llmModels = data.llmModels;
+	});
 
-	let llmModels: LLMModel[] = $state([
-		{
-			id: 'm1',
-			providerId: 'p1',
-			name: 'Claude 3.5 Sonnet',
-			contextWindow: 200000,
-			costInput: 0.003,
-			costOutput: 0.015,
-			enabled: true
-		},
-		{
-			id: 'm2',
-			providerId: 'p1',
-			name: 'Claude 3 Opus',
-			contextWindow: 200000,
-			costInput: 0.015,
-			costOutput: 0.075,
-			enabled: true
-		},
-		{
-			id: 'm3',
-			providerId: 'p2',
-			name: 'GPT-4 Turbo',
-			contextWindow: 128000,
-			costInput: 0.01,
-			costOutput: 0.03,
-			enabled: false
-		},
-		{
-			id: 'm4',
-			providerId: 'p2',
-			name: 'GPT-4o',
-			contextWindow: 128000,
-			costInput: 0.005,
-			costOutput: 0.015,
-			enabled: true
-		}
-	]);
-
-	let users = $derived(data.users);
-
-	let rooms = $state([
-		{
-			id: 'r1',
-			name: 'Wild West Duel',
-			host: 'Sheriff_Buck',
-			currentPlayers: 3,
-			maxPlayers: 4,
-			status: 'waiting' as const
-		},
-		{
-			id: 'r2',
-			name: 'Gold Rush Heist',
-			host: 'Outlaw_Jane',
-			currentPlayers: 4,
-			maxPlayers: 4,
-			status: 'in_progress' as const
-		},
-		{
-			id: 'r3',
-			name: 'Saloon Brawl',
-			host: 'Whiskey_Pete',
-			currentPlayers: 2,
-			maxPlayers: 8,
-			status: 'waiting' as const
-		}
-	]);
-
-	let assistants = $state<Assistant[]>([
-		{
-			id: 'a1',
-			name: 'Sheriff',
-			prompt:
-				'당신은 서부 영화의 보안관처럼 행동하는 AI입니다. 공정하고 정의감 있으며, 항상 플레이어들의 안전을 먼저 생각합니다. 따뜻한 미국 남부 억양으로 말하세요.',
-			active: true,
-			created: '2025-02-01',
-			updated: '2025-03-08'
-		},
-		{
-			id: 'a2',
-			name: 'Saloon Keeper',
-			prompt:
-				'당신은 오래된 술집의 주인입니다. 사교적이고 말을 잘 들으며, 게임에 대한 흥미로운 이야기와 조언을 해줍니다. 따뜻하고 포용적인 성격을 보여주세요.',
-			active: true,
-			created: '2025-02-15',
-			updated: '2025-03-05'
-		},
-		{
-			id: 'a3',
-			name: 'Outlaw',
-			prompt:
-				'당신은 대담하고 모험적인 악당입니다. 재치 있고 약간 위협적이지만 나쁜 의도는 없습니다. 플레이어들에게 도전적인 질문을 던지고 재미있는 상황을 만드세요.',
-			active: false,
-			created: '2025-02-20',
-			updated: '2025-02-28'
-		}
-	]);
-
-	function banUser(_userId: string) {
-		// TODO: implement ban
-	}
-
-	function unbanUser(_userId: string) {
-		// TODO: implement unban
-	}
-
-	async function changeRole(userId: string, role: 'admin' | 'user') {
-		const formData = new FormData();
-		formData.set('userId', userId);
-		formData.set('role', role);
-		await fetch('?/setRole', { method: 'POST', body: formData });
+	async function banUser(userId: string) {
+		const fd = new FormData();
+		fd.set('id', userId);
+		await fetch('?/banUser', { method: 'POST', body: fd });
 		await invalidateAll();
 	}
 
-	function closeRoom(roomId: string) {
-		rooms = rooms.filter((r) => r.id !== roomId);
+	async function unbanUser(userId: string) {
+		const fd = new FormData();
+		fd.set('id', userId);
+		await fetch('?/unbanUser', { method: 'POST', body: fd });
+		await invalidateAll();
+	}
+
+	async function closeRoom(roomId: string) {
+		const fd = new FormData();
+		fd.set('id', roomId);
+		await fetch('?/closeRoom', { method: 'POST', body: fd });
+		await invalidateAll();
 	}
 
 	function addLLMProvider(provider: Omit<LLMProvider, 'id'>) {
@@ -208,47 +98,34 @@
 		llmModels = llmModels.filter((m) => m.id !== modelId);
 	}
 
-	function addAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
-		const now = new Date().toISOString().split('T')[0];
-		assistants = [
-			...assistants,
-			{
-				id: crypto.randomUUID(),
-				...assistant,
-				created: now,
-				updated: now
-			}
-		];
-		showAssistantForm = false;
-		editingAssistant = null;
-	}
-
 	function editAssistant(assistant: Assistant) {
 		editingAssistant = assistant;
 		showAssistantForm = true;
 	}
 
-	function saveAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
+	async function saveAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
+		const fd = new FormData();
+		fd.set('name', assistant.name);
+		fd.set('prompt', assistant.prompt);
+		fd.set('active', String(assistant.active));
+
 		if (editingAssistant) {
-			const now = new Date().toISOString().split('T')[0];
-			assistants = assistants.map((a) =>
-				a.id === editingAssistant!.id
-					? {
-							...a,
-							...assistant,
-							updated: now
-						}
-					: a
-			);
+			fd.set('id', editingAssistant.id);
+			await fetch('?/updateAssistant', { method: 'POST', body: fd });
 		} else {
-			addAssistant(assistant);
+			await fetch('?/createAssistant', { method: 'POST', body: fd });
 		}
+
+		await invalidateAll();
 		showAssistantForm = false;
 		editingAssistant = null;
 	}
 
-	function deleteAssistant(assistantId: string) {
-		assistants = assistants.filter((a) => a.id !== assistantId);
+	async function deleteAssistant(assistantId: string) {
+		const fd = new FormData();
+		fd.set('id', assistantId);
+		await fetch('?/deleteAssistant', { method: 'POST', body: fd });
+		await invalidateAll();
 	}
 
 	function closeAssistantForm() {
@@ -267,10 +144,10 @@
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-8">
 		{#if activeTab === 'dashboard'}
 			<AdminStats
-				totalUsers={users.length}
-				activeNow={users.filter((u) => !u.banned).length}
-				activeRooms={rooms.length}
-				gamesToday={23}
+				totalUsers={data.users.length}
+				activeNow={data.users.filter((u) => !u.banned).length}
+				activeRooms={data.rooms.length}
+				gamesToday={0}
 			/>
 
 			<!-- Quick overview sections -->
@@ -281,7 +158,7 @@
 					<span class="material-symbols-outlined text-primary">group</span>
 					{m.admin_users()}
 				</h2>
-				<AdminUserList {users} onban={banUser} onunban={unbanUser} onrole={changeRole} />
+				<AdminUserList users={data.users} onban={banUser} onunban={unbanUser} />
 			</section>
 
 			<section>
@@ -291,7 +168,7 @@
 					<span class="material-symbols-outlined text-primary">meeting_room</span>
 					{m.admin_rooms()}
 				</h2>
-				<AdminRoomList {rooms} onclose={closeRoom} />
+				<AdminRoomList rooms={data.rooms} onclose={closeRoom} />
 			</section>
 		{:else if activeTab === 'users'}
 			<h2
@@ -300,7 +177,7 @@
 				<span class="material-symbols-outlined text-primary">group</span>
 				{m.admin_users()}
 			</h2>
-			<AdminUserList {users} onban={banUser} onunban={unbanUser} onrole={changeRole} />
+			<AdminUserList users={data.users} onban={banUser} onunban={unbanUser} />
 		{:else if activeTab === 'rooms'}
 			<h2
 				class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
@@ -308,7 +185,7 @@
 				<span class="material-symbols-outlined text-primary">meeting_room</span>
 				{m.admin_rooms()}
 			</h2>
-			<AdminRoomList {rooms} onclose={closeRoom} />
+			<AdminRoomList rooms={data.rooms} onclose={closeRoom} />
 		{:else if activeTab === 'llm'}
 			<h2
 				class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
@@ -344,7 +221,11 @@
 					{m.admin_add_assistant()}
 				</button>
 			</div>
-			<AdminAssistantList {assistants} onedit={editAssistant} ondelete={deleteAssistant} />
+			<AdminAssistantList
+				assistants={data.assistants}
+				onedit={editAssistant}
+				ondelete={deleteAssistant}
+			/>
 			{#if showAssistantForm}
 				<AdminAssistantForm
 					isOpen={showAssistantForm}

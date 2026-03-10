@@ -11,7 +11,15 @@ export const load: PageServerLoad = async (event) => {
 
 	return {
 		username: event.locals.user.name,
-		avatarSrc: event.locals.user.image ?? ''
+		avatarSrc: event.locals.user.image ?? '',
+		recentMatches: [] as {
+			id: string;
+			name: string;
+			result: 'win' | 'loss';
+			score: string;
+			date: string;
+		}[],
+		stats: { games: 0, wins: 0, streak: 0 }
 	};
 };
 
