@@ -2,7 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 
 	type Card = 'heal' | 'jail' | 'verify';
-	type Role = 'normal' | 'spy' | 'leader';
+	type Role = 'normal' | 'spy' | 'leader' | 'revealed';
 
 	let {
 		name,
@@ -44,6 +44,8 @@
 				return 'bg-red-100 border-red-400';
 			case 'leader':
 				return 'bg-blue-100 border-blue-400';
+			case 'revealed':
+				return 'bg-green-100 border-green-400';
 			default:
 				return 'bg-white border-slate-900';
 		}
@@ -55,6 +57,8 @@
 				return 'text-red-700';
 			case 'leader':
 				return 'text-blue-700';
+			case 'revealed':
+				return 'text-green-700';
 			default:
 				return 'text-slate-900';
 		}
@@ -67,7 +71,7 @@
 		{selected ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : roleColor}
 		{selectable && alive && !isMe ? 'cursor-pointer hover:scale-105' : ''}
 		{isMe ? 'ring-3 ring-primary' : ''}"
-	style="border-color: {selected ? '#ef4444' : role === 'spy' ? '#dc2626' : role === 'leader' ? '#2563eb' : '#0f172a'}"
+	style="border-color: {selected ? '#ef4444' : role === 'spy' ? '#dc2626' : role === 'leader' ? '#2563eb' : role === 'revealed' ? '#16a34a' : '#0f172a'}"
 	disabled={!selectable || !alive || isMe}
 	onclick={onselect}
 >
@@ -117,6 +121,8 @@
 			<span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-red-500 text-white uppercase">SPY</span>
 		{:else if role === 'leader'}
 			<span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-blue-500 text-white uppercase">LEADER</span>
+		{:else if role === 'revealed'}
+			<span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-green-500 text-white uppercase">REVEALED</span>
 		{/if}
 	</div>
 

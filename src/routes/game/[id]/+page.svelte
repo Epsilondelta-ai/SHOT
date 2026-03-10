@@ -7,7 +7,7 @@
 	import GameResult from '$lib/components/game/GameResult.svelte';
 
 	type Card = 'heal' | 'jail' | 'verify';
-	type Role = 'normal' | 'spy' | 'leader';
+	type Role = 'normal' | 'spy' | 'leader' | 'revealed';
 
 	type GamePlayerData = {
 		id: string;
@@ -49,7 +49,8 @@
 		{ id: 'p7', name: 'Bandit_Bob', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
 		{ id: 'p8', name: 'Lawman_Tom', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: ['verify'], isJailed: false, role: 'normal' },
 		{ id: 'p9', name: 'Undercover_Max', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'spy' },
-		{ id: 'p10', name: 'Captain_Wilson', hp: 5, maxHp: 5, alive: true, attacks: 2, cards: [], isJailed: false, role: 'leader' }
+		{ id: 'p10', name: 'Captain_Wilson', hp: 5, maxHp: 5, alive: true, attacks: 2, cards: [], isJailed: false, role: 'leader' },
+		{ id: 'p11', name: 'Agent_Green', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'revealed' }
 	]);
 
 	let logs: LogEntry[] = $state([
@@ -207,7 +208,7 @@
 
 		<!-- Opponents -->
 		<section>
-			<div class="grid grid-cols-5 gap-2">
+			<div class="grid grid-cols-6 gap-2">
 				{#each opponents as player (player.id)}
 					<GamePlayer
 						name={player.name}
