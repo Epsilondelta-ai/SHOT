@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { resolve } from '$app/paths';
+	import { enhance } from '$app/forms';
 	import LoginHeader from '$lib/components/login/LoginHeader.svelte';
 	import ComicInput from '$lib/components/login/ComicInput.svelte';
 	import ComicButton from '$lib/components/login/ComicButton.svelte';
 	import OrDivider from '$lib/components/login/OrDivider.svelte';
 
+	let { form } = $props();
 	let showPassword = $state(false);
 	let showConfirmPassword = $state(false);
 </script>
@@ -22,10 +24,17 @@
 	>
 		<LoginHeader subtitle={m.signup_subtitle()} />
 
-		<form class="space-y-6">
+		<form method="POST" class="space-y-6" use:enhance>
+			{#if form?.error}
+				<div class="comic-border-sm rounded-lg bg-red-50 px-4 py-3 text-sm font-bold text-red-600">
+					{form.error}
+				</div>
+			{/if}
+
 			<ComicInput
 				label={m.signup_name_label()}
 				type="text"
+				name="name"
 				placeholder={m.signup_name_placeholder()}
 				icon="person"
 			/>
@@ -33,6 +42,7 @@
 			<ComicInput
 				label={m.signup_email_label()}
 				type="email"
+				name="email"
 				placeholder={m.signup_email_placeholder()}
 				icon="alternate_email"
 			/>
@@ -40,6 +50,7 @@
 			<ComicInput
 				label={m.signup_password_label()}
 				type={showPassword ? 'text' : 'password'}
+				name="password"
 				placeholder={m.signup_password_placeholder()}
 				icon={showPassword ? 'visibility_off' : 'visibility'}
 				onIconClick={() => (showPassword = !showPassword)}
@@ -48,6 +59,7 @@
 			<ComicInput
 				label={m.signup_confirm_password_label()}
 				type={showConfirmPassword ? 'text' : 'password'}
+				name="confirmPassword"
 				placeholder={m.signup_confirm_password_placeholder()}
 				icon={showConfirmPassword ? 'visibility_off' : 'visibility'}
 				onIconClick={() => (showConfirmPassword = !showConfirmPassword)}
