@@ -2,7 +2,7 @@ import { redirect, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { assistant, bot } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
-import type { Actions, RequestEvent } from '@sveltejs/kit';
+import type { Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -101,10 +101,7 @@ export const actions: Actions = {
 			return fail(400, { error: 'Missing fields' });
 		}
 
-		await db
-			.update(bot)
-			.set({ name, apiKey, active, updatedAt: new Date() })
-			.where(eq(bot.id, id));
+		await db.update(bot).set({ name, apiKey, active, updatedAt: new Date() }).where(eq(bot.id, id));
 		return { success: true };
 	},
 

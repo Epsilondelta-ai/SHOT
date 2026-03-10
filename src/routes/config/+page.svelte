@@ -7,6 +7,7 @@
 	import AdminAssistantForm from '$lib/components/admin/AdminAssistantForm.svelte';
 	import BottomNav from '$lib/components/lobby/BottomNav.svelte';
 	import LobbyHeader from '$lib/components/lobby/LobbyHeader.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
 
@@ -36,48 +37,20 @@
 	let showBotForm = $state(false);
 	let editingBot: Bot | null = $state(null);
 
-	// Mock data
-	let assistants = $state<Assistant[]>([
-		{
-			id: 'a1',
-			name: 'Helpful Guide',
-			prompt: '당신은 게임을 설명해주고 도움을 주는 AI 어시스턴트입니다.',
-			active: true,
-			created: '2025-03-01',
-			updated: '2025-03-08'
-		},
-		{
-			id: 'a2',
-			name: 'Challenger',
-			prompt: '당신은 도전적인 태도로 플레이어들에게 자극을 주는 AI입니다.',
-			active: false,
-			created: '2025-03-05',
-			updated: '2025-03-07'
-		}
-	]);
+	async function saveAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
+		const formData = new FormData();
+		formData.set('name', assistant.name);
+		formData.set('prompt', assistant.prompt);
+		formData.set('active', String(assistant.active));
 
-	let bots = $state<Bot[]>([
-		{
-			id: 'b1',
-			name: 'Discord Bot',
-			apiKey: 'MTk4NjIyNDgzNDU5Mjk1MDcy...',
-			active: true,
-			created: '2025-02-15',
-			updated: '2025-03-08'
+		if (editingAssistant) {
+			formData.set('id', editingAssistant.id);
+			await fetch('?/updateAssistant', { method: 'POST', body: formData });
+		} else {
+			await fetch('?/createAssistant', { method: 'POST', body: formData });
 		}
-	]);
 
-	function addAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
-		const now = new Date().toISOString().split('T')[0];
-		assistants = [
-			...assistants,
-			{
-				id: crypto.randomUUID(),
-				...assistant,
-				created: now,
-				updated: now
-			}
-		];
+		await invalidateAll();
 		showAssistantForm = false;
 		editingAssistant = null;
 	}
@@ -87,27 +60,11 @@
 		showAssistantForm = true;
 	}
 
-	function saveAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
-		if (editingAssistant) {
-			const now = new Date().toISOString().split('T')[0];
-			assistants = assistants.map((a) =>
-				a.id === editingAssistant!.id
-					? {
-							...a,
-							...assistant,
-							updated: now
-						}
-					: a
-			);
-		} else {
-			addAssistant(assistant);
-		}
-		showAssistantForm = false;
-		editingAssistant = null;
-	}
-
-	function deleteAssistant(assistantId: string) {
-		assistants = assistants.filter((a) => a.id !== assistantId);
+	async function deleteAssistant(assistantId: string) {
+		const formData = new FormData();
+		formData.set('id', assistantId);
+		await fetch('?/deleteAssistant', { method: 'POST', body: formData });
+		await invalidateAll();
 	}
 
 	function closeAssistantForm() {
@@ -115,17 +72,20 @@
 		editingAssistant = null;
 	}
 
-	function addBot(bot: Omit<Bot, 'id' | 'created' | 'updated'>) {
-		const now = new Date().toISOString().split('T')[0];
-		bots = [
-			...bots,
-			{
-				id: crypto.randomUUID(),
-				...bot,
-				created: now,
-				updated: now
-			}
-		];
+	async function saveBot(bot: Omit<Bot, 'id' | 'created' | 'updated'>) {
+		const formData = new FormData();
+		formData.set('name', bot.name);
+		formData.set('apiKey', bot.apiKey);
+		formData.set('active', String(bot.active));
+
+		if (editingBot) {
+			formData.set('id', editingBot.id);
+			await fetch('?/updateBot', { method: 'POST', body: formData });
+		} else {
+			await fetch('?/createBot', { method: 'POST', body: formData });
+		}
+
+		await invalidateAll();
 		showBotForm = false;
 		editingBot = null;
 	}
@@ -135,27 +95,11 @@
 		showBotForm = true;
 	}
 
-	function saveBot(bot: Omit<Bot, 'id' | 'created' | 'updated'>) {
-		if (editingBot) {
-			const now = new Date().toISOString().split('T')[0];
-			bots = bots.map((b) =>
-				b.id === editingBot!.id
-					? {
-							...b,
-							...bot,
-							updated: now
-						}
-					: b
-			);
-		} else {
-			addBot(bot);
-		}
-		showBotForm = false;
-		editingBot = null;
-	}
-
-	function deleteBot(botId: string) {
-		bots = bots.filter((b) => b.id !== botId);
+	async function deleteBot(botId: string) {
+		const formData = new FormData();
+		formData.set('id', botId);
+		await fetch('?/deleteBot', { method: 'POST', body: formData });
+		await invalidateAll();
 	}
 
 	function closeBotForm() {
@@ -186,7 +130,11 @@
 					{m.config_add_assistant()}
 				</button>
 			</div>
-			<AdminAssistantList {assistants} onedit={editAssistant} ondelete={deleteAssistant} />
+			<AdminAssistantList
+				assistants={data.assistants}
+				onedit={editAssistant}
+				ondelete={deleteAssistant}
+			/>
 			{#if showAssistantForm}
 				<AdminAssistantForm
 					isOpen={showAssistantForm}
@@ -208,7 +156,7 @@
 					{m.config_add_bot()}
 				</button>
 			</div>
-			<ConfigBotList {bots} onedit={editBot} ondelete={deleteBot} />
+			<ConfigBotList bots={data.bots} onedit={editBot} ondelete={deleteBot} />
 			{#if showBotForm}
 				<ConfigBotForm isOpen={showBotForm} {editingBot} onsave={saveBot} oncancel={closeBotForm} />
 			{/if}
