@@ -32,7 +32,9 @@ class MockWebSocket {
 	}
 
 	static instances: MockWebSocket[] = [];
-	static reset() { this.instances = []; }
+	static reset() {
+		this.instances = [];
+	}
 }
 
 vi.stubGlobal('WebSocket', MockWebSocket);
@@ -59,7 +61,7 @@ describe('createRoomSocket', () => {
 		ws.onmessage?.({
 			data: JSON.stringify({
 				type: 'players',
-				room: { hostUserId: 'u1', maxPlayers: 5 },
+				room: { hostUserId: 'u1', maxPlayers: 5, status: 'in_progress' },
 				players: [
 					{
 						id: '1',
@@ -96,7 +98,7 @@ describe('createRoomSocket', () => {
 					ready: false
 				}
 			],
-			{ hostUserId: 'u1', maxPlayers: 5 }
+			{ hostUserId: 'u1', maxPlayers: 5, status: 'in_progress' }
 		);
 	});
 
@@ -176,7 +178,9 @@ describe('createRoomSocket', () => {
 
 		expect(() => {
 			ws.onmessage?.({ data: JSON.stringify({ type: 'players', players: [] }) } as MessageEvent);
-			ws.onmessage?.({ data: JSON.stringify({ type: 'chat', userName: 'X', text: 'y' }) } as MessageEvent);
+			ws.onmessage?.({
+				data: JSON.stringify({ type: 'chat', userName: 'X', text: 'y' })
+			} as MessageEvent);
 			ws.onmessage?.({ data: JSON.stringify({ type: 'kicked', userId: 'u1' }) } as MessageEvent);
 		}).not.toThrow();
 	});

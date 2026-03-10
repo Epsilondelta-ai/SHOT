@@ -69,6 +69,12 @@
 	});
 
 	$effect(() => {
+		if (data.status === 'in_progress') {
+			goto(`/game/${data.roomId}`);
+		}
+	});
+
+	$effect(() => {
 		const socket = createRoomSocket(data.roomId, {
 			onPlayers: (wsPlayers, roomState) => {
 				players = wsPlayers.map((player) => ({
@@ -82,6 +88,9 @@
 					hostUserId = roomState.hostUserId;
 					maxPlayers = roomState.maxPlayers;
 					capacityDraft = roomState.maxPlayers;
+					if (roomState.status === 'in_progress') {
+						goto(`/game/${data.roomId}`);
+					}
 				}
 			},
 			onChat: (msg) => {

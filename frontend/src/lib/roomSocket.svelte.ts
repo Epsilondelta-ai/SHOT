@@ -23,7 +23,10 @@ type ChatMessage = {
 };
 
 type RoomSocketCallbacks = {
-	onPlayers?: (players: Player[], room?: { hostUserId: string; maxPlayers: number }) => void;
+	onPlayers?: (
+		players: Player[],
+		room?: { hostUserId: string; maxPlayers: number; status?: string }
+	) => void;
 	onChat?: (message: ChatMessage) => void;
 	onKicked?: (payload: { playerId: string; userId: string }) => void;
 };

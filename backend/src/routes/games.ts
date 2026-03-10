@@ -11,6 +11,7 @@ import {
 import { getUser } from "../lib/getUser";
 import { getRoomById } from "../lib/roomState";
 import { getSerializedRoomPlayers } from "../lib/roomPlayers";
+import { broadcastPlayers } from "../ws/roomWs";
 
 export const gameRoutes = new Elysia()
   .get("/api/games/:id", async ({ params, request, set }) => {
@@ -67,6 +68,7 @@ export const gameRoutes = new Elysia()
       .update(room)
       .set({ status: "in_progress" })
       .where(eq(room.id, params.id));
+    await broadcastPlayers(params.id);
 
     return { success: true, roomId: params.id };
   })
