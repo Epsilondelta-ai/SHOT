@@ -8,6 +8,13 @@
       "when": 1773151049642,
       "tag": "0000_brainy_karen_page",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1773186349805,
+      "tag": "0001_bright_lake",
+      "breakpoints": true
     }
   ]
 }

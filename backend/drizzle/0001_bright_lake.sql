@@ -1,0 +1,1 @@
+ALTER TABLE `room_player` ADD `ready` integer DEFAULT false NOT NULL;
