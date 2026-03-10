@@ -37,6 +37,7 @@
 	let timeLeft = $state(12);
 	let phase: Phase = $state('aiming');
 	let selectedTargetId: string | null = $state(null);
+	let selectedCard: Card | null = $state(null);
 	let isLogOpen = $state(false);
 
 	let players: GamePlayerData[] = $state([
@@ -231,25 +232,31 @@
 		<!-- Action Area -->
 		<section class="flex flex-col items-center gap-3">
 			{#if phase === 'aiming' && amAlive}
-				<p class="text-sm font-bold text-slate-400 uppercase tracking-wide">
-					{#if selectedTargetId}
-						<span class="material-symbols-outlined align-middle text-red-500">gps_fixed</span>
-						{players.find((p) => p.id === selectedTargetId)?.name}
-					{:else}
-						{m.game_select_target()}
-					{/if}
-				</p>
-				<button
-					class="comic-button flex items-center justify-center gap-3 rounded-2xl border-3 border-slate-900 px-12 py-5 text-2xl font-extrabold uppercase italic shadow-[4px_4px_0px_#000] transition-all
-						{selectedTargetId
-						? 'bg-red-600 text-white hover:bg-red-700'
-						: 'cursor-not-allowed bg-slate-700 text-slate-500'}"
-					disabled={!selectedTargetId}
-					onclick={shoot}
-				>
-					<span class="material-symbols-outlined text-3xl">local_fire_department</span>
-					{m.game_shoot()}
-				</button>
+				{#if selectedCard}
+					<p class="text-sm font-bold text-slate-400 uppercase tracking-wide">
+						{#if selectedTargetId}
+							<span class="material-symbols-outlined align-middle text-red-500">gps_fixed</span>
+							{players.find((p) => p.id === selectedTargetId)?.name}
+						{:else}
+							{m.game_select_target()}
+						{/if}
+					</p>
+					<button
+						class="comic-button flex items-center justify-center gap-3 rounded-2xl border-3 border-slate-900 px-12 py-5 text-2xl font-extrabold uppercase italic shadow-[4px_4px_0px_#000] transition-all
+							{selectedTargetId
+							? 'bg-red-600 text-white hover:bg-red-700'
+							: 'cursor-not-allowed bg-slate-700 text-slate-500'}"
+						disabled={!selectedTargetId}
+						onclick={shoot}
+					>
+						<span class="material-symbols-outlined text-3xl">
+							{selectedCard === 'heal' ? 'local_hospital' : selectedCard === 'jail' ? 'gavel' : selectedCard === 'verify' ? 'warning' : 'local_fire_department'}
+						</span>
+						{selectedCard === 'heal' ? 'HEAL' : selectedCard === 'jail' ? 'JAIL' : selectedCard === 'verify' ? 'VERIFY' : 'SHOT'}
+					</button>
+				{:else}
+					<p class="text-sm font-bold text-slate-400 uppercase tracking-wide">Select a card to act</p>
+				{/if}
 			{:else if phase === 'waiting'}
 				<div class="flex flex-col items-center gap-3 py-4">
 					<div class="size-10 animate-spin rounded-full border-4 border-slate-600 border-t-primary">
@@ -267,22 +274,27 @@
 
 
 	<!-- My Card Hand -->
-	{#if myPlayer}
+	{#if myPlayer && phase !== 'finished'}
 		<section class="border-t-4 border-slate-600 pt-4">
 			<h3 class="mb-3 text-sm font-black uppercase text-slate-300">My Cards</h3>
 			<div class="flex flex-wrap items-center justify-center gap-3">
 				{#if myPlayer.cards && myPlayer.cards.length > 0}
 					{#each myPlayer.cards as card, idx}
 						<button
-							class="group relative flex flex-col items-center gap-2 rounded-lg border-2 border-slate-400 bg-gradient-to-b from-slate-700 to-slate-800 px-4 py-3 transition-all hover:border-primary hover:shadow-lg hover:shadow-primary/50"
+							class="group relative flex flex-col items-center gap-2 rounded-lg border-2 px-4 py-3 transition-all"
+							class:border-primary={selectedCard === card}
+							class:border-slate-400={selectedCard !== card}
+							class:text-white={selectedCard === card}
+							style={selectedCard === card ? 'background: linear-gradient(to bottom, var(--color-primary)); box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.5));' : 'background: linear-gradient(to bottom, rgb(55, 65, 81), rgb(31, 41, 55))'}
 							title={`Play ${card}`}
+							onclick={() => (selectedCard = selectedCard === card ? null : card)}
 						>
 							<!-- Card icon -->
-							<span class="material-symbols-outlined text-2xl text-primary transition-transform group-hover:scale-110">
+							<span class="material-symbols-outlined text-2xl transition-transform" class:text-primary={selectedCard !== card} class:text-white={selectedCard === card} class:group-hover:scale-110={selectedCard !== card}>
 								{card === 'heal' ? 'local_hospital' : card === 'jail' ? 'gavel' : 'warning'}
 							</span>
 							<!-- Card label -->
-							<span class="text-xs font-bold uppercase text-slate-300 transition-colors group-hover:text-primary">
+							<span class="text-xs font-bold uppercase transition-colors" class:text-slate-300={selectedCard !== card} class:group-hover:text-primary={selectedCard !== card} class:text-white={selectedCard === card}>
 								{card}
 							</span>
 						</button>
