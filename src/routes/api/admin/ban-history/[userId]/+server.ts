@@ -26,6 +26,8 @@ export const GET: RequestHandler = async ({ params, locals }) => {
 			banStart: h.banStart?.toISOString().split('T')[0] ?? null,
 			banEnd: h.banEnd.toISOString().split('T')[0],
 			banReason: h.banReason ?? '',
+			unbannedAt: h.unbannedAt?.toISOString().split('T')[0] ?? null,
+			unbanReason: h.unbanReason ?? null,
 			createdAt: h.createdAt.toISOString().split('T')[0]
 		}))
 	);

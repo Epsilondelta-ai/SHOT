@@ -6,6 +6,8 @@
 		banStart: string | null;
 		banEnd: string;
 		banReason: string;
+		unbannedAt: string | null;
+		unbanReason: string | null;
 		createdAt: string;
 	};
 
@@ -75,13 +77,23 @@
 			{:else}
 				<div class="max-h-80 space-y-2 overflow-y-auto">
 					{#each history as record (record.id)}
-						<div class="comic-border rounded-xl bg-slate-50 p-3">
+						<div
+							class="comic-border rounded-xl p-3 {record.unbannedAt ? 'bg-green-50' : 'bg-red-50'}"
+						>
 							<div class="flex items-start justify-between gap-2">
 								<div class="min-w-0 flex-1">
 									<p class="text-sm font-black text-slate-800">{record.banReason}</p>
 									<p class="mt-1 text-[11px] font-bold text-slate-500">
 										{record.banStart ?? '?'} ~ {record.banEnd}
 									</p>
+									{#if record.unbannedAt}
+										<p class="mt-1 text-[11px] font-bold text-green-600">
+											{m.admin_unban_at()}: {record.unbannedAt}
+											{#if record.unbanReason}
+												— {record.unbanReason}
+											{/if}
+										</p>
+									{/if}
 								</div>
 								<span class="shrink-0 text-[10px] font-bold text-slate-400">
 									{m.admin_ban_history_date()}: {record.createdAt}

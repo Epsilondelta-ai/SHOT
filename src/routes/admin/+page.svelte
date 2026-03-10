@@ -8,30 +8,13 @@
 	import AdminAssistantList from '$lib/components/admin/AdminAssistantList.svelte';
 	import AdminAssistantForm from '$lib/components/admin/AdminAssistantForm.svelte';
 	import AdminBanModal from '$lib/components/admin/AdminBanModal.svelte';
+	import AdminUnbanModal from '$lib/components/admin/AdminUnbanModal.svelte';
 	import AdminBanHistoryModal from '$lib/components/admin/AdminBanHistoryModal.svelte';
 	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
 
 	type Tab = 'dashboard' | 'users' | 'rooms' | 'llm' | 'assistant';
-
-	type LLMProvider = {
-		id: string;
-		name: string;
-		baseUrl: string;
-		apiKey: string;
-		active: boolean;
-	};
-
-	type LLMModel = {
-		id: string;
-		providerId: string;
-		name: string;
-		contextWindow: number;
-		costInput: number;
-		costOutput: number;
-		enabled: boolean;
-	};
 
 	type Assistant = {
 		id: string;
@@ -47,21 +30,35 @@
 	let editingAssistant: Assistant | null = $state(null);
 	let showBanModal = $state(false);
 	let banningUserId = $state('');
+	let showUnbanModal = $state(false);
+	let unbanningUserId = $state('');
 	let showHistoryModal = $state(false);
 	let historyUserId = $state('');
 	let historyUserName = $state('');
 
-	// LLM config has no DB backing — client state only
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let llmProviders: LLMProvider[] = $state(data.llmProviders);
-	$effect(() => {
-		llmProviders = data.llmProviders;
-	});
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let llmModels: LLMModel[] = $state(data.llmModels);
-	$effect(() => {
-		llmModels = data.llmModels;
-	});
+	const llmProviders = $derived(data.llmProviders);
+
+	async function saveLlmApiKey(
+		provider: 'anthropic' | 'openai' | 'google' | 'xai',
+		apiKey: string
+	) {
+		const fd = new FormData();
+		fd.set('provider', provider);
+		fd.set('apiKey', apiKey);
+		await fetch('?/saveLlmApiKey', { method: 'POST', body: fd });
+		await invalidateAll();
+	}
+
+	async function toggleLlmProvider(
+		provider: 'anthropic' | 'openai' | 'google' | 'xai',
+		active: boolean
+	) {
+		const fd = new FormData();
+		fd.set('provider', provider);
+		fd.set('active', String(active));
+		await fetch('?/toggleLlmProvider', { method: 'POST', body: fd });
+		await invalidateAll();
+	}
 
 	function openHistoryModal(userId: string, userName: string) {
 		historyUserId = userId;
@@ -86,11 +83,19 @@
 		banningUserId = '';
 	}
 
-	async function unbanUser(userId: string) {
+	function openUnbanModal(userId: string) {
+		unbanningUserId = userId;
+		showUnbanModal = true;
+	}
+
+	async function submitUnban(reason: string) {
 		const fd = new FormData();
-		fd.set('id', userId);
+		fd.set('id', unbanningUserId);
+		fd.set('reason', reason);
 		await fetch('?/unbanUser', { method: 'POST', body: fd });
 		await invalidateAll();
+		showUnbanModal = false;
+		unbanningUserId = '';
 	}
 
 	async function setRole(userId: string, role: 'admin' | 'user') {
@@ -106,27 +111,6 @@
 		fd.set('id', roomId);
 		await fetch('?/closeRoom', { method: 'POST', body: fd });
 		await invalidateAll();
-	}
-
-	function addLLMProvider(provider: Omit<LLMProvider, 'id'>) {
-		llmProviders = [...llmProviders, { id: crypto.randomUUID(), ...provider }];
-	}
-
-	function deleteLLMProvider(providerId: string) {
-		llmProviders = llmProviders.filter((p) => p.id !== providerId);
-		llmModels = llmModels.filter((m) => m.providerId !== providerId);
-	}
-
-	function testLLMModel(_modelId: string) {
-		// TODO: implement model testing
-	}
-
-	function addLLMModel(model: Omit<LLMModel, 'id'>) {
-		llmModels = [...llmModels, { id: crypto.randomUUID(), ...model }];
-	}
-
-	function deleteLLMModel(modelId: string) {
-		llmModels = llmModels.filter((m) => m.id !== modelId);
 	}
 
 	function editAssistant(assistant: Assistant) {
@@ -192,7 +176,7 @@
 				<AdminUserList
 					users={data.users}
 					onban={openBanModal}
-					onunban={unbanUser}
+					onunban={openUnbanModal}
 					onrole={setRole}
 				/>
 			</section>
@@ -216,7 +200,7 @@
 			<AdminUserList
 				users={data.users}
 				onban={openBanModal}
-				onunban={unbanUser}
+				onunban={openUnbanModal}
 				onrole={setRole}
 				onhistory={openHistoryModal}
 			/>
@@ -237,12 +221,8 @@
 			</h2>
 			<AdminLLMConfig
 				providers={llmProviders}
-				models={llmModels}
-				onprovideradd={addLLMProvider}
-				onproviderdelete={deleteLLMProvider}
-				onmodeltest={testLLMModel}
-				onmodeladd={addLLMModel}
-				onmodeldelete={deleteLLMModel}
+				onsave={saveLlmApiKey}
+				ontoggle={toggleLlmProvider}
 			/>
 		{:else if activeTab === 'assistant'}
 			<div class="flex items-center justify-between">
@@ -286,6 +266,15 @@
 	oncancel={() => {
 		showBanModal = false;
 		banningUserId = '';
+	}}
+/>
+
+<AdminUnbanModal
+	isOpen={showUnbanModal}
+	onsave={submitUnban}
+	oncancel={() => {
+		showUnbanModal = false;
+		unbanningUserId = '';
 	}}
 />
 

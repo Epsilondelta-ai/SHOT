@@ -1,7 +1,7 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { user, room, roomPlayer, assistant, banHistory } from '$lib/server/db/schema';
-import { count, eq } from 'drizzle-orm';
+import { user, room, roomPlayer, assistant, banHistory, llmProvider } from '$lib/server/db/schema';
+import { count, eq, desc } from 'drizzle-orm';
 import type { Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
@@ -49,6 +49,11 @@ export const load: PageServerLoad = async (event) => {
 
 	const assistants = await db.select().from(assistant).orderBy(assistant.createdAt);
 
+	const llmProviderRows = await db.select().from(llmProvider);
+
+	const PROVIDERS = ['anthropic', 'openai', 'google', 'xai'] as const;
+	const llmProviderMap = Object.fromEntries(llmProviderRows.map((p) => [p.provider, p]));
+
 	return {
 		users: users.map((u) => ({
 			id: u.id,
@@ -77,22 +82,11 @@ export const load: PageServerLoad = async (event) => {
 			created: a.createdAt.toISOString().split('T')[0],
 			updated: a.updatedAt.toISOString().split('T')[0]
 		})),
-		llmProviders: [] as {
-			id: string;
-			name: string;
-			baseUrl: string;
-			apiKey: string;
-			active: boolean;
-		}[],
-		llmModels: [] as {
-			id: string;
-			providerId: string;
-			name: string;
-			contextWindow: number;
-			costInput: number;
-			costOutput: number;
-			enabled: boolean;
-		}[]
+		llmProviders: PROVIDERS.map((p) => ({
+			provider: p,
+			apiKey: llmProviderMap[p]?.apiKey ?? '',
+			active: llmProviderMap[p]?.active ?? false
+		}))
 	};
 };
 
@@ -144,11 +138,25 @@ export const actions: Actions = {
 	unbanUser: async ({ request }) => {
 		const data = await request.formData();
 		const id = data.get('id') as string;
-		if (!id) return fail(400, { error: 'Missing id' });
+		const reason = data.get('reason') as string;
+		if (!id || !reason) return fail(400, { error: 'Missing fields' });
+		const now = new Date();
 		await db
 			.update(user)
 			.set({ banStart: null, banEnd: null, banReason: null })
 			.where(eq(user.id, id));
+		const [latest] = await db
+			.select({ id: banHistory.id })
+			.from(banHistory)
+			.where(eq(banHistory.userId, id))
+			.orderBy(desc(banHistory.createdAt))
+			.limit(1);
+		if (latest) {
+			await db
+				.update(banHistory)
+				.set({ unbannedAt: now, unbanReason: reason })
+				.where(eq(banHistory.id, latest.id));
+		}
 		return { success: true };
 	},
 
@@ -189,6 +197,45 @@ export const actions: Actions = {
 		const id = data.get('id') as string;
 		if (!id) return fail(400, { error: 'Missing id' });
 		await db.delete(assistant).where(eq(assistant.id, id));
+		return { success: true };
+	},
+
+	saveLlmApiKey: async (event) => {
+		await getAdminUser(event.locals);
+		const data = await event.request.formData();
+		const provider = data.get('provider') as string;
+		const apiKey = data.get('apiKey') as string;
+
+		if (!['anthropic', 'openai', 'google', 'xai'].includes(provider)) {
+			return fail(400, { error: 'Invalid provider' });
+		}
+		if (!apiKey) return fail(400, { error: 'API key is required' });
+
+		await db
+			.insert(llmProvider)
+			.values({ provider: provider as 'anthropic' | 'openai' | 'google' | 'xai', apiKey })
+			.onConflictDoUpdate({ target: llmProvider.provider, set: { apiKey, updatedAt: new Date() } });
+		return { success: true };
+	},
+
+	toggleLlmProvider: async (event) => {
+		await getAdminUser(event.locals);
+		const data = await event.request.formData();
+		const provider = data.get('provider') as string;
+		const active = data.get('active') === 'true';
+
+		if (!['anthropic', 'openai', 'google', 'xai'].includes(provider)) {
+			return fail(400, { error: 'Invalid provider' });
+		}
+
+		await db
+			.insert(llmProvider)
+			.values({
+				provider: provider as 'anthropic' | 'openai' | 'google' | 'xai',
+				apiKey: '',
+				active
+			})
+			.onConflictDoUpdate({ target: llmProvider.provider, set: { active, updatedAt: new Date() } });
 		return { success: true };
 	}
 };

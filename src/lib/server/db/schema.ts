@@ -72,4 +72,13 @@ export const bot = sqliteTable('bot', {
 		.notNull()
 });
 
+export const llmProvider = sqliteTable('llm_provider', {
+	provider: text('provider', { enum: ['anthropic', 'openai', 'google', 'xai'] }).primaryKey(),
+	apiKey: text('api_key').notNull().default(''),
+	active: integer('active', { mode: 'boolean' }).notNull().default(false),
+	updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+		.notNull()
+});
+
 export * from './auth.schema';

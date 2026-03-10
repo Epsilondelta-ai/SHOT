@@ -101,6 +101,8 @@ export const banHistory = sqliteTable(
 		banStart: integer('ban_start', { mode: 'timestamp_ms' }),
 		banEnd: integer('ban_end', { mode: 'timestamp_ms' }).notNull(),
 		banReason: text('ban_reason'),
+		unbannedAt: integer('unbanned_at', { mode: 'timestamp_ms' }),
+		unbanReason: text('unban_reason'),
 		createdAt: integer('created_at', { mode: 'timestamp_ms' })
 			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 			.notNull()
