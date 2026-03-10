@@ -87,14 +87,14 @@ describe('lobby load', () => {
 			}
 		]);
 
-		const result = await load(makeEvent({ id: 'user-1' }));
+		const result = (await load(makeEvent({ id: 'user-1' }))) as Record<string, any>;
 		expect(result).toHaveProperty('lobbies');
 		expect(result.lobbies).toHaveLength(1);
 	});
 
 	it('빈 방 목록도 정상 반환', async () => {
 		makeSelectChain([]);
-		const result = await load(makeEvent({ id: 'user-1' }));
+		const result = (await load(makeEvent({ id: 'user-1' }))) as Record<string, any>;
 		expect(result.lobbies).toEqual([]);
 	});
 });

@@ -199,7 +199,7 @@ describe('admin load', () => {
 
 	it('admin이면 데이터 반환', async () => {
 		setupFullLoadMocks('admin');
-		const result = await load(makeEvent({ id: 'user-1' }));
+		const result = (await load(makeEvent({ id: 'user-1' }))) as Record<string, any>;
 		expect(result).toHaveProperty('users');
 		expect(result).toHaveProperty('rooms');
 		expect(result).toHaveProperty('assistants');
@@ -209,7 +209,7 @@ describe('admin load', () => {
 
 	it('llmProviders는 항상 4개 provider 포함', async () => {
 		setupFullLoadMocks('admin');
-		const result = await load(makeEvent({ id: 'user-1' }));
+		const result = (await load(makeEvent({ id: 'user-1' }))) as Record<string, any>;
 		expect(result.llmProviders).toHaveLength(4);
 		const providerNames = result.llmProviders.map((p: { provider: string }) => p.provider);
 		expect(providerNames).toContain('anthropic');
@@ -241,7 +241,7 @@ describe('admin load', () => {
 			[],
 			[]
 		]);
-		const result = await load(makeEvent({ id: 'user-1' }));
+		const result = (await load(makeEvent({ id: 'user-1' }))) as Record<string, any>;
 		expect(result.users[0].banned).toBe(true);
 	});
 
@@ -268,7 +268,7 @@ describe('admin load', () => {
 			[],
 			[]
 		]);
-		const result = await load(makeEvent({ id: 'user-1' }));
+		const result = (await load(makeEvent({ id: 'user-1' }))) as Record<string, any>;
 		expect(result.users[0].online).toBe(true);
 	});
 });

@@ -78,7 +78,7 @@ describe('room page load', () => {
 
 		makeSelectChain([[roomData], players]);
 
-		const result = await load(makeEvent({ id: 'user-1' }, { id: 'room-1' }));
+		const result = (await load(makeEvent({ id: 'user-1' }, { id: 'room-1' }))) as Record<string, any>;
 		expect(result).toMatchObject({
 			roomName: '테스트 방',
 			maxPlayers: 4,
@@ -90,14 +90,14 @@ describe('room page load', () => {
 	it('방 코드는 id의 앞 6자리 대문자', async () => {
 		const roomData = { id: 'abcdef123456', name: '방', maxPlayers: 4 };
 		makeSelectChain([[roomData], []]);
-		const result = await load(makeEvent({ id: 'user-1' }, { id: 'abcdef123456' }));
+		const result = (await load(makeEvent({ id: 'user-1' }, { id: 'abcdef123456' }))) as Record<string, any>;
 		expect(result.roomCode).toBe('ABCDEF');
 	});
 
 	it('플레이어가 없으면 hostId는 빈 문자열', async () => {
 		const roomData = { id: 'room-1', name: '방', maxPlayers: 4 };
 		makeSelectChain([[roomData], []]);
-		const result = await load(makeEvent({ id: 'user-1' }));
+		const result = (await load(makeEvent({ id: 'user-1' }))) as Record<string, any>;
 		expect(result.hostId).toBe('');
 	});
 
@@ -105,7 +105,7 @@ describe('room page load', () => {
 		const roomData = { id: 'room-1', name: '방', maxPlayers: 4 };
 		const players = [{ userId: 'host-id', name: '호스트' }];
 		makeSelectChain([[roomData], players]);
-		const result = await load(makeEvent({ id: 'user-1' }));
+		const result = (await load(makeEvent({ id: 'user-1' }))) as Record<string, any>;
 		expect(result.hostId).toBe('host-id');
 	});
 });

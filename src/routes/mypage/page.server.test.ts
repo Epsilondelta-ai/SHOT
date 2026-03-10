@@ -67,7 +67,7 @@ describe('mypage load', () => {
 	});
 
 	it('image가 없으면 avatarSrc는 빈 문자열', async () => {
-		const result = await load(makeEvent({ id: 'user-1', name: '이름' }));
+		const result = (await load(makeEvent({ id: 'user-1', name: '이름' }))) as Record<string, unknown>;
 		expect(result.avatarSrc).toBe('');
 	});
 });
