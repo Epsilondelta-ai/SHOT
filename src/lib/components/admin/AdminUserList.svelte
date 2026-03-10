@@ -17,12 +17,14 @@
 		users,
 		onban,
 		onunban,
-		onrole
+		onrole,
+		onhistory
 	}: {
 		users: User[];
 		onban?: (userId: string) => void;
 		onunban?: (userId: string) => void;
 		onrole?: (userId: string, role: 'admin' | 'user') => void;
+		onhistory?: (userId: string, userName: string) => void;
 	} = $props();
 
 	let search = $state('');
@@ -113,6 +115,13 @@
 				</div>
 
 				<div class="flex shrink-0 flex-col gap-1 sm:flex-row">
+					<button
+						class="comic-button rounded-lg border-2 border-slate-900 bg-slate-100 px-3 py-2 text-xs font-black text-slate-700 uppercase"
+						onclick={() => onhistory?.(user.id, user.name)}
+					>
+						<span class="material-symbols-outlined align-middle text-sm">history</span>
+					</button>
+
 					{#if user.role === 'admin'}
 						<button
 							class="comic-button rounded-lg border-2 border-slate-900 bg-slate-200 px-3 py-2 text-xs font-black text-slate-700 uppercase"

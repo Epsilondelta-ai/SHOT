@@ -89,9 +89,36 @@ export const verification = sqliteTable(
 	(table) => [index('verification_identifier_idx').on(table.identifier)]
 );
 
+export const banHistory = sqliteTable(
+	'ban_history',
+	{
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => crypto.randomUUID()),
+		userId: text('user_id')
+			.notNull()
+			.references(() => user.id, { onDelete: 'cascade' }),
+		banStart: integer('ban_start', { mode: 'timestamp_ms' }),
+		banEnd: integer('ban_end', { mode: 'timestamp_ms' }).notNull(),
+		banReason: text('ban_reason'),
+		createdAt: integer('created_at', { mode: 'timestamp_ms' })
+			.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+			.notNull()
+	},
+	(table) => [index('ban_history_userId_idx').on(table.userId)]
+);
+
 export const userRelations = relations(user, ({ many }) => ({
 	sessions: many(session),
-	accounts: many(account)
+	accounts: many(account),
+	banHistories: many(banHistory)
+}));
+
+export const banHistoryRelations = relations(banHistory, ({ one }) => ({
+	user: one(user, {
+		fields: [banHistory.userId],
+		references: [user.id]
+	})
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({

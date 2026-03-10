@@ -1,6 +1,6 @@
 import { redirect, fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
-import { user, room, roomPlayer, assistant } from '$lib/server/db/schema';
+import { user, room, roomPlayer, assistant, banHistory } from '$lib/server/db/schema';
 import { count, eq } from 'drizzle-orm';
 import type { Actions } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -126,14 +126,18 @@ export const actions: Actions = {
 		const endAt = data.get('endAt') as string;
 		const reason = data.get('reason') as string;
 		if (!id || !endAt || !reason) return fail(400, { error: 'Missing fields' });
+		const banStartDate = startAt ? new Date(startAt) : new Date();
+		const banEndDate = new Date(endAt);
 		await db
 			.update(user)
-			.set({
-				banStart: startAt ? new Date(startAt) : new Date(),
-				banEnd: new Date(endAt),
-				banReason: reason
-			})
+			.set({ banStart: banStartDate, banEnd: banEndDate, banReason: reason })
 			.where(eq(user.id, id));
+		await db.insert(banHistory).values({
+			userId: id,
+			banStart: banStartDate,
+			banEnd: banEndDate,
+			banReason: reason
+		});
 		return { success: true };
 	},
 

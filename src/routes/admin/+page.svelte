@@ -8,6 +8,7 @@
 	import AdminAssistantList from '$lib/components/admin/AdminAssistantList.svelte';
 	import AdminAssistantForm from '$lib/components/admin/AdminAssistantForm.svelte';
 	import AdminBanModal from '$lib/components/admin/AdminBanModal.svelte';
+	import AdminBanHistoryModal from '$lib/components/admin/AdminBanHistoryModal.svelte';
 	import { invalidateAll } from '$app/navigation';
 
 	let { data } = $props();
@@ -46,6 +47,9 @@
 	let editingAssistant: Assistant | null = $state(null);
 	let showBanModal = $state(false);
 	let banningUserId = $state('');
+	let showHistoryModal = $state(false);
+	let historyUserId = $state('');
+	let historyUserName = $state('');
 
 	// LLM config has no DB backing — client state only
 	// eslint-disable-next-line svelte/prefer-writable-derived
@@ -58,6 +62,12 @@
 	$effect(() => {
 		llmModels = data.llmModels;
 	});
+
+	function openHistoryModal(userId: string, userName: string) {
+		historyUserId = userId;
+		historyUserName = userName;
+		showHistoryModal = true;
+	}
 
 	function openBanModal(userId: string) {
 		banningUserId = userId;
@@ -203,7 +213,13 @@
 				<span class="material-symbols-outlined text-primary">group</span>
 				{m.admin_users()}
 			</h2>
-			<AdminUserList users={data.users} onban={openBanModal} onunban={unbanUser} onrole={setRole} />
+			<AdminUserList
+				users={data.users}
+				onban={openBanModal}
+				onunban={unbanUser}
+				onrole={setRole}
+				onhistory={openHistoryModal}
+			/>
 		{:else if activeTab === 'rooms'}
 			<h2
 				class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
@@ -270,5 +286,16 @@
 	oncancel={() => {
 		showBanModal = false;
 		banningUserId = '';
+	}}
+/>
+
+<AdminBanHistoryModal
+	isOpen={showHistoryModal}
+	userId={historyUserId}
+	userName={historyUserName}
+	onclose={() => {
+		showHistoryModal = false;
+		historyUserId = '';
+		historyUserName = '';
 	}}
 />
