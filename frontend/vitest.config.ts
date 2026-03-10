@@ -8,8 +8,8 @@ export default defineConfig({
 		environment: 'node',
 		coverage: {
 			provider: 'v8',
-			include: ['src/routes/**/*.server.ts', 'src/lib/server/**/*.ts'],
-			exclude: ['src/lib/server/db/auth.schema.ts', 'src/lib/server/db/schema.ts']
+			include: ['src/lib/api.ts', 'src/lib/config.ts', 'src/lib/roomSocket.svelte.ts'],
+			exclude: []
 		}
 	}
 });
