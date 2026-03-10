@@ -47,6 +47,10 @@ const handleBanCheck: Handle = async ({ event, resolve }) => {
 			if (dbUser?.banEnd && dbUser.banEnd > new Date()) {
 				redirect(302, '/banned');
 			}
+			await db
+				.update(user)
+				.set({ lastSeenAt: new Date() })
+				.where(eq(user.id, event.locals.user.id));
 		}
 	}
 	return resolve(event);

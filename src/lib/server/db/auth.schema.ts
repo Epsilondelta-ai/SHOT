@@ -11,6 +11,7 @@ export const user = sqliteTable('user', {
 	banStart: integer('ban_start', { mode: 'timestamp_ms' }),
 	banEnd: integer('ban_end', { mode: 'timestamp_ms' }),
 	banReason: text('ban_reason'),
+	lastSeenAt: integer('last_seen_at', { mode: 'timestamp_ms' }),
 	createdAt: integer('created_at', { mode: 'timestamp_ms' })
 		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
 		.notNull(),
