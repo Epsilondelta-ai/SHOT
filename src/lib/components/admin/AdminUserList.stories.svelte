@@ -18,9 +18,30 @@
 	name="With Users"
 	args={{
 		users: [
-			{ id: 'u1', name: 'Sheriff_Buck', email: 'buck@shot.com', games: 128, joined: '2025-01-15', banned: false },
-			{ id: 'u2', name: 'Outlaw_Jane', email: 'jane@shot.com', games: 95, joined: '2025-02-03', banned: false },
-			{ id: 'u3', name: 'Calamity_Sue', email: 'sue@shot.com', games: 12, joined: '2025-03-01', banned: true }
+			{
+				id: 'u1',
+				name: 'Sheriff_Buck',
+				email: 'buck@shot.com',
+				games: 128,
+				joined: '2025-01-15',
+				banned: false
+			},
+			{
+				id: 'u2',
+				name: 'Outlaw_Jane',
+				email: 'jane@shot.com',
+				games: 95,
+				joined: '2025-02-03',
+				banned: false
+			},
+			{
+				id: 'u3',
+				name: 'Calamity_Sue',
+				email: 'sue@shot.com',
+				games: 12,
+				joined: '2025-03-01',
+				banned: true
+			}
 		]
 	}}
 />
@@ -29,8 +50,22 @@
 	name="All Active"
 	args={{
 		users: [
-			{ id: 'u1', name: 'Sheriff_Buck', email: 'buck@shot.com', games: 128, joined: '2025-01-15', banned: false },
-			{ id: 'u2', name: 'Doc_Holiday', email: 'doc@shot.com', games: 67, joined: '2025-02-20', banned: false }
+			{
+				id: 'u1',
+				name: 'Sheriff_Buck',
+				email: 'buck@shot.com',
+				games: 128,
+				joined: '2025-01-15',
+				banned: false
+			},
+			{
+				id: 'u2',
+				name: 'Doc_Holiday',
+				email: 'doc@shot.com',
+				games: 67,
+				joined: '2025-02-20',
+				banned: false
+			}
 		]
 	}}
 />

@@ -10,7 +10,11 @@
 		updated: string;
 	};
 
-	let { bots = [], onedit, ondelete }: { bots?: Bot[]; onedit?: (bot: Bot) => void; ondelete?: (botId: string) => void } = $props();
+	let {
+		bots = [],
+		onedit,
+		ondelete
+	}: { bots?: Bot[]; onedit?: (bot: Bot) => void; ondelete?: (botId: string) => void } = $props();
 
 	function maskApiKey(apiKey: string): string {
 		if (apiKey.length <= 8) return '•'.repeat(apiKey.length);
@@ -31,14 +35,18 @@
 			<div class="comic-border rounded-lg border-2 border-slate-900 bg-white p-4">
 				<div class="mb-3 flex items-start justify-between">
 					<div class="flex-1">
-						<h3 class="font-black uppercase text-slate-900">{bot.name}</h3>
+						<h3 class="font-black text-slate-900 uppercase">{bot.name}</h3>
 						<div class="mt-1 flex gap-2">
 							{#if bot.active}
-								<span class="rounded-full bg-green-100 px-2 py-1 text-xs font-black uppercase text-green-700">
+								<span
+									class="rounded-full bg-green-100 px-2 py-1 text-xs font-black text-green-700 uppercase"
+								>
 									{m.config_bot_active()}
 								</span>
 							{:else}
-								<span class="rounded-full bg-gray-100 px-2 py-1 text-xs font-black uppercase text-gray-700">
+								<span
+									class="rounded-full bg-gray-100 px-2 py-1 text-xs font-black text-gray-700 uppercase"
+								>
 									{m.config_bot_inactive()}
 								</span>
 							{/if}
@@ -64,10 +72,9 @@
 
 				<!-- API Key Section -->
 				<div class="mb-2 space-y-1 text-sm">
-					<p class="text-xs font-black uppercase text-slate-500">{m.config_bot_api_key()}</p>
+					<p class="text-xs font-black text-slate-500 uppercase">{m.config_bot_api_key()}</p>
 					<p class="font-mono text-sm font-bold text-slate-700">{maskApiKey(bot.apiKey)}</p>
 				</div>
-
 
 				<!-- Metadata -->
 				<div class="mt-3 border-t border-slate-200 pt-2 text-xs text-slate-500">

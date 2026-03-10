@@ -57,7 +57,7 @@
 					{#if expandedId === assistant.id}
 						<div class="mt-2 space-y-2 rounded-lg bg-slate-50 p-3">
 							<p class="text-sm font-bold text-slate-500 uppercase">{m.admin_assistant_prompt()}</p>
-							<p class="whitespace-pre-wrap text-sm text-slate-700">{assistant.prompt}</p>
+							<p class="text-sm whitespace-pre-wrap text-slate-700">{assistant.prompt}</p>
 						</div>
 					{/if}
 
@@ -99,7 +99,9 @@
 	{#if assistants.length === 0}
 		<div class="comic-border rounded-xl border-dashed bg-slate-50 p-8 text-center">
 			<span class="material-symbols-outlined text-4xl text-slate-300">smart_toy</span>
-			<p class="mt-2 text-sm font-bold text-slate-400 uppercase">{m.admin_assistant()}가 없습니다</p>
+			<p class="mt-2 text-sm font-bold text-slate-400 uppercase">
+				{m.admin_assistant()}가 없습니다
+			</p>
 		</div>
 	{/if}
 </div>

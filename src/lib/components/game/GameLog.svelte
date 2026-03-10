@@ -36,7 +36,7 @@
 
 <!-- FAB Toggle Button (우측 하단) -->
 <button
-	class="fixed bottom-6 right-4 z-40 comic-button flex items-center justify-center gap-2 rounded-full border-2 border-slate-900 bg-primary px-4 py-4 shadow-lg hover:bg-primary/90 transition-colors"
+	class="comic-button fixed right-4 bottom-6 z-40 flex items-center justify-center gap-2 rounded-full border-2 border-slate-900 bg-primary px-4 py-4 shadow-lg transition-colors hover:bg-primary/90"
 	onclick={ontoggle}
 	title={isOpen ? '전투 기록 닫기' : '전투 기록 보기'}
 >
@@ -55,11 +55,13 @@
 
 <!-- Bottom Sheet -->
 <div
-	class="fixed inset-x-0 bottom-0 z-30 max-h-[60vh] bg-white comic-border rounded-t-2xl transition-transform duration-300"
+	class="comic-border fixed inset-x-0 bottom-0 z-30 max-h-[60vh] rounded-t-2xl bg-white transition-transform duration-300"
 	style="transform: translateY({isOpen ? '0%' : '100%'})"
 >
 	<!-- Header -->
-	<div class="flex items-center justify-between gap-2 border-b-2 border-slate-900 bg-background-dark px-4 py-3 rounded-t-2xl">
+	<div
+		class="flex items-center justify-between gap-2 rounded-t-2xl border-b-2 border-slate-900 bg-background-dark px-4 py-3"
+	>
 		<div class="flex items-center gap-2">
 			<span class="material-symbols-outlined text-sm text-primary">menu_book</span>
 			<span class="text-xs font-black tracking-widest text-white uppercase"
@@ -67,7 +69,7 @@
 			>
 		</div>
 		<button
-			class="material-symbols-outlined text-xl text-white hover:text-slate-300 transition-colors"
+			class="material-symbols-outlined text-xl text-white transition-colors hover:text-slate-300"
 			onclick={ontoggle}
 		>
 			expand_more

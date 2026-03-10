@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import { page } from '$app/stores';
 	import GameHeader from '$lib/components/game/GameHeader.svelte';
 	import GamePlayer from '$lib/components/game/GamePlayer.svelte';
 	import GameLog from '$lib/components/game/GameLog.svelte';
@@ -27,67 +26,49 @@
 		type: 'shot' | 'eliminated' | 'round' | 'result';
 	};
 
-	type Phase = 'aiming' | 'waiting' | 'resolving' | 'finished';
+	type Phase = 'aiming' | 'waiting' | 'resolving' | 'finished' | 'died';
 
 	interface PageProps {
 		initialPhase?: Phase;
 		initialPlayers?: GamePlayerData[];
+		initialLogs?: LogEntry[];
 	}
 
-	let { initialPhase = 'aiming', initialPlayers }: PageProps = $props();
+	// eslint-disable-next-line svelte/valid-prop-names-in-kit-pages
+	let { initialPhase = 'aiming', initialPlayers, initialLogs }: PageProps = $props();
 
-	const gameId = $derived($page.params.id);
 	const myId: string = 'p2';
 	const totalTime = 15;
 
 	let round = $state(1);
 	let timeLeft = $state(12);
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let phase: Phase = $state(initialPhase);
+
+	$effect(() => {
+		phase = initialPhase;
+	});
 	let selectedTargetId: string | null = $state(null);
 	let selectedCard: Card | null = $state(null);
 	let isLogOpen = $state(false);
 
-	const defaultPlayers: GamePlayerData[] = [
-		{ id: 'p1', name: 'Sheriff_Buck', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
-		{ id: 'p2', name: 'Outlaw_Jane', hp: 3, maxHp: 3, alive: true, attacks: 6, cards: ['heal', 'heal', 'jail', 'verify'], isJailed: false, role: 'normal' },
-		{ id: 'p3', name: 'Doc_Holiday', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
-		{ id: 'p4', name: 'Calamity_Sue', hp: 0, maxHp: 3, alive: false, attacks: 1, cards: [], isJailed: false, role: 'normal' },
-		{ id: 'p5', name: 'Quick_Draw', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: ['verify'], isJailed: true, role: 'normal' },
-		{ id: 'p6', name: 'Gunslinger_Kate', hp: 1, maxHp: 3, alive: true, attacks: 2, cards: ['heal', 'jail'], isJailed: false, role: 'normal' },
-		{ id: 'p7', name: 'Bandit_Bob', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'normal' },
-		{ id: 'p8', name: 'Lawman_Tom', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: ['verify'], isJailed: false, role: 'normal' },
-		{ id: 'p9', name: 'Undercover_Max', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'spy' },
-		{ id: 'p10', name: 'Captain_Wilson', hp: 5, maxHp: 5, alive: true, attacks: 2, cards: [], isJailed: false, role: 'leader' },
-		{ id: 'p11', name: 'Agent_Green', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false, role: 'revealed' }
-	];
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let players: GamePlayerData[] = $state(initialPlayers ?? []);
 
-	let players: GamePlayerData[] = $state(initialPlayers ? initialPlayers : defaultPlayers);
+	$effect(() => {
+		players = initialPlayers ?? [];
+	});
 
-	let logs: LogEntry[] = $state([
-		{ id: '1', text: m.game_round_start({ round: '1' }), type: 'round' },
-		{
-			id: '2',
-			text: m.game_shot_other({ shooter: 'Sheriff_Buck', target: 'Doc_Holiday' }),
-			type: 'shot'
-		},
-		{
-			id: '3',
-			text: m.game_shot_other({ shooter: 'Doc_Holiday', target: 'Calamity_Sue' }),
-			type: 'shot'
-		},
-		{
-			id: '4',
-			text: m.game_shot_other({ shooter: 'Calamity_Sue', target: 'Doc_Holiday' }),
-			type: 'shot'
-		},
-		{ id: '5', text: m.game_eliminated({ player: 'Calamity_Sue' }), type: 'eliminated' },
-		{ id: '6', text: m.game_round_start({ round: '2' }), type: 'round' }
-	]);
+	// eslint-disable-next-line svelte/prefer-writable-derived
+	let logs: LogEntry[] = $state(initialLogs ?? []);
+
+	$effect(() => {
+		logs = initialLogs ?? [];
+	});
 
 	const myPlayer = $derived(players.find((p) => p.id === myId));
 	const amAlive = $derived(myPlayer?.alive ?? false);
 	const alivePlayers = $derived(players.filter((p) => p.alive));
-	const opponents = $derived(players.filter((p) => p.id !== myId));
 	const isFinished = $derived(phase === 'finished');
 	const winner = $derived.by(() => {
 		if (alivePlayers.length === 1) return alivePlayers[0];
@@ -226,95 +207,122 @@
 						maxHp={player.maxHp}
 						alive={player.alive}
 						selected={selectedTargetId === player.id}
-						selectable={phase === "aiming" && amAlive && player.id !== myId}
+						selectable={phase === 'aiming' && amAlive && player.id !== myId}
 						onselect={() => selectTarget(player.id)}
 						isJailed={player.isJailed}
 						attacks={player.attacks}
 						cards={player.cards}
 						role={player.role}
-					isMe={player.id === myId}
+						isMe={player.id === myId}
 					/>
 				{/each}
 			</div>
 		</section>
 
 		<!-- Action Area -->
-		<section class="flex flex-col items-center gap-3">
-			{#if phase === 'aiming' && amAlive}
-				{#if selectedCard}
-					<p class="text-sm font-bold text-slate-400 uppercase tracking-wide">
-						{#if selectedTargetId}
-							<span class="material-symbols-outlined align-middle text-red-500">gps_fixed</span>
-							{players.find((p) => p.id === selectedTargetId)?.name}
-						{:else}
-							{m.game_select_target()}
-						{/if}
-					</p>
-					<button
-						class="comic-button flex items-center justify-center gap-3 rounded-2xl border-3 border-slate-900 px-12 py-5 text-2xl font-extrabold uppercase italic shadow-[4px_4px_0px_#000] transition-all
-							{selectedTargetId
-							? 'bg-red-600 text-white hover:bg-red-700'
-							: 'cursor-not-allowed bg-slate-700 text-slate-500'}"
-						disabled={!selectedTargetId}
-						onclick={shoot}
-					>
-						<span class="material-symbols-outlined text-3xl">
-							{selectedCard === 'heal' ? 'local_hospital' : selectedCard === 'jail' ? 'gavel' : selectedCard === 'verify' ? 'warning' : 'local_fire_department'}
-						</span>
-						{selectedCard === 'heal' ? 'HEAL' : selectedCard === 'jail' ? 'JAIL' : selectedCard === 'verify' ? 'VERIFY' : 'SHOT'}
-					</button>
-				{:else}
-					<p class="text-sm font-bold text-slate-400 uppercase tracking-wide">Select a card to act</p>
-				{/if}
-			{:else if phase === 'waiting'}
-				<div class="flex flex-col items-center gap-3 py-4">
-					<div class="size-10 animate-spin rounded-full border-4 border-slate-600 border-t-primary">
-					</div>
-					<p class="text-sm font-bold text-slate-400 uppercase">{m.game_waiting_others()}</p>
-				</div>
-			{:else if phase === 'resolving'}
-				<div class="flex flex-col items-center gap-2 py-4">
-					<span class="material-symbols-outlined animate-pulse text-5xl text-red-500"
-						>local_fire_department</span
-					>
-				</div>
-			{/if}
-		</section>
-
-
-	<!-- My Card Hand -->
-	{#if myPlayer && phase !== 'finished'}
-		<section class="border-t-4 border-slate-600 pt-4">
-			<h3 class="mb-3 text-sm font-black uppercase text-slate-300">My Cards</h3>
-			<div class="flex flex-wrap items-center justify-center gap-3">
-				{#if myPlayer.cards && myPlayer.cards.length > 0}
-					{#each myPlayer.cards as card, idx}
+		{#if phase !== 'finished' && phase !== 'died'}
+			<section class="flex flex-col items-center gap-3">
+				{#if phase === 'aiming' && amAlive}
+					{#if selectedCard}
+						<p class="text-sm font-bold tracking-wide text-slate-400 uppercase">
+							{#if selectedTargetId}
+								<span class="material-symbols-outlined align-middle text-red-500">gps_fixed</span>
+								{players.find((p) => p.id === selectedTargetId)?.name}
+							{:else}
+								{m.game_select_target()}
+							{/if}
+						</p>
 						<button
-							class="group relative flex flex-col items-center gap-2 rounded-lg border-2 px-4 py-3 transition-all"
-							class:border-primary={selectedCard === card}
-							class:border-slate-400={selectedCard !== card}
-							class:text-white={selectedCard === card}
-							style={selectedCard === card ? 'background: linear-gradient(to bottom, var(--color-primary)); box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.5));' : 'background: linear-gradient(to bottom, rgb(55, 65, 81), rgb(31, 41, 55))'}
-							title={`Play ${card}`}
-							onclick={() => (selectedCard = selectedCard === card ? null : card)}
+							class="comic-button flex items-center justify-center gap-3 rounded-2xl border-3 border-slate-900 px-12 py-5 text-2xl font-extrabold uppercase italic shadow-[4px_4px_0px_#000] transition-all
+							{selectedTargetId
+								? 'bg-red-600 text-white hover:bg-red-700'
+								: 'cursor-not-allowed bg-slate-700 text-slate-500'}"
+							disabled={!selectedTargetId}
+							onclick={shoot}
 						>
-							<!-- Card icon -->
-							<span class="material-symbols-outlined text-2xl transition-transform" class:text-primary={selectedCard !== card} class:text-white={selectedCard === card} class:group-hover:scale-110={selectedCard !== card}>
-								{card === 'heal' ? 'local_hospital' : card === 'jail' ? 'gavel' : 'warning'}
+							<span class="material-symbols-outlined text-3xl">
+								{selectedCard === 'heal'
+									? 'local_hospital'
+									: selectedCard === 'jail'
+										? 'gavel'
+										: selectedCard === 'verify'
+											? 'warning'
+											: 'local_fire_department'}
 							</span>
-							<!-- Card label -->
-							<span class="text-xs font-bold uppercase transition-colors" class:text-slate-300={selectedCard !== card} class:group-hover:text-primary={selectedCard !== card} class:text-white={selectedCard === card}>
-								{card}
-							</span>
+							{selectedCard === 'heal'
+								? 'HEAL'
+								: selectedCard === 'jail'
+									? 'JAIL'
+									: selectedCard === 'verify'
+										? 'VERIFY'
+										: 'SHOT'}
 						</button>
-					{/each}
-				{:else}
-					<p class="text-sm font-bold text-slate-500">No cards in hand</p>
+					{:else}
+						<p class="text-sm font-bold tracking-wide text-slate-400 uppercase">
+							Select a card to act
+						</p>
+					{/if}
+				{:else if phase === 'waiting'}
+					<div class="flex flex-col items-center gap-3 py-4">
+						<div
+							class="size-10 animate-spin rounded-full border-4 border-slate-600 border-t-primary"
+						></div>
+						<p class="text-sm font-bold text-slate-400 uppercase">{m.game_waiting_others()}</p>
+					</div>
+				{:else if phase === 'resolving'}
+					<div class="flex flex-col items-center gap-2 py-4">
+						<span class="material-symbols-outlined animate-pulse text-5xl text-red-500"
+							>local_fire_department</span
+						>
+					</div>
 				{/if}
-			</div>
-		</section>
-	{/if}
+			</section>
+		{/if}
 
+		<!-- My Card Hand -->
+		{#if myPlayer && phase !== 'finished' && phase !== 'died'}
+			<section class="border-t-4 border-slate-600 pt-4">
+				<h3 class="mb-3 text-sm font-black text-slate-300 uppercase">My Cards</h3>
+				<div class="flex flex-wrap items-center justify-center gap-3">
+					{#if myPlayer.cards && myPlayer.cards.length > 0}
+						{#each myPlayer.cards as card, i (i)}
+							<button
+								class="group relative flex flex-col items-center gap-2 rounded-lg border-2 px-4 py-3 transition-all"
+								class:border-primary={selectedCard === card}
+								class:border-slate-400={selectedCard !== card}
+								class:text-white={selectedCard === card}
+								style={selectedCard === card
+									? 'background: linear-gradient(to bottom, var(--color-primary)); box-shadow: 0 10px 15px -3px rgba(168, 85, 247, 0.5));'
+									: 'background: linear-gradient(to bottom, rgb(55, 65, 81), rgb(31, 41, 55))'}
+								title={`Play ${card}`}
+								onclick={() => (selectedCard = selectedCard === card ? null : card)}
+							>
+								<!-- Card icon -->
+								<span
+									class="material-symbols-outlined text-2xl transition-transform"
+									class:text-primary={selectedCard !== card}
+									class:text-white={selectedCard === card}
+									class:group-hover:scale-110={selectedCard !== card}
+								>
+									{card === 'heal' ? 'local_hospital' : card === 'jail' ? 'gavel' : 'warning'}
+								</span>
+								<!-- Card label -->
+								<span
+									class="text-xs font-bold uppercase transition-colors"
+									class:text-slate-300={selectedCard !== card}
+									class:group-hover:text-primary={selectedCard !== card}
+									class:text-white={selectedCard === card}
+								>
+									{card}
+								</span>
+							</button>
+						{/each}
+					{:else}
+						<p class="text-sm font-bold text-slate-500">No cards in hand</p>
+					{/if}
+				</div>
+			</section>
+		{/if}
 	</main>
 
 	<!-- GameLog Bottom Sheet Overlay -->

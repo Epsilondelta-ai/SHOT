@@ -21,7 +21,8 @@
 			<span
 				class="rounded-lg border-2 border-slate-600 bg-slate-800 px-3 py-1 text-xs font-black tracking-widest text-primary uppercase"
 			>
-				{m.game_round()} {round}
+				{m.game_round()}
+				{round}
 			</span>
 		</div>
 
@@ -34,12 +35,11 @@
 
 		<div class="flex items-center gap-2">
 			<span
-				class="material-symbols-outlined text-lg {timerUrgent ? 'text-red-400 animate-pulse' : 'text-slate-400'}"
-				>timer</span
+				class="material-symbols-outlined text-lg {timerUrgent
+					? 'animate-pulse text-red-400'
+					: 'text-slate-400'}">timer</span
 			>
-			<span
-				class="text-xl font-black tabular-nums {timerUrgent ? 'text-red-400' : 'text-white'}"
-			>
+			<span class="text-xl font-black tabular-nums {timerUrgent ? 'text-red-400' : 'text-white'}">
 				{timeLeft}s
 			</span>
 		</div>

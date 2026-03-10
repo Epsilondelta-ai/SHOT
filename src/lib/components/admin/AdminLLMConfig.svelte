@@ -25,7 +25,7 @@
 		onprovideradd,
 		onproviderdelete,
 		onmodeltest,
-		onmodeladd,
+		onmodeladd: _onmodeladd,
 		onmodeldelete
 	}: {
 		providers?: Provider[];
@@ -72,9 +72,7 @@
 		</button>
 		<button
 			class="flex-1 border-b-3 px-4 py-2 text-sm font-black uppercase transition-colors
-				{activeSection === 'models'
-				? 'border-primary text-primary'
-				: 'border-transparent text-slate-400'}"
+				{activeSection === 'models' ? 'border-primary text-primary' : 'border-transparent text-slate-400'}"
 			onclick={() => (activeSection = 'models')}
 		>
 			{m.admin_model()}
@@ -108,7 +106,9 @@
 					<button
 						class="comic-button w-full rounded-lg border-2 border-slate-900 bg-primary px-4 py-2 font-black text-white uppercase"
 						onclick={addProvider}
-						disabled={!newProviderName.trim() || !newProviderBaseUrl.trim() || !newProviderApiKey.trim()}
+						disabled={!newProviderName.trim() ||
+							!newProviderBaseUrl.trim() ||
+							!newProviderApiKey.trim()}
 					>
 						{m.admin_add_provider()}
 					</button>
@@ -169,18 +169,12 @@
 								</span>
 							{/if}
 						</div>
-						<div
-							class="mt-1 flex flex-wrap gap-2 text-[10px] font-bold text-slate-500 uppercase"
-						>
+						<div class="mt-1 flex flex-wrap gap-2 text-[10px] font-bold text-slate-500 uppercase">
 							<span>{m.admin_model_context_window()}: {model.contextWindow.toLocaleString()}</span>
 							<span>•</span>
-							<span
-								>{m.admin_model_cost_input()}: ${model.costInput.toFixed(2)}</span
-							>
+							<span>{m.admin_model_cost_input()}: ${model.costInput.toFixed(2)}</span>
 							<span>•</span>
-							<span
-								>{m.admin_model_cost_output()}: ${model.costOutput.toFixed(2)}</span
-							>
+							<span>{m.admin_model_cost_output()}: ${model.costOutput.toFixed(2)}</span>
 						</div>
 					</div>
 

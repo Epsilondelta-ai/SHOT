@@ -67,22 +67,42 @@
 </script>
 
 <button
-	class="relative flex flex-col items-center gap-2 rounded-xl p-3 transition-all border-3
+	class="relative flex flex-col items-center gap-2 rounded-xl border-3 p-3 transition-all
 		{!alive ? 'opacity-40 grayscale' : ''}
-		{selected ? 'ring-4 ring-red-500 bg-red-50 border-red-500' : roleColor}
+		{selected ? 'border-red-500 bg-red-50 ring-4 ring-red-500' : roleColor}
 		{selectable && alive && !isMe ? 'cursor-pointer hover:scale-105' : ''}
 		{isMe ? 'ring-3 ring-primary' : ''}"
-	style="border-color: {selected ? '#ef4444' : role === 'spy' ? '#dc2626' : role === 'leader' ? '#2563eb' : role === 'revealed' ? '#16a34a' : '#0f172a'}"
+	style="border-color: {selected
+		? '#ef4444'
+		: role === 'spy'
+			? '#dc2626'
+			: role === 'leader'
+				? '#2563eb'
+				: role === 'revealed'
+					? '#16a34a'
+					: '#0f172a'}"
 	disabled={!selectable || !alive || isMe}
 	onclick={onselect}
 >
 	<!-- Jail bars overlay when jailed -->
 	{#if isJailed}
-		<div class="absolute inset-0 z-10 rounded-xl flex items-center justify-center pointer-events-none">
-			<div class="absolute inset-0 rounded-xl bg-gradient-to-r from-slate-800 to-slate-700 opacity-40"></div>
-			<svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-				{#each Array.from({length: 6}) as _, i}
-					<line x1={i * 16 + 8} y1="0" x2={i * 16 + 8} y2="100" stroke="currentColor" stroke-width="2" class="text-slate-600 opacity-70"/>
+		<div
+			class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl"
+		>
+			<div
+				class="absolute inset-0 rounded-xl bg-gradient-to-r from-slate-800 to-slate-700 opacity-40"
+			></div>
+			<svg class="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+				{#each Array.from({ length: 6 }) as _, i (i)}
+					<line
+						x1={i * 16 + 8}
+						y1="0"
+						x2={i * 16 + 8}
+						y2="100"
+						stroke="currentColor"
+						stroke-width="2"
+						class="text-slate-600 opacity-70"
+					/>
 				{/each}
 			</svg>
 		</div>
@@ -90,7 +110,7 @@
 
 	<!-- Crosshair overlay when selected -->
 	{#if selected}
-		<div class="absolute inset-0 flex items-center justify-center z-20">
+		<div class="absolute inset-0 z-20 flex items-center justify-center">
 			<span class="material-symbols-outlined text-5xl text-red-500/30">gps_fixed</span>
 		</div>
 	{/if}
@@ -108,7 +128,7 @@
 	</div>
 
 	<!-- Name -->
-	<div class="flex flex-col items-center gap-1 w-full">
+	<div class="flex w-full flex-col items-center gap-1">
 		<span
 			class="max-w-full truncate text-xs font-black tracking-tight
 				{isMe ? 'text-primary' : roleTextColor}"
@@ -119,18 +139,24 @@
 
 		<!-- Role Badge -->
 		{#if role === 'spy'}
-			<span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-red-500 text-white uppercase">SPY</span>
+			<span class="rounded-full bg-red-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
+				>SPY</span
+			>
 		{:else if role === 'leader'}
-			<span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-blue-500 text-white uppercase">LEADER</span>
+			<span class="rounded-full bg-blue-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
+				>LEADER</span
+			>
 		{:else if role === 'revealed'}
-			<span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-green-500 text-white uppercase">REVEALED</span>
+			<span class="rounded-full bg-green-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
+				>REVEALED</span
+			>
 		{/if}
 	</div>
 
 	<!-- HP Hearts -->
 	{#if alive}
-		<div class="flex gap-0.5 justify-center">
-			{#each Array.from({length: maxHp}) as _, i}
+		<div class="flex justify-center gap-0.5">
+			{#each Array.from({ length: maxHp }) as _, i (i)}
 				<span
 					class="material-symbols-outlined text-sm {i < hp ? 'text-red-500' : 'text-slate-300'}"
 					style="font-variation-settings: 'FILL' {i < hp ? 1 : 0}"
@@ -143,8 +169,8 @@
 		<!-- Attacks & Cards -->
 		<div class="w-full space-y-1">
 			<!-- Attacks -->
-			<div class="flex items-center justify-center gap-1 px-2 py-1 bg-slate-100 rounded">
-				{#each Array.from({length: attacks}) as _, i}
+			<div class="flex items-center justify-center gap-1 rounded bg-slate-100 px-2 py-1">
+				{#each Array.from({ length: attacks }) as _, i (i)}
 					<img src={favicon} alt="attack" class="size-3.5" />
 				{/each}
 			</div>
@@ -152,8 +178,10 @@
 			<!-- Cards -->
 			{#if cards.length > 0}
 				<div class="flex items-center justify-center gap-0.5">
-					{#each cards as card}
-						<div class="flex items-center justify-center size-6 bg-blue-100 rounded border border-blue-300">
+					{#each cards as card, i (i)}
+						<div
+							class="flex size-6 items-center justify-center rounded border border-blue-300 bg-blue-100"
+						>
 							<span class="material-symbols-outlined text-xs text-blue-600">
 								{cardIcons[card]}
 							</span>

@@ -92,12 +92,7 @@
 
 				<!-- Active Toggle -->
 				<div class="flex items-center gap-2">
-					<input
-						class="size-4 accent-primary"
-						id="active"
-						type="checkbox"
-						bind:checked={active}
-					/>
+					<input class="size-4 accent-primary" id="active" type="checkbox" bind:checked={active} />
 					<label class="text-sm font-black text-slate-900 uppercase" for="active">
 						{m.config_bot_active()}
 					</label>

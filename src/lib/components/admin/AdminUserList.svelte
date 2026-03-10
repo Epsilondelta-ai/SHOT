@@ -36,8 +36,7 @@
 <div class="space-y-3">
 	<!-- Search -->
 	<div class="relative">
-		<span
-			class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2 text-slate-400"
+		<span class="material-symbols-outlined absolute top-1/2 left-4 -translate-y-1/2 text-slate-400"
 			>search</span
 		>
 		<input

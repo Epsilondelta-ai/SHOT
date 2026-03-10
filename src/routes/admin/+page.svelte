@@ -179,7 +179,8 @@
 		{
 			id: 'a1',
 			name: 'Sheriff',
-			prompt: '당신은 서부 영화의 보안관처럼 행동하는 AI입니다. 공정하고 정의감 있으며, 항상 플레이어들의 안전을 먼저 생각합니다. 따뜻한 미국 남부 억양으로 말하세요.',
+			prompt:
+				'당신은 서부 영화의 보안관처럼 행동하는 AI입니다. 공정하고 정의감 있으며, 항상 플레이어들의 안전을 먼저 생각합니다. 따뜻한 미국 남부 억양으로 말하세요.',
 			active: true,
 			created: '2025-02-01',
 			updated: '2025-03-08'
@@ -187,7 +188,8 @@
 		{
 			id: 'a2',
 			name: 'Saloon Keeper',
-			prompt: '당신은 오래된 술집의 주인입니다. 사교적이고 말을 잘 들으며, 게임에 대한 흥미로운 이야기와 조언을 해줍니다. 따뜻하고 포용적인 성격을 보여주세요.',
+			prompt:
+				'당신은 오래된 술집의 주인입니다. 사교적이고 말을 잘 들으며, 게임에 대한 흥미로운 이야기와 조언을 해줍니다. 따뜻하고 포용적인 성격을 보여주세요.',
 			active: true,
 			created: '2025-02-15',
 			updated: '2025-03-05'
@@ -195,7 +197,8 @@
 		{
 			id: 'a3',
 			name: 'Outlaw',
-			prompt: '당신은 대담하고 모험적인 악당입니다. 재치 있고 약간 위협적이지만 나쁜 의도는 없습니다. 플레이어들에게 도전적인 질문을 던지고 재미있는 상황을 만드세요.',
+			prompt:
+				'당신은 대담하고 모험적인 악당입니다. 재치 있고 약간 위협적이지만 나쁜 의도는 없습니다. 플레이어들에게 도전적인 질문을 던지고 재미있는 상황을 만드세요.',
 			active: false,
 			created: '2025-02-20',
 			updated: '2025-02-28'
@@ -215,10 +218,7 @@
 	}
 
 	function addLLMProvider(provider: Omit<LLMProvider, 'id'>) {
-		llmProviders = [
-			...llmProviders,
-			{ id: crypto.randomUUID(), ...provider }
-		];
+		llmProviders = [...llmProviders, { id: crypto.randomUUID(), ...provider }];
 	}
 
 	function deleteLLMProvider(providerId: string) {
@@ -226,15 +226,12 @@
 		llmModels = llmModels.filter((m) => m.providerId !== providerId);
 	}
 
-	function testLLMModel(modelId: string) {
+	function testLLMModel(_modelId: string) {
 		// TODO: implement model testing
 	}
 
 	function addLLMModel(model: Omit<LLMModel, 'id'>) {
-		llmModels = [
-			...llmModels,
-			{ id: crypto.randomUUID(), ...model }
-		];
+		llmModels = [...llmModels, { id: crypto.randomUUID(), ...model }];
 	}
 
 	function deleteLLMModel(modelId: string) {
@@ -308,7 +305,9 @@
 
 			<!-- Quick overview sections -->
 			<section>
-				<h2 class="mb-3 flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase">
+				<h2
+					class="mb-3 flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
+				>
 					<span class="material-symbols-outlined text-primary">group</span>
 					{m.admin_users()}
 				</h2>
@@ -316,26 +315,34 @@
 			</section>
 
 			<section>
-				<h2 class="mb-3 flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase">
+				<h2
+					class="mb-3 flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
+				>
 					<span class="material-symbols-outlined text-primary">meeting_room</span>
 					{m.admin_rooms()}
 				</h2>
 				<AdminRoomList {rooms} onclose={closeRoom} />
 			</section>
 		{:else if activeTab === 'users'}
-			<h2 class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase">
+			<h2
+				class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
+			>
 				<span class="material-symbols-outlined text-primary">group</span>
 				{m.admin_users()}
 			</h2>
 			<AdminUserList {users} onban={banUser} onunban={unbanUser} />
 		{:else if activeTab === 'rooms'}
-			<h2 class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase">
+			<h2
+				class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
+			>
 				<span class="material-symbols-outlined text-primary">meeting_room</span>
 				{m.admin_rooms()}
 			</h2>
 			<AdminRoomList {rooms} onclose={closeRoom} />
 		{:else if activeTab === 'llm'}
-			<h2 class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase">
+			<h2
+				class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
+			>
 				<span class="material-symbols-outlined text-primary">smart_toy</span>
 				{m.admin_llm()}
 			</h2>
@@ -350,7 +357,9 @@
 			/>
 		{:else if activeTab === 'assistant'}
 			<div class="flex items-center justify-between">
-				<h2 class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase">
+				<h2
+					class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
+				>
 					<span class="material-symbols-outlined text-primary">psychology</span>
 					{m.admin_assistant()}
 				</h2>
@@ -365,15 +374,11 @@
 					{m.admin_add_assistant()}
 				</button>
 			</div>
-			<AdminAssistantList
-				{assistants}
-				onedit={editAssistant}
-				ondelete={deleteAssistant}
-			/>
+			<AdminAssistantList {assistants} onedit={editAssistant} ondelete={deleteAssistant} />
 			{#if showAssistantForm}
 				<AdminAssistantForm
 					isOpen={showAssistantForm}
-					editingAssistant={editingAssistant}
+					{editingAssistant}
 					onsave={saveAssistant}
 					oncancel={closeAssistantForm}
 				/>

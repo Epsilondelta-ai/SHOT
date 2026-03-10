@@ -171,7 +171,9 @@
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-24">
 		{#if activeTab === 'assistant'}
 			<div class="flex items-center justify-between">
-				<h2 class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase">
+				<h2
+					class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
+				>
 					<span class="material-symbols-outlined text-primary">psychology</span>
 					{m.config_tab_assistant()}
 				</h2>
@@ -186,22 +188,20 @@
 					{m.config_add_assistant()}
 				</button>
 			</div>
-			<AdminAssistantList
-				{assistants}
-				onedit={editAssistant}
-				ondelete={deleteAssistant}
-			/>
+			<AdminAssistantList {assistants} onedit={editAssistant} ondelete={deleteAssistant} />
 			{#if showAssistantForm}
 				<AdminAssistantForm
 					isOpen={showAssistantForm}
-					editingAssistant={editingAssistant}
+					{editingAssistant}
 					onsave={saveAssistant}
 					oncancel={closeAssistantForm}
 				/>
 			{/if}
 		{:else if activeTab === 'bot'}
 			<div class="flex items-center justify-between">
-				<h2 class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase">
+				<h2
+					class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
+				>
 					<span class="material-symbols-outlined text-primary">smart_toy</span>
 					{m.config_tab_bot()}
 				</h2>
@@ -216,18 +216,9 @@
 					{m.config_add_bot()}
 				</button>
 			</div>
-			<ConfigBotList
-				{bots}
-				onedit={editBot}
-				ondelete={deleteBot}
-			/>
+			<ConfigBotList {bots} onedit={editBot} ondelete={deleteBot} />
 			{#if showBotForm}
-				<ConfigBotForm
-					isOpen={showBotForm}
-					editingBot={editingBot}
-					onsave={saveBot}
-					oncancel={closeBotForm}
-				/>
+				<ConfigBotForm isOpen={showBotForm} {editingBot} onsave={saveBot} oncancel={closeBotForm} />
 			{/if}
 		{/if}
 	</main>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import { page } from '$app/stores';
+
 	import RoomHeader from '$lib/components/room/RoomHeader.svelte';
 	import PlayerSlot from '$lib/components/room/PlayerSlot.svelte';
 	import RoomChat from '$lib/components/room/RoomChat.svelte';
@@ -11,8 +11,6 @@
 		avatarSrc?: string;
 		ready: boolean;
 	};
-
-	const roomId = $derived($page.params.id);
 
 	// Mock data
 	const roomName = 'Wild West Duel';

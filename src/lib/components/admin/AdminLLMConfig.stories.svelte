@@ -134,7 +134,7 @@
 				providerId: 'p1',
 				name: 'Claude 3 Haiku',
 				contextWindow: 200000,
-				costInput: 0.00080,
+				costInput: 0.0008,
 				costOutput: 0.004,
 				enabled: true
 			}
