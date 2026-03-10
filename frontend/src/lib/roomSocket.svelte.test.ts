@@ -59,6 +59,7 @@ describe('createRoomSocket', () => {
 		ws.onmessage?.({
 			data: JSON.stringify({
 				type: 'players',
+				room: { hostUserId: 'u1', maxPlayers: 5 },
 				players: [
 					{
 						id: '1',
@@ -66,30 +67,37 @@ describe('createRoomSocket', () => {
 						name: 'Alice',
 						avatarSrc: null,
 						type: 'human',
+						canManageBots: true,
 						assistantId: null,
 						assistantName: null,
 						llmModelId: null,
 						modelName: null,
+						botId: null,
 						ready: false
 					}
 				]
 			})
 		} as MessageEvent);
 
-		expect(onPlayers).toHaveBeenCalledWith([
-			{
-				id: '1',
-				userId: 'u1',
-				name: 'Alice',
-				avatarSrc: null,
-				type: 'human',
-				assistantId: null,
-				assistantName: null,
-				llmModelId: null,
-				modelName: null,
-				ready: false
-			}
-		]);
+		expect(onPlayers).toHaveBeenCalledWith(
+			[
+				{
+					id: '1',
+					userId: 'u1',
+					name: 'Alice',
+					avatarSrc: null,
+					type: 'human',
+					canManageBots: true,
+					assistantId: null,
+					assistantName: null,
+					llmModelId: null,
+					modelName: null,
+					botId: null,
+					ready: false
+				}
+			],
+			{ hostUserId: 'u1', maxPlayers: 5 }
+		);
 	});
 
 	it('calls onChat callback when chat message received', () => {

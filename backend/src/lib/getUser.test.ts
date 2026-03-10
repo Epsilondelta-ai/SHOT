@@ -10,18 +10,43 @@ const mockSelect = mock((..._args: any[]): any => ({
 
 mock.module('../db', () => ({
 	db: {
-		query: { session: { findFirst: mockFindFirst } },
+		query: {
+			session: { findFirst: mockFindFirst },
+			roomPlayer: { findMany: mock(async () => []) },
+			user: { findMany: mock(async () => []) },
+			assistant: { findMany: mock(async () => []) },
+			llmModel: { findMany: mock(async () => []) }
+		},
 		select: mockSelect
 	}
 }));
 
 mock.module('../db/schema', () => ({
-	session: { token: 'session.token' },
-	user: { id: 'user.id', name: 'user.name', email: 'user.email', role: 'user.role', image: 'user.image' }
+	user: { id: 'user.id', name: 'user.name', email: 'user.email', role: 'user.role', image: 'user.image', createdAt: 'user.createdAt', updatedAt: 'user.updatedAt', banStart: 'user.banStart', banEnd: 'user.banEnd', banReason: 'user.banReason', lastSeenAt: 'user.lastSeenAt', emailVerified: 'user.emailVerified' },
+	session: { id: 'session.id', token: 'session.token', userId: 'session.userId', expiresAt: 'session.expiresAt', createdAt: 'session.createdAt', updatedAt: 'session.updatedAt', ipAddress: 'session.ipAddress', userAgent: 'session.userAgent' },
+	account: { id: 'account.id', userId: 'account.userId' },
+	verification: { id: 'verification.id' },
+	banHistory: { id: 'banHistory.id', userId: 'banHistory.userId', createdAt: 'banHistory.createdAt' },
+	task: { id: 'task.id' },
+	room: { id: 'room.id', name: 'room.name', icon: 'room.icon', maxPlayers: 'room.maxPlayers', status: 'room.status', createdAt: 'room.createdAt' },
+	roomPlayer: { id: 'roomPlayer.id', roomId: 'roomPlayer.roomId', userId: 'roomPlayer.userId', playerType: 'roomPlayer.playerType', displayName: 'roomPlayer.displayName', assistantId: 'roomPlayer.assistantId', llmModelId: 'roomPlayer.llmModelId' },
+	assistant: { id: 'assistant.id', userId: 'assistant.userId', name: 'assistant.name', prompt: 'assistant.prompt', active: 'assistant.active', createdAt: 'assistant.createdAt', updatedAt: 'assistant.updatedAt' },
+	bot: { id: 'bot.id', name: 'bot.name', apiKey: 'bot.apiKey', active: 'bot.active', createdAt: 'bot.createdAt', updatedAt: 'bot.updatedAt' },
+	llmProvider: { provider: 'llmProvider.provider', apiKey: 'llmProvider.apiKey', active: 'llmProvider.active', updatedAt: 'llmProvider.updatedAt' },
+	llmModel: { id: 'llmModel.id', provider: 'llmModel.provider', apiModelName: 'llmModel.apiModelName', displayName: 'llmModel.displayName', active: 'llmModel.active', createdAt: 'llmModel.createdAt' },
+	userRelations: {}, banHistoryRelations: {}, sessionRelations: {}, accountRelations: {}, roomRelations: {}, roomPlayerRelations: {}
 }));
 
 mock.module('drizzle-orm', () => ({
-	eq: (a: unknown, b: unknown) => ({ a, b })
+	eq: (a: unknown, b: unknown) => ({ a, b }),
+	and: (...args: unknown[]) => ({ op: 'and', args }),
+	or: (...args: unknown[]) => ({ op: 'or', args }),
+	count: (col: unknown) => ({ op: 'count', col }),
+	desc: (col: unknown) => ({ op: 'desc', col }),
+	inArray: (col: unknown, vals: unknown) => ({ op: 'inArray', col, vals }),
+	isNull: (col: unknown) => ({ op: 'isNull', col }),
+	relations: () => ({}),
+	sql: {}
 }));
 
 const { getUser, requireUser, requireAdmin } = await import('./getUser');
