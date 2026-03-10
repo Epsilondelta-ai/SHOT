@@ -5,7 +5,8 @@
 	import LobbyCard from '$lib/components/lobby/LobbyCard.svelte';
 	import BottomNav from '$lib/components/lobby/BottomNav.svelte';
 	import LobbyCreateModal from '$lib/components/lobby/LobbyCreateModal.svelte';
-	import { goto } from '$app/navigation';
+	import { goto, invalidateAll } from '$app/navigation';
+	import { onDestroy } from 'svelte';
 
 	type Tab = 'all' | 'in_progress' | 'waiting';
 
@@ -35,6 +36,9 @@
 			goto(result.location);
 		}
 	}
+
+	const interval = setInterval(() => invalidateAll(), 5000);
+	onDestroy(() => clearInterval(interval));
 
 	let activeTab: Tab = $state('all');
 
