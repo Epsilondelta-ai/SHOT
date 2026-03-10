@@ -12,6 +12,7 @@
 	import AdminBanHistoryModal from '$lib/components/admin/AdminBanHistoryModal.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import AddButton from '$lib/components/common/AddButton.svelte';
+	import ConfirmModal from '$lib/components/common/ConfirmModal.svelte';
 
 	let { data } = $props();
 
@@ -36,6 +37,24 @@
 	let showHistoryModal = $state(false);
 	let historyUserId = $state('');
 	let historyUserName = $state('');
+	let showConfirmModal = $state(false);
+	let confirmCallback = $state<(() => void) | null>(null);
+
+	function openConfirm(callback: () => void) {
+		confirmCallback = callback;
+		showConfirmModal = true;
+	}
+
+	function handleConfirm() {
+		confirmCallback?.();
+		showConfirmModal = false;
+		confirmCallback = null;
+	}
+
+	function handleCancelConfirm() {
+		showConfirmModal = false;
+		confirmCallback = null;
+	}
 
 	const llmProviders = $derived(data.llmProviders);
 	const llmModels = $derived(data.llmModels);
@@ -84,11 +103,13 @@
 		await invalidateAll();
 	}
 
-	async function deleteLlmModel(id: string) {
-		const fd = new FormData();
-		fd.set('id', id);
-		await fetch('?/deleteLlmModel', { method: 'POST', body: fd });
-		await invalidateAll();
+	function deleteLlmModel(id: string) {
+		openConfirm(async () => {
+			const fd = new FormData();
+			fd.set('id', id);
+			await fetch('?/deleteLlmModel', { method: 'POST', body: fd });
+			await invalidateAll();
+		});
 	}
 
 	async function toggleLlmModel(id: string, active: boolean) {
@@ -145,11 +166,13 @@
 		await invalidateAll();
 	}
 
-	async function closeRoom(roomId: string) {
-		const fd = new FormData();
-		fd.set('id', roomId);
-		await fetch('?/closeRoom', { method: 'POST', body: fd });
-		await invalidateAll();
+	function closeRoom(roomId: string) {
+		openConfirm(async () => {
+			const fd = new FormData();
+			fd.set('id', roomId);
+			await fetch('?/closeRoom', { method: 'POST', body: fd });
+			await invalidateAll();
+		});
 	}
 
 	function editAssistant(assistant: Assistant) {
@@ -175,11 +198,13 @@
 		editingAssistant = null;
 	}
 
-	async function deleteAssistant(assistantId: string) {
-		const fd = new FormData();
-		fd.set('id', assistantId);
-		await fetch('?/deleteAssistant', { method: 'POST', body: fd });
-		await invalidateAll();
+	function deleteAssistant(assistantId: string) {
+		openConfirm(async () => {
+			const fd = new FormData();
+			fd.set('id', assistantId);
+			await fetch('?/deleteAssistant', { method: 'POST', body: fd });
+			await invalidateAll();
+		});
 	}
 
 	function closeAssistantForm() {
@@ -330,3 +355,5 @@
 		historyUserName = '';
 	}}
 />
+
+<ConfirmModal isOpen={showConfirmModal} onconfirm={handleConfirm} oncancel={handleCancelConfirm} />

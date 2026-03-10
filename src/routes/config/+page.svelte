@@ -9,6 +9,7 @@
 	import LobbyHeader from '$lib/components/lobby/LobbyHeader.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import AddButton from '$lib/components/common/AddButton.svelte';
+	import ConfirmModal from '$lib/components/common/ConfirmModal.svelte';
 
 	let { data } = $props();
 
@@ -37,6 +38,24 @@
 	let editingAssistant: Assistant | null = $state(null);
 	let showBotForm = $state(false);
 	let editingBot: Bot | null = $state(null);
+	let showConfirmModal = $state(false);
+	let confirmCallback = $state<(() => void) | null>(null);
+
+	function openConfirm(callback: () => void) {
+		confirmCallback = callback;
+		showConfirmModal = true;
+	}
+
+	function handleConfirm() {
+		confirmCallback?.();
+		showConfirmModal = false;
+		confirmCallback = null;
+	}
+
+	function handleCancelConfirm() {
+		showConfirmModal = false;
+		confirmCallback = null;
+	}
 
 	async function saveAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
 		const formData = new FormData();
@@ -61,11 +80,13 @@
 		showAssistantForm = true;
 	}
 
-	async function deleteAssistant(assistantId: string) {
-		const formData = new FormData();
-		formData.set('id', assistantId);
-		await fetch('?/deleteAssistant', { method: 'POST', body: formData });
-		await invalidateAll();
+	function deleteAssistant(assistantId: string) {
+		openConfirm(async () => {
+			const formData = new FormData();
+			formData.set('id', assistantId);
+			await fetch('?/deleteAssistant', { method: 'POST', body: formData });
+			await invalidateAll();
+		});
 	}
 
 	function closeAssistantForm() {
@@ -96,11 +117,13 @@
 		showBotForm = true;
 	}
 
-	async function deleteBot(botId: string) {
-		const formData = new FormData();
-		formData.set('id', botId);
-		await fetch('?/deleteBot', { method: 'POST', body: formData });
-		await invalidateAll();
+	function deleteBot(botId: string) {
+		openConfirm(async () => {
+			const formData = new FormData();
+			formData.set('id', botId);
+			await fetch('?/deleteBot', { method: 'POST', body: formData });
+			await invalidateAll();
+		});
 	}
 
 	function closeBotForm() {
@@ -160,3 +183,5 @@
 
 	<BottomNav active="config" />
 </div>
+
+<ConfirmModal isOpen={showConfirmModal} onconfirm={handleConfirm} oncancel={handleCancelConfirm} />
