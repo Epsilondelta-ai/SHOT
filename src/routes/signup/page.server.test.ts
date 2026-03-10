@@ -97,4 +97,17 @@ describe('signup action', () => {
 		expect(fail).toHaveBeenCalledWith(422, expect.objectContaining({ error: expect.any(String) }));
 		expect(result).toMatchObject({ status: 422 });
 	});
+
+	it('응답 JSON 파싱 실패 시 기본 에러 메시지 사용', async () => {
+		vi.mocked(auth.api.signUpEmail).mockResolvedValueOnce(
+			new Response('invalid json', { status: 500 }) as never
+		);
+
+		const result = await actions.default(makeEvent(validFields));
+		expect(fail).toHaveBeenCalledWith(
+			500,
+			expect.objectContaining({ error: '회원가입에 실패했습니다.' })
+		);
+		expect(result).toMatchObject({ status: 500 });
+	});
 });
