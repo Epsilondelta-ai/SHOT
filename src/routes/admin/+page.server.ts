@@ -63,10 +63,11 @@ export const load: PageServerLoad = async (event) => {
 		.groupBy(banHistory.userId);
 	const banCountMap = Object.fromEntries(banCounts.map((b) => [b.userId, b.total]));
 
+	const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
 	const activeSessions = await db
 		.select({ userId: session.userId })
 		.from(session)
-		.where(gt(session.expiresAt, new Date()));
+		.where(gt(session.updatedAt, fiveMinutesAgo));
 	const onlineUserIds = new Set(activeSessions.map((s) => s.userId));
 
 	const llmProviderRows = await db.select().from(llmProvider);

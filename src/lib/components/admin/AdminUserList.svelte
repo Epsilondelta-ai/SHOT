@@ -91,12 +91,6 @@
 								>
 									{m.admin_user_status_banned()}
 								</span>
-							{:else}
-								<span
-									class="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-black text-green-600 uppercase"
-								>
-									{m.admin_user_status_active()}
-								</span>
 							{/if}
 						</div>
 						<div
