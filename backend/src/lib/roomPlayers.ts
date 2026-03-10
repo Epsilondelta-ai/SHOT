@@ -7,11 +7,13 @@ export type SerializedRoomPlayer = {
 	userId: string;
 	name: string;
 	avatarSrc: string | null;
-	type: 'human' | 'llm';
+	type: 'human' | 'llm' | 'bot';
+	canManageBots: boolean;
 	assistantId: string | null;
 	assistantName: string | null;
 	llmModelId: string | null;
 	modelName: string | null;
+	botId: string | null;
 	ready: boolean;
 };
 
@@ -31,8 +33,11 @@ export async function getSerializedRoomPlayers(roomId: string): Promise<Serializ
 	const llmModelIds = players
 		.map((player) => player.llmModelId)
 		.filter((llmModelId): llmModelId is string => !!llmModelId);
+	const botIds = players
+		.map((player) => player.botId)
+		.filter((botId): botId is string => !!botId);
 
-	const [users, assistants, models] = await Promise.all([
+	const [users, assistants, models, bots] = await Promise.all([
 		humanIds.length === 0
 			? Promise.resolve([])
 			: db.query.user.findMany({
@@ -50,12 +55,19 @@ export async function getSerializedRoomPlayers(roomId: string): Promise<Serializ
 			: db.query.llmModel.findMany({
 					where: (table, { inArray }) => inArray(table.id, llmModelIds),
 					columns: { id: true, displayName: true }
+				}),
+		botIds.length === 0
+			? Promise.resolve([])
+			: db.query.bot.findMany({
+					where: (table, { inArray }) => inArray(table.id, botIds),
+					columns: { id: true, name: true }
 				})
 	]);
 
 	const userMap = new Map(users.map((entry) => [entry.id, entry]));
 	const assistantMap = new Map(assistants.map((entry) => [entry.id, entry]));
 	const modelMap = new Map(models.map((entry) => [entry.id, entry]));
+	const botMap = new Map(bots.map((entry) => [entry.id, entry]));
 
 	return players.map((player) => {
 		if (player.playerType === 'llm') {
@@ -65,10 +77,29 @@ export async function getSerializedRoomPlayers(roomId: string): Promise<Serializ
 				name: player.displayName ?? assistantMap.get(player.assistantId ?? '')?.name ?? 'LLM Player',
 				avatarSrc: null,
 				type: 'llm',
+				canManageBots: player.canManageBots,
 				assistantId: player.assistantId ?? null,
 				assistantName: assistantMap.get(player.assistantId ?? '')?.name ?? null,
 				llmModelId: player.llmModelId ?? null,
 				modelName: modelMap.get(player.llmModelId ?? '')?.displayName ?? null,
+				botId: null,
+				ready: true
+			};
+		}
+
+		if (player.playerType === 'bot') {
+			return {
+				id: player.id,
+				userId: player.userId,
+				name: player.displayName ?? botMap.get(player.botId ?? '')?.name ?? 'OpenClaw Bot',
+				avatarSrc: null,
+				type: 'bot',
+				canManageBots: player.canManageBots,
+				assistantId: null,
+				assistantName: null,
+				llmModelId: null,
+				modelName: null,
+				botId: player.botId ?? null,
 				ready: true
 			};
 		}
@@ -80,10 +111,12 @@ export async function getSerializedRoomPlayers(roomId: string): Promise<Serializ
 			name: roomUser?.name ?? player.displayName ?? 'Unknown',
 			avatarSrc: roomUser?.image ?? null,
 			type: 'human',
+			canManageBots: player.canManageBots,
 			assistantId: null,
 			assistantName: null,
 			llmModelId: null,
 			modelName: null,
+			botId: null,
 			ready: false
 		};
 	});

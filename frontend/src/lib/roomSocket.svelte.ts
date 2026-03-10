@@ -5,11 +5,13 @@ type Player = {
 	userId: string;
 	name: string;
 	avatarSrc: string | null;
-	type: 'human' | 'llm';
+	type: 'human' | 'llm' | 'bot';
+	canManageBots: boolean;
 	assistantId: string | null;
 	assistantName: string | null;
 	llmModelId: string | null;
 	modelName: string | null;
+	botId: string | null;
 	ready: boolean;
 };
 
@@ -21,7 +23,7 @@ type ChatMessage = {
 };
 
 type RoomSocketCallbacks = {
-	onPlayers?: (players: Player[]) => void;
+	onPlayers?: (players: Player[], room?: { hostUserId: string; maxPlayers: number }) => void;
 	onChat?: (message: ChatMessage) => void;
 	onKicked?: (payload: { playerId: string; userId: string }) => void;
 };
@@ -36,7 +38,7 @@ export function createRoomSocket(roomId: string, callbacks: RoomSocketCallbacks)
 			try {
 				const msg = JSON.parse(event.data);
 				if (msg.type === 'players') {
-					callbacks.onPlayers?.(msg.players);
+					callbacks.onPlayers?.(msg.players, msg.room);
 				} else if (msg.type === 'chat') {
 					callbacks.onChat?.({
 						id: crypto.randomUUID(),

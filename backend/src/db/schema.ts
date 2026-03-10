@@ -125,7 +125,8 @@ export const room = sqliteTable('room', {
 		.$defaultFn(() => crypto.randomUUID()),
 	name: text('name').notNull(),
 	icon: text('icon').notNull().default('swords'),
-	maxPlayers: integer('max_players').notNull().default(4),
+	maxPlayers: integer('max_players').notNull().default(5),
+	hostUserId: text('host_user_id').notNull(),
 	status: text('status', { enum: ['waiting', 'full', 'starting_soon', 'in_progress'] })
 		.notNull()
 		.default('waiting'),
@@ -142,10 +143,12 @@ export const roomPlayer = sqliteTable('room_player', {
 		.notNull()
 		.references(() => room.id, { onDelete: 'cascade' }),
 	userId: text('user_id').notNull(),
-	playerType: text('player_type', { enum: ['human', 'llm'] }).notNull().default('human'),
+	playerType: text('player_type', { enum: ['human', 'llm', 'bot'] }).notNull().default('human'),
 	displayName: text('display_name'),
+	canManageBots: integer('can_manage_bots', { mode: 'boolean' }).notNull().default(false),
 	assistantId: text('assistant_id').references(() => assistant.id, { onDelete: 'set null' }),
-	llmModelId: text('llm_model_id').references(() => llmModel.id, { onDelete: 'set null' })
+	llmModelId: text('llm_model_id').references(() => llmModel.id, { onDelete: 'set null' }),
+	botId: text('bot_id').references(() => bot.id, { onDelete: 'set null' })
 });
 
 export const assistant = sqliteTable('assistant', {

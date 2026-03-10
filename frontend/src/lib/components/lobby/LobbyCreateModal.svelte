@@ -22,14 +22,14 @@
 
 	let name = $state('');
 	let icon = $state('swords');
-	let maxPlayers = $state(4);
+	let maxPlayers = $state(5);
 
 	function handleSubmit() {
 		if (!name.trim()) return;
 		oncreate?.({ name: name.trim(), icon, maxPlayers });
 		name = '';
 		icon = 'swords';
-		maxPlayers = 4;
+		maxPlayers = 5;
 	}
 </script>
 
@@ -81,12 +81,12 @@
 						id="max-players"
 						class="w-full accent-primary"
 						type="range"
-						min="2"
+						min="5"
 						max="8"
 						bind:value={maxPlayers}
 					/>
 					<div class="mt-1 flex justify-between text-[10px] font-bold text-slate-400">
-						<span>2</span>
+						<span>5</span>
 						<span>8</span>
 					</div>
 				</div>

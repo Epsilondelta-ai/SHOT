@@ -10,10 +10,12 @@
 			avatarSrc: null,
 			ready: true,
 			type: 'human',
+			canManageBots: true,
 			assistantId: null,
 			assistantName: null,
 			llmModelId: null,
-			modelName: null
+			modelName: null,
+			botId: null
 		},
 		{
 			id: 'rp2',
@@ -22,10 +24,12 @@
 			avatarSrc: null,
 			ready: false,
 			type: 'human',
+			canManageBots: false,
 			assistantId: null,
 			assistantName: null,
 			llmModelId: null,
-			modelName: null
+			modelName: null,
+			botId: null
 		},
 		{
 			id: 'rp3',
@@ -34,10 +38,12 @@
 			avatarSrc: null,
 			ready: true,
 			type: 'human',
+			canManageBots: false,
 			assistantId: null,
 			assistantName: null,
 			llmModelId: null,
-			modelName: null
+			modelName: null,
+			botId: null
 		}
 	];
 
@@ -66,6 +72,8 @@
 		{ id: '4', sender: 'Doc_Holiday', text: ' 준비됐어요!' }
 	];
 
+	const mockBots = [{ id: 'bot-1', name: 'BanditBot' }];
+
 	const { Story } = defineMeta({
 		title: 'Pages/Room',
 		component: RoomPage,
@@ -84,13 +92,15 @@
 			roomId: 'room-1',
 			roomName: 'Wild West Duel',
 			roomCode: 'ABCD',
-			maxPlayers: 4,
+			maxPlayers: 5,
+			hostUserId: 'p1',
 			myId: 'p1',
 			hostId: 'rp1',
 			players: mockPlayers,
 			chatMessages: mockChatMessages,
 			assistants: mockAssistants,
-			llmModels: mockModels
+			llmModels: mockModels,
+			bots: mockBots
 		}}
 	/>
 </Story>
@@ -104,13 +114,15 @@
 			roomId: 'room-1',
 			roomName: 'Wild West Duel',
 			roomCode: 'ABCD',
-			maxPlayers: 4,
+			maxPlayers: 5,
+			hostUserId: 'p1',
 			myId: 'p2',
 			hostId: 'rp1',
 			players: mockPlayers,
 			chatMessages: mockChatMessages,
 			assistants: mockAssistants,
-			llmModels: mockModels
+			llmModels: mockModels,
+			bots: mockBots
 		}}
 	/>
 </Story>
@@ -124,7 +136,8 @@
 			roomId: 'room-2',
 			roomName: 'Gold Rush Heist',
 			roomCode: 'XY12',
-			maxPlayers: 4,
+			maxPlayers: 5,
+			hostUserId: 'p1',
 			myId: 'p1',
 			hostId: 'rp1',
 			players: [
@@ -135,10 +148,12 @@
 					avatarSrc: null,
 					ready: true,
 					type: 'human',
+					canManageBots: true,
 					assistantId: null,
 					assistantName: null,
 					llmModelId: null,
-					modelName: null
+					modelName: null,
+					botId: null
 				},
 				{
 					id: 'rp2',
@@ -147,15 +162,18 @@
 					avatarSrc: null,
 					ready: true,
 					type: 'human',
+					canManageBots: false,
 					assistantId: null,
 					assistantName: null,
 					llmModelId: null,
-					modelName: null
+					modelName: null,
+					botId: null
 				}
 			],
 			chatMessages: [],
 			assistants: mockAssistants,
-			llmModels: mockModels
+			llmModels: mockModels,
+			bots: mockBots
 		}}
 	/>
 </Story>

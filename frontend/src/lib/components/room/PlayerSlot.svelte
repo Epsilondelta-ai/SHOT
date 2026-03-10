@@ -11,7 +11,8 @@
 			name: string;
 			avatarSrc?: string | null;
 			ready: boolean;
-			type?: 'human' | 'llm';
+			type?: 'human' | 'llm' | 'bot';
+			canManageBots?: boolean;
 			modelName?: string | null;
 			assistantName?: string | null;
 		};
@@ -43,7 +44,7 @@
 			{:else}
 				<div class="flex h-full w-full items-center justify-center">
 					<span class="material-symbols-outlined text-3xl text-slate-600">
-						{player.type === 'llm' ? 'smart_toy' : 'person'}
+						{player.type === 'llm' ? 'smart_toy' : player.type === 'bot' ? 'precision_manufacturing' : 'person'}
 					</span>
 				</div>
 			{/if}
@@ -53,7 +54,7 @@
 			{player.name}
 		</span>
 
-		{#if player.type === 'llm'}
+		{#if player.type === 'llm' || player.type === 'bot'}
 			<div class="text-center">
 				{#if player.modelName}
 					<p class="text-[10px] font-black text-slate-500 uppercase">{player.modelName}</p>
@@ -61,7 +62,18 @@
 				{#if player.assistantName}
 					<p class="text-[10px] font-bold text-slate-400">{player.assistantName}</p>
 				{/if}
+				{#if player.type === 'bot'}
+					<p class="text-[10px] font-black text-slate-500 uppercase">OPENCLAW</p>
+				{/if}
 			</div>
+		{/if}
+
+		{#if player.type === 'human' && player.canManageBots && !isHost}
+			<span
+				class="rounded-full bg-blue-100 px-3 py-1 text-[10px] font-black text-blue-700 uppercase"
+			>
+				BOT MANAGER
+			</span>
 		{/if}
 
 		{#if player.ready}

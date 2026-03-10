@@ -1,13 +1,14 @@
 <script lang="ts">
-	import { m } from '$lib/paraglide/messages';
 	import { goto } from '$app/navigation';
 	import { apiPost } from '$lib/api';
 	import { createRoomSocket } from '$lib/roomSocket.svelte';
+	import { m } from '$lib/paraglide/messages';
 
-	import RoomHeader from '$lib/components/room/RoomHeader.svelte';
-	import PlayerSlot from '$lib/components/room/PlayerSlot.svelte';
+	import RoomBotPlayerPanel from '$lib/components/room/RoomBotPlayerPanel.svelte';
 	import RoomChat from '$lib/components/room/RoomChat.svelte';
+	import RoomHeader from '$lib/components/room/RoomHeader.svelte';
 	import RoomLlmPlayerPanel from '$lib/components/room/RoomLlmPlayerPanel.svelte';
+	import PlayerSlot from '$lib/components/room/PlayerSlot.svelte';
 
 	type Player = {
 		id: string;
@@ -15,11 +16,13 @@
 		name: string;
 		avatarSrc?: string | null;
 		ready: boolean;
-		type: 'human' | 'llm';
+		type: 'human' | 'llm' | 'bot';
+		canManageBots: boolean;
 		assistantId: string | null;
 		assistantName: string | null;
 		llmModelId: string | null;
 		modelName: string | null;
+		botId: string | null;
 	};
 
 	type ChatMessage = {
@@ -29,34 +32,57 @@
 		isSystem?: boolean;
 	};
 
+	type AssistantOption = {
+		id: string;
+		name: string;
+		prompt: string;
+		scope: 'personal' | 'global';
+	};
+
+	type ModelOption = {
+		id: string;
+		provider: 'anthropic' | 'openai' | 'google' | 'xai';
+		apiModelName: string;
+		displayName: string;
+	};
+
+	type BotOption = {
+		id: string;
+		name: string;
+	};
+
 	let { data } = $props();
 
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let players: Player[] = $state(data.players);
-	$effect(() => {
-		players = data.players;
-	});
-
-	// eslint-disable-next-line svelte/prefer-writable-derived
-	let chatMessages: ChatMessage[] = $state(data.chatMessages);
-	$effect(() => {
-		chatMessages = data.chatMessages;
-	});
-
-	// Store socket reference for chat sending
+	let players: Player[] = $state([]);
+	let chatMessages: ChatMessage[] = $state([]);
+	let hostUserId = $state('');
+	let maxPlayers = $state(5);
+	let capacityDraft = $state(5);
 	let socketRef: ReturnType<typeof createRoomSocket> | null = $state(null);
 
-	// WebSocket connection
+	$effect(() => {
+		players = data.players;
+		chatMessages = data.chatMessages;
+		hostUserId = data.hostUserId;
+		maxPlayers = data.maxPlayers;
+		capacityDraft = data.maxPlayers;
+	});
+
 	$effect(() => {
 		const socket = createRoomSocket(data.roomId, {
-			onPlayers: (wsPlayers) => {
+			onPlayers: (wsPlayers, roomState) => {
 				players = wsPlayers.map((player) => ({
 					...player,
 					ready:
-						player.type === 'llm'
-							? true
-							: players.find((existing) => existing.id === player.id)?.ready ?? false
+						player.type === 'human'
+							? players.find((existing) => existing.id === player.id)?.ready ?? false
+							: true
 				}));
+				if (roomState) {
+					hostUserId = roomState.hostUserId;
+					maxPlayers = roomState.maxPlayers;
+					capacityDraft = roomState.maxPlayers;
+				}
 			},
 			onChat: (msg) => {
 				chatMessages = [...chatMessages, msg];
@@ -75,17 +101,22 @@
 		};
 	});
 
-	const isHost = $derived((players.find((player) => player.userId === data.myId)?.id ?? '') === data.hostId);
-	const myPlayer = $derived(players.find((player) => player.userId === data.myId));
+	const myPlayer = $derived(players.find((player) => player.type === 'human' && player.userId === data.myId));
+	const hostId = $derived(players.find((player) => player.type === 'human' && player.userId === hostUserId)?.id ?? '');
+	const isHost = $derived(data.myId === hostUserId);
+	const canManageBots = $derived(isHost || myPlayer?.canManageBots === true);
 	const amReady = $derived(myPlayer?.ready ?? false);
-	const readyCount = $derived(players.filter((player) => player.id === data.hostId || player.ready).length);
+	const readyCount = $derived(players.filter((player) => player.id === hostId || player.ready).length);
 	const allReady = $derived(readyCount === players.length);
 	const canStart = $derived(isHost && allReady && players.length >= 2);
-	const isRoomFull = $derived(players.length >= data.maxPlayers);
+	const isRoomFull = $derived(players.length >= maxPlayers);
+	const humanMembers = $derived(
+		players.filter((player) => player.type === 'human' && player.userId !== hostUserId)
+	);
 
 	const slots = $derived.by<(Player | undefined)[]>(() => {
 		const result: (Player | undefined)[] = [...players];
-		while (result.length < data.maxPlayers) {
+		while (result.length < maxPlayers) {
 			result.push(undefined);
 		}
 		return result;
@@ -99,7 +130,7 @@
 
 	function kickPlayer(playerId: string) {
 		socketRef?.sendKick(playerId);
-		players = players.filter((p) => p.id !== playerId);
+		players = players.filter((player) => player.id !== playerId);
 	}
 
 	function sendChat(text: string) {
@@ -112,8 +143,28 @@
 	}
 
 	async function addLlmPlayer(payload: { assistantId: string; llmModelId: string }) {
-		const result = await apiPost<{ player: Player }>(`/api/rooms/${data.roomId}/llm-players`, payload);
-		players = players.some((player) => player.id === result.player.id) ? players : [...players, result.player];
+		await apiPost(`/api/rooms/${data.roomId}/llm-players`, payload);
+	}
+
+	async function addBotPlayer(payload: { botId: string }) {
+		await apiPost(`/api/rooms/${data.roomId}/bot-players`, payload);
+	}
+
+	async function transferHost(userId: string) {
+		await apiPost(`/api/rooms/${data.roomId}/host`, { userId });
+		hostUserId = userId;
+	}
+
+	async function setBotPermission(userId: string, canManageBots: boolean) {
+		await apiPost(`/api/rooms/${data.roomId}/bot-permissions`, { userId, canManageBots });
+		players = players.map((player) =>
+			player.userId === userId ? { ...player, canManageBots } : player
+		);
+	}
+
+	async function updateCapacity() {
+		await apiPost(`/api/rooms/${data.roomId}/capacity`, { maxPlayers: capacityDraft });
+		maxPlayers = capacityDraft;
 	}
 
 	function startGame() {
@@ -130,11 +181,10 @@
 		roomName={data.roomName}
 		roomCode={data.roomCode}
 		currentPlayers={players.length}
-		maxPlayers={data.maxPlayers}
+		{maxPlayers}
 	/>
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-6 p-4">
-		<!-- Status Banner -->
 		<div
 			class="comic-border-sm flex items-center justify-center gap-2 rounded-xl px-4 py-3
 				{allReady && players.length >= 2
@@ -164,7 +214,6 @@
 			</span>
 		</div>
 
-		<!-- Player Grid -->
 		<section>
 			<h2 class="mb-3 flex items-center gap-2 text-lg font-black uppercase">
 				<span class="material-symbols-outlined text-primary">group</span>
@@ -174,7 +223,7 @@
 				{#each slots as player, i (player?.id ?? `empty-${i}`)}
 					<PlayerSlot
 						{player}
-						isHost={player?.id === data.hostId}
+						isHost={player?.id === hostId}
 						isMe={player?.userId === data.myId}
 						onkick={isHost && player && player.userId !== data.myId
 							? () => kickPlayer(player.id)
@@ -185,20 +234,107 @@
 		</section>
 
 		{#if isHost}
-			<RoomLlmPlayerPanel
-				assistants={data.assistants}
-				llmModels={data.llmModels}
-				disabled={isRoomFull}
-				onadd={addLlmPlayer}
-			/>
+			<section class="comic-border rounded-xl bg-white p-4">
+				<div class="flex items-center gap-2">
+					<span class="material-symbols-outlined text-primary">tune</span>
+					<div>
+						<h2 class="text-sm font-black tracking-wider text-slate-900 uppercase">Room Control</h2>
+						<p class="text-xs font-bold text-slate-400">방장 변경, 정원 변경, bot 권한 부여를 관리합니다.</p>
+					</div>
+				</div>
+
+				<div class="mt-4 rounded-xl bg-slate-50 p-4">
+					<div class="flex items-center justify-between gap-3">
+						<div>
+							<p class="text-[11px] font-black tracking-wider text-slate-500 uppercase">Room Size</p>
+							<p class="text-sm font-bold text-slate-700">현재 {maxPlayers}명, 변경 범위는 5~8명입니다.</p>
+						</div>
+						<button
+							type="button"
+							class="comic-button rounded-xl border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase disabled:opacity-50"
+							disabled={capacityDraft === maxPlayers || capacityDraft < players.length}
+							onclick={updateCapacity}
+						>
+							정원 변경
+						</button>
+					</div>
+					<input
+						class="mt-3 w-full accent-primary"
+						type="range"
+						min="5"
+						max="8"
+						bind:value={capacityDraft}
+					/>
+					<div class="mt-1 flex justify-between text-[10px] font-bold text-slate-400">
+						<span>5</span>
+						<span>{capacityDraft}명</span>
+						<span>8</span>
+					</div>
+				</div>
+
+				<div class="mt-4 space-y-3">
+					{#if humanMembers.length === 0}
+						<p class="rounded-lg bg-slate-50 px-3 py-2 text-xs font-bold text-slate-500">
+							현재 위임하거나 권한을 줄 수 있는 다른 플레이어가 없습니다.
+						</p>
+					{:else}
+						{#each humanMembers as player (player.id)}
+							<div class="comic-border-sm flex flex-col gap-3 rounded-xl bg-slate-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+								<div>
+									<p class="text-sm font-black text-slate-900">{player.name}</p>
+									<p class="text-[11px] font-bold text-slate-500">
+										{player.canManageBots ? 'bot/LLM 추가 권한 있음' : 'bot/LLM 추가 권한 없음'}
+									</p>
+								</div>
+								<div class="flex gap-2">
+									<button
+										type="button"
+										class="comic-button rounded-xl border-2 border-slate-900 px-3 py-2 text-[11px] font-black uppercase {player.canManageBots ? 'bg-white text-slate-700' : 'bg-blue-600 text-white'}"
+										onclick={() => setBotPermission(player.userId, !player.canManageBots)}
+									>
+										{player.canManageBots ? '권한 회수' : 'bot 권한 부여'}
+									</button>
+									<button
+										type="button"
+										class="comic-button rounded-xl border-2 border-slate-900 bg-yellow-400 px-3 py-2 text-[11px] font-black text-slate-900 uppercase"
+										onclick={() => transferHost(player.userId)}
+									>
+										방장 위임
+									</button>
+								</div>
+							</div>
+						{/each}
+					{/if}
+				</div>
+			</section>
 		{/if}
 
-		<!-- Chat -->
+		{#if canManageBots}
+			<section class="grid gap-4 lg:grid-cols-2">
+				<RoomLlmPlayerPanel
+					assistants={data.assistants as AssistantOption[]}
+					llmModels={data.llmModels as ModelOption[]}
+					disabled={isRoomFull}
+					onadd={addLlmPlayer}
+				/>
+				<RoomBotPlayerPanel
+					bots={data.bots as BotOption[]}
+					disabled={isRoomFull}
+					onadd={addBotPlayer}
+				/>
+			</section>
+		{:else}
+			<section class="comic-border rounded-xl bg-white p-4">
+				<p class="text-sm font-bold text-slate-600">
+					LLM/OpenClaw 봇 추가 권한은 기본적으로 방장만 가지며, 다른 참가자는 방장이 따로 권한을 부여해야 합니다.
+				</p>
+			</section>
+		{/if}
+
 		<section>
 			<RoomChat messages={chatMessages} onsend={sendChat} />
 		</section>
 
-		<!-- Action Buttons -->
 		<div class="flex gap-3 pb-6">
 			<button
 				type="button"
