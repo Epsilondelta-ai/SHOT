@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 
+	type Card = 'heal' | 'jail' | 'verify';
+
 	let {
 		name,
 		hp,
@@ -9,7 +11,10 @@
 		isMe = false,
 		selected = false,
 		selectable = false,
-		onselect
+		onselect,
+		isJailed = false,
+		attacks = 1,
+		cards = []
 	}: {
 		name: string;
 		hp: number;
@@ -19,12 +24,16 @@
 		selected?: boolean;
 		selectable?: boolean;
 		onselect?: () => void;
+		isJailed?: boolean;
+		attacks?: number;
+		cards?: Card[];
 	} = $props();
 
-	const hpPercent = $derived(Math.max(0, (hp / maxHp) * 100));
-	const hpColor = $derived(
-		hpPercent > 60 ? 'bg-green-500' : hpPercent > 30 ? 'bg-yellow-500' : 'bg-red-500'
-	);
+	const cardIcons: Record<Card, string> = {
+		heal: 'local_hospital',
+		jail: 'gavel',
+		verify: 'warning'
+	};
 </script>
 
 <button
@@ -36,9 +45,21 @@
 	disabled={!selectable || !alive || isMe}
 	onclick={onselect}
 >
+	<!-- Jail bars overlay when jailed -->
+	{#if isJailed}
+		<div class="absolute inset-0 z-10 rounded-xl flex items-center justify-center pointer-events-none">
+			<div class="absolute inset-0 rounded-xl bg-gradient-to-r from-slate-800 to-slate-700 opacity-40"></div>
+			<svg class="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+				{#each Array.from({length: 6}) as _, i}
+					<line x1={i * 16 + 8} y1="0" x2={i * 16 + 8} y2="100" stroke="currentColor" stroke-width="2" class="text-slate-600 opacity-70"/>
+				{/each}
+			</svg>
+		</div>
+	{/if}
+
 	<!-- Crosshair overlay when selected -->
 	{#if selected}
-		<div class="absolute inset-0 flex items-center justify-center">
+		<div class="absolute inset-0 flex items-center justify-center z-20">
 			<span class="material-symbols-outlined text-5xl text-red-500/30">gps_fixed</span>
 		</div>
 	{/if}
@@ -64,19 +85,40 @@
 		{#if isMe}(ME){/if}
 	</span>
 
-	<!-- HP Bar -->
+	<!-- HP Hearts -->
 	{#if alive}
-		<div class="w-full">
-			<div class="flex items-center justify-between text-[10px] font-bold text-slate-500">
-				<span>{m.game_hp()}</span>
-				<span>{hp}/{maxHp}</span>
+		<div class="flex gap-0.5 justify-center">
+			{#each Array.from({length: maxHp}) as _, i}
+				<span
+					class="material-symbols-outlined text-sm {i < hp ? 'text-red-500' : 'text-slate-300'}"
+					style="font-variation-settings: 'FILL' {i < hp ? 1 : 0}"
+				>
+					favorite
+				</span>
+			{/each}
+		</div>
+
+		<!-- Attacks & Cards -->
+		<div class="w-full space-y-1">
+			<!-- Attacks -->
+			<div class="flex items-center justify-center gap-1 px-2 py-1 bg-slate-100 rounded">
+				{#each Array.from({length: attacks}) as _, i}
+					<span class="material-symbols-outlined text-xs text-yellow-600">bullet_point</span>
+				{/each}
 			</div>
-			<div class="mt-0.5 h-2 w-full overflow-hidden rounded-full border border-slate-900 bg-slate-200">
-				<div
-					class="h-full rounded-full transition-all duration-500 {hpColor}"
-					style="width: {hpPercent}%"
-				></div>
-			</div>
+
+			<!-- Cards -->
+			{#if cards.length > 0}
+				<div class="flex items-center justify-center gap-0.5">
+					{#each cards as card}
+						<div class="flex items-center justify-center size-6 bg-blue-100 rounded border border-blue-300">
+							<span class="material-symbols-outlined text-xs text-blue-600">
+								{cardIcons[card]}
+							</span>
+						</div>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	{:else}
 		<span class="text-[10px] font-black text-red-600 uppercase">{m.game_dead()}</span>

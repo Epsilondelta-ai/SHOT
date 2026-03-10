@@ -6,12 +6,17 @@
 	import GameLog from '$lib/components/game/GameLog.svelte';
 	import GameResult from '$lib/components/game/GameResult.svelte';
 
+	type Card = 'heal' | 'jail' | 'verify';
+
 	type GamePlayerData = {
 		id: string;
 		name: string;
 		hp: number;
 		maxHp: number;
 		alive: boolean;
+		isJailed?: boolean;
+		attacks?: number;
+		cards?: Card[];
 	};
 
 	type LogEntry = {
@@ -33,10 +38,14 @@
 	let isLogOpen = $state(false);
 
 	let players: GamePlayerData[] = $state([
-		{ id: 'p1', name: 'Sheriff_Buck', hp: 3, maxHp: 3, alive: true },
-		{ id: 'p2', name: 'Outlaw_Jane', hp: 3, maxHp: 3, alive: true },
-		{ id: 'p3', name: 'Doc_Holiday', hp: 2, maxHp: 3, alive: true },
-		{ id: 'p4', name: 'Calamity_Sue', hp: 0, maxHp: 3, alive: false }
+		{ id: 'p1', name: 'Sheriff_Buck', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false },
+		{ id: 'p2', name: 'Outlaw_Jane', hp: 3, maxHp: 3, alive: true, attacks: 2, cards: ['heal'], isJailed: false },
+		{ id: 'p3', name: 'Doc_Holiday', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false },
+		{ id: 'p4', name: 'Calamity_Sue', hp: 0, maxHp: 3, alive: false, attacks: 1, cards: [], isJailed: false },
+		{ id: 'p5', name: 'Quick_Draw', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: ['verify'], isJailed: true },
+		{ id: 'p6', name: 'Gunslinger_Kate', hp: 1, maxHp: 3, alive: true, attacks: 2, cards: ['heal', 'jail'], isJailed: false },
+		{ id: 'p7', name: 'Bandit_Bob', hp: 3, maxHp: 3, alive: true, attacks: 1, cards: [], isJailed: false },
+		{ id: 'p8', name: 'Lawman_Tom', hp: 2, maxHp: 3, alive: true, attacks: 1, cards: ['verify'], isJailed: false }
 	]);
 
 	let logs: LogEntry[] = $state([
@@ -194,7 +203,7 @@
 
 		<!-- Opponents -->
 		<section>
-			<div class="grid grid-cols-3 gap-3">
+			<div class="grid grid-cols-4 gap-2">
 				{#each opponents as player (player.id)}
 					<GamePlayer
 						name={player.name}
@@ -204,6 +213,9 @@
 						selected={selectedTargetId === player.id}
 						selectable={phase === 'aiming' && amAlive}
 						onselect={() => selectTarget(player.id)}
+						isJailed={player.isJailed}
+						attacks={player.attacks}
+						cards={player.cards}
 					/>
 				{/each}
 			</div>
@@ -256,6 +268,9 @@
 						maxHp={myPlayer.maxHp}
 						alive={myPlayer.alive}
 						isMe={true}
+						isJailed={myPlayer.isJailed}
+						attacks={myPlayer.attacks}
+						cards={myPlayer.cards}
 					/>
 				</div>
 			</section>
