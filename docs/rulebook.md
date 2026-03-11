@@ -77,7 +77,7 @@ SHOT! is an online strategy card game where players are divided into the Agent T
 ### Turn Structure
 
 1. **Draw Phase:** Draw 2 cards.
-2. **Action Phase:** Use cards. No limit on usage per turn. Cards are used sequentially one by one, and multiple players can be attacked in a single turn. You can also skip your turn without using any cards.
+2. **Action Phase:** Use cards. No limit on usage per turn. Cards are used sequentially one by one, and multiple players can be attacked in a single turn. You can also skip your turn without using any cards. Once per turn, you may send one chat message at any point during the Action Phase.
 3. **End Turn:** The turn passes to the next player.
 
 A player in the Jail state cannot use Attack cards, but can use other cards (Heal, Inspect, Jail). The Jail state is lifted at the end of their next turn.
