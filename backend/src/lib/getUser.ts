@@ -1,21 +1,16 @@
 import { db } from '../db';
 import { eq } from 'drizzle-orm';
-import { session, user } from '../db/schema';
+import { user } from '../db/schema';
+import { auth } from './auth';
 
 export async function getUser(request: Request) {
-	const rawCookie = request.headers.get('cookie') ?? '';
-	const tokenMatch = rawCookie.match(/better-auth\.session_token=([^;]+)/);
-	if (!tokenMatch) return null;
-
-	const sess = await db.query.session.findFirst({
-		where: eq(session.token, decodeURIComponent(tokenMatch[1]))
-	});
-	if (!sess) return null;
+	const result = await auth.api.getSession({ headers: request.headers });
+	if (!result) return null;
 
 	const [u] = await db
 		.select({ id: user.id, name: user.name, email: user.email, role: user.role, image: user.image })
 		.from(user)
-		.where(eq(user.id, sess.userId));
+		.where(eq(user.id, result.user.id));
 
 	return u ?? null;
 }
