@@ -13,6 +13,53 @@ import { llmLog } from "./llmLogger";
 
 const MAX_ACTIONS_PER_TURN = 10;
 const MAX_RETRIES = 3;
+const MAX_HISTORY_MESSAGES = 400; // 200 user-assistant pairs
+
+type ConversationMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+// roomId -> playerId -> conversation messages
+const conversationHistories = new Map<
+  string,
+  Map<string, ConversationMessage[]>
+>();
+
+function getHistory(
+  roomId: string,
+  playerId: string,
+): ConversationMessage[] {
+  if (!conversationHistories.has(roomId)) {
+    conversationHistories.set(roomId, new Map());
+  }
+  const roomHistories = conversationHistories.get(roomId)!;
+  if (!roomHistories.has(playerId)) {
+    roomHistories.set(playerId, []);
+  }
+  return roomHistories.get(playerId)!;
+}
+
+function appendToHistory(
+  roomId: string,
+  playerId: string,
+  userMessage: string,
+  assistantMessage: string,
+): void {
+  const history = getHistory(roomId, playerId);
+  history.push(
+    { role: "user", content: userMessage },
+    { role: "assistant", content: assistantMessage },
+  );
+  while (history.length > MAX_HISTORY_MESSAGES) {
+    history.shift();
+    history.shift();
+  }
+}
+
+export function clearConversationHistory(roomId: string): void {
+  conversationHistories.delete(roomId);
+}
 
 type LlmContext = {
   systemPrompt: string;
@@ -164,7 +211,7 @@ async function callLlmApi(
   apiKey: string,
   model: string,
   systemPrompt: string,
-  userPrompt: string,
+  messages: ConversationMessage[],
 ): Promise<string> {
   if (provider === "anthropic") {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -178,7 +225,7 @@ async function callLlmApi(
         model,
         max_tokens: 256,
         system: systemPrompt,
-        messages: [{ role: "user", content: userPrompt }],
+        messages: messages.map((m) => ({ role: m.role, content: m.content })),
       }),
     });
     const data = (await res.json()) as {
@@ -195,7 +242,10 @@ async function callLlmApi(
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: systemPrompt }] },
-          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+          contents: messages.map((m) => ({
+            role: m.role === "assistant" ? "model" : "user",
+            parts: [{ text: m.content }],
+          })),
           generationConfig: { maxOutputTokens: 256 },
         }),
       },
@@ -223,7 +273,7 @@ async function callLlmApi(
       max_tokens: 256,
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
+        ...messages.map((m) => ({ role: m.role, content: m.content })),
       ],
     }),
   });
@@ -330,6 +380,12 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
     const userPrompt = buildPrompt(snapshot, validActions, info.userId);
     const playerName = snapshot.players.find((p) => p.userId === info.userId)?.name ?? info.playerId;
 
+    const history = getHistory(roomId, info.playerId);
+    const messages: ConversationMessage[] = [
+      ...history,
+      { role: "user", content: userPrompt },
+    ];
+
     const baseLogFields = {
       roomId,
       round: snapshot.round,
@@ -344,6 +400,7 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
       },
       systemPrompt: ctx.systemPrompt,
       userPrompt,
+      historyLength: history.length,
     };
 
     let action: GameAction | null = null;
@@ -357,7 +414,7 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
           ctx.apiKey,
           ctx.apiModelName,
           ctx.systemPrompt,
-          userPrompt,
+          messages,
         );
         lastRawResponse = responseText;
         const parsed = parseActionFromResponse(responseText, validActions);
@@ -441,6 +498,7 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
       continue;
     }
 
+    appendToHistory(roomId, info.playerId, userPrompt, lastRawResponse ?? "");
     await broadcastGameState(roomId);
 
     if (action.type === "end-turn") {

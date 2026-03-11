@@ -22,6 +22,7 @@ export type LlmLogEntry = {
   parsedAction: GameAction | null;
   success: boolean;
   error: string | null;
+  historyLength?: number;
   outcome:
     | "action_applied"
     | "parse_failed"

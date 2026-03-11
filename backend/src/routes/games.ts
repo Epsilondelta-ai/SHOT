@@ -13,7 +13,7 @@ import { getRoomById } from "../lib/roomState";
 import { getSerializedRoomPlayers } from "../lib/roomPlayers";
 import { broadcastPlayers } from "../ws/roomWs";
 import { broadcastGameState } from "../ws/gameWs";
-import { maybeRunLlmTurn } from "../lib/llmPlayer";
+import { maybeRunLlmTurn, clearConversationHistory } from "../lib/llmPlayer";
 
 function isSpectatorRequest(request: Request) {
   return new URL(request.url).searchParams.get("spectator") === "1";
@@ -75,6 +75,7 @@ export const gameRoutes = new Elysia()
       };
     }
 
+    clearConversationHistory(params.id);
     initializeGame(params.id, players);
     await db
       .update(room)
