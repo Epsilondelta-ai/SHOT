@@ -249,6 +249,10 @@
 			</div>
 		</section>
 
+		<section>
+			<RoomChat messages={chatMessages} onsend={sendChat} />
+		</section>
+
 		{#if isHost}
 			<section class="comic-border rounded-xl bg-white p-4">
 				<div class="flex items-center gap-2">
@@ -357,10 +361,6 @@
 				</p>
 			</section>
 		{/if}
-
-		<section>
-			<RoomChat messages={chatMessages} onsend={sendChat} />
-		</section>
 
 		<div class="flex gap-3 pb-6">
 			<button
