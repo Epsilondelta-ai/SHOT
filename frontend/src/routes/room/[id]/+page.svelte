@@ -453,7 +453,26 @@
 				{m.room_leave()}
 			</button>
 
-			{#if data.isSpectator}
+			{#if data.isSpectator && isHost}
+				<button
+					type="button"
+					onclick={joinAsPlayer}
+					disabled={isRoomFull}
+					class="comic-button flex flex-1 items-center justify-center gap-2 rounded-xl border-3 border-slate-900 bg-primary px-4 py-4 font-black text-white uppercase disabled:cursor-not-allowed disabled:opacity-50"
+				>
+					<span class="material-symbols-outlined">person_add</span>
+					{isRoomFull ? m.room_full() : m.room_join_as_player()}
+				</button>
+				<button
+					class="comic-button flex flex-[2] items-center justify-center gap-2 rounded-xl border-3 border-slate-900 px-6 py-4 font-black text-white uppercase italic shadow-[3px_3px_0px_#221910]
+						{canStart ? 'bg-green-600' : 'cursor-not-allowed bg-slate-400 opacity-60'}"
+					disabled={!canStart}
+					onclick={startGame}
+				>
+					<span class="material-symbols-outlined">play_arrow</span>
+					{m.room_start_game()}
+				</button>
+			{:else if data.isSpectator}
 				<button
 					type="button"
 					onclick={joinAsPlayer}
