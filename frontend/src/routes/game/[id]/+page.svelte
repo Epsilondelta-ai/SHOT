@@ -26,7 +26,12 @@
 
 	let { data } = $props();
 
-	let game = $state<GameSnapshot>((data.game as GameSnapshot) ?? emptyGame);
+	// Capture stable initial values before reactivity — prevents $effect re-run on game updates
+	const initialGame = (data.game as GameSnapshot) ?? emptyGame;
+	const roomId = initialGame.roomId;
+	const isSpectator = initialGame.viewerMode === 'spectator';
+
+	let game = $state<GameSnapshot>(initialGame);
 	let selectedCard = $state<ActionCard | null>(null);
 	let selectedTargetId = $state<string | null>(null);
 	let isLogOpen = $state(false);
@@ -39,7 +44,7 @@
 
 	$effect(() => {
 		const s = createGameSocket(
-			game.roomId,
+			roomId,
 			{
 				onGameState: (snapshot) => {
 					game = snapshot;
@@ -51,7 +56,7 @@
 					actionError = 'Connection lost. Please refresh.';
 				}
 			},
-			{ spectator: game.viewerMode === 'spectator' }
+			{ spectator: isSpectator }
 		);
 		socket = s;
 		return () => s.close();
@@ -155,7 +160,7 @@
 		game.winnerTeam === 'agents' ? 'Agents' : game.winnerTeam === 'spies' ? 'Spies' : undefined
 	);
 	const isMyWin = $derived(game.winnerTeam !== null && game.winnerTeam === game.myTeam);
-	const isSpectator = $derived(game.viewerMode === 'spectator');
+	const isSpectatorView = $derived(game.viewerMode === 'spectator');
 </script>
 
 <svelte:head>
@@ -182,7 +187,7 @@
 			</p>
 		</div>
 
-		{#if (isSpectator || !amAlive) && !isFinished}
+		{#if (isSpectatorView || !amAlive) && !isFinished}
 			<div
 				class="comic-border-sm flex items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-3 text-slate-400"
 			>
@@ -308,7 +313,7 @@
 			{/if}
 		</section>
 
-		{#if myPlayer && amAlive && !isSpectator}
+		{#if myPlayer && amAlive && !isSpectatorView}
 			<section class="border-t-4 border-slate-600 pt-4">
 				<h3 class="mb-3 text-sm font-black text-slate-300 uppercase">My Cards</h3>
 				<div class="flex flex-wrap items-center justify-center gap-3">

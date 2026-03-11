@@ -267,7 +267,8 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
     if (actionsThisTurn >= MAX_ACTIONS_PER_TURN) {
       forceEndTurn(roomId, info.userId);
       await broadcastGameState(roomId);
-      return;
+      actionsThisTurn = 0;
+      continue;
     }
 
     if (!info.assistantId || !info.llmModelId) {
@@ -404,7 +405,8 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
       });
       forceEndTurn(roomId, info.userId);
       await broadcastGameState(roomId);
-      return;
+      actionsThisTurn = 0;
+      continue;
     }
 
     // For chat actions, LLM may have returned an empty text placeholder;
@@ -428,12 +430,16 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
       });
       forceEndTurn(roomId, info.userId);
       await broadcastGameState(roomId);
-      return;
+      actionsThisTurn = 0;
+      continue;
     }
 
     await broadcastGameState(roomId);
 
-    if (action.type === "end-turn") return;
+    if (action.type === "end-turn") {
+      actionsThisTurn = 0; // reset counter for the next player's turn
+      continue;
+    }
 
     actionsThisTurn++;
   }
