@@ -8,11 +8,12 @@ export const load: PageLoad = async ({ fetch }) => {
 	const session = await sessionRes.json();
 	if (!session?.user) redirect(303, '/login');
 
-	const [usersRes, roomsRes, assistantsRes, llmRes] = await Promise.all([
+	const [usersRes, roomsRes, assistantsRes, llmRes, rulebookRes] = await Promise.all([
 		fetch(`${BACKEND_URL}/api/admin/users`, { credentials: 'include' }),
 		fetch(`${BACKEND_URL}/api/admin/rooms`, { credentials: 'include' }),
 		fetch(`${BACKEND_URL}/api/admin/assistants`, { credentials: 'include' }),
-		fetch(`${BACKEND_URL}/api/admin/llm-providers`, { credentials: 'include' })
+		fetch(`${BACKEND_URL}/api/admin/llm-providers`, { credentials: 'include' }),
+		fetch(`${BACKEND_URL}/api/admin/rulebook`, { credentials: 'include' })
 	]);
 
 	if (!usersRes.ok) redirect(303, '/');
@@ -21,12 +22,14 @@ export const load: PageLoad = async ({ fetch }) => {
 	const rooms = await roomsRes.json();
 	const assistants = await assistantsRes.json();
 	const llmData = await llmRes.json();
+	const rulebooks = rulebookRes.ok ? await rulebookRes.json() : [];
 
 	return {
 		users,
 		rooms,
 		assistants,
 		llmProviders: llmData.llmProviders,
-		llmModels: llmData.llmModels
+		llmModels: llmData.llmModels,
+		rulebooks
 	};
 };

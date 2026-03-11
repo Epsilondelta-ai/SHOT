@@ -1,7 +1,7 @@
 import Elysia from 'elysia';
 import { db } from '../db';
 import { eq, desc, count, isNull } from 'drizzle-orm';
-import { user, room, roomPlayer, assistant, banHistory, llmProvider, llmModel } from '../db/schema';
+import { user, room, roomPlayer, assistant, banHistory, llmProvider, llmModel, gameRulebook } from '../db/schema';
 import { requireAdmin } from '../lib/getUser';
 
 export const adminRoutes = new Elysia()
@@ -447,5 +447,80 @@ export const adminRoutes = new Elysia()
 
 		const body = (await request.json()) as { active: boolean };
 		await db.update(llmModel).set({ active: body.active }).where(eq(llmModel.id, params.id));
+		return { success: true };
+	})
+
+	.get('/api/admin/rulebook', async ({ request, set }) => {
+		try {
+			await requireAdmin(request);
+		} catch {
+			set.status = 403;
+			return { error: 'Forbidden' };
+		}
+
+		const rulebooks = await db.select().from(gameRulebook).orderBy(gameRulebook.createdAt);
+
+		return rulebooks.map((r) => ({
+			id: r.id,
+			name: r.name,
+			content: r.content,
+			active: r.active,
+			created: r.createdAt.toISOString().split('T')[0],
+			updated: r.updatedAt.toISOString().split('T')[0]
+		}));
+	})
+
+	.post('/api/admin/rulebook', async ({ request, set }) => {
+		try {
+			await requireAdmin(request);
+		} catch {
+			set.status = 403;
+			return { error: 'Forbidden' };
+		}
+
+		const body = (await request.json()) as { name: string; content: string; active?: boolean };
+		if (!body.name || !body.content) {
+			set.status = 400;
+			return { error: 'Name and content are required' };
+		}
+
+		await db.insert(gameRulebook).values({
+			name: body.name,
+			content: body.content,
+			active: body.active ?? true
+		});
+		return { success: true };
+	})
+
+	.put('/api/admin/rulebook/:id', async ({ params, request, set }) => {
+		try {
+			await requireAdmin(request);
+		} catch {
+			set.status = 403;
+			return { error: 'Forbidden' };
+		}
+
+		const body = (await request.json()) as { name: string; content: string; active?: boolean };
+		if (!body.name || !body.content) {
+			set.status = 400;
+			return { error: 'Missing fields' };
+		}
+
+		await db
+			.update(gameRulebook)
+			.set({ name: body.name, content: body.content, active: body.active ?? true, updatedAt: new Date() })
+			.where(eq(gameRulebook.id, params.id));
+		return { success: true };
+	})
+
+	.delete('/api/admin/rulebook/:id', async ({ params, request, set }) => {
+		try {
+			await requireAdmin(request);
+		} catch {
+			set.status = 403;
+			return { error: 'Forbidden' };
+		}
+
+		await db.delete(gameRulebook).where(eq(gameRulebook.id, params.id));
 		return { success: true };
 	});

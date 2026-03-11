@@ -182,7 +182,8 @@
 			rooms: mockRooms,
 			assistants: mockAssistants,
 			llmProviders: mockLLMProviders,
-			llmModels: mockLLMModels
+			llmModels: mockLLMModels,
+			rulebooks: []
 		}}
 	/>
 </Story>
@@ -194,7 +195,8 @@
 			rooms: [],
 			assistants: [],
 			llmProviders: [],
-			llmModels: []
+			llmModels: [],
+			rulebooks: []
 		}}
 	/>
 </Story>

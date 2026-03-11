@@ -15,6 +15,13 @@
       "when": 1773186349805,
       "tag": "0001_bright_lake",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1773231897680,
+      "tag": "0002_demonic_jamie_braddock",
+      "breakpoints": true
     }
   ]
 }

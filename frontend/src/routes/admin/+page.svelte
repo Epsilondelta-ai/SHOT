@@ -7,6 +7,8 @@
 	import AdminLLMConfig from '$lib/components/admin/AdminLLMConfig.svelte';
 	import AdminAssistantList from '$lib/components/admin/AdminAssistantList.svelte';
 	import AdminAssistantForm from '$lib/components/admin/AdminAssistantForm.svelte';
+	import AdminRulebookList from '$lib/components/admin/AdminRulebookList.svelte';
+	import AdminRulebookForm from '$lib/components/admin/AdminRulebookForm.svelte';
 	import AdminBanModal from '$lib/components/admin/AdminBanModal.svelte';
 	import AdminUnbanModal from '$lib/components/admin/AdminUnbanModal.svelte';
 	import AdminBanHistoryModal from '$lib/components/admin/AdminBanHistoryModal.svelte';
@@ -17,7 +19,7 @@
 
 	let { data } = $props();
 
-	type Tab = 'dashboard' | 'users' | 'rooms' | 'llm' | 'assistant';
+	type Tab = 'dashboard' | 'users' | 'rooms' | 'llm' | 'assistant' | 'rulebook';
 
 	type Assistant = {
 		id: string;
@@ -28,9 +30,20 @@
 		updated: string;
 	};
 
+	type Rulebook = {
+		id: string;
+		name: string;
+		content: string;
+		active: boolean;
+		created: string;
+		updated: string;
+	};
+
 	let activeTab: Tab = $state('dashboard');
 	let showAssistantForm = $state(false);
 	let editingAssistant: Assistant | null = $state(null);
+	let showRulebookForm = $state(false);
+	let editingRulebook: Rulebook | null = $state(null);
 	let showBanModal = $state(false);
 	let banningUserId = $state('');
 	let showUnbanModal = $state(false);
@@ -171,6 +184,35 @@
 	function closeAssistantForm() {
 		showAssistantForm = false;
 		editingAssistant = null;
+	}
+
+	function editRulebook(rulebook: Rulebook) {
+		editingRulebook = rulebook;
+		showRulebookForm = true;
+	}
+
+	async function saveRulebook(rulebook: Omit<Rulebook, 'id' | 'created' | 'updated'>) {
+		if (editingRulebook) {
+			await apiPut(`/api/admin/rulebook/${editingRulebook.id}`, rulebook);
+		} else {
+			await apiPost('/api/admin/rulebook', rulebook);
+		}
+
+		await invalidateAll();
+		showRulebookForm = false;
+		editingRulebook = null;
+	}
+
+	function deleteRulebook(rulebookId: string) {
+		openConfirm(async () => {
+			await apiDelete(`/api/admin/rulebook/${rulebookId}`);
+			await invalidateAll();
+		});
+	}
+
+	function closeRulebookForm() {
+		showRulebookForm = false;
+		editingRulebook = null;
 	}
 </script>
 

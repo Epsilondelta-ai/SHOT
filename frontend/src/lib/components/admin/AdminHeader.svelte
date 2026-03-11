@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 
-	type Tab = 'dashboard' | 'users' | 'rooms' | 'llm' | 'assistant';
+	type Tab = 'dashboard' | 'users' | 'rooms' | 'llm' | 'assistant' | 'rulebook';
 
 	let {
 		activeTab,
@@ -16,7 +16,8 @@
 		{ key: 'users', label: () => m.admin_tab_users(), icon: 'group' },
 		{ key: 'rooms', label: () => m.admin_tab_rooms(), icon: 'meeting_room' },
 		{ key: 'llm', label: () => m.admin_tab_llm(), icon: 'smart_toy' },
-		{ key: 'assistant', label: () => m.admin_tab_assistant(), icon: 'psychology' }
+		{ key: 'assistant', label: () => m.admin_tab_assistant(), icon: 'psychology' },
+		{ key: 'rulebook', label: () => m.admin_tab_rulebook(), icon: 'menu_book' }
 	];
 </script>
 

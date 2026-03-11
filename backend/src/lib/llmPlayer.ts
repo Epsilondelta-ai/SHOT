@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
-import { assistant, llmModel, llmProvider } from "../db/schema";
+import { assistant, llmModel, llmProvider, gameRulebook } from "../db/schema";
 import {
   applyGameAction,
   createSnapshot,
@@ -33,14 +33,23 @@ async function fetchLlmContext(
 
   if (!assistantRow || !modelRow) return null;
 
-  const providerRow = await db.query.llmProvider.findFirst({
-    where: eq(llmProvider.provider, modelRow.provider),
-  });
+  const [providerRow, activeRulebook] = await Promise.all([
+    db.query.llmProvider.findFirst({
+      where: eq(llmProvider.provider, modelRow.provider),
+    }),
+    db.query.gameRulebook.findFirst({
+      where: eq(gameRulebook.active, true),
+    }),
+  ]);
 
   if (!providerRow || !providerRow.apiKey) return null;
 
+  const systemPrompt = activeRulebook
+    ? `${assistantRow.prompt}\n\n== GAME RULEBOOK ==\n${activeRulebook.content}`
+    : assistantRow.prompt;
+
   return {
-    systemPrompt: assistantRow.prompt,
+    systemPrompt,
     assistantName: assistantRow.name,
     provider: modelRow.provider,
     apiModelName: modelRow.apiModelName,
@@ -131,46 +140,7 @@ function buildPrompt(
     .map((c) => `  ${c.playerName}: ${c.text}`)
     .join("\n");
 
-  return `You are playing a hidden-role social deduction game called SHOT.
-
-== GAME RULES ==
-TEAMS: Agents vs Spies.
-WIN CONDITIONS:
-  - Agents win: all spies are eliminated.
-  - Spies win: the Leader is eliminated, OR no agents remain alive.
-
-ROLES:
-  - leader: An agent. The leader is always publicly known. Spies must kill the leader to win.
-  - normal: A regular agent. Identity is hidden unless revealed by verify card.
-  - spy: Hidden enemy. Goal is to eliminate the leader and agents. Role is secret until revealed.
-  - revealed: A spy who has voluntarily revealed their identity (gains 2 extra cards + chat turn).
-
-ATTACK RULES:
-  - Only a REVEALED spy can attack the leader.
-  - Normal agents cannot attack the leader.
-  - If an agent accidentally attacks a teammate, they get jailed as penalty.
-
-CARDS:
-  - attack: Deal 1 damage to target. You have ${me?.attacks ?? 0} attack(s). Agents should attack spies. Revealed spies MUST attack the leader or agents to win.
-  - heal: Restore 1 HP to target (can target self). Use to keep teammates alive.
-  - jail: Jail a target for 1 round — they cannot act. Use on dangerous opponents.
-  - verify: Reveal whether target is a spy or not. If spy found, draw 2 bonus cards.
-
-STRATEGY:
-  - If your role is "revealed" (you are a spy who revealed): your top priority is to ATTACK the leader immediately. Every turn you don't attack is wasted.
-  - If your role is "spy": stay hidden, manipulate chat, eliminate agents quietly.
-  - If your role is "leader" or "normal": identify and eliminate spies. Protect the leader.
-  - In chatting phase: use chat to coordinate with teammates or spread disinformation.
-  - In acting phase: use your cards strategically. Ending your turn without acting is usually wasteful.
-
-PLAYER ROLES VISIBLE TO YOU:
-  - "leader" = confirmed agent leader (public info)
-  - "revealed" = confirmed spy (revealed themselves)
-  - "spy" = you know this person is a spy (only visible to you if you are also a spy, or revealed by verify)
-  - "normal" = agent whose identity is not yet confirmed
-== END RULES ==
-
-YOUR STATUS: ${myStatus}
+  return `YOUR STATUS: ${myStatus}
 ROUND: ${snapshot.round}
 PHASE: ${snapshot.phase}
 
