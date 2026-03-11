@@ -188,7 +188,7 @@ function buildPrompt(
     .join("\n");
 
   return `YOUR STATUS: ${myStatus}
-ROUND: ${snapshot.round}
+ROUND: ${snapshot.round}/${snapshot.maxRound}
 PHASE: ${snapshot.phase}
 
 PLAYERS:

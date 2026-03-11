@@ -38,6 +38,7 @@ type GameChatMessage = {
 type GameState = {
   roomId: string;
   round: number;
+  maxRound: number;
   currentTurnPlayerId: string;
   pendingChatTurns: number;
   players: InternalPlayer[];
@@ -64,6 +65,7 @@ export type GamePlayerView = {
 export type GameSnapshot = {
   roomId: string;
   round: number;
+  maxRound: number;
   currentTurnPlayerId: string;
   viewerMode: "player" | "spectator";
   myPlayerId: string | null;
@@ -233,6 +235,12 @@ function maybeFinishGame(state: GameState) {
   if (aliveSpies.length === 0) {
     state.winnerTeam = "agents";
     addLog(state, "Agents win the game.", "result");
+    return true;
+  }
+
+  if (state.round >= state.maxRound) {
+    state.winnerTeam = "spies";
+    addLog(state, "Time ran out. Spies win by default.", "result");
     return true;
   }
 
@@ -473,6 +481,7 @@ export function initializeGame(
   const state: GameState = {
     roomId,
     round: 1,
+    maxRound: players.length * 3,
     currentTurnPlayerId: leaderPlayer.id,
     pendingChatTurns: 0,
     players,
@@ -538,6 +547,7 @@ export function createSnapshot(
   return {
     roomId: state.roomId,
     round: state.round,
+    maxRound: state.maxRound,
     currentTurnPlayerId: state.currentTurnPlayerId,
     viewerMode: viewer ? "player" : "spectator",
     myPlayerId: viewer?.id ?? null,

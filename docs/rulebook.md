@@ -43,6 +43,7 @@ SHOT! is an online strategy card game where players are divided into the Agent T
 
 - Spy Team wins immediately if the Captain is killed.
 - Spy Team wins immediately if all Agents (excluding Spies) are killed.
+- Spy Team wins by default if the game reaches the maximum number of turns (Players × 3) without a winner.
 
 ---
 
@@ -154,4 +155,5 @@ If the Agent Team (Captain/Agent) or a hidden Spy kills an Agent, they enter the
 | Card Usage Method         | Sequentially one by one                                                            |
 | Card Visibility           | All held cards are revealed                                                        |
 | Turn Order                | Clockwise from Captain                                                             |
-| Victory Conditions        | Agent Team: All Spies eliminated / Spy Team: Captain dies or all Agents eliminated |
+| Max Turns                 | Players × 3                                                                       |
+| Victory Conditions        | Agent Team: All Spies eliminated / Spy Team: Captain dies, all Agents eliminated, or time runs out |
