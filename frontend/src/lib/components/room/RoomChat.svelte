@@ -46,7 +46,7 @@
 				</div>
 			{:else}
 				<div class="text-sm">
-					<span class="font-black text-primary">{msg.sender}</span>
+					<span class="font-black text-primary">{msg.sender}:</span>
 					<span class="font-medium text-slate-700">{msg.text}</span>
 				</div>
 			{/if}
