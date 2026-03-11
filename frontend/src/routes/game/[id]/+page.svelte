@@ -244,7 +244,7 @@
 		{/if}
 
 		<section>
-			<div class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
+			<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
 				{#each game.players as player (player.id)}
 					<GamePlayer
 						name={player.name}
