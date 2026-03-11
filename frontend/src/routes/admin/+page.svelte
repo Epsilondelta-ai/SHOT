@@ -326,6 +326,35 @@
 					oncancel={closeAssistantForm}
 				/>
 			{/if}
+	{:else if activeTab === 'rulebook'}
+		<div class="flex items-center justify-between">
+			<h2
+				class="flex items-center gap-2 text-sm font-black tracking-widest text-slate-500 uppercase"
+			>
+				<span class="material-symbols-outlined text-primary">menu_book</span>
+				룰북
+			</h2>
+			<AddButton
+				label="룰북 추가"
+				onclick={() => {
+					editingRulebook = null;
+					showRulebookForm = true;
+				}}
+			/>
+		</div>
+		<AdminRulebookList
+			rulebooks={data.rulebooks}
+			onedit={editRulebook}
+			ondelete={deleteRulebook}
+		/>
+		{#if showRulebookForm}
+			<AdminRulebookForm
+				isOpen={showRulebookForm}
+				{editingRulebook}
+				onsave={saveRulebook}
+				oncancel={closeRulebookForm}
+			/>
+		{/if}
 		{/if}
 	</main>
 </div>
