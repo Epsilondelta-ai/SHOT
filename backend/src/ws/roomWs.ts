@@ -10,11 +10,20 @@ type RoomMessage =
   | { type: "kick"; targetPlayerId: string }
   | { type: "ready"; ready: boolean };
 
+type WsUser = {
+  userId: string;
+  userName: string;
+  roomId: string;
+  isSpectator: boolean;
+};
+
 // roomId → Set of ws ids
 const roomSockets = new Map<string, Set<string>>();
 // ws id → ws object (any to avoid circular type issues)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const wsById = new Map<string, any>();
+// ws id → authenticated user data
+const wsUserData = new Map<string, WsUser>();
 
 function broadcast(roomId: string, payload: unknown, excludeId?: string) {
   const ids = roomSockets.get(roomId);
@@ -48,59 +57,56 @@ export async function broadcastPlayers(roomId: string) {
 }
 
 export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
-  async upgrade({ params, request, set }) {
-    // Extract session token from cookie
-    const rawCookie = request.headers.get("cookie") ?? "";
+  async open(ws) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ctx = ws.data as any;
+    const roomId = ctx.params?.roomId as string;
+    const rawCookie = (ctx.headers?.cookie ?? "") as string;
     const tokenMatch = rawCookie.match(/better-auth\.session_token=([^;]+)/);
+
     if (!tokenMatch) {
-      set.status = 401;
+      ws.close();
       return;
     }
 
+    const rawToken = decodeURIComponent(tokenMatch[1]);
+    // better-auth sends TOKEN.HMAC_SIGNATURE in cookie; DB stores only TOKEN
+    const decodedToken = rawToken.split(".")[0];
     const sess = await db.query.session.findFirst({
-      where: eq(session.token, decodeURIComponent(tokenMatch[1])),
+      where: eq(session.token, decodedToken),
       with: { user: true },
     });
+
     if (!sess) {
-      set.status = 401;
+      ws.close();
       return;
     }
 
-    const isSpectator =
-      new URL(request.url).searchParams.get("spectator") === "1";
-
-    return {
-      userId: sess.userId,
-      userName: sess.user.name,
-      roomId: params.roomId,
-      isSpectator,
-    };
-  },
-
-  open(ws) {
-    const { roomId, userId } = ws.data as unknown as {
-      roomId: string;
-      userId: string;
-      userName: string;
-      isSpectator: boolean;
-    };
-    const wsId = `${roomId}:${userId}:${Date.now()}`;
-    (ws as unknown as { _id: string })._id = wsId;
+    const isSpectator = ctx.query?.spectator === "1";
+    // Use ws.id (Elysia's built-in unique connection ID) as the key
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wsId = (ws as any).id as string;
     wsById.set(wsId, ws);
+    wsUserData.set(wsId, {
+      userId: sess.userId,
+      userName: sess.user.name ?? sess.user.email ?? "Unknown",
+      roomId,
+      isSpectator,
+    });
 
     if (!roomSockets.has(roomId)) roomSockets.set(roomId, new Set());
     roomSockets.get(roomId)!.add(wsId);
 
-    broadcastPlayers(roomId);
+    await broadcastPlayers(roomId);
   },
 
   async message(ws, rawMessage) {
-    const { roomId, userId, userName, isSpectator } = ws.data as unknown as {
-      roomId: string;
-      userId: string;
-      userName: string;
-      isSpectator: boolean;
-    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wsId = (ws as any).id as string;
+    const userData = wsUserData.get(wsId);
+    if (!userData) return;
+
+    const { roomId, userId, userName, isSpectator } = userData;
 
     let msg: RoomMessage;
     try {
@@ -175,34 +181,45 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
   },
 
   async close(ws) {
-    const { roomId, userId, isSpectator } = ws.data as unknown as {
-      roomId: string;
-      userId: string;
-      isSpectator: boolean;
-    };
-    const wsId = (ws as unknown as { _id: string })._id;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const wsId = (ws as any).id as string;
+    const userData = wsUserData.get(wsId);
+    const roomId = userData?.roomId;
 
-    roomSockets.get(roomId)?.delete(wsId);
+    if (roomId) roomSockets.get(roomId)?.delete(wsId);
     wsById.delete(wsId);
-    if (roomSockets.get(roomId)?.size === 0) roomSockets.delete(roomId);
+    wsUserData.delete(wsId);
+    if (roomId && roomSockets.get(roomId)?.size === 0) roomSockets.delete(roomId);
 
-    if (isSpectator) {
+    if (!userData || userData.isSpectator) {
       return;
     }
+
+    const { userId } = userData;
+
+    const existingPlayer = await db.query.roomPlayer.findFirst({
+      where: and(
+        eq(roomPlayer.roomId, roomId!),
+        eq(roomPlayer.userId, userId),
+        eq(roomPlayer.playerType, "human"),
+      ),
+    });
+
+    if (!existingPlayer) return;
 
     await db
       .delete(roomPlayer)
       .where(
         and(
-          eq(roomPlayer.roomId, roomId),
+          eq(roomPlayer.roomId, roomId!),
           eq(roomPlayer.userId, userId),
           eq(roomPlayer.playerType, "human"),
         ),
       );
 
-    const result = await syncRoomAfterHumanDeparture(roomId);
+    const result = await syncRoomAfterHumanDeparture(roomId!);
     if (!result.deleted) {
-      await broadcastPlayers(roomId);
+      await broadcastPlayers(roomId!);
     }
   },
 });

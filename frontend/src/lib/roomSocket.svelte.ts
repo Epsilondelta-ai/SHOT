@@ -29,6 +29,7 @@ type RoomSocketCallbacks = {
 	) => void;
 	onChat?: (message: ChatMessage) => void;
 	onKicked?: (payload: { playerId: string; userId: string }) => void;
+	onError?: () => void;
 };
 
 type RoomSocketOptions = {
@@ -63,6 +64,10 @@ export function createRoomSocket(
 			} catch {
 				// ignore parse errors
 			}
+		};
+
+		ws.onerror = () => {
+			callbacks.onError?.();
 		};
 
 		ws.onclose = () => {

@@ -514,7 +514,7 @@ export const roomRoutes = new Elysia()
       return { error: "Unauthorized" };
     }
 
-    const { roomData, member, canManageBots } = await getRoomManagementContext(
+    const { roomData, member, isHost, canManageBots } = await getRoomManagementContext(
       params.id,
       u.id,
     );
@@ -522,7 +522,7 @@ export const roomRoutes = new Elysia()
       set.status = 404;
       return { error: "Room not found" };
     }
-    if (!member) {
+    if (!member && !isHost) {
       set.status = 403;
       return { error: "You must join the room first" };
     }
@@ -616,7 +616,7 @@ export const roomRoutes = new Elysia()
       return { error: "Unauthorized" };
     }
 
-    const { roomData, member, canManageBots } = await getRoomManagementContext(
+    const { roomData, member, isHost, canManageBots } = await getRoomManagementContext(
       params.id,
       u.id,
     );
@@ -624,7 +624,7 @@ export const roomRoutes = new Elysia()
       set.status = 404;
       return { error: "Room not found" };
     }
-    if (!member) {
+    if (!member && !isHost) {
       set.status = 403;
       return { error: "You must join the room first" };
     }
