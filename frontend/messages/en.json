@@ -71,6 +71,7 @@
 	"room_chat_placeholder": "Type a message...",
 	"room_chat_send": "Send",
 	"room_leave": "Leave",
+	"room_spectate": "Spectate",
 	"room_kick": "Kick",
 	"room_empty_slot": "Empty Slot",
 	"game_title": "Game - SHOT!",

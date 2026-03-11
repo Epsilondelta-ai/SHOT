@@ -199,6 +199,11 @@
 		await apiPost(`/api/games/${data.roomId}/start`);
 		goto(`/game/${data.roomId}${getSpectatorQuery()}`);
 	}
+
+	async function becomeSpectator() {
+		await apiPost(`/api/rooms/${data.roomId}/leave`);
+		goto(`/room/${data.roomId}?spectator=1`);
+	}
 </script>
 
 <svelte:head>
@@ -417,6 +422,14 @@
 					</div>
 				</div>
 			{:else if isHost}
+				<button
+					type="button"
+					onclick={becomeSpectator}
+					class="comic-button flex flex-1 items-center justify-center gap-2 rounded-xl border-3 border-slate-900 bg-white px-4 py-4 font-black uppercase"
+				>
+					<span class="material-symbols-outlined">visibility</span>
+					{m.room_spectate()}
+				</button>
 				<button
 					class="comic-button flex flex-[2] items-center justify-center gap-2 rounded-xl border-3 border-slate-900 px-6 py-4 font-black text-white uppercase italic shadow-[3px_3px_0px_#221910]
 						{canStart ? 'bg-green-600' : 'cursor-not-allowed bg-slate-400 opacity-60'}"

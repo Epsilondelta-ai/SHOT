@@ -71,6 +71,7 @@
 	"room_chat_placeholder": "메시지를 입력하세요...",
 	"room_chat_send": "보내기",
 	"room_leave": "나가기",
+	"room_spectate": "관전",
 	"room_kick": "추방",
 	"room_empty_slot": "빈 자리",
 	"game_title": "게임 - SHOT!",
