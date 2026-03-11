@@ -17,12 +17,6 @@
 			value: 'EN'
 		},
 		{
-			key: 'notifications',
-			label: m.mypage_settings_notifications(),
-			icon: 'notifications',
-			value: 'On'
-		},
-		{
 			key: 'signout',
 			label: m.mypage_sign_out(),
 			icon: 'logout'
