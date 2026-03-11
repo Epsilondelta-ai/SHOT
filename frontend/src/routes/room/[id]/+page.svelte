@@ -53,7 +53,10 @@
 
 	let { data } = $props();
 
+	type Spectator = { userId: string; userName: string };
+
 	let players: Player[] = $state([]);
+	let spectators: Spectator[] = $state([]);
 	let chatMessages: ChatMessage[] = $state([]);
 	let hostUserId = $state('');
 	let maxPlayers = $state(5);
@@ -82,8 +85,9 @@
 		const socket = createRoomSocket(
 			data.roomId,
 			{
-				onPlayers: (wsPlayers, roomState) => {
+				onPlayers: (wsPlayers, roomState, wsSpectators) => {
 					players = wsPlayers;
+					if (wsSpectators) spectators = wsSpectators;
 					if (roomState) {
 						hostUserId = roomState.hostUserId;
 						maxPlayers = roomState.maxPlayers;
@@ -301,6 +305,22 @@
 				{/each}
 			</div>
 		</section>
+
+		{#if spectators.length > 0}
+			<section>
+				<h2 class="mb-2 flex items-center gap-2 text-sm font-black uppercase text-slate-500">
+					<span class="material-symbols-outlined text-base">visibility</span>
+					{m.game_spectating()} ({spectators.length})
+				</h2>
+				<div class="comic-border-sm flex flex-wrap gap-2 rounded-xl bg-white px-4 py-3">
+					{#each spectators as spectator (spectator.userId)}
+						<span class="rounded-lg bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+							{spectator.userName}
+						</span>
+					{/each}
+				</div>
+			</section>
+		{/if}
 
 		<section>
 			<RoomChat messages={chatMessages} onsend={sendChat} canSend={!data.isSpectator} />

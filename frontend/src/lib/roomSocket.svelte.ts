@@ -22,10 +22,16 @@ type ChatMessage = {
 	isSystem?: boolean;
 };
 
+type Spectator = {
+	userId: string;
+	userName: string;
+};
+
 type RoomSocketCallbacks = {
 	onPlayers?: (
 		players: Player[],
-		room?: { hostUserId: string; maxPlayers: number; status?: string }
+		room?: { hostUserId: string; maxPlayers: number; status?: string },
+		spectators?: Spectator[]
 	) => void;
 	onChat?: (message: ChatMessage) => void;
 	onKicked?: (payload: { playerId: string; userId: string }) => void;
@@ -51,7 +57,7 @@ export function createRoomSocket(
 			try {
 				const msg = JSON.parse(event.data);
 				if (msg.type === 'players') {
-					callbacks.onPlayers?.(msg.players, msg.room);
+					callbacks.onPlayers?.(msg.players, msg.room, msg.spectators);
 				} else if (msg.type === 'chat') {
 					callbacks.onChat?.({
 						id: crypto.randomUUID(),

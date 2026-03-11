@@ -41,9 +41,18 @@ export async function broadcastPlayers(roomId: string) {
   ]);
   if (!roomData || players.length === 0) return;
 
+  const wsIds = roomSockets.get(roomId);
+  const spectators = wsIds
+    ? [...wsIds]
+        .map((id) => wsUserData.get(id))
+        .filter((u): u is WsUser => !!u && u.isSpectator)
+        .map((u) => ({ userId: u.userId, userName: u.userName }))
+    : [];
+
   const payload = JSON.stringify({
     type: "players",
     players,
+    spectators,
     room: {
       hostUserId: roomData.hostUserId,
       maxPlayers: roomData.maxPlayers,
