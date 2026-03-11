@@ -5,24 +5,27 @@
 		roomName,
 		roomCode,
 		currentPlayers,
-		maxPlayers
+		maxPlayers,
+		onback
 	}: {
 		roomName: string;
 		roomCode: string;
 		currentPlayers: number;
 		maxPlayers: number;
+		onback?: () => void;
 	} = $props();
 </script>
 
 <header class="sticky top-0 z-50 border-b-4 border-slate-900 bg-white px-4 py-4">
 	<div class="mx-auto flex w-full max-w-2xl items-center justify-between">
-		<a
-			href="/lobby"
+		<button
+			type="button"
+			onclick={onback}
 			class="comic-button flex items-center gap-1 rounded-lg border-2 border-slate-900 bg-accent-beige px-3 py-2 text-sm font-bold transition-colors hover:bg-primary hover:text-white"
 		>
 			<span class="material-symbols-outlined text-lg">arrow_back</span>
 			{m.room_back()}
-		</a>
+		</button>
 
 		<div class="text-center">
 			<h1

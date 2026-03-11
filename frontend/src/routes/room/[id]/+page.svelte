@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, beforeNavigate } from '$app/navigation';
 	import { apiPost } from '$lib/api';
 	import { createRoomSocket } from '$lib/roomSocket.svelte';
 	import { m } from '$lib/paraglide/messages';
@@ -160,15 +160,23 @@
 		socketRef?.sendChat(text);
 	}
 
-	async function leaveRoom() {
-		if (data.isSpectator) {
-			goto('/lobby');
-			return;
-		}
+	let isLeaving = false;
 
-		await apiPost(`/api/rooms/${data.roomId}/leave`);
+	async function leaveRoom() {
+		if (isLeaving) return;
+		isLeaving = true;
+		await apiPost(`/api/rooms/${data.roomId}/leave`).catch(() => {});
 		goto('/lobby');
 	}
+
+	beforeNavigate(({ cancel, to }) => {
+		if (isLeaving || data.isSpectator) return;
+		cancel();
+		isLeaving = true;
+		apiPost(`/api/rooms/${data.roomId}/leave`)
+			.catch(() => {})
+			.finally(() => goto(to?.url.pathname ?? '/lobby'));
+	});
 
 	async function addLlmPlayer(payload: { assistantId: string; llmModelId: string }) {
 		await apiPost(`/api/rooms/${data.roomId}/llm-players`, payload);
@@ -216,6 +224,7 @@
 		roomCode={data.roomCode}
 		currentPlayers={players.length}
 		{maxPlayers}
+		onback={leaveRoom}
 	/>
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-6 p-4">
