@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
-	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
+	import { apiPutFormData } from '$lib/api';
 
 	let {
 		username = '',
@@ -14,6 +15,7 @@
 	let draftUsername = $state('');
 	let draftAvatarSrc = $state('');
 	let fileInput: HTMLInputElement;
+	let formRef: HTMLFormElement;
 
 	function startEdit() {
 		draftUsername = username;
@@ -30,21 +32,21 @@
 		if (!file) return;
 		draftAvatarSrc = URL.createObjectURL(file);
 	}
+
+	async function handleSubmit(e: SubmitEvent) {
+		e.preventDefault();
+		const formData = new FormData(formRef);
+		await apiPutFormData('/api/me', formData);
+		editing = false;
+		await invalidateAll();
+	}
 </script>
 
 <div class="comic-border relative overflow-hidden rounded-xl bg-white p-6">
 	<form
-		method="POST"
-		action="?/updateProfile"
+		bind:this={formRef}
 		enctype="multipart/form-data"
-		use:enhance={() => {
-			return async ({ result, update }) => {
-				if (result.type === 'success') {
-					editing = false;
-				}
-				await update();
-			};
-		}}
+		onsubmit={handleSubmit}
 	>
 		<div class="flex items-center gap-5">
 			<div class="relative shrink-0">
