@@ -1,4 +1,5 @@
 import { Elysia } from "elysia";
+import { cors } from "@elysiajs/cors";
 import { auth } from "./lib/auth";
 import { roomWsPlugin } from "./ws/roomWs";
 import { roomRoutes } from "./routes/rooms";
@@ -12,18 +13,12 @@ const PORT = Number(process.env.PORT ?? 3001);
 
 const app = new Elysia()
   // ── CORS ──────────────────────────────────────────────────────────────────
-  .onBeforeHandle(({ request, set }) => {
-    set.headers["Access-Control-Allow-Origin"] = FRONTEND_URL;
-    set.headers["Access-Control-Allow-Credentials"] = "true";
-    set.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
-    set.headers["Access-Control-Allow-Methods"] =
-      "GET, POST, PUT, DELETE, OPTIONS";
-
-    if (request.method === "OPTIONS") {
-      set.status = 204;
-      return "";
-    }
-  })
+  .use(cors({
+    origin: FRONTEND_URL,
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  }))
 
   // ── Auth (better-auth handles all /api/auth/* routes) ─────────────────────
   .all("/api/auth/*", ({ request }) => auth.handler(request))
