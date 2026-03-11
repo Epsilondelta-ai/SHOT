@@ -31,6 +31,32 @@
 - Bun 1.x
 - Node.js 18+
 
+### 빠른 시작 (로컬 실행)
+
+처음 실행할 때는 아래 순서대로 진행하면 됩니다.
+
+```bash
+bun run setup
+cp frontend/.env.example frontend/.env
+cp backend/.env.example backend/.env
+bun run db:push
+bun run dev
+```
+
+정상적으로 실행되면 아래 주소로 접속할 수 있습니다.
+
+- 프론트엔드: `http://localhost:5173`
+- 백엔드: `http://localhost:3001`
+
+추가 DB 서버는 필요하지 않습니다. 현재 로컬 개발 환경은 SQLite를 사용하며, `bun run db:push` 시 `local.db` 파일이 생성되거나 갱신됩니다.
+
+이미 `bun run setup`과 `.env` 파일 준비가 끝난 상태라면, 그 다음부터는 아래 두 줄만으로 로컬 실행이 가능합니다.
+
+```bash
+bun run db:push
+bun run dev
+```
+
 ### 설치
 
 ```bash
@@ -49,6 +75,16 @@ cp backend/.env.example backend/.env
 ```
 
 기본 로컬 개발값은 예시 파일에 들어 있습니다. 백엔드는 기본적으로 `http://localhost:3001`, 프론트엔드는 `http://localhost:5173` 기준입니다.
+
+`backend/.env`가 없으면 실행 시 `DATABASE_URL is not set`, `ORIGIN is not set`, `BETTER_AUTH_SECRET is not set` 같은 오류가 발생할 수 있습니다.
+
+### DB 스키마 반영
+
+처음 한 번은 아래 명령으로 백엔드 기준 DB 스키마를 로컬 SQLite에 반영하세요.
+
+```bash
+bun run db:push
+```
 
 ### 개발 서버 실행
 
