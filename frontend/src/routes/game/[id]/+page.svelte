@@ -360,7 +360,7 @@
 			{/if}
 		</section>
 
-		{#if myPlayer}
+		{#if myPlayer && amAlive && !isSpectator}
 			<section class="border-t-4 border-slate-600 pt-4">
 				<h3 class="mb-3 text-sm font-black text-slate-300 uppercase">My Cards</h3>
 				<div class="flex flex-wrap items-center justify-center gap-3">

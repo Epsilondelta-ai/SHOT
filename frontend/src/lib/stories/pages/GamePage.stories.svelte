@@ -72,7 +72,7 @@
 			attacks: 1,
 			cards: [],
 			isJailed: false,
-			role: 'normal'
+			role: 'revealed'
 		},
 		{
 			id: 'p5',
@@ -96,67 +96,31 @@
 			attacks: 2,
 			cards: ['heal', 'jail'],
 			isJailed: false,
-			role: 'normal'
+			role: 'spy'
 		},
 		{
 			id: 'p7',
 			userId: 'u7',
 			name: 'Bandit_Bob',
-			hp: 3,
+			hp: 0,
 			maxHp: 3,
-			alive: true,
-			attacks: 1,
-			cards: [],
-			isJailed: false,
-			role: 'normal'
-		},
-		{
-			id: 'p8',
-			userId: 'u8',
-			name: 'Lawman_Tom',
-			hp: 2,
-			maxHp: 3,
-			alive: true,
-			attacks: 1,
-			cards: ['verify'],
-			isJailed: false,
-			role: 'normal'
-		},
-		{
-			id: 'p9',
-			userId: 'u9',
-			name: 'Undercover_Max',
-			hp: 3,
-			maxHp: 3,
-			alive: true,
+			alive: false,
 			attacks: 1,
 			cards: [],
 			isJailed: false,
 			role: 'spy'
 		},
 		{
-			id: 'p10',
-			userId: 'u10',
+			id: 'p8',
+			userId: 'u8',
 			name: 'Captain_Wilson',
 			hp: 5,
 			maxHp: 5,
 			alive: true,
 			attacks: 2,
-			cards: [],
+			cards: ['verify'],
 			isJailed: false,
 			role: 'leader'
-		},
-		{
-			id: 'p11',
-			userId: 'u11',
-			name: 'Agent_Green',
-			hp: 3,
-			maxHp: 3,
-			alive: true,
-			attacks: 1,
-			cards: [],
-			isJailed: false,
-			role: 'revealed'
 		}
 	];
 
@@ -165,11 +129,12 @@
 			? { ...p, cards: ['heal', 'heal', 'jail', 'verify'] as ('heal' | 'jail' | 'verify')[] }
 			: p
 	);
+	const emptyHandPlayers = basePlayers.map((p) =>
+		p.id === 'p2' ? { ...p, attacks: 0, cards: [] as Card[] } : p
+	);
 
 	const gameOverPlayers = basePlayers.map((p) =>
-		['p1', 'p3', 'p4', 'p6', 'p7', 'p8', 'p9', 'p11'].includes(p.id)
-			? { ...p, hp: 0, alive: false }
-			: p
+		['p1', 'p3', 'p4', 'p6', 'p7', 'p8'].includes(p.id) ? { ...p, hp: 0, alive: false } : p
 	);
 
 	const baseLogs: { id: string; text: string; type: 'shot' | 'eliminated' | 'round' | 'result' }[] =
@@ -209,7 +174,7 @@
 				players,
 				logs: baseLogs,
 				chatMessages: [
-					{ id: 'c1', playerId: 'p1', playerName: 'Sheriff_Buck', text: 'Watch p9.' },
+					{ id: 'c1', playerId: 'p1', playerName: 'Sheriff_Buck', text: 'Watch p6.' },
 					{ id: 'c2', playerId: 'p2', playerName: 'Outlaw_Jane', text: 'I am checking.' }
 				]
 			}
@@ -225,7 +190,11 @@
 <!-- 카드가 없는 경우 -->
 <Story name="Empty Hand - No Cards" asChild>
 	<GamePage
-		data={buildGame(basePlayers, { phase: 'chatting', remainingChatTurns: 1, canReveal: true })}
+		data={buildGame(emptyHandPlayers, {
+			phase: 'chatting',
+			remainingChatTurns: 1,
+			canReveal: true
+		})}
 	/>
 </Story>
 
