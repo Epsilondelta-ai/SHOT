@@ -1,58 +1,12 @@
 <script lang="ts">
-	import { apiGet, apiPost } from '$lib/api';
 	import GameChat from '$lib/components/game/GameChat.svelte';
 	import GameHeader from '$lib/components/game/GameHeader.svelte';
 	import GameLog from '$lib/components/game/GameLog.svelte';
 	import GamePlayer from '$lib/components/game/GamePlayer.svelte';
 	import GameResult from '$lib/components/game/GameResult.svelte';
+	import { createGameSocket } from '$lib/gameSocket.svelte';
 	import { m } from '$lib/paraglide/messages';
-
-	type SpecialCard = 'heal' | 'jail' | 'verify';
-	type ActionCard = 'attack' | SpecialCard;
-	type Role = 'normal' | 'spy' | 'leader' | 'revealed';
-	type WinnerTeam = 'agents' | 'spies';
-
-	type GamePlayerData = {
-		id: string;
-		userId: string;
-		name: string;
-		hp: number;
-		maxHp: number;
-		alive: boolean;
-		isJailed: boolean;
-		attacks: number;
-		cards: SpecialCard[];
-		role: Role;
-	};
-
-	type LogEntry = {
-		id: string;
-		text: string;
-		type: 'shot' | 'eliminated' | 'round' | 'result';
-	};
-
-	type ChatMessage = {
-		id: string;
-		playerId: string;
-		playerName: string;
-		text: string;
-	};
-
-	type GameSnapshot = {
-		roomId: string;
-		round: number;
-		currentTurnPlayerId: string;
-		viewerMode: 'player' | 'spectator';
-		myPlayerId: string | null;
-		myTeam: WinnerTeam | null;
-		phase: 'chatting' | 'acting' | 'finished';
-		remainingChatTurns: number;
-		canReveal: boolean;
-		winnerTeam: WinnerTeam | null;
-		players: GamePlayerData[];
-		logs: LogEntry[];
-		chatMessages: ChatMessage[];
-	};
+	import type { ActionCard, GameAction, GameSnapshot } from '$lib/types/game';
 
 	const emptyGame: GameSnapshot = {
 		roomId: 'story-room',
@@ -72,7 +26,7 @@
 
 	let { data } = $props();
 
-	let game = $derived((data.game as GameSnapshot) ?? emptyGame);
+	let game = $state<GameSnapshot>((data.game as GameSnapshot) ?? emptyGame);
 	let selectedCard = $state<ActionCard | null>(null);
 	let selectedTargetId = $state<string | null>(null);
 	let isLogOpen = $state(false);
@@ -81,12 +35,26 @@
 	let actionPending = $state(false);
 	let timeLeft = $state(15);
 
-	$effect(() => {
-		const timer = setInterval(() => {
-			void refreshGame();
-		}, 2000);
+	let socket = $state<ReturnType<typeof createGameSocket> | null>(null);
 
-		return () => clearInterval(timer);
+	$effect(() => {
+		const s = createGameSocket(
+			game.roomId,
+			{
+				onGameState: (snapshot) => {
+					game = snapshot;
+					actionPending = false;
+					selectedCard = null;
+					selectedTargetId = null;
+				},
+				onError: () => {
+					actionError = 'Connection lost. Please refresh.';
+				}
+			},
+			{ spectator: game.viewerMode === 'spectator' }
+		);
+		socket = s;
+		return () => s.close();
 	});
 
 	$effect(() => {
@@ -134,38 +102,18 @@
 			}));
 	});
 
-	async function refreshGame() {
-		try {
-			const spectatorQuery = game.viewerMode === 'spectator' ? '?spectator=1' : '';
-			game = await apiGet<GameSnapshot>(`/api/games/${game.roomId}${spectatorQuery}`);
-		} catch {
-			// ignore transient refresh errors; action handlers surface blocking failures
-		}
-	}
-
-	async function dispatchAction(
-		action:
-			| { type: 'chat'; text: string }
-			| { type: 'skip-chat' }
-			| { type: 'reveal' }
-			| { type: 'play-card'; card: ActionCard; targetId?: string }
-			| { type: 'end-turn' }
-	) {
+	function dispatchAction(action: GameAction) {
 		if (actionPending) return;
+		if (!socket) return;
 
 		actionPending = true;
 		actionError = '';
+		socket.sendAction(action);
 
-		try {
-			game = await apiPost<GameSnapshot>(`/api/games/${game.roomId}/actions`, action);
-			selectedCard = null;
-			selectedTargetId = null;
-		} catch (error) {
-			actionError = error instanceof Error ? error.message : 'Action failed';
-			await refreshGame();
-		} finally {
+		// Auto-release pending after 10s in case server never responds
+		setTimeout(() => {
 			actionPending = false;
-		}
+		}, 10000);
 	}
 
 	function selectTarget(playerId: string) {
@@ -174,19 +122,19 @@
 	}
 
 	function sendChat(text: string) {
-		void dispatchAction({ type: 'chat', text });
+		dispatchAction({ type: 'chat', text });
 	}
 
 	function skipChatTurn() {
-		void dispatchAction({ type: 'skip-chat' });
+		dispatchAction({ type: 'skip-chat' });
 	}
 
 	function revealIdentity() {
-		void dispatchAction({ type: 'reveal' });
+		dispatchAction({ type: 'reveal' });
 	}
 
 	function endTurn() {
-		void dispatchAction({ type: 'end-turn' });
+		dispatchAction({ type: 'end-turn' });
 	}
 
 	function playSelectedCard() {
@@ -200,7 +148,7 @@
 			return;
 		}
 
-		void dispatchAction({ type: 'play-card', card: selectedCard, targetId });
+		dispatchAction({ type: 'play-card', card: selectedCard, targetId });
 	}
 
 	const winnerLabel = $derived(

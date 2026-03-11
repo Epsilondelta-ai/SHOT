@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { auth } from "./lib/auth";
 import { roomWsPlugin } from "./ws/roomWs";
+import { gameWsPlugin } from "./ws/gameWs";
 import { roomRoutes } from "./routes/rooms";
 import { gameRoutes } from "./routes/games";
 import { adminRoutes } from "./routes/admin";
@@ -32,6 +33,7 @@ const app = new Elysia()
 
   // ── WebSocket ─────────────────────────────────────────────────────────────
   .use(roomWsPlugin)
+  .use(gameWsPlugin)
 
   .listen(PORT);
 

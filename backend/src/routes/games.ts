@@ -12,6 +12,8 @@ import { getUser } from "../lib/getUser";
 import { getRoomById } from "../lib/roomState";
 import { getSerializedRoomPlayers } from "../lib/roomPlayers";
 import { broadcastPlayers } from "../ws/roomWs";
+import { broadcastGameState } from "../ws/gameWs";
+import { maybeRunLlmTurn } from "../lib/llmPlayer";
 
 function isSpectatorRequest(request: Request) {
   return new URL(request.url).searchParams.get("spectator") === "1";
@@ -79,6 +81,8 @@ export const gameRoutes = new Elysia()
       .set({ status: "in_progress" })
       .where(eq(room.id, params.id));
     await broadcastPlayers(params.id);
+    await broadcastGameState(params.id);
+    void maybeRunLlmTurn(params.id);
 
     return { success: true, roomId: params.id };
   })
@@ -103,6 +107,8 @@ export const gameRoutes = new Elysia()
 
     try {
       applyGameAction(params.id, user.id, body);
+      await broadcastGameState(params.id);
+      void maybeRunLlmTurn(params.id);
       return createSnapshot(params.id, user.id);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Invalid action";

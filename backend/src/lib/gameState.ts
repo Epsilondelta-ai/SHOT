@@ -10,6 +10,8 @@ type InternalPlayer = {
   userId: string;
   name: string;
   controller: Controller;
+  assistantId: string | null;
+  llmModelId: string | null;
   role: HiddenRole;
   revealed: boolean;
   verified: boolean;
@@ -455,6 +457,8 @@ export function initializeGame(
       userId: player.userId,
       name: player.name,
       controller: player.type,
+      assistantId: player.assistantId ?? null,
+      llmModelId: player.llmModelId ?? null,
       role,
       revealed: isLeader,
       verified: isLeader,
@@ -487,6 +491,28 @@ export function initializeGame(
   startTurn(state, state.players[0]!);
   games.set(roomId, state);
   return state;
+}
+
+export function getCurrentTurnController(roomId: string): {
+  controller: "human" | "llm" | "bot";
+  playerId: string;
+  userId: string;
+  assistantId: string | null;
+  llmModelId: string | null;
+} | null {
+  const state = games.get(roomId);
+  if (!state || state.winnerTeam) return null;
+  const player = state.players.find(
+    (p) => p.id === state.currentTurnPlayerId,
+  );
+  if (!player || !player.alive) return null;
+  return {
+    controller: player.controller,
+    playerId: player.id,
+    userId: player.userId,
+    assistantId: player.assistantId,
+    llmModelId: player.llmModelId,
+  };
 }
 
 export function getGame(roomId: string) {
