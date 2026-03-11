@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, mock, it } from "bun:test";
 import Elysia from "elysia";
+import type { SerializedRoomPlayer } from "../lib/roomPlayers";
 
 const mockUser = { id: "u1", name: "Host" };
 const mockGetUser = mock(async () => mockUser);
@@ -9,7 +10,7 @@ const mockGetRoomById = mock(async () => ({
   maxPlayers: 5,
   status: "waiting",
 }));
-const mockGetSerializedRoomPlayers = mock(async () => []);
+const mockGetSerializedRoomPlayers = mock(async (): Promise<SerializedRoomPlayer[]> => []);
 const mockInitializeGame = mock(() => {});
 const mockGetGame = mock(() => ({ roomId: "room-1" }));
 const mockCreateSnapshot = mock(() => ({ roomId: "room-1" }));
@@ -30,11 +31,32 @@ mock.module("../db", () => ({
 }));
 
 mock.module("../db/schema", () => ({
-  room: { id: "room.id" },
+  room: { id: "room.id", name: "room.name", icon: "room.icon", maxPlayers: "room.maxPlayers", status: "room.status", createdAt: "room.createdAt" },
+  roomPlayer: { id: "roomPlayer.id", roomId: "roomPlayer.roomId", userId: "roomPlayer.userId", playerType: "roomPlayer.playerType", displayName: "roomPlayer.displayName", assistantId: "roomPlayer.assistantId", llmModelId: "roomPlayer.llmModelId" },
+  user: { id: "user.id", name: "user.name", email: "user.email", role: "user.role", image: "user.image" },
+  session: { id: "session.id", token: "session.token", userId: "session.userId" },
+  account: { id: "account.id", userId: "account.userId" },
+  verification: { id: "verification.id" },
+  banHistory: { id: "banHistory.id", userId: "banHistory.userId", createdAt: "banHistory.createdAt" },
+  task: { id: "task.id" },
+  assistant: { id: "assistant.id", userId: "assistant.userId", name: "assistant.name", prompt: "assistant.prompt", active: "assistant.active" },
+  bot: { id: "bot.id", name: "bot.name", apiKey: "bot.apiKey", active: "bot.active" },
+  llmProvider: { provider: "llmProvider.provider", apiKey: "llmProvider.apiKey", active: "llmProvider.active" },
+  llmModel: { id: "llmModel.id", provider: "llmModel.provider", apiModelName: "llmModel.apiModelName", displayName: "llmModel.displayName", active: "llmModel.active" },
+  gameRulebook: { id: "gameRulebook.id", name: "gameRulebook.name", content: "gameRulebook.content", active: "gameRulebook.active" },
+  userRelations: {}, banHistoryRelations: {}, sessionRelations: {}, accountRelations: {}, roomRelations: {}, roomPlayerRelations: {},
 }));
 
 mock.module("drizzle-orm", () => ({
   eq: (a: unknown, b: unknown) => ({ op: "eq", a, b }),
+  and: (...args: unknown[]) => ({ op: "and", args }),
+  or: (...args: unknown[]) => ({ op: "or", args }),
+  count: (col: unknown) => ({ op: "count", col }),
+  desc: (col: unknown) => ({ op: "desc", col }),
+  inArray: (col: unknown, vals: unknown) => ({ op: "inArray", col, vals }),
+  isNull: (col: unknown) => ({ op: "isNull", col }),
+  relations: () => ({}),
+  sql: {},
 }));
 
 mock.module("../lib/getUser", () => ({
@@ -43,6 +65,11 @@ mock.module("../lib/getUser", () => ({
 
 mock.module("../lib/roomState", () => ({
   getRoomById: mockGetRoomById,
+  getHumanRoomPlayer: mock(async () => null),
+  parseRoomCapacity: mock((v: unknown) => { const p = Number(v); return Number.isInteger(p) && p >= 5 && p <= 8 ? p : null; }),
+  syncRoomAfterHumanDeparture: mock(async () => ({ deleted: false, hostUserId: null })),
+  MIN_ROOM_PLAYERS: 5,
+  MAX_ROOM_PLAYERS: 8,
 }));
 
 mock.module("../lib/roomPlayers", () => ({
@@ -58,6 +85,15 @@ mock.module("../lib/gameState", () => ({
 
 mock.module("../ws/roomWs", () => ({
   broadcastPlayers: mockBroadcastPlayers,
+}));
+
+mock.module("../ws/gameWs", () => ({
+  broadcastGameState: mock(async () => {}),
+}));
+
+mock.module("../lib/llmPlayer", () => ({
+  maybeRunLlmTurn: mock(async () => {}),
+  clearConversationHistory: mock(() => {}),
 }));
 
 const { gameRoutes } = await import("./games");
@@ -96,11 +132,11 @@ beforeEach(() => {
 describe("POST /api/games/:id/start", () => {
   it("rejects start when a non-host player is not ready", async () => {
     mockGetSerializedRoomPlayers.mockResolvedValueOnce([
-      { id: "p1", userId: "u1", type: "human", ready: false },
-      { id: "p2", userId: "u2", type: "human", ready: true },
-      { id: "p3", userId: "u3", type: "human", ready: false },
-      { id: "p4", userId: "u4", type: "human", ready: true },
-      { id: "p5", userId: "u5", type: "human", ready: true },
+      { id: "p1", userId: "u1", name: "P1", avatarSrc: null, type: "human", canManageBots: false, assistantId: null, assistantName: null, llmModelId: null, modelName: null, botId: null, ready: false },
+      { id: "p2", userId: "u2", name: "P2", avatarSrc: null, type: "human", canManageBots: false, assistantId: null, assistantName: null, llmModelId: null, modelName: null, botId: null, ready: true },
+      { id: "p3", userId: "u3", name: "P3", avatarSrc: null, type: "human", canManageBots: false, assistantId: null, assistantName: null, llmModelId: null, modelName: null, botId: null, ready: false },
+      { id: "p4", userId: "u4", name: "P4", avatarSrc: null, type: "human", canManageBots: false, assistantId: null, assistantName: null, llmModelId: null, modelName: null, botId: null, ready: true },
+      { id: "p5", userId: "u5", name: "P5", avatarSrc: null, type: "human", canManageBots: false, assistantId: null, assistantName: null, llmModelId: null, modelName: null, botId: null, ready: true },
     ]);
 
     const app = makeApp();
@@ -119,11 +155,11 @@ describe("POST /api/games/:id/start", () => {
 
   it("starts the game when readiness requirements are satisfied", async () => {
     mockGetSerializedRoomPlayers.mockResolvedValueOnce([
-      { id: "p1", userId: "u1", type: "human", ready: false },
-      { id: "p2", userId: "u2", type: "human", ready: true },
-      { id: "p3", userId: "u3", type: "human", ready: true },
-      { id: "p4", userId: "u4", type: "human", ready: true },
-      { id: "p5", userId: "u5", type: "human", ready: true },
+      { id: "p1", userId: "u1", name: "P1", avatarSrc: null, type: "human", canManageBots: false, assistantId: null, assistantName: null, llmModelId: null, modelName: null, botId: null, ready: false },
+      { id: "p2", userId: "u2", name: "P2", avatarSrc: null, type: "human", canManageBots: false, assistantId: null, assistantName: null, llmModelId: null, modelName: null, botId: null, ready: true },
+      { id: "p3", userId: "u3", name: "P3", avatarSrc: null, type: "human", canManageBots: false, assistantId: null, assistantName: null, llmModelId: null, modelName: null, botId: null, ready: true },
+      { id: "p4", userId: "u4", name: "P4", avatarSrc: null, type: "human", canManageBots: false, assistantId: null, assistantName: null, llmModelId: null, modelName: null, botId: null, ready: true },
+      { id: "p5", userId: "u5", name: "P5", avatarSrc: null, type: "human", canManageBots: false, assistantId: null, assistantName: null, llmModelId: null, modelName: null, botId: null, ready: true },
     ]);
 
     const app = makeApp();

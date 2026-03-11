@@ -2,54 +2,19 @@ import { describe, it, expect, mock, beforeEach } from 'bun:test';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-const mockRoomPlayerFindMany = mock(async (): Promise<unknown[]> => []);
-const mockSessionFindFirst = mock(async (): Promise<unknown | undefined> => undefined);
-const mockGetSerializedRoomPlayers = mock(async (): Promise<unknown[]> => []);
-const mockGetRoomById = mock(async (): Promise<unknown | null> => null);
+const mockAppendFileSync = mock((..._args: unknown[]) => {});
+const mockMkdirSync = mock((..._args: unknown[]) => {});
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockDelete = mock((..._args: any[]): any => ({
-	where: (..._: unknown[]) => Promise.resolve()
+mock.module('fs', () => ({
+	appendFileSync: mockAppendFileSync,
+	mkdirSync: mockMkdirSync,
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockSelect = mock((..._args: any[]): any => ({
-	from: (..._: unknown[]) => ({
-		where: (...__: unknown[]) => Promise.resolve([]),
-		leftJoin: (...__: unknown[]) => ({
-			groupBy: (...___: unknown[]) => Promise.resolve([])
-		}),
-		orderBy: (...__: unknown[]) => Promise.resolve([])
-	})
-}));
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockInsert = mock((..._args: any[]): any => ({
-	values: (..._: unknown[]) => Promise.resolve()
-}));
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockUpdate = mock((..._args: any[]): any => ({
-	set: (..._: unknown[]) => ({
-		where: (...__: unknown[]) => Promise.resolve()
-	})
+mock.module('path', () => ({
+	join: (...parts: string[]) => parts.join('/'),
 }));
 
-mock.module('../db', () => ({
-	db: {
-		select: mockSelect,
-		insert: mockInsert,
-		update: mockUpdate,
-		delete: mockDelete,
-		query: {
-			roomPlayer: { findMany: mockRoomPlayerFindMany },
-			session: { findFirst: mockSessionFindFirst },
-			user: { findMany: mock(async () => []) },
-			assistant: { findMany: mock(async () => []) },
-			llmModel: { findMany: mock(async () => []) },
-			bot: { findFirst: mock(async () => null) }
-		}
-	}
-}));
-
+// Schema mock for consistency with other test files
 mock.module('../db/schema', () => ({
 	user: { id: 'user.id', name: 'user.name', email: 'user.email', role: 'user.role', image: 'user.image', createdAt: 'user.createdAt', updatedAt: 'user.updatedAt', banStart: 'user.banStart', banEnd: 'user.banEnd', banReason: 'user.banReason', lastSeenAt: 'user.lastSeenAt', emailVerified: 'user.emailVerified' },
 	session: { id: 'session.id', token: 'session.token', userId: 'session.userId', expiresAt: 'session.expiresAt', createdAt: 'session.createdAt', updatedAt: 'session.updatedAt', ipAddress: 'session.ipAddress', userAgent: 'session.userAgent' },
@@ -79,47 +44,104 @@ mock.module('drizzle-orm', () => ({
 	sql: {}
 }));
 
-mock.module('../lib/roomPlayers', () => ({
-	getSerializedRoomPlayers: mockGetSerializedRoomPlayers
-}));
-
-mock.module('../lib/roomState', () => ({
-	getRoomById: mockGetRoomById,
-	getHumanRoomPlayer: mock(async () => null),
-	parseRoomCapacity: mock((v: unknown) => { const p = Number(v); return Number.isInteger(p) && p >= 5 && p <= 8 ? p : null; }),
-	syncRoomAfterHumanDeparture: mock(async () => ({ deleted: false, hostUserId: null })),
-	MIN_ROOM_PLAYERS: 5,
-	MAX_ROOM_PLAYERS: 8
-}));
-
-const { broadcastPlayers } = await import('./roomWs');
+// Import the REAL module — no other test file mocks llmLogger
+const { writeLlmLog, llmLog } = await import('./llmLogger');
 
 beforeEach(() => {
-	mockRoomPlayerFindMany.mockClear();
-	mockGetSerializedRoomPlayers.mockReset();
-	mockGetSerializedRoomPlayers.mockResolvedValue([]);
-	mockGetRoomById.mockReset();
-	mockGetRoomById.mockResolvedValue({ id: 'room-1', hostUserId: 'u1', maxPlayers: 5, status: 'waiting' });
+	mockAppendFileSync.mockReset();
+	mockMkdirSync.mockReset();
 });
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
-describe('broadcastPlayers', () => {
-	it('does nothing when no players in room', async () => {
-		await broadcastPlayers('room-1');
-		expect(true).toBe(true);
+const sampleLogEntry = {
+	roomId: 'room-1',
+	round: 2,
+	phase: 'acting',
+	player: {
+		userId: 'u1',
+		name: 'TestBot',
+		assistantId: 'a1',
+		assistantName: 'SmartBot',
+		provider: 'anthropic',
+		model: 'claude-sonnet',
+	},
+	attempt: 1,
+	systemPrompt: 'You are a game player',
+	userPrompt: 'Choose an action',
+	rawResponse: '{"type":"end-turn"}',
+	parsedAction: { type: 'end-turn' } as Record<string, unknown>,
+	success: true,
+	error: null,
+	outcome: 'action_applied' as const,
+};
+
+describe('writeLlmLog', () => {
+	it('creates log directory and writes log entry', () => {
+		writeLlmLog({ timestamp: '2026-03-11T00:00:00.000Z', ...sampleLogEntry });
+
+		expect(mockMkdirSync).toHaveBeenCalled();
+		expect(mockAppendFileSync).toHaveBeenCalledTimes(1);
+
+		const writtenData = mockAppendFileSync.mock.calls[0][1] as string;
+		const parsed = JSON.parse(writtenData.trim());
+		expect(parsed.roomId).toBe('room-1');
+		expect(parsed.success).toBe(true);
+		expect(parsed.outcome).toBe('action_applied');
 	});
 
-	it('serializes players and does not throw when no sockets registered', async () => {
-		mockGetSerializedRoomPlayers.mockResolvedValueOnce([
-			{
-				id: 'p1', userId: 'u1', name: 'Alice', avatarSrc: null,
-				type: 'human', assistantId: null, assistantName: null, llmModelId: null, modelName: null, ready: false
-			}
-		]);
+	it('does not throw when appendFileSync fails', () => {
+		mockAppendFileSync.mockImplementationOnce(() => {
+			throw new Error('disk full');
+		});
 
-		// No sockets registered for this room, should complete without error
-		await broadcastPlayers('nonexistent-room');
-		expect(true).toBe(true);
+		expect(() => {
+			writeLlmLog({ timestamp: '2026-03-11T00:00:00.000Z', ...sampleLogEntry });
+		}).not.toThrow();
+	});
+
+	it('does not throw when mkdirSync fails', () => {
+		mockMkdirSync.mockImplementationOnce(() => {
+			throw new Error('permission denied');
+		});
+
+		expect(() => {
+			writeLlmLog({ timestamp: '2026-03-11T00:00:00.000Z', ...sampleLogEntry });
+		}).not.toThrow();
+	});
+});
+
+describe('llmLog', () => {
+	it('adds timestamp and calls writeLlmLog', () => {
+		llmLog(sampleLogEntry);
+
+		expect(mockAppendFileSync).toHaveBeenCalledTimes(1);
+		const writtenData = mockAppendFileSync.mock.calls[0][1] as string;
+		const parsed = JSON.parse(writtenData.trim());
+		expect(parsed.timestamp).toBeDefined();
+		expect(typeof parsed.timestamp).toBe('string');
+		expect(parsed.timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+	});
+
+	it('includes all log fields', () => {
+		llmLog(sampleLogEntry);
+
+		const writtenData = mockAppendFileSync.mock.calls[0][1] as string;
+		const parsed = JSON.parse(writtenData.trim());
+		expect(parsed.roomId).toBe('room-1');
+		expect(parsed.round).toBe(2);
+		expect(parsed.phase).toBe('acting');
+		expect(parsed.player.name).toBe('TestBot');
+		expect(parsed.attempt).toBe(1);
+		expect(parsed.success).toBe(true);
+		expect(parsed.outcome).toBe('action_applied');
+	});
+
+	it('includes historyLength when provided', () => {
+		llmLog({ ...sampleLogEntry, historyLength: 42 });
+
+		const writtenData = mockAppendFileSync.mock.calls[0][1] as string;
+		const parsed = JSON.parse(writtenData.trim());
+		expect(parsed.historyLength).toBe(42);
 	});
 });
