@@ -209,6 +209,7 @@
 	}
 
 	async function becomeSpectator() {
+		isLeaving = true;
 		await apiPost(`/api/rooms/${data.roomId}/spectate`);
 		goto(`/room/${data.roomId}?spectator=1`);
 	}
