@@ -11,11 +11,12 @@ import { meRoutes } from "./routes/me";
 
 const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
 const PORT = Number(process.env.PORT ?? 3001);
+const IS_DEV = process.env.NODE_ENV === "development";
 
 const app = new Elysia()
   // ── CORS ──────────────────────────────────────────────────────────────────
   .use(cors({
-    origin: FRONTEND_URL,
+    origin: IS_DEV ? true : FRONTEND_URL,
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
