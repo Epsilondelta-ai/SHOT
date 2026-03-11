@@ -46,6 +46,9 @@ frontend/project.inlang/cache/
 *storybook.log
 storybook-static
 
+# E2E
+e2e/screenshots
+
 # OMC / Tools
 .omc
 .omx
