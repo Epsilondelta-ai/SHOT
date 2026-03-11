@@ -129,8 +129,7 @@
 		players.filter((player) => player.id === hostId || player.ready).length
 	);
 	const allReady = $derived(readyCount === players.length);
-	const hasOnlyHumanPlayers = $derived(players.every((player) => player.type === 'human'));
-	const canStart = $derived(isHost && allReady && hasOnlyHumanPlayers && players.length >= 5);
+	const canStart = $derived(isHost && allReady && players.length >= 5);
 	const isRoomFull = $derived(players.length >= maxPlayers);
 	const humanMembers = $derived(
 		players.filter((player) => player.type === 'human' && player.userId !== hostUserId)
