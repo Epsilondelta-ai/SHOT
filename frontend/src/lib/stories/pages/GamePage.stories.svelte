@@ -185,11 +185,13 @@
 	function buildGame(
 		players: GamePlayerData[],
 		overrides: Partial<{
+			viewerMode: 'player' | 'spectator';
 			phase: 'chatting' | 'acting' | 'finished';
 			remainingChatTurns: number;
 			canReveal: boolean;
 			winnerTeam: 'agents' | 'spies' | null;
-			myTeam: 'agents' | 'spies';
+			myTeam: 'agents' | 'spies' | null;
+			myPlayerId: string | null;
 		}> = {}
 	) {
 		return {
@@ -197,7 +199,8 @@
 				roomId: 'story-room',
 				round: 2,
 				currentTurnPlayerId: 'p2',
-				myPlayerId: 'p2',
+				viewerMode: overrides.viewerMode ?? 'player',
+				myPlayerId: overrides.myPlayerId ?? 'p2',
 				myTeam: overrides.myTeam ?? 'agents',
 				phase: overrides.phase ?? 'acting',
 				remainingChatTurns: overrides.remainingChatTurns ?? 0,
@@ -229,4 +232,9 @@
 <!-- 게임 종료 상태 -->
 <Story name="Game Over" asChild>
 	<GamePage data={buildGame(gameOverPlayers, { phase: 'finished', winnerTeam: 'agents' })} />
+</Story>
+
+<!-- 내가 죽은 뒤 관전하는 상태 -->
+<Story name="Died - Spectating" asChild>
+	<GamePage data={buildGame(basePlayers, { myPlayerId: 'p4', phase: 'acting' })} />
 </Story>
