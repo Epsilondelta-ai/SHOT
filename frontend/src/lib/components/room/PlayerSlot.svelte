@@ -5,7 +5,8 @@
 		player,
 		isHost = false,
 		isMe = false,
-		onkick
+		onkick,
+		ontoggleReady
 	}: {
 		player?: {
 			name: string;
@@ -19,14 +20,21 @@
 		isHost?: boolean;
 		isMe?: boolean;
 		onkick?: () => void;
+		ontoggleReady?: () => void;
 	} = $props();
+
+	const canToggleReady = $derived(
+		Boolean(player && isMe && player.type === 'human' && !isHost && ontoggleReady)
+	);
+
+	const readyHint = $derived.by(() => {
+		if (!canToggleReady) return '';
+		return player?.ready ? '한 번 더 누르면 준비 취소' : '내 슬롯을 눌러 준비';
+	});
 </script>
 
 {#if player}
-	<div
-		class="comic-border relative flex flex-col items-center gap-2 rounded-xl bg-white p-4 transition-all
-			{player.ready ? 'ring-3 ring-green-400' : ''}"
-	>
+	{#snippet slotContent()}
 		{#if isHost}
 			<span
 				class="absolute -top-3 -right-2 rounded-full border-2 border-slate-900 bg-yellow-400 px-2 py-0.5 text-[10px] font-black uppercase"
@@ -44,7 +52,11 @@
 			{:else}
 				<div class="flex h-full w-full items-center justify-center">
 					<span class="material-symbols-outlined text-3xl text-slate-600">
-						{player.type === 'llm' ? 'smart_toy' : player.type === 'bot' ? 'precision_manufacturing' : 'person'}
+						{player.type === 'llm'
+							? 'smart_toy'
+							: player.type === 'bot'
+								? 'precision_manufacturing'
+								: 'person'}
 					</span>
 				</div>
 			{/if}
@@ -91,16 +103,48 @@
 			</span>
 		{/if}
 
+		{#if canToggleReady}
+			<span
+				class="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-black text-primary"
+			>
+				<span class="material-symbols-outlined text-xs">touch_app</span>
+				{readyHint}
+			</span>
+		{/if}
+
 		{#if onkick && !isMe}
 			<button
 				class="absolute -top-2 -left-2 flex size-6 items-center justify-center rounded-full border-2 border-slate-900 bg-red-500 text-white transition-transform hover:scale-110"
-				onclick={onkick}
+				onclick={(event) => {
+					event.stopPropagation();
+					onkick();
+				}}
 				title={m.room_kick()}
 			>
 				<span class="material-symbols-outlined text-sm">close</span>
 			</button>
 		{/if}
-	</div>
+	{/snippet}
+
+	{#if canToggleReady}
+		<button
+			type="button"
+			class="comic-border relative flex cursor-pointer flex-col items-center gap-2 rounded-xl bg-white p-4 text-left transition-all hover:-translate-y-1 hover:bg-primary/5 focus-visible:outline-3 focus-visible:outline-primary
+				{player.ready ? 'ring-3 ring-green-400' : ''}"
+			aria-pressed={player.ready}
+			title={readyHint}
+			onclick={ontoggleReady}
+		>
+			{@render slotContent()}
+		</button>
+	{:else}
+		<div
+			class="comic-border relative flex flex-col items-center gap-2 rounded-xl bg-white p-4 transition-all
+				{player.ready ? 'ring-3 ring-green-400' : ''}"
+		>
+			{@render slotContent()}
+		</div>
+	{/if}
 {:else}
 	<div
 		class="comic-border flex flex-col items-center justify-center gap-2 rounded-xl border-dashed bg-slate-50 p-4 opacity-50"

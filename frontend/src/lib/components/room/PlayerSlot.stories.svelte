@@ -46,7 +46,8 @@
 	args={{
 		player: { name: 'Outlaw_Jane', ready: false },
 		isHost: false,
-		isMe: true
+		isMe: true,
+		ontoggleReady: fn()
 	}}
 />
 

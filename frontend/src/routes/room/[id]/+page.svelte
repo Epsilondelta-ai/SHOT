@@ -77,13 +77,7 @@
 	$effect(() => {
 		const socket = createRoomSocket(data.roomId, {
 			onPlayers: (wsPlayers, roomState) => {
-				players = wsPlayers.map((player) => ({
-					...player,
-					ready:
-						player.type === 'human'
-							? (players.find((existing) => existing.id === player.id)?.ready ?? false)
-							: true
-				}));
+				players = wsPlayers;
 				if (roomState) {
 					hostUserId = roomState.hostUserId;
 					maxPlayers = roomState.maxPlayers;
@@ -139,8 +133,12 @@
 	});
 
 	function toggleReady() {
-		if (!myPlayer) return;
-		socketRef?.sendReady(!myPlayer.ready);
+		if (!myPlayer || isHost) return;
+		const nextReady = !myPlayer.ready;
+		players = players.map((player) =>
+			player.id === myPlayer.id ? { ...player, ready: nextReady } : player
+		);
+		socketRef?.sendReady(nextReady);
 	}
 
 	function kickPlayer(playerId: string) {
@@ -231,10 +229,17 @@
 		</div>
 
 		<section>
-			<h2 class="mb-3 flex items-center gap-2 text-lg font-black uppercase">
-				<span class="material-symbols-outlined text-primary">group</span>
-				{m.room_players()}
-			</h2>
+			<div class="mb-3 flex items-end justify-between gap-3">
+				<h2 class="flex items-center gap-2 text-lg font-black uppercase">
+					<span class="material-symbols-outlined text-primary">group</span>
+					{m.room_players()}
+				</h2>
+				{#if !isHost && myPlayer}
+					<p class="text-right text-[11px] font-black text-primary">
+						{amReady ? '내 슬롯을 다시 누르면 준비 취소' : '내 슬롯을 누르면 준비 완료'}
+					</p>
+				{/if}
+			</div>
 			<div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
 				{#each slots as player, i (player?.id ?? `empty-${i}`)}
 					<PlayerSlot
@@ -243,6 +248,9 @@
 						isMe={player?.userId === data.myId}
 						onkick={isHost && player && player.userId !== data.myId
 							? () => kickPlayer(player.id)
+							: undefined}
+						ontoggleReady={player?.userId === data.myId && player?.id !== hostId
+							? toggleReady
 							: undefined}
 					/>
 				{/each}
@@ -383,16 +391,19 @@
 					{m.room_start_game()}
 				</button>
 			{:else}
-				<button
-					class="comic-button flex flex-[2] items-center justify-center gap-2 rounded-xl border-3 border-slate-900 px-6 py-4 font-black text-white uppercase italic shadow-[3px_3px_0px_#221910]
-						{amReady ? 'bg-red-500' : 'bg-primary'}"
-					onclick={toggleReady}
+				<div
+					class="comic-border flex flex-[2] items-center justify-center gap-3 rounded-xl bg-white px-6 py-4"
 				>
-					<span class="material-symbols-outlined">
-						{amReady ? 'close' : 'check'}
-					</span>
-					{amReady ? m.room_cancel_ready() : m.room_not_ready()}
-				</button>
+					<span class="material-symbols-outlined text-2xl text-primary">touch_app</span>
+					<div class="text-left">
+						<p class="text-[11px] font-black tracking-wider text-slate-500 uppercase">
+							Ready Control
+						</p>
+						<p class="text-sm font-black text-slate-800">
+							{amReady ? '내 슬롯을 다시 눌러 준비를 취소하세요.' : '내 슬롯을 눌러 준비하세요.'}
+						</p>
+					</div>
+				</div>
 			{/if}
 		</div>
 	</main>
