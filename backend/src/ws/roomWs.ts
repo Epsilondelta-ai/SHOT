@@ -39,7 +39,7 @@ export async function broadcastPlayers(roomId: string) {
     getSerializedRoomPlayers(roomId),
     getRoomById(roomId),
   ]);
-  if (!roomData || players.length === 0) return;
+  if (!roomData) return;
 
   const wsIds = roomSockets.get(roomId);
   const spectators = wsIds

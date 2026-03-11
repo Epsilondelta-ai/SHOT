@@ -164,7 +164,13 @@
 		socketRef?.sendChat(text);
 	}
 
-	let isLeaving = false;
+	let isLeaving = $state(false);
+
+	// Reset isLeaving when spectator mode activates (becomeSpectator sets isLeaving=true
+	// to block beforeNavigate, but SvelteKit soft-navigates keeping the same instance)
+	$effect(() => {
+		if (data.isSpectator) isLeaving = false;
+	});
 
 	async function leaveRoom() {
 		if (isLeaving) return;
