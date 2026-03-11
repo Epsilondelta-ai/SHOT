@@ -314,7 +314,10 @@
 				</h2>
 				<div class="comic-border-sm flex flex-wrap gap-2 rounded-xl bg-white px-4 py-3">
 					{#each spectators as spectator (spectator.userId)}
-						<span class="rounded-lg bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+						<span class="flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
+							{#if spectator.userId === hostUserId}
+								<span class="material-symbols-outlined text-xs text-yellow-500">star</span>
+							{/if}
 							{spectator.userName}
 						</span>
 					{/each}
