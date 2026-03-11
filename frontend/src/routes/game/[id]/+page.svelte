@@ -38,7 +38,7 @@
 	let isChatOpen = $state(false);
 	let actionError = $state('');
 	let actionPending = $state(false);
-	let timeLeft = $state(15);
+	let timeLeft = $state(120);
 
 	let socket = $state<ReturnType<typeof createGameSocket> | null>(null);
 
@@ -64,7 +64,7 @@
 
 	$effect(() => {
 		const round = game.round;
-		timeLeft = round >= 0 ? 15 : 15;
+		timeLeft = round >= 0 ? 120 : 120;
 		const timer = setInterval(() => {
 			timeLeft = Math.max(0, timeLeft - 1);
 		}, 1000);
@@ -168,7 +168,7 @@
 </svelte:head>
 
 <div class="flex min-h-screen flex-col bg-background-dark font-display text-white">
-	<GameHeader round={game.round} {timeLeft} totalTime={15} />
+	<GameHeader round={game.round} {timeLeft} totalTime={120} />
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-5 p-4">
 		<div class="comic-border-sm rounded-xl bg-slate-800 px-4 py-3 text-center">
