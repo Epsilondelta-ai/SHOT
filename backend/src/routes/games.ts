@@ -62,12 +62,6 @@ export const gameRoutes = new Elysia()
       set.status = 400;
       return { error: "At least 5 players are required to start the game" };
     }
-    if (players.some((player) => player.type !== "human")) {
-      set.status = 400;
-      return {
-        error: "Bots and LLM players are not yet supported for live games",
-      };
-    }
     if (
       players.some(
         (player) => player.userId !== roomData.hostUserId && !player.ready,
