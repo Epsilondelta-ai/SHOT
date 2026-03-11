@@ -9,7 +9,8 @@
 		currentPlayers,
 		maxPlayers,
 		status,
-		onjoin
+		onjoin,
+		onspectate
 	}: {
 		name: string;
 		icon: string;
@@ -17,6 +18,7 @@
 		maxPlayers: number;
 		status: LobbyStatus;
 		onjoin?: () => void;
+		onspectate?: () => void;
 	} = $props();
 
 	const statusConfig: Record<
@@ -46,6 +48,7 @@
 	};
 
 	const isFull = $derived(status === 'full');
+	const isJoinDisabled = $derived(status === 'full' || status === 'in_progress');
 	const config = $derived(statusConfig[status]);
 </script>
 
@@ -72,26 +75,26 @@
 		</div>
 	</div>
 
-	{#if isFull}
+	<div class="flex flex-col gap-2">
 		<button
-			class="rounded-full border-2 border-slate-900 bg-slate-200 px-6 py-2 text-sm font-black uppercase opacity-50"
-			disabled
-		>
-			{m.lobby_status_full()}
-		</button>
-	{:else if status === 'starting_soon'}
-		<button
-			class="comic-button rounded-full border-2 border-slate-900 bg-primary px-6 py-2 text-sm font-black text-white uppercase"
+			class="comic-button rounded-full border-2 border-slate-900 px-6 py-2 text-sm font-black uppercase transition-colors disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500
+				{status === 'starting_soon'
+				? 'bg-primary text-white'
+				: 'bg-accent-beige hover:bg-primary hover:text-white'}"
+			disabled={isJoinDisabled}
 			onclick={onjoin}
 		>
-			{m.lobby_join()}
+			{status === 'full'
+				? m.lobby_status_full()
+				: status === 'in_progress'
+					? m.lobby_status_in_progress()
+					: m.lobby_join()}
 		</button>
-	{:else}
 		<button
-			class="comic-button rounded-full border-2 border-slate-900 bg-accent-beige px-6 py-2 text-sm font-black uppercase transition-colors hover:bg-primary hover:text-white"
-			onclick={onjoin}
+			class="comic-button rounded-full border-2 border-slate-900 bg-white px-6 py-2 text-sm font-black uppercase transition-colors hover:bg-slate-900 hover:text-white"
+			onclick={onspectate}
 		>
-			{m.lobby_join()}
+			{m.lobby_spectate()}
 		</button>
-	{/if}
+	</div>
 </div>

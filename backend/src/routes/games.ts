@@ -13,6 +13,10 @@ import { getRoomById } from "../lib/roomState";
 import { getSerializedRoomPlayers } from "../lib/roomPlayers";
 import { broadcastPlayers } from "../ws/roomWs";
 
+function isSpectatorRequest(request: Request) {
+  return new URL(request.url).searchParams.get("spectator") === "1";
+}
+
 export const gameRoutes = new Elysia()
   .get("/api/games/:id", async ({ params, request, set }) => {
     const user = await getUser(request);
@@ -27,7 +31,9 @@ export const gameRoutes = new Elysia()
     }
 
     try {
-      return createSnapshot(params.id, user.id);
+      return createSnapshot(params.id, user.id, {
+        allowSpectator: isSpectatorRequest(request),
+      });
     } catch (error) {
       set.status = 403;
       return { error: error instanceof Error ? error.message : "Forbidden" };

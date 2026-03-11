@@ -19,6 +19,10 @@ import {
 import { getSerializedRoomPlayers } from "../lib/roomPlayers";
 import { broadcastPlayers } from "../ws/roomWs";
 
+function isSpectatorRequest(request: Request) {
+  return new URL(request.url).searchParams.get("spectator") === "1";
+}
+
 function getHostPlayerId(
   players: Awaited<ReturnType<typeof getSerializedRoomPlayers>>,
   hostUserId: string,
@@ -204,7 +208,14 @@ export const roomRoutes = new Elysia()
     }
 
     const existingMember = await getHumanRoomPlayer(params.id, u.id);
-    if (!existingMember) {
+    const isSpectator = isSpectatorRequest(request) && !existingMember;
+
+    if (!existingMember && !isSpectator) {
+      if (roomData.status === "in_progress") {
+        set.status = 403;
+        return { error: "Game is already in progress" };
+      }
+
       const playerCount = await getRoomPlayerCount(params.id);
       if (playerCount >= roomData.maxPlayers) {
         set.status = 403;
@@ -233,6 +244,7 @@ export const roomRoutes = new Elysia()
       maxPlayers: roomData.maxPlayers,
       hostUserId: roomData.hostUserId,
       myId: u.id,
+      isSpectator,
       hostId: getHostPlayerId(players, roomData.hostUserId),
       players,
       chatMessages: [],
@@ -278,6 +290,10 @@ export const roomRoutes = new Elysia()
       if (!roomData) {
         set.status = 404;
         return { error: "Room not found" };
+      }
+      if (roomData.status === "in_progress") {
+        set.status = 403;
+        return { error: "Game is already in progress" };
       }
 
       const playerCount = await getRoomPlayerCount(params.id);

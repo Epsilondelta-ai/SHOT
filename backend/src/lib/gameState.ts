@@ -63,8 +63,9 @@ export type GameSnapshot = {
   roomId: string;
   round: number;
   currentTurnPlayerId: string;
-  myPlayerId: string;
-  myTeam: WinnerTeam;
+  viewerMode: "player" | "spectator";
+  myPlayerId: string | null;
+  myTeam: WinnerTeam | null;
   phase: "chatting" | "acting" | "finished";
   remainingChatTurns: number;
   canReveal: boolean;
@@ -414,11 +415,13 @@ function playVerify(
 
 function buildRoleForViewer(
   player: InternalPlayer,
-  viewerId: string,
+  viewerId: string | null,
 ): GamePlayerView["role"] {
   if (player.role === "leader") return "leader";
   if (player.role === "spy" && player.revealed) return "revealed";
-  if (player.role === "spy" && player.userId === viewerId) return "spy";
+  if (viewerId && player.role === "spy" && player.userId === viewerId) {
+    return "spy";
+  }
   return "normal";
 }
 
@@ -493,6 +496,7 @@ export function getGame(roomId: string) {
 export function createSnapshot(
   roomId: string,
   viewerUserId: string,
+  options: { allowSpectator?: boolean } = {},
 ): GameSnapshot {
   const state = getGame(roomId);
   if (!state) {
@@ -500,7 +504,8 @@ export function createSnapshot(
   }
 
   const viewer = state.players.find((player) => player.userId === viewerUserId);
-  if (!viewer) {
+  const isSpectator = !viewer && options.allowSpectator === true;
+  if (!viewer && !isSpectator) {
     throw new Error("You are not part of this game.");
   }
 
@@ -508,11 +513,13 @@ export function createSnapshot(
     roomId: state.roomId,
     round: state.round,
     currentTurnPlayerId: state.currentTurnPlayerId,
-    myPlayerId: viewer.id,
-    myTeam: viewer.role === "spy" ? "spies" : "agents",
+    viewerMode: viewer ? "player" : "spectator",
+    myPlayerId: viewer?.id ?? null,
+    myTeam: viewer ? (viewer.role === "spy" ? "spies" : "agents") : null,
     phase: getPhase(state),
     remainingChatTurns: state.pendingChatTurns,
     canReveal:
+      viewer !== undefined &&
       state.currentTurnPlayerId === viewer.id &&
       viewer.role === "spy" &&
       !viewer.revealed &&
@@ -530,7 +537,7 @@ export function createSnapshot(
       cards: player.cards.filter(
         (card): card is Exclude<ActionCard, "attack"> => card !== "attack",
       ),
-      role: buildRoleForViewer(player, viewerUserId),
+      role: buildRoleForViewer(player, viewer?.userId ?? null),
     })),
     logs: [...state.logs],
     chatMessages: [...state.chatMessages],

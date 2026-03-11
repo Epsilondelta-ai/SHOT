@@ -10,6 +10,15 @@
 	import { apiPost } from '$lib/api';
 
 	type Tab = 'all' | 'in_progress' | 'waiting';
+	type LobbyStatus = 'waiting' | 'full' | 'starting_soon' | 'in_progress';
+	type Lobby = {
+		id: string;
+		name: string;
+		icon: string;
+		currentPlayers: number;
+		maxPlayers: number;
+		status: LobbyStatus;
+	};
 
 	let { data } = $props();
 
@@ -21,9 +30,18 @@
 		goto(`/room/${result.id}`);
 	}
 
-	async function joinRoom(roomId: string) {
+	async function joinRoom(roomId: string, status: LobbyStatus) {
+		if (status === 'in_progress') {
+			goto(`/game/${roomId}?spectator=1`);
+			return;
+		}
+
 		await apiPost('/api/rooms/' + roomId + '/join');
 		goto(`/room/${roomId}`);
+	}
+
+	function spectateRoom(roomId: string, status: LobbyStatus) {
+		goto(status === 'in_progress' ? `/game/${roomId}?spectator=1` : `/room/${roomId}?spectator=1`);
 	}
 
 	const interval = setInterval(() => invalidateAll(), 5000);
@@ -35,8 +53,10 @@
 		activeTab === 'all'
 			? data.lobbies
 			: activeTab === 'in_progress'
-				? data.lobbies.filter((l: { status: string }) => l.status === 'in_progress' || l.status === 'starting_soon')
-				: data.lobbies.filter((l: { status: string }) => l.status === 'waiting')
+				? data.lobbies.filter(
+						(l: Lobby) => l.status === 'in_progress' || l.status === 'starting_soon'
+					)
+				: data.lobbies.filter((l: Lobby) => l.status === 'waiting')
 	);
 </script>
 
@@ -81,7 +101,8 @@
 					currentPlayers={lobby.currentPlayers}
 					maxPlayers={lobby.maxPlayers}
 					status={lobby.status}
-					onjoin={() => joinRoom(lobby.id)}
+					onjoin={() => joinRoom(lobby.id, lobby.status)}
+					onspectate={() => spectateRoom(lobby.id, lobby.status)}
 				/>
 			{/each}
 			{#if filteredLobbies.length === 0}

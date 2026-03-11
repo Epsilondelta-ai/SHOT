@@ -42,8 +42,9 @@
 		roomId: string;
 		round: number;
 		currentTurnPlayerId: string;
-		myPlayerId: string;
-		myTeam: WinnerTeam;
+		viewerMode: 'player' | 'spectator';
+		myPlayerId: string | null;
+		myTeam: WinnerTeam | null;
 		phase: 'chatting' | 'acting' | 'finished';
 		remainingChatTurns: number;
 		canReveal: boolean;
@@ -57,6 +58,7 @@
 		roomId: 'story-room',
 		round: 1,
 		currentTurnPlayerId: 'p2',
+		viewerMode: 'player',
 		myPlayerId: 'p2',
 		myTeam: 'agents',
 		phase: 'acting',
@@ -70,7 +72,7 @@
 
 	let { data } = $props();
 
-	let game = $state<GameSnapshot>(emptyGame);
+	let game = $derived((data.game as GameSnapshot) ?? emptyGame);
 	let selectedCard = $state<ActionCard | null>(null);
 	let selectedTargetId = $state<string | null>(null);
 	let isLogOpen = $state(false);
@@ -78,10 +80,6 @@
 	let actionError = $state('');
 	let actionPending = $state(false);
 	let timeLeft = $state(15);
-
-	$effect(() => {
-		game = data.game as GameSnapshot;
-	});
 
 	$effect(() => {
 		const timer = setInterval(() => {
@@ -92,8 +90,8 @@
 	});
 
 	$effect(() => {
-		timeLeft = 15;
-		game.round;
+		const round = game.round;
+		timeLeft = round >= 0 ? 15 : 15;
 		const timer = setInterval(() => {
 			timeLeft = Math.max(0, timeLeft - 1);
 		}, 1000);
@@ -138,7 +136,8 @@
 
 	async function refreshGame() {
 		try {
-			game = await apiGet<GameSnapshot>(`/api/games/${game.roomId}`);
+			const spectatorQuery = game.viewerMode === 'spectator' ? '?spectator=1' : '';
+			game = await apiGet<GameSnapshot>(`/api/games/${game.roomId}${spectatorQuery}`);
 		} catch {
 			// ignore transient refresh errors; action handlers surface blocking failures
 		}
@@ -208,6 +207,7 @@
 		game.winnerTeam === 'agents' ? 'Agents' : game.winnerTeam === 'spies' ? 'Spies' : undefined
 	);
 	const isMyWin = $derived(game.winnerTeam !== null && game.winnerTeam === game.myTeam);
+	const isSpectator = $derived(game.viewerMode === 'spectator');
 </script>
 
 <svelte:head>
@@ -234,7 +234,7 @@
 			</p>
 		</div>
 
-		{#if !amAlive && !isFinished}
+		{#if (isSpectator || !amAlive) && !isFinished}
 			<div
 				class="comic-border-sm flex items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-3 text-slate-400"
 			>
@@ -403,7 +403,7 @@
 
 	<GameChat
 		messages={game.chatMessages}
-		myId={game.myPlayerId}
+		myId={game.myPlayerId ?? ''}
 		isOpen={isChatOpen}
 		canSend={canSendChat}
 		ontoggle={() => (isChatOpen = !isChatOpen)}

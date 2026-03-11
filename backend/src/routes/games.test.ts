@@ -137,3 +137,17 @@ describe("POST /api/games/:id/start", () => {
     expect(mockBroadcastPlayers).toHaveBeenCalledWith("room-1");
   });
 });
+
+describe("GET /api/games/:id", () => {
+  it("passes spectator mode through to snapshot creation", async () => {
+    const app = makeApp();
+    const res = await app.handle(
+      new Request("http://localhost/api/games/room-1?spectator=1"),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockCreateSnapshot).toHaveBeenCalledWith("room-1", "u1", {
+      allowSpectator: true,
+    });
+  });
+});

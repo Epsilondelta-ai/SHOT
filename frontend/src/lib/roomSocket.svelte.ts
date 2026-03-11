@@ -31,11 +31,20 @@ type RoomSocketCallbacks = {
 	onKicked?: (payload: { playerId: string; userId: string }) => void;
 };
 
-export function createRoomSocket(roomId: string, callbacks: RoomSocketCallbacks) {
+type RoomSocketOptions = {
+	spectator?: boolean;
+};
+
+export function createRoomSocket(
+	roomId: string,
+	callbacks: RoomSocketCallbacks,
+	options: RoomSocketOptions = {}
+) {
 	let ws: WebSocket | null = null;
 
 	function connect() {
-		ws = new WebSocket(`${WS_BACKEND_URL}/ws/room/${roomId}`);
+		const spectatorQuery = options.spectator ? '?spectator=1' : '';
+		ws = new WebSocket(`${WS_BACKEND_URL}/ws/room/${roomId}${spectatorQuery}`);
 
 		ws.onmessage = (event) => {
 			try {

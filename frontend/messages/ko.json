@@ -31,6 +31,7 @@
 	"lobby_search_placeholder": "대결을 검색하세요...",
 	"lobby_create": "로비 만들기",
 	"lobby_join": "참가",
+	"lobby_spectate": "관전",
 	"lobby_status_waiting": "대기 중",
 	"lobby_status_full": "만석",
 	"lobby_status_starting_soon": "곧 시작",

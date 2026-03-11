@@ -122,4 +122,18 @@ describe("gameState", () => {
       "revealed",
     );
   });
+
+  it("builds a public spectator snapshot without private roles", () => {
+    const snapshot = createSnapshot("room-test", "spectator-user", {
+      allowSpectator: true,
+    });
+
+    expect(snapshot.viewerMode).toBe("spectator");
+    expect(snapshot.myPlayerId).toBeNull();
+    expect(snapshot.myTeam).toBeNull();
+    expect(snapshot.canReveal).toBe(false);
+    expect(snapshot.players.find((player) => player.id === "p5")?.role).toBe(
+      "normal",
+    );
+  });
 });

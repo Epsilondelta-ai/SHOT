@@ -66,10 +66,14 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
       return;
     }
 
+    const isSpectator =
+      new URL(request.url).searchParams.get("spectator") === "1";
+
     return {
       userId: sess.userId,
       userName: sess.user.name,
       roomId: params.roomId,
+      isSpectator,
     };
   },
 
@@ -78,6 +82,7 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
       roomId: string;
       userId: string;
       userName: string;
+      isSpectator: boolean;
     };
     const wsId = `${roomId}:${userId}:${Date.now()}`;
     (ws as unknown as { _id: string })._id = wsId;
@@ -90,10 +95,11 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
   },
 
   async message(ws, rawMessage) {
-    const { roomId, userId, userName } = ws.data as unknown as {
+    const { roomId, userId, userName, isSpectator } = ws.data as unknown as {
       roomId: string;
       userId: string;
       userName: string;
+      isSpectator: boolean;
     };
 
     let msg: RoomMessage;
@@ -104,6 +110,10 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
           : JSON.stringify(rawMessage);
       msg = JSON.parse(text);
     } catch {
+      return;
+    }
+
+    if (isSpectator) {
       return;
     }
 
@@ -165,15 +175,20 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
   },
 
   async close(ws) {
-    const { roomId, userId } = ws.data as unknown as {
+    const { roomId, userId, isSpectator } = ws.data as unknown as {
       roomId: string;
       userId: string;
+      isSpectator: boolean;
     };
     const wsId = (ws as unknown as { _id: string })._id;
 
     roomSockets.get(roomId)?.delete(wsId);
     wsById.delete(wsId);
     if (roomSockets.get(roomId)?.size === 0) roomSockets.delete(roomId);
+
+    if (isSpectator) {
+      return;
+    }
 
     await db
       .delete(roomPlayer)

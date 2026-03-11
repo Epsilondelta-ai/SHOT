@@ -3,10 +3,12 @@
 
 	let {
 		messages,
-		onsend
+		onsend,
+		canSend = true
 	}: {
 		messages: { id: string; sender: string; text: string; isSystem?: boolean }[];
 		onsend?: (text: string) => void;
+		canSend?: boolean;
 	} = $props();
 
 	let inputText = $state('');
@@ -20,6 +22,7 @@
 	}
 
 	function handleSend() {
+		if (!canSend) return;
 		const trimmed = inputText.trim();
 		if (!trimmed) return;
 		onsend?.(trimmed);
@@ -56,10 +59,12 @@
 			placeholder={m.room_chat_placeholder()}
 			type="text"
 			bind:value={inputText}
+			disabled={!canSend}
 			onkeydown={handleKeydown}
 		/>
 		<button
-			class="comic-button border-l-2 border-slate-900 bg-primary px-5 py-3 font-black text-white uppercase"
+			class="comic-button border-l-2 border-slate-900 bg-primary px-5 py-3 font-black text-white uppercase disabled:opacity-40"
+			disabled={!canSend || !inputText.trim()}
 			onclick={handleSend}
 		>
 			<span class="material-symbols-outlined text-lg">send</span>

@@ -341,6 +341,25 @@ describe('POST /api/rooms/:id/join', () => {
 		const body = await res.json();
 		expect(body.error).toBe('Room is full');
 	});
+
+	it('returns 403 when a game is already in progress', async () => {
+		mockGetHumanRoomPlayer.mockResolvedValueOnce(null);
+		mockGetRoomById.mockResolvedValueOnce({
+			id: 'r1',
+			name: 'Room',
+			maxPlayers: 5,
+			hostUserId: 'u2',
+			status: 'in_progress'
+		});
+
+		const app = makeApp();
+		const res = await app.handle(
+			new Request('http://localhost/api/rooms/r1/join', { method: 'POST' })
+		);
+		expect(res.status).toBe(403);
+		const body = await res.json();
+		expect(body.error).toBe('Game is already in progress');
+	});
 });
 
 describe('GET /api/rooms/:id', () => {
@@ -438,6 +457,52 @@ describe('GET /api/rooms/:id', () => {
 		expect(res.status).toBe(403);
 		const body = await res.json();
 		expect(body.error).toBe('Room is full');
+	});
+
+	it('returns spectator room data without auto-joining', async () => {
+		const roomData = {
+			id: 'r1abcd',
+			name: 'Room 1',
+			maxPlayers: 5,
+			hostUserId: 'u2',
+			status: 'in_progress'
+		};
+		mockGetRoomById.mockResolvedValueOnce(roomData);
+		mockGetHumanRoomPlayer.mockResolvedValueOnce(null);
+		mockGetSerializedRoomPlayers.mockResolvedValueOnce([
+			{
+				id: 'p2',
+				userId: 'u2',
+				name: 'Host',
+				avatarSrc: null,
+				type: 'human',
+				canManageBots: true,
+				assistantId: null,
+				assistantName: null,
+				llmModelId: null,
+				modelName: null,
+				botId: null,
+				ready: true
+			}
+		]);
+		mockSelect
+			.mockImplementationOnce(() => ({
+				from: () => ({ where: () => Promise.resolve([]) })
+			}))
+			.mockImplementationOnce(() => ({
+				from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
+			}))
+			.mockImplementationOnce(() => ({
+				from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
+			}));
+
+		const app = makeApp();
+		const res = await app.handle(new Request('http://localhost/api/rooms/r1?spectator=1'));
+		expect(res.status).toBe(200);
+		const body = await res.json();
+		expect(body.isSpectator).toBe(true);
+		expect(mockBroadcastPlayers).not.toHaveBeenCalled();
+		expect(mockInsert).not.toHaveBeenCalled();
 	});
 });
 

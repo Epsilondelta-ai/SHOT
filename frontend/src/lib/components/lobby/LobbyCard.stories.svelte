@@ -18,7 +18,8 @@
 			maxPlayers: { control: 'number' }
 		},
 		args: {
-			onjoin: fn()
+			onjoin: fn(),
+			onspectate: fn()
 		}
 	});
 </script>

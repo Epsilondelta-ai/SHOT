@@ -31,6 +31,7 @@
 	"lobby_search_placeholder": "Search for a showdown...",
 	"lobby_create": "Create Lobby",
 	"lobby_join": "Join",
+	"lobby_spectate": "Spectate",
 	"lobby_status_waiting": "Waiting",
 	"lobby_status_full": "Full",
 	"lobby_status_starting_soon": "Starting Soon",

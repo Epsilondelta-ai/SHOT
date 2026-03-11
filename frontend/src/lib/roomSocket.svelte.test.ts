@@ -53,6 +53,12 @@ describe('createRoomSocket', () => {
 		expect(MockWebSocket.instances[0].url).toBe('ws://test-backend/ws/room/room-123');
 	});
 
+	it('appends spectator query when requested', () => {
+		createRoomSocket('room-123', {}, { spectator: true });
+		expect(MockWebSocket.instances).toHaveLength(1);
+		expect(MockWebSocket.instances[0].url).toBe('ws://test-backend/ws/room/room-123?spectator=1');
+	});
+
 	it('calls onPlayers callback when players message received', () => {
 		const onPlayers = vi.fn();
 		createRoomSocket('room-1', { onPlayers });

@@ -60,6 +60,10 @@
 	let capacityDraft = $state(5);
 	let socketRef: ReturnType<typeof createRoomSocket> | null = $state(null);
 
+	function getSpectatorQuery() {
+		return data.isSpectator ? '?spectator=1' : '';
+	}
+
 	$effect(() => {
 		players = data.players;
 		chatMessages = data.chatMessages;
@@ -70,32 +74,36 @@
 
 	$effect(() => {
 		if (data.status === 'in_progress') {
-			goto(`/game/${data.roomId}`);
+			goto(`/game/${data.roomId}${getSpectatorQuery()}`);
 		}
 	});
 
 	$effect(() => {
-		const socket = createRoomSocket(data.roomId, {
-			onPlayers: (wsPlayers, roomState) => {
-				players = wsPlayers;
-				if (roomState) {
-					hostUserId = roomState.hostUserId;
-					maxPlayers = roomState.maxPlayers;
-					capacityDraft = roomState.maxPlayers;
-					if (roomState.status === 'in_progress') {
-						goto(`/game/${data.roomId}`);
+		const socket = createRoomSocket(
+			data.roomId,
+			{
+				onPlayers: (wsPlayers, roomState) => {
+					players = wsPlayers;
+					if (roomState) {
+						hostUserId = roomState.hostUserId;
+						maxPlayers = roomState.maxPlayers;
+						capacityDraft = roomState.maxPlayers;
+						if (roomState.status === 'in_progress') {
+							goto(`/game/${data.roomId}${getSpectatorQuery()}`);
+						}
+					}
+				},
+				onChat: (msg) => {
+					chatMessages = [...chatMessages, msg];
+				},
+				onKicked: ({ playerId, userId }) => {
+					if (userId === data.myId || myPlayer?.id === playerId) {
+						goto('/lobby');
 					}
 				}
 			},
-			onChat: (msg) => {
-				chatMessages = [...chatMessages, msg];
-			},
-			onKicked: ({ playerId, userId }) => {
-				if (userId === data.myId || myPlayer?.id === playerId) {
-					goto('/lobby');
-				}
-			}
-		});
+			{ spectator: data.isSpectator }
+		);
 		socketRef = socket;
 
 		return () => {
@@ -133,6 +141,7 @@
 	});
 
 	function toggleReady() {
+		if (data.isSpectator) return;
 		if (!myPlayer || isHost) return;
 		const nextReady = !myPlayer.ready;
 		players = players.map((player) =>
@@ -147,10 +156,16 @@
 	}
 
 	function sendChat(text: string) {
+		if (data.isSpectator) return;
 		socketRef?.sendChat(text);
 	}
 
 	async function leaveRoom() {
+		if (data.isSpectator) {
+			goto('/lobby');
+			return;
+		}
+
 		await apiPost(`/api/rooms/${data.roomId}/leave`);
 		goto('/lobby');
 	}
@@ -182,7 +197,7 @@
 
 	async function startGame() {
 		await apiPost(`/api/games/${data.roomId}/start`);
-		goto(`/game/${data.roomId}`);
+		goto(`/game/${data.roomId}${getSpectatorQuery()}`);
 	}
 </script>
 
@@ -228,13 +243,22 @@
 			</span>
 		</div>
 
+		{#if data.isSpectator}
+			<div
+				class="comic-border-sm flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-white"
+			>
+				<span class="material-symbols-outlined text-lg">visibility</span>
+				<span class="text-sm font-black uppercase">{m.game_spectating()}</span>
+			</div>
+		{/if}
+
 		<section>
 			<div class="mb-3 flex items-end justify-between gap-3">
 				<h2 class="flex items-center gap-2 text-lg font-black uppercase">
 					<span class="material-symbols-outlined text-primary">group</span>
 					{m.room_players()}
 				</h2>
-				{#if !isHost && myPlayer}
+				{#if !data.isSpectator && !isHost && myPlayer}
 					<p class="text-right text-[11px] font-black text-primary">
 						{amReady ? '내 슬롯을 다시 누르면 준비 취소' : '내 슬롯을 누르면 준비 완료'}
 					</p>
@@ -258,7 +282,7 @@
 		</section>
 
 		<section>
-			<RoomChat messages={chatMessages} onsend={sendChat} />
+			<RoomChat messages={chatMessages} onsend={sendChat} canSend={!data.isSpectator} />
 		</section>
 
 		{#if isHost}
@@ -380,7 +404,19 @@
 				{m.room_leave()}
 			</button>
 
-			{#if isHost}
+			{#if data.isSpectator}
+				<div
+					class="comic-border flex flex-[2] items-center justify-center gap-3 rounded-xl bg-white px-6 py-4"
+				>
+					<span class="material-symbols-outlined text-2xl text-primary">visibility</span>
+					<div class="text-left">
+						<p class="text-[11px] font-black tracking-wider text-slate-500 uppercase">Spectator</p>
+						<p class="text-sm font-black text-slate-800">
+							관전자는 플레이어 슬롯과 준비 상태에 영향을 주지 않습니다.
+						</p>
+					</div>
+				</div>
+			{:else if isHost}
 				<button
 					class="comic-button flex flex-[2] items-center justify-center gap-2 rounded-xl border-3 border-slate-900 px-6 py-4 font-black text-white uppercase italic shadow-[3px_3px_0px_#221910]
 						{canStart ? 'bg-green-600' : 'cursor-not-allowed bg-slate-400 opacity-60'}"
