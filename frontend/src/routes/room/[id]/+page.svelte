@@ -213,6 +213,12 @@
 		await apiPost(`/api/rooms/${data.roomId}/spectate`);
 		goto(`/room/${data.roomId}?spectator=1`);
 	}
+
+	async function joinAsPlayer() {
+		isLeaving = true;
+		await apiPost(`/api/rooms/${data.roomId}/join`);
+		goto(`/room/${data.roomId}`);
+	}
 </script>
 
 <svelte:head>
@@ -420,17 +426,15 @@
 			</button>
 
 			{#if data.isSpectator}
-				<div
-					class="comic-border flex flex-[2] items-center justify-center gap-3 rounded-xl bg-white px-6 py-4"
+				<button
+					type="button"
+					onclick={joinAsPlayer}
+					disabled={isRoomFull}
+					class="comic-button flex flex-[2] items-center justify-center gap-2 rounded-xl border-3 border-slate-900 bg-primary px-6 py-4 font-black text-white uppercase disabled:cursor-not-allowed disabled:opacity-50"
 				>
-					<span class="material-symbols-outlined text-2xl text-primary">visibility</span>
-					<div class="text-left">
-						<p class="text-[11px] font-black tracking-wider text-slate-500 uppercase">Spectator</p>
-						<p class="text-sm font-black text-slate-800">
-							관전자는 플레이어 슬롯과 준비 상태에 영향을 주지 않습니다.
-						</p>
-					</div>
-				</div>
+					<span class="material-symbols-outlined">person_add</span>
+					{isRoomFull ? m.room_full() : m.room_join_as_player()}
+				</button>
 			{:else if isHost}
 				<button
 					type="button"

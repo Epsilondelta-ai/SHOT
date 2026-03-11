@@ -72,6 +72,8 @@
 	"room_chat_send": "보내기",
 	"room_leave": "나가기",
 	"room_spectate": "관전",
+	"room_join_as_player": "플레이어로 참가",
+	"room_full": "방이 가득 찼습니다",
 	"room_kick": "추방",
 	"room_empty_slot": "빈 자리",
 	"game_title": "게임 - SHOT!",

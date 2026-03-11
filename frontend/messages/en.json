@@ -72,6 +72,8 @@
 	"room_chat_send": "Send",
 	"room_leave": "Leave",
 	"room_spectate": "Spectate",
+	"room_join_as_player": "Join as Player",
+	"room_full": "Room is Full",
 	"room_kick": "Kick",
 	"room_empty_slot": "Empty Slot",
 	"game_title": "Game - SHOT!",
