@@ -201,7 +201,7 @@
 	}
 
 	async function becomeSpectator() {
-		await apiPost(`/api/rooms/${data.roomId}/leave`);
+		await apiPost(`/api/rooms/${data.roomId}/spectate`);
 		goto(`/room/${data.roomId}?spectator=1`);
 	}
 </script>

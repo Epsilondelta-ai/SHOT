@@ -277,6 +277,46 @@ export const roomRoutes = new Elysia()
     return { success: true };
   })
 
+  .post("/api/rooms/:id/spectate", async ({ params, request, set }) => {
+    const u = await getUser(request);
+    if (!u) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+
+    await db
+      .delete(roomPlayer)
+      .where(
+        and(
+          eq(roomPlayer.roomId, params.id),
+          eq(roomPlayer.userId, u.id),
+          eq(roomPlayer.playerType, "human"),
+        ),
+      );
+
+    const roomData = await getRoomById(params.id);
+    if (!roomData) {
+      set.status = 404;
+      return { error: "Room not found" };
+    }
+
+    if (roomData.hostUserId === u.id) {
+      const remaining = await db.query.roomPlayer.findMany({
+        where: and(eq(roomPlayer.roomId, params.id), eq(roomPlayer.playerType, "human")),
+      });
+      if (remaining.length > 0) {
+        const nextHost = remaining[0];
+        await db.update(room).set({ hostUserId: nextHost.userId }).where(eq(room.id, params.id));
+        await db.update(roomPlayer).set({ canManageBots: true }).where(
+          and(eq(roomPlayer.roomId, params.id), eq(roomPlayer.userId, nextHost.userId)),
+        );
+      }
+    }
+
+    await broadcastPlayers(params.id);
+    return { success: true };
+  })
+
   .post("/api/rooms/:id/join", async ({ params, request, set }) => {
     const u = await getUser(request);
     if (!u) {
