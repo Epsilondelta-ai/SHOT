@@ -1,16 +1,12 @@
 # SHOT! Official Rulebook
 
-> Online Strategy Card Game · 5-12 Players
-
----
-
 ## 1. Game Overview
 
 SHOT! is an online strategy card game where players are divided into the Agent Team and the Spy Team. The Spy's goal is to disguise themselves as an Agent and assassinate the Captain or eliminate all Agents. The Agent Team's goal is to find and eliminate all Spies.
 
 ### Players
 
-5 to 12 players
+5 to 8 players
 
 ### Roles
 
@@ -26,10 +22,6 @@ SHOT! is an online strategy card game where players are divided into the Agent T
 | 6             | 2     | 4 (1+3)                       |                      |
 | 7             | 2     | 5 (1+4)                       |                      |
 | 8             | 2~3   | 5~6 (1+4~5)                   |                      |
-| 9             | 3     | 6 (1+5)                       | Recommended          |
-| 10            | 3     | 7 (1+6)                       |                      |
-| 11            | 3~4   | 7~8 (1+6~7)                   |                      |
-| 12            | 4     | 8 (1+7)                       |                      |
 
 ---
 
@@ -145,15 +137,15 @@ If the Agent Team (Captain/Agent) or a hidden Spy kills an Agent, they enter the
 
 ## 10. Key Summary
 
-| Item                      | Description                                                                        |
-| ------------------------- | ---------------------------------------------------------------------------------- |
-| Players                   | 5~12                                                                               |
-| HP                        | Captain 5 / Agent 3 / Spy 3                                                        |
-| Initial Hand              | 2 cards                                                                            |
-| Draw per Turn             | 2 cards                                                                            |
-| Card Usage Limit per Turn | None (Unlimited)                                                                   |
-| Card Usage Method         | Sequentially one by one                                                            |
-| Card Visibility           | All held cards are revealed                                                        |
-| Turn Order                | Clockwise from Captain                                                             |
-| Max Turns                 | Players × 3                                                                       |
+| Item                      | Description                                                                                        |
+| ------------------------- | -------------------------------------------------------------------------------------------------- |
+| Players                   | 5~8                                                                                                |
+| HP                        | Captain 5 / Agent 3 / Spy 3                                                                        |
+| Initial Hand              | 2 cards                                                                                            |
+| Draw per Turn             | 2 cards                                                                                            |
+| Card Usage Limit per Turn | None (Unlimited)                                                                                   |
+| Card Usage Method         | Sequentially one by one                                                                            |
+| Card Visibility           | All held cards are revealed                                                                        |
+| Turn Order                | Clockwise from Captain                                                                             |
+| Max Turns                 | Players × 3                                                                                        |
 | Victory Conditions        | Agent Team: All Spies eliminated / Spy Team: Captain dies, all Agents eliminated, or time runs out |
