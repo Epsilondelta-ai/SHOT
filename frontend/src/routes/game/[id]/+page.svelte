@@ -53,7 +53,7 @@
 			const { playerId } = msg;
 			setTimeout(() => {
 				delete chatBubbles[playerId];
-			}, 6000);
+			}, 10000);
 		}
 	});
 

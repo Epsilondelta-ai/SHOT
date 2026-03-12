@@ -21,13 +21,52 @@
 	const game = $derived<GameSnapshot | null>(currentFrame?.snapshot ?? null);
 	const totalFrames = frames.length;
 
-	const replayChatBubbles = $derived.by(() => {
-		const map = new Map<string, string>();
-		if (!game) return map;
-		for (const msg of game.chatMessages) {
-			map.set(msg.playerId, msg.text);
+	let replayChatBubbles = $state<Record<string, string>>({});
+	const bubbleTimers = new Map<string, ReturnType<typeof setTimeout>>();
+	let prevMsgCount = 0;
+
+	function scheduleBubbleHide(playerId: string) {
+		const existing = bubbleTimers.get(playerId);
+		if (existing) clearTimeout(existing);
+		const timer = setTimeout(() => {
+			delete replayChatBubbles[playerId];
+			bubbleTimers.delete(playerId);
+		}, 10000);
+		bubbleTimers.set(playerId, timer);
+	}
+
+	// Detect new messages when frame changes
+	$effect(() => {
+		const messages = game?.chatMessages ?? [];
+		const count = messages.length;
+
+		if (count < prevMsgCount) {
+			// Stepped backward — clear bubbles
+			for (const t of bubbleTimers.values()) clearTimeout(t);
+			bubbleTimers.clear();
+			replayChatBubbles = {};
+			prevMsgCount = count;
+			return;
 		}
-		return map;
+
+		for (let i = prevMsgCount; i < count; i++) {
+			const msg = messages[i];
+			replayChatBubbles[msg.playerId] = msg.text;
+			if (playing) scheduleBubbleHide(msg.playerId);
+		}
+		prevMsgCount = count;
+	});
+
+	// Pause/resume bubble timers with playback
+	$effect(() => {
+		if (playing) {
+			for (const playerId of Object.keys(replayChatBubbles)) {
+				scheduleBubbleHide(playerId);
+			}
+		} else {
+			for (const t of bubbleTimers.values()) clearTimeout(t);
+			bubbleTimers.clear();
+		}
 	});
 
 	let playInterval: ReturnType<typeof setInterval> | null = null;
@@ -147,7 +186,7 @@
 									verified={player.verified}
 									isMe={false}
 									isTurn={player.id === game.currentTurnPlayerId && game.phase !== 'finished'}
-					chatBubble={replayChatBubbles.get(player.id) ?? null}
+					chatBubble={replayChatBubbles[player.id] ?? null}
 								/>
 							{/each}
 						</div>
