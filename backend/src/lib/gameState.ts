@@ -493,7 +493,7 @@ export function initializeGame(
     currentTurnPlayerId: leaderPlayer.id,
     pendingChatTurns: 0,
     attackUsedThisTurn: false,
-    players,
+    players: shuffle(players),
     deck: createDeck(players.length, spyCount),
     discard: [],
     logs: [],
