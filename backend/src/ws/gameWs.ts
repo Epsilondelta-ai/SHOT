@@ -50,10 +50,16 @@ function scheduleGameEnd(roomId: string): void {
   }, GAME_END_DELAY_MS);
 }
 
-// @MX:ANCHOR: broadcastGameState is called from gameWs, games.ts routes
-// @MX:REASON: [AUTO] fan_in >= 3 — game state broadcast public API boundary
+// @MX:ANCHOR: broadcastGameState is called from gameWs, games.ts routes, llmPlayer
+// @MX:REASON: [AUTO] fan_in >= 3 — single convergence point for all game state changes and replay recording
 export async function broadcastGameState(roomId: string): Promise<void> {
   const state = getGame(roomId);
+
+  // Record replay frame for every state change (human + LLM + HTTP paths)
+  if (state && !state.winnerTeam) {
+    recordFrame(roomId, null);
+  }
+
   const ids = gameSockets.get(roomId);
   if (!ids) return;
 
@@ -156,9 +162,6 @@ export const gameWsPlugin = new Elysia().ws("/ws/game/:roomId", {
       applyGameAction(roomId, userId, action);
       await broadcastGameState(roomId);
       void maybeRunLlmTurn(roomId);
-      recordFrame(roomId, null);
-      const gameState = getGame(roomId);
-      if (gameState?.winnerTeam) recordGameEnd(roomId, gameState.winnerTeam);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Invalid action";
