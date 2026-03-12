@@ -52,21 +52,9 @@
 		for (let i = prevMsgCount; i < count; i++) {
 			const msg = messages[i];
 			replayChatBubbles[msg.playerId] = msg.text;
-			if (playing) scheduleBubbleHide(msg.playerId);
+			scheduleBubbleHide(msg.playerId);
 		}
 		prevMsgCount = count;
-	});
-
-	// Pause/resume bubble timers with playback
-	$effect(() => {
-		if (playing) {
-			for (const playerId of Object.keys(replayChatBubbles)) {
-				scheduleBubbleHide(playerId);
-			}
-		} else {
-			for (const t of bubbleTimers.values()) clearTimeout(t);
-			bubbleTimers.clear();
-		}
 	});
 
 	let playInterval: ReturnType<typeof setInterval> | null = null;
