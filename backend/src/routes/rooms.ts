@@ -539,21 +539,28 @@ export const roomRoutes = new Elysia()
       assistantId?: string;
       llmModelId?: string;
       language?: string;
+      name?: string;
     };
-    if (!body.assistantId || !body.llmModelId) {
+    if (!body.llmModelId) {
       set.status = 400;
-      return { error: "Assistant and model are required" };
+      return { error: "Model is required" };
+    }
+    if (!body.assistantId && !body.name?.trim()) {
+      set.status = 400;
+      return { error: "Assistant or name is required" };
     }
 
     const [selectedAssistant, selectedModel] = await Promise.all([
-      db.query.assistant.findFirst({
-        where: and(
-          eq(assistant.id, body.assistantId),
-          eq(assistant.active, true),
-          or(eq(assistant.userId, u.id), isNull(assistant.userId)),
-        ),
-        columns: { id: true, name: true },
-      }),
+      body.assistantId
+        ? db.query.assistant.findFirst({
+            where: and(
+              eq(assistant.id, body.assistantId),
+              eq(assistant.active, true),
+              or(eq(assistant.userId, u.id), isNull(assistant.userId)),
+            ),
+            columns: { id: true, name: true },
+          })
+        : Promise.resolve(null),
       db
         .select({
           id: llmModel.id,
@@ -571,12 +578,16 @@ export const roomRoutes = new Elysia()
         .then((rows) => rows[0] ?? null),
     ]);
 
-    if (!selectedAssistant || !selectedModel) {
+    if (body.assistantId && !selectedAssistant) {
       set.status = 400;
       return { error: "Invalid assistant or model" };
     }
+    if (!selectedModel) {
+      set.status = 400;
+      return { error: "Invalid model" };
+    }
 
-    const displayName = selectedAssistant.name;
+    const displayName = selectedAssistant?.name ?? body.name!.trim();
     const [newPlayer] = await db
       .insert(roomPlayer)
       .values({
@@ -584,7 +595,7 @@ export const roomRoutes = new Elysia()
         userId: `llm:${crypto.randomUUID()}`,
         playerType: "llm",
         displayName,
-        assistantId: selectedAssistant.id,
+        assistantId: selectedAssistant?.id ?? null,
         llmModelId: selectedModel.id,
         language: body.language ?? null,
       })
@@ -601,8 +612,8 @@ export const roomRoutes = new Elysia()
         avatarSrc: null,
         type: "llm" as const,
         canManageBots: false,
-        assistantId: selectedAssistant.id,
-        assistantName: selectedAssistant.name,
+        assistantId: selectedAssistant?.id ?? null,
+        assistantName: selectedAssistant?.name ?? null,
         llmModelId: selectedModel.id,
         modelName: selectedModel.displayName,
         language: body.language ?? null,

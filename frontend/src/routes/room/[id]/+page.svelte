@@ -187,7 +187,7 @@
 			.finally(() => goto(to?.url.pathname ?? '/lobby'));
 	});
 
-	async function addLlmPlayer(payload: { assistantId: string; llmModelId: string; language: string }) {
+	async function addLlmPlayer(payload: { assistantId?: string; name?: string; llmModelId: string; language: string }) {
 		await apiPost(`/api/rooms/${data.roomId}/llm-players`, payload);
 	}
 
