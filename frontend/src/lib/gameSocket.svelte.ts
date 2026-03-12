@@ -4,6 +4,7 @@ import type { GameSnapshot, GameAction } from '$lib/types/game';
 type GameSocketCallbacks = {
 	onGameState?: (snapshot: GameSnapshot) => void;
 	onError?: () => void;
+	onRedirect?: (url: string) => void;
 };
 
 type GameSocketOptions = {
@@ -27,6 +28,8 @@ export function createGameSocket(
 				const msg = JSON.parse(event.data as string);
 				if (msg.type === 'game_state') {
 					callbacks.onGameState?.(msg.snapshot as GameSnapshot);
+				} else if (msg.type === 'redirect') {
+					callbacks.onRedirect?.(msg.url as string);
 				} else if (msg.type === 'error') {
 					callbacks.onError?.();
 				}

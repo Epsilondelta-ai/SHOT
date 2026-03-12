@@ -4,11 +4,13 @@
 	let {
 		winner,
 		isMyWin = false,
-		isDraw = false
+		isDraw = false,
+		countdown = null
 	}: {
 		winner?: string;
 		isMyWin?: boolean;
 		isDraw?: boolean;
+		countdown?: number | null;
 	} = $props();
 </script>
 
@@ -40,6 +42,12 @@
 			>
 				{m.game_winner({ player: winner ?? '' })}
 			</h2>
+		{/if}
+
+		{#if countdown !== null}
+			<p class="text-sm font-bold text-slate-500">
+				Returning to lobby in {countdown}s…
+			</p>
 		{/if}
 
 		<a

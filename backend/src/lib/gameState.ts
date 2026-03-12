@@ -539,6 +539,10 @@ export function getGame(roomId: string) {
   return games.get(roomId) ?? null;
 }
 
+export function deleteGame(roomId: string): void {
+  games.delete(roomId);
+}
+
 export function forceAdvanceTurn(roomId: string, userId: string): void {
   const state = getGame(roomId);
   if (!state) return;

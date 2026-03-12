@@ -4,6 +4,7 @@
 	import GameLog from '$lib/components/game/GameLog.svelte';
 	import GamePlayer from '$lib/components/game/GamePlayer.svelte';
 	import GameResult from '$lib/components/game/GameResult.svelte';
+	import { goto } from '$app/navigation';
 	import { createGameSocket } from '$lib/gameSocket.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { ActionCard, GameAction, GameSnapshot } from '$lib/types/game';
@@ -40,6 +41,7 @@
 	let actionError = $state('');
 	let actionPending = $state(false);
 	let timeLeft = $state(120);
+	let redirectCountdown = $state(30);
 
 	let socket = $state<ReturnType<typeof createGameSocket> | null>(null);
 
@@ -55,12 +57,26 @@
 				},
 				onError: () => {
 					actionError = 'Connection lost. Please refresh.';
-				}
+				},
+				onRedirect: (url) => goto(url)
 			},
 			{ spectator: isSpectator }
 		);
 		socket = s;
 		return () => s.close();
+	});
+
+	$effect(() => {
+		if (game.phase !== 'finished') return;
+		redirectCountdown = 30;
+		const timer = setInterval(() => {
+			redirectCountdown -= 1;
+			if (redirectCountdown <= 0) {
+				clearInterval(timer);
+				goto('/lobby');
+			}
+		}, 1000);
+		return () => clearInterval(timer);
 	});
 
 	$effect(() => {
@@ -404,5 +420,5 @@
 </div>
 
 {#if isFinished}
-	<GameResult winner={winnerLabel} {isMyWin} isDraw={false} />
+	<GameResult winner={winnerLabel} {isMyWin} isDraw={false} countdown={redirectCountdown} />
 {/if}

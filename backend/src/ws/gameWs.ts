@@ -1,10 +1,11 @@
 import Elysia from "elysia";
 import { eq } from "drizzle-orm";
 import { db } from "../db";
-import { session } from "../db/schema";
+import { session, room } from "../db/schema";
 import {
   applyGameAction,
   createSnapshot,
+  deleteGame,
   getGame,
   type GameAction,
 } from "../lib/gameState";
@@ -24,10 +25,34 @@ const gameSockets = new Map<string, Set<string>>();
 const wsById = new Map<string, any>();
 // ws id → authenticated user data
 const wsUserData = new Map<string, WsUser>();
+// rooms already scheduled for cleanup
+const scheduledCleanups = new Set<string>();
+
+const GAME_END_DELAY_MS = 30_000;
+
+function scheduleGameEnd(roomId: string): void {
+  if (scheduledCleanups.has(roomId)) return;
+  scheduledCleanups.add(roomId);
+
+  setTimeout(async () => {
+    // Broadcast redirect to all connected clients
+    const ids = gameSockets.get(roomId);
+    if (ids) {
+      for (const id of ids) {
+        wsById.get(id)?.send(JSON.stringify({ type: "redirect", url: "/lobby" }));
+      }
+    }
+    // Reset room status and clean up in-memory state
+    await db.update(room).set({ status: "waiting" }).where(eq(room.id, roomId));
+    deleteGame(roomId);
+    scheduledCleanups.delete(roomId);
+  }, GAME_END_DELAY_MS);
+}
 
 // @MX:ANCHOR: broadcastGameState is called from gameWs, games.ts routes
 // @MX:REASON: [AUTO] fan_in >= 3 — game state broadcast public API boundary
 export async function broadcastGameState(roomId: string): Promise<void> {
+  const state = getGame(roomId);
   const ids = gameSockets.get(roomId);
   if (!ids) return;
 
@@ -46,6 +71,8 @@ export async function broadcastGameState(roomId: string): Promise<void> {
       // viewer may have left the game; skip
     }
   }
+
+  if (state?.winnerTeam) scheduleGameEnd(roomId);
 }
 
 export const gameWsPlugin = new Elysia().ws("/ws/game/:roomId", {
