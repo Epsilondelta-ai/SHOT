@@ -121,7 +121,7 @@
 					{/if}
 
 					<section>
-						<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+						<div class="grid grid-cols-2 gap-2 pt-8 sm:grid-cols-4">
 							{#each game.players as player (player.id)}
 								<GamePlayer
 									name={player.name}
@@ -137,6 +137,7 @@
 									role={player.role}
 									verified={player.verified}
 									isMe={false}
+									isTurn={player.id === game.currentTurnPlayerId && game.phase !== 'finished'}
 								/>
 							{/each}
 						</div>

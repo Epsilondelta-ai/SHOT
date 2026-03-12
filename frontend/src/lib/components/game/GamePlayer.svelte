@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import arrow from '$lib/assets/arrow.png';
 	import bullet from '$lib/assets/bullet.png';
 	import handcuffs from '$lib/assets/handcuffs.png';
 	import heal from '$lib/assets/heal.png';
@@ -14,6 +15,7 @@
 		maxHp,
 		alive,
 		isMe = false,
+		isTurn = false,
 		selected = false,
 		selectable = false,
 		onselect,
@@ -28,6 +30,7 @@
 		maxHp: number;
 		alive: boolean;
 		isMe?: boolean;
+		isTurn?: boolean;
 		selected?: boolean;
 		selectable?: boolean;
 		onselect?: () => void;
@@ -86,10 +89,11 @@
 </script>
 
 <button
-	class="relative flex flex-col items-center gap-2 overflow-hidden rounded-xl border-3 p-3 transition-all
+	class="relative flex flex-col items-center gap-2 rounded-xl border-3 p-3 transition-all
 		{selected ? 'border-red-500 bg-red-50 ring-4 ring-red-500' : roleColor}
 		{selectable && alive && !isMe ? 'cursor-pointer hover:scale-105' : ''}
-		{isMe ? 'ring-3 ring-primary' : ''}"
+		{isMe ? 'ring-3 ring-primary' : ''}
+		"
 	style="border-color: {selected
 		? '#ef4444'
 		: role === 'spy'
@@ -104,6 +108,13 @@
 	disabled={!selectable || !alive || isMe}
 	onclick={onselect}
 >
+	<!-- Current turn indicator -->
+	{#if isTurn}
+		<div class="absolute -top-7 left-1/2 z-30 -translate-x-1/2">
+			<img src={arrow} alt="current turn" class="size-8 animate-bounce" />
+		</div>
+	{/if}
+
 	<!-- Jail bars overlay when jailed -->
 	{#if isJailed}
 		<div
