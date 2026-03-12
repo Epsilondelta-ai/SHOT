@@ -10,7 +10,7 @@ export type LlmLogEntry = {
   player: {
     userId: string;
     name: string;
-    assistantId: string;
+    assistantId: string | null;
     assistantName?: string;
     provider: string;
     model: string;

@@ -70,15 +70,18 @@ type LlmContext = {
 };
 
 async function fetchLlmContext(
-  assistantId: string,
+  assistantId: string | null,
   llmModelId: string,
 ): Promise<LlmContext | null> {
   const [assistantRow, modelRow] = await Promise.all([
-    db.query.assistant.findFirst({ where: eq(assistant.id, assistantId) }),
+    assistantId
+      ? db.query.assistant.findFirst({ where: eq(assistant.id, assistantId) })
+      : Promise.resolve(null),
     db.query.llmModel.findFirst({ where: eq(llmModel.id, llmModelId) }),
   ]);
 
-  if (!assistantRow || !modelRow) return null;
+  if (!modelRow) return null;
+  if (assistantId && !assistantRow) return null;
 
   const [providerRow, activeRulebook] = await Promise.all([
     db.query.llmProvider.findFirst({
@@ -91,13 +94,14 @@ async function fetchLlmContext(
 
   if (!providerRow || !providerRow.apiKey) return null;
 
+  const basePrompt = assistantRow?.prompt ?? "";
   const systemPrompt = activeRulebook
-    ? `${assistantRow.prompt}\n\n== GAME RULEBOOK ==\n${activeRulebook.content}`
-    : assistantRow.prompt;
+    ? `${basePrompt}${basePrompt ? "\n\n" : ""}== GAME RULEBOOK ==\n${activeRulebook.content}`
+    : basePrompt;
 
   return {
     systemPrompt,
-    assistantName: assistantRow.name,
+    assistantName: assistantRow?.name ?? "",
     provider: modelRow.provider,
     apiModelName: modelRow.apiModelName,
     apiKey: providerRow.apiKey,
@@ -339,7 +343,7 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
       continue;
     }
 
-    if (!info.assistantId || !info.llmModelId) {
+    if (!info.llmModelId) {
       llmLog({
         roomId,
         round: 0,
