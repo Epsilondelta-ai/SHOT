@@ -9,24 +9,24 @@
 	}
 
 	function winnerLabel(team: string | null): string {
-		if (team === 'agents') return 'Agents Win';
-		if (team === 'spies') return 'Spies Win';
-		if (team === 'draw') return 'Draw';
-		return 'Unknown';
+		if (team === 'agents') return '대원 팀 승리';
+		if (team === 'spies') return '스파이 팀 승리';
+		if (team === 'draw') return '무승부';
+		return '알 수 없음';
 	}
 </script>
 
 <svelte:head>
-	<title>Replays</title>
+	<title>다시보기</title>
 </svelte:head>
 
 <div class="min-h-screen bg-background-dark font-display text-white">
 	<div class="mx-auto max-w-2xl p-6">
-		<h1 class="mb-6 text-2xl font-black uppercase tracking-widest text-white">Game Replays</h1>
+		<h1 class="mb-6 text-2xl font-black uppercase tracking-widest text-white">게임 다시보기</h1>
 
 		{#if records.length === 0}
 			<div class="rounded-xl bg-slate-800 px-6 py-10 text-center text-slate-400">
-				<p class="font-bold">No finished games yet.</p>
+				<p class="font-bold">아직 종료된 게임이 없습니다.</p>
 			</div>
 		{:else}
 			<div class="flex flex-col gap-4">
@@ -41,7 +41,7 @@
 									{record.playerNames.join(', ')}
 								</p>
 								<p class="mt-1 text-xs font-bold text-slate-400">
-									{record.playerCount} players &mdash; {formatDate(record.startedAt)}
+									{record.playerCount}명 &mdash; {formatDate(record.startedAt)}
 								</p>
 							</div>
 							<span

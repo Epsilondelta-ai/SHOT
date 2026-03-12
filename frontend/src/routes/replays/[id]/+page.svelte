@@ -3,7 +3,7 @@
 	import GameHeader from '$lib/components/game/GameHeader.svelte';
 	import GameLog from '$lib/components/game/GameLog.svelte';
 	import GamePlayer from '$lib/components/game/GamePlayer.svelte';
-	import type { ReplayFrame } from '$lib/types/replay';
+	import type { Replay프레임 } from '$lib/types/replay';
 	import type { GameSnapshot } from '$lib/types/game';
 
 	let { data } = $props();
@@ -16,7 +16,7 @@
 
 	const speeds = [0.5, 1, 2, 4];
 
-	const currentFrame = $derived(frames[currentIndex] ?? null);
+	const current프레임 = $derived(frames[currentIndex] ?? null);
 	const game = $derived<GameSnapshot | null>(currentFrame?.snapshot ?? null);
 	const totalFrames = $derived(frames.length);
 
@@ -88,18 +88,18 @@
 				<div class="mx-auto w-full max-w-2xl space-y-5 p-4 lg:max-w-none">
 					<div class="comic-border-sm rounded-xl bg-slate-800 px-4 py-3 text-center">
 						<p class="text-xs font-black tracking-[0.25em] text-slate-400 uppercase">
-							Replay — Round {game.round} / {game.maxRound}
+							다시보기 — 라운드 {game.round} / {game.maxRound}
 						</p>
 						<p class="mt-2 text-lg font-black text-white">
 							{game.players.find((p) => p.id === game.currentTurnPlayerId)?.name ?? '—'}
 						</p>
 						<p class="mt-1 text-sm font-bold text-slate-400">
 							{#if game.phase === 'finished'}
-								Game finished
+								게임 종료
 							{:else if game.phase === 'chatting'}
-								Chatting phase
+								대화 단계
 							{:else}
-								Action phase
+								행동 단계
 							{/if}
 						</p>
 					</div>
@@ -108,7 +108,7 @@
 						class="comic-border-sm flex items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-3 text-slate-400"
 					>
 						<span class="material-symbols-outlined">movie</span>
-						<span class="text-sm font-black uppercase">Omniscient Replay — All roles visible</span>
+						<span class="text-sm font-black uppercase">전지적 다시보기 — 모든 역할 공개</span>
 					</div>
 
 					{#if currentFrame?.actionSummary}
@@ -165,7 +165,7 @@
 						class="comic-button rounded-lg border-2 border-slate-700 bg-slate-700 px-3 py-2 font-black text-white disabled:opacity-40"
 						onclick={stepBack}
 						disabled={currentIndex === 0}
-						aria-label="Step back"
+						aria-label="이전"
 					>
 						<span class="material-symbols-outlined">skip_previous</span>
 					</button>
@@ -173,7 +173,7 @@
 					<button
 						class="comic-button rounded-lg border-2 border-slate-700 bg-primary px-4 py-2 font-black text-white"
 						onclick={togglePlay}
-						aria-label={playing ? 'Pause' : 'Play'}
+						aria-label={playing ? '일시정지' : '재생'}
 					>
 						<span class="material-symbols-outlined">
 							{playing ? 'pause' : 'play_arrow'}
@@ -184,7 +184,7 @@
 						class="comic-button rounded-lg border-2 border-slate-700 bg-slate-700 px-3 py-2 font-black text-white disabled:opacity-40"
 						onclick={stepForward}
 						disabled={currentIndex >= totalFrames - 1}
-						aria-label="Step forward"
+						aria-label="다음"
 					>
 						<span class="material-symbols-outlined">skip_next</span>
 					</button>
@@ -207,7 +207,7 @@
 
 				<div class="flex w-full max-w-lg items-center gap-3">
 					<span class="text-xs font-bold text-slate-400">
-						Frame {currentIndex + 1} / {totalFrames}
+						프레임 {currentIndex + 1} / {totalFrames}
 					</span>
 					<input
 						type="range"
@@ -222,7 +222,7 @@
 		</div>
 	{:else}
 		<div class="flex flex-1 items-center justify-center">
-			<p class="text-slate-400 font-bold">No replay frames found for this game.</p>
+			<p class="text-slate-400 font-bold">이 게임의 다시보기 데이터가 없습니다.</p>
 		</div>
 	{/if}
 </div>
