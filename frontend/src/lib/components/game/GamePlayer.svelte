@@ -165,7 +165,7 @@
 			>
 		{:else if role === 'revealed'}
 			<span class="rounded-full bg-green-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
-				>AGENT</span
+				>SPY</span
 			>
 		{/if}
 	</div>
