@@ -1,0 +1,228 @@
+<script lang="ts">
+	import GameChat from '$lib/components/game/GameChat.svelte';
+	import GameHeader from '$lib/components/game/GameHeader.svelte';
+	import GameLog from '$lib/components/game/GameLog.svelte';
+	import GamePlayer from '$lib/components/game/GamePlayer.svelte';
+	import type { ReplayFrame } from '$lib/types/replay';
+	import type { GameSnapshot } from '$lib/types/game';
+
+	let { data } = $props();
+	const frames: ReplayFrame[] = data.frames;
+	const roomId: string = data.roomId;
+
+	let currentIndex = $state(0);
+	let playing = $state(false);
+	let speed = $state(1);
+
+	const speeds = [0.5, 1, 2, 4];
+
+	const currentFrame = $derived(frames[currentIndex] ?? null);
+	const game = $derived<GameSnapshot | null>(currentFrame?.snapshot ?? null);
+	const totalFrames = $derived(frames.length);
+
+	let playInterval: ReturnType<typeof setInterval> | null = null;
+
+	function clearPlay() {
+		if (playInterval !== null) {
+			clearInterval(playInterval);
+			playInterval = null;
+		}
+	}
+
+	function startPlay() {
+		clearPlay();
+		playInterval = setInterval(() => {
+			if (currentIndex >= totalFrames - 1) {
+				playing = false;
+				clearPlay();
+				return;
+			}
+			currentIndex += 1;
+		}, 1000 / speed);
+	}
+
+	$effect(() => {
+		if (playing) {
+			startPlay();
+		} else {
+			clearPlay();
+		}
+		return () => clearPlay();
+	});
+
+	function togglePlay() {
+		if (currentIndex >= totalFrames - 1) {
+			currentIndex = 0;
+		}
+		playing = !playing;
+	}
+
+	function stepBack() {
+		playing = false;
+		currentIndex = Math.max(0, currentIndex - 1);
+	}
+
+	function stepForward() {
+		playing = false;
+		currentIndex = Math.min(totalFrames - 1, currentIndex + 1);
+	}
+
+	function setSpeed(s: number) {
+		speed = s;
+		if (playing) {
+			startPlay();
+		}
+	}
+</script>
+
+<svelte:head>
+	<title>Replay — {roomId}</title>
+</svelte:head>
+
+<div class="flex h-screen flex-col bg-background-dark font-display text-white">
+	{#if game}
+		<GameHeader round={game.round} timeLeft={0} totalTime={1} />
+
+		<div class="flex flex-1 overflow-hidden">
+			<main class="flex-1 overflow-y-auto">
+				<div class="mx-auto w-full max-w-2xl space-y-5 p-4 lg:max-w-none">
+					<div class="comic-border-sm rounded-xl bg-slate-800 px-4 py-3 text-center">
+						<p class="text-xs font-black tracking-[0.25em] text-slate-400 uppercase">
+							Replay — Round {game.round} / {game.maxRound}
+						</p>
+						<p class="mt-2 text-lg font-black text-white">
+							{game.players.find((p) => p.id === game.currentTurnPlayerId)?.name ?? '—'}
+						</p>
+						<p class="mt-1 text-sm font-bold text-slate-400">
+							{#if game.phase === 'finished'}
+								Game finished
+							{:else if game.phase === 'chatting'}
+								Chatting phase
+							{:else}
+								Action phase
+							{/if}
+						</p>
+					</div>
+
+					<div
+						class="comic-border-sm flex items-center justify-center gap-2 rounded-xl bg-slate-800 px-4 py-3 text-slate-400"
+					>
+						<span class="material-symbols-outlined">movie</span>
+						<span class="text-sm font-black uppercase">Omniscient Replay — All roles visible</span>
+					</div>
+
+					{#if currentFrame?.actionSummary}
+						<div class="rounded-xl bg-slate-700 px-4 py-3 text-center">
+							<p class="text-sm font-bold text-slate-200">{currentFrame.actionSummary}</p>
+						</div>
+					{/if}
+
+					<section>
+						<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+							{#each game.players as player (player.id)}
+								<GamePlayer
+									name={player.name}
+									hp={player.hp}
+									maxHp={player.maxHp}
+									alive={player.alive}
+									selected={false}
+									selectable={false}
+									onselect={() => {}}
+									isJailed={player.isJailed}
+									attacks={player.attacks}
+									cards={player.cards}
+									role={player.role}
+									verified={player.verified}
+									isMe={false}
+								/>
+							{/each}
+						</div>
+					</section>
+				</div>
+			</main>
+
+			<aside class="hidden lg:flex w-80 flex-col border-l-2 border-slate-700 bg-slate-900">
+				<div class="flex flex-1 flex-col overflow-hidden border-b-2 border-slate-700">
+					<GameLog logs={game.logs} inline={true} />
+				</div>
+				<div class="flex flex-1 flex-col overflow-hidden">
+					<GameChat
+						messages={game.chatMessages}
+						myId=""
+						canSend={false}
+						onsend={() => {}}
+						inline={true}
+					/>
+				</div>
+			</aside>
+		</div>
+
+		<!-- Replay controls -->
+		<div class="border-t-4 border-slate-700 bg-slate-900 px-4 py-3">
+			<div class="mx-auto flex max-w-2xl flex-col items-center gap-3 lg:max-w-none">
+				<div class="flex items-center gap-3">
+					<button
+						class="comic-button rounded-lg border-2 border-slate-700 bg-slate-700 px-3 py-2 font-black text-white disabled:opacity-40"
+						onclick={stepBack}
+						disabled={currentIndex === 0}
+						aria-label="Step back"
+					>
+						<span class="material-symbols-outlined">skip_previous</span>
+					</button>
+
+					<button
+						class="comic-button rounded-lg border-2 border-slate-700 bg-primary px-4 py-2 font-black text-white"
+						onclick={togglePlay}
+						aria-label={playing ? 'Pause' : 'Play'}
+					>
+						<span class="material-symbols-outlined">
+							{playing ? 'pause' : 'play_arrow'}
+						</span>
+					</button>
+
+					<button
+						class="comic-button rounded-lg border-2 border-slate-700 bg-slate-700 px-3 py-2 font-black text-white disabled:opacity-40"
+						onclick={stepForward}
+						disabled={currentIndex >= totalFrames - 1}
+						aria-label="Step forward"
+					>
+						<span class="material-symbols-outlined">skip_next</span>
+					</button>
+
+					<div class="flex items-center gap-1">
+						{#each speeds as s (s)}
+							<button
+								class="rounded px-2 py-1 text-xs font-black transition-colors"
+								class:bg-primary={speed === s}
+								class:text-white={speed === s}
+								class:bg-slate-700={speed !== s}
+								class:text-slate-300={speed !== s}
+								onclick={() => setSpeed(s)}
+							>
+								{s}x
+							</button>
+						{/each}
+					</div>
+				</div>
+
+				<div class="flex w-full max-w-lg items-center gap-3">
+					<span class="text-xs font-bold text-slate-400">
+						Frame {currentIndex + 1} / {totalFrames}
+					</span>
+					<input
+						type="range"
+						min="0"
+						max={totalFrames - 1}
+						bind:value={currentIndex}
+						oninput={() => (playing = false)}
+						class="flex-1 accent-primary"
+					/>
+				</div>
+			</div>
+		</div>
+	{:else}
+		<div class="flex flex-1 items-center justify-center">
+			<p class="text-slate-400 font-bold">No replay frames found for this game.</p>
+		</div>
+	{/if}
+</div>

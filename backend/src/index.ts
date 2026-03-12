@@ -8,6 +8,7 @@ import { gameRoutes } from "./routes/games";
 import { adminRoutes } from "./routes/admin";
 import { configRoutes } from "./routes/config";
 import { meRoutes } from "./routes/me";
+import { replayRoutes } from "./routes/replays";
 
 const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
 const PORT = Number(process.env.PORT ?? 3001);
@@ -31,6 +32,7 @@ const app = new Elysia()
   .use(adminRoutes)
   .use(configRoutes)
   .use(meRoutes)
+  .use(replayRoutes)
 
   // ── WebSocket ─────────────────────────────────────────────────────────────
   .use(roomWsPlugin)

@@ -14,6 +14,7 @@ import { getSerializedRoomPlayers } from "../lib/roomPlayers";
 import { broadcastPlayers } from "../ws/roomWs";
 import { broadcastGameState } from "../ws/gameWs";
 import { maybeRunLlmTurn, clearConversationHistory } from "../lib/llmPlayer";
+import { recordGameStart, recordFrame, recordGameEnd } from "../lib/replayStore";
 
 function isSpectatorRequest(request: Request) {
   return new URL(request.url).searchParams.get("spectator") === "1";
@@ -77,6 +78,7 @@ export const gameRoutes = new Elysia()
 
     clearConversationHistory(params.id);
     initializeGame(params.id, players);
+    recordGameStart(params.id, players.map((p) => p.name));
     await db
       .update(room)
       .set({ status: "in_progress" })
@@ -110,6 +112,9 @@ export const gameRoutes = new Elysia()
       applyGameAction(params.id, user.id, body);
       await broadcastGameState(params.id);
       void maybeRunLlmTurn(params.id);
+      recordFrame(params.id, null);
+      const game = getGame(params.id);
+      if (game?.winnerTeam) recordGameEnd(params.id, game.winnerTeam);
       return createSnapshot(params.id, user.id);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Invalid action";

@@ -430,9 +430,11 @@ function playVerify(
 function buildRoleForViewer(
   player: InternalPlayer,
   viewerId: string | null,
+  omniscient?: boolean,
 ): GamePlayerView["role"] {
   if (player.role === "leader") return "leader";
   if (player.role === "spy" && player.revealed) return "revealed";
+  if (omniscient && player.role === "spy") return "spy";
   if (viewerId && player.role === "spy" && player.userId === viewerId) {
     return "spy";
   }
@@ -551,15 +553,19 @@ export function forceAdvanceTurn(roomId: string, userId: string): void {
 export function createSnapshot(
   roomId: string,
   viewerUserId: string,
-  options: { allowSpectator?: boolean } = {},
+  options: { allowSpectator?: boolean; omniscient?: boolean } = {},
 ): GameSnapshot {
   const state = getGame(roomId);
   if (!state) {
     throw new Error("Game not found.");
   }
 
-  const viewer = state.players.find((player) => player.userId === viewerUserId);
-  const isSpectator = !viewer && options.allowSpectator === true;
+  const isOmniscient = options.omniscient === true;
+
+  const viewer = isOmniscient
+    ? undefined
+    : state.players.find((player) => player.userId === viewerUserId);
+  const isSpectator = !viewer && (options.allowSpectator === true || isOmniscient);
   if (!viewer && !isSpectator) {
     throw new Error("You are not part of this game.");
   }
@@ -569,23 +575,25 @@ export function createSnapshot(
     round: state.round,
     maxRound: state.maxRound,
     currentTurnPlayerId: state.currentTurnPlayerId,
-    viewerMode: viewer ? "player" : "spectator",
-    myPlayerId: viewer?.id ?? null,
-    myTeam: viewer ? (viewer.role === "spy" ? "spies" : "agents") : null,
+    viewerMode: isOmniscient ? "spectator" : viewer ? "player" : "spectator",
+    myPlayerId: isOmniscient ? null : (viewer?.id ?? null),
+    myTeam: isOmniscient ? null : viewer ? (viewer.role === "spy" ? "spies" : "agents") : null,
     phase: getPhase(state),
     remainingChatTurns: state.pendingChatTurns,
-    canReveal:
-      viewer !== undefined &&
-      state.currentTurnPlayerId === viewer.id &&
-      viewer.role === "spy" &&
-      !viewer.revealed &&
-      viewer.alive,
-    mustUseAttack:
-      viewer !== undefined &&
-      state.currentTurnPlayerId === viewer.id &&
-      !state.attackUsedThisTurn &&
-      !viewer.isJailed &&
-      getAttackCount(viewer) > 0,
+    canReveal: isOmniscient
+      ? false
+      : viewer !== undefined &&
+        state.currentTurnPlayerId === viewer.id &&
+        viewer.role === "spy" &&
+        !viewer.revealed &&
+        viewer.alive,
+    mustUseAttack: isOmniscient
+      ? false
+      : viewer !== undefined &&
+        state.currentTurnPlayerId === viewer.id &&
+        !state.attackUsedThisTurn &&
+        !viewer.isJailed &&
+        getAttackCount(viewer) > 0,
     winnerTeam: state.winnerTeam,
     players: state.players.map((player) => ({
       id: player.id,
@@ -599,12 +607,18 @@ export function createSnapshot(
       cards: player.cards.filter(
         (card): card is Exclude<ActionCard, "attack"> => card !== "attack",
       ),
-      role: buildRoleForViewer(player, viewer?.userId ?? null),
+      role: buildRoleForViewer(player, viewer?.userId ?? null, isOmniscient),
       verified: player.verified || (!player.alive && player.role === "agent"),
     })),
     logs: [...state.logs],
     chatMessages: [...state.chatMessages],
   };
+}
+
+export function createOmniscientSnapshot(roomId: string): GameSnapshot | null {
+  const state = getGame(roomId);
+  if (!state) return null;
+  return createSnapshot(roomId, "", { omniscient: true });
 }
 
 export function applyGameAction(

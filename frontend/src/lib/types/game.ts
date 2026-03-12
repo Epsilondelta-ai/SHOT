@@ -33,6 +33,7 @@ export type ChatMessage = {
 export type GameSnapshot = {
 	roomId: string;
 	round: number;
+	maxRound: number;
 	currentTurnPlayerId: string;
 	viewerMode: 'player' | 'spectator';
 	myPlayerId: string | null;

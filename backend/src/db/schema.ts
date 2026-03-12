@@ -241,6 +241,30 @@ export const gameRulebook = sqliteTable("game_rulebook", {
     .notNull(),
 });
 
+export const gameRecord = sqliteTable("game_record", {
+  roomId: text("room_id").primaryKey(),
+  playerCount: integer("player_count").notNull(),
+  playerNames: text("player_names").notNull(), // JSON array of strings
+  winnerTeam: text("winner_team"), // null until game ends
+  startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
+  finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
+});
+
+export const gameReplayFrame = sqliteTable(
+  "game_replay_frame",
+  {
+    id: text("id").primaryKey(),
+    roomId: text("room_id").notNull(),
+    seq: integer("seq").notNull(),
+    snapshot: text("snapshot").notNull(), // JSON of GameSnapshot
+    actionSummary: text("action_summary"),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+  },
+  (table) => [index("game_replay_frame_roomId_seq_idx").on(table.roomId, table.seq)],
+);
+
 // ── Relations ────────────────────────────────────────────────────────────────
 
 export const userRelations = relations(user, ({ many }) => ({

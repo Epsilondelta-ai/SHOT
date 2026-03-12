@@ -11,6 +11,7 @@
 	const emptyGame: GameSnapshot = {
 		roomId: 'story-room',
 		round: 1,
+		maxRound: 15,
 		currentTurnPlayerId: 'p2',
 		viewerMode: 'player',
 		myPlayerId: 'p2',
