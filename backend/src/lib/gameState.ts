@@ -232,19 +232,19 @@ function maybeFinishGame(state: GameState) {
 
   if (!leaderAlive || aliveAgents.length === 0) {
     state.winnerTeam = "spies";
-    addLog(state, "Spies win the game.", "result");
+    addLog(state, "스파이 팀이 승리했습니다.", "result");
     return true;
   }
 
   if (aliveSpies.length === 0) {
     state.winnerTeam = "agents";
-    addLog(state, "Agents win the game.", "result");
+    addLog(state, "대원 팀이 승리했습니다.", "result");
     return true;
   }
 
   if (state.round > state.maxRound) {
     state.winnerTeam = "draw";
-    addLog(state, "Time ran out. The game ends in a draw.", "result");
+    addLog(state, "제한 턴 초과. 무승부로 게임이 종료됩니다.", "result");
     return true;
   }
 
@@ -260,7 +260,7 @@ function rewardKill(
 
   actor.hp = Math.min(actor.maxHp, actor.hp + 1);
   drawCards(state, actor, 2);
-  addLog(state, `${actor.name} gained a bounty reward.`, "round");
+  addLog(state, `${actor.name}이(가) 처치 보상을 받았습니다.`, "round");
 }
 
 function maybeApplyFriendlyFirePenalty(
@@ -272,7 +272,7 @@ function maybeApplyFriendlyFirePenalty(
   if (actor.role === "spy" && actor.revealed) return;
 
   actor.isJailed = true;
-  addLog(state, `${actor.name} is jailed for friendly fire.`, "round");
+  addLog(state, `${actor.name}이(가) 아군 오사로 구금되었습니다.`, "round");
 }
 
 function revealPlayerRole(player: InternalPlayer) {
@@ -288,14 +288,14 @@ function startTurn(state: GameState, player: InternalPlayer) {
   state.currentTurnPlayerId = player.id;
   state.attackUsedThisTurn = false;
   drawCards(state, player, 2);
-  addLog(state, `${player.name} drew 2 action cards.`, "round");
+  addLog(state, `${player.name}이(가) 행동 카드 2장을 뽑았습니다.`, "round");
   state.pendingChatTurns = 1;
 
   if (player.role === "spy" && player.revealed) {
     drawCards(state, player, 2);
     addLog(
       state,
-      `${player.name} drew 2 more cards as a revealed spy.`,
+      `${player.name}이(가) 정체가 밝혀진 스파이로서 카드 2장을 추가로 뽑았습니다.`,
       "round",
     );
     state.pendingChatTurns += 1;
@@ -360,13 +360,13 @@ function playAttack(
   }
 
   target.hp = Math.max(0, target.hp - 1);
-  addLog(state, `${actor.name} attacked ${target.name}.`, "shot");
+  addLog(state, `${actor.name}이(가) ${target.name}을(를) 공격했습니다.`, "shot");
 
   if (target.hp > 0) return;
 
   target.alive = false;
   revealPlayerRole(target);
-  addLog(state, `${target.name} was eliminated.`, "eliminated");
+  addLog(state, `${target.name}이(가) 제거되었습니다.`, "eliminated");
   rewardKill(state, actor, target);
   maybeApplyFriendlyFirePenalty(state, actor, target);
   maybeFinishGame(state);
@@ -385,7 +385,7 @@ function playHeal(
   }
 
   target.hp = Math.min(target.maxHp, target.hp + 1);
-  addLog(state, `${actor.name} healed ${target.name}.`, "round");
+  addLog(state, `${actor.name}이(가) ${target.name}을(를) 치료했습니다.`, "round");
 }
 
 function playJail(
@@ -401,7 +401,7 @@ function playJail(
   }
 
   target.isJailed = true;
-  addLog(state, `${actor.name} jailed ${target.name}.`, "round");
+  addLog(state, `${actor.name}이(가) ${target.name}을(를) 구금했습니다.`, "round");
 }
 
 function playVerify(
@@ -419,12 +419,12 @@ function playVerify(
   if (target.role === "spy") {
     target.revealed = true;
     drawCards(state, actor, 2);
-    addLog(state, `${actor.name} exposed ${target.name} as a spy.`, "round");
+    addLog(state, `${actor.name}이(가) ${target.name}을(를) 스파이로 밝혀냈습니다.`, "round");
     return;
   }
 
   target.verified = true;
-  addLog(state, `${actor.name} confirmed ${target.name} as an agent.`, "round");
+  addLog(state, `${actor.name}이(가) ${target.name}을(를) 대원으로 확인했습니다.`, "round");
 }
 
 function buildRoleForViewer(
@@ -505,7 +505,7 @@ export function initializeGame(
     drawCards(state, player, 2);
   }
 
-  addLog(state, "Game started.", "round");
+  addLog(state, "게임이 시작되었습니다.", "round");
   startTurn(state, state.players[0]!);
   games.set(roomId, state);
   return state;
@@ -680,7 +680,7 @@ export function applyGameAction(
     actor.revealed = true;
     drawCards(state, actor, 2);
     state.pendingChatTurns += 1;
-    addLog(state, `${actor.name} revealed as a spy and drew 2 cards.`, "round");
+    addLog(state, `${actor.name}이(가) 스파이로 정체를 드러내고 카드 2장을 뽑았습니다.`, "round");
     return;
   }
 

@@ -32,7 +32,7 @@ export function recordGameStart(
       })
       .run();
   }
-  recordFrame(roomId, "Game started");
+  recordFrame(roomId, "게임 시작");
 }
 
 export function recordSpectator(roomId: string, userId: string): void {
@@ -79,7 +79,7 @@ export function recordGameEnd(roomId: string, winnerTeam: string): void {
     .set({ winnerTeam, finishedAt: new Date() })
     .where(eq(gameRecord.roomId, roomId))
     .run();
-  recordFrame(roomId, `Game over: ${winnerTeam} win`);
+  recordFrame(roomId, `게임 종료: ${winnerTeam} 승리`);
   frameCounters.delete(roomId);
   finishedRooms.delete(roomId);
 }
