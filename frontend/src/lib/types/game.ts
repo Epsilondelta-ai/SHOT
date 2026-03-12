@@ -14,6 +14,7 @@ export type GamePlayerData = {
 	attacks: number;
 	cards: SpecialCard[];
 	role: Role;
+	verified: boolean;
 };
 
 export type LogEntry = {

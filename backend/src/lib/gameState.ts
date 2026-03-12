@@ -61,6 +61,7 @@ export type GamePlayerView = {
   attacks: number;
   cards: Exclude<ActionCard, "attack">[];
   role: "normal" | "spy" | "leader" | "revealed";
+  verified: boolean;
 };
 
 export type GameSnapshot = {
@@ -578,6 +579,7 @@ export function createSnapshot(
         (card): card is Exclude<ActionCard, "attack"> => card !== "attack",
       ),
       role: buildRoleForViewer(player, viewer?.userId ?? null),
+      verified: player.verified,
     })),
     logs: [...state.logs],
     chatMessages: [...state.chatMessages],
