@@ -349,7 +349,7 @@ function playAttack(
     throw new Error("You cannot attack while jailed.");
   }
   if (target.role === "leader" && !(actor.role === "spy" && actor.revealed)) {
-    throw new Error("Only a revealed spy can attack the leader.");
+    throw new Error("Only a revealed spy can attack the Captain.");
   }
   if (!removeCardFromHand(state, actor, "attack")) {
     throw new Error("No attack card available.");

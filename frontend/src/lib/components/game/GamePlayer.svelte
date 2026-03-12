@@ -161,7 +161,7 @@
 			>
 		{:else if role === 'leader'}
 			<span class="rounded-full bg-blue-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
-				>LEADER</span
+				>CAPTAIN</span
 			>
 		{:else if role === 'revealed'}
 			<span class="rounded-full bg-green-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"

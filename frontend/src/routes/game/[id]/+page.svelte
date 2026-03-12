@@ -103,7 +103,7 @@
 							: card === 'jail'
 								? 'gavel'
 								: 'warning',
-				label: card.toUpperCase()
+				label: card === 'verify' ? 'INSPECT' : card.toUpperCase()
 			}));
 	});
 
