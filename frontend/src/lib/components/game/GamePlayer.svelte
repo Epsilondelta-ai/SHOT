@@ -5,6 +5,7 @@
 	import bulletHole from '$lib/assets/bullet_hole.png';
 	import handcuffs from '$lib/assets/handcuffs.png';
 	import heal from '$lib/assets/heal.png';
+	import healing from '$lib/assets/healing.png';
 	import magnifier from '$lib/assets/magnifier.png';
 	import type { ActionCard } from '$lib/types/game';
 
@@ -12,6 +13,7 @@
 	type Role = 'normal' | 'spy' | 'leader' | 'revealed';
 
 	export type AnimationState = {
+		id: number;
 		role: 'actor' | 'target';
 		card: ActionCard;
 	};
@@ -268,6 +270,7 @@
 
 	<!-- Action animation overlay -->
 	{#if animation}
+	{#key animation.id}
 		{#if animation.role === 'actor'}
 			<!-- Actor: show the card image centered, fade in/out -->
 			<div class="animation-actor pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-xl">
@@ -285,9 +288,9 @@
 					<img src={bulletHole} alt="bullet hole" class="size-16 object-contain" />
 				</div>
 			{:else if animation.card === 'heal'}
-				<!-- Green cross flash -->
+				<!-- Healing image flash -->
 				<div class="animation-target pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-xl">
-					<span class="heal-cross">+</span>
+					<img src={healing} alt="heal" class="size-16 object-contain" />
 				</div>
 			{:else if animation.card === 'jail'}
 				<!-- Bars slam down from top -->
@@ -305,6 +308,7 @@
 				</div>
 			{/if}
 		{/if}
+	{/key}
 	{/if}
 </button>
 
@@ -332,23 +336,6 @@
 
 	.animation-target {
 		animation: target-flash 1s ease-in-out forwards;
-	}
-
-	/* Heal cross */
-	@keyframes heal-pop {
-		0% { opacity: 0; transform: scale(0.5); }
-		30% { opacity: 1; transform: scale(1.3); }
-		60% { opacity: 1; transform: scale(1); }
-		100% { opacity: 0; transform: scale(1.1); }
-	}
-
-	.heal-cross {
-		font-size: 3.5rem;
-		font-weight: 900;
-		color: #22c55e;
-		text-shadow: 0 0 12px #16a34a, 0 0 4px #fff;
-		line-height: 1;
-		animation: heal-pop 1s ease-in-out forwards;
 	}
 
 	/* Jail bars slam down */

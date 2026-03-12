@@ -45,11 +45,12 @@
 	}
 
 	const animationTimers = new Map<string, ReturnType<typeof setTimeout>>();
+	let animationCounter = 0;
 
 	function triggerAnimation(playerId: string, role: 'actor' | 'target', card: ActionCard): void {
 		const existing = animationTimers.get(playerId);
 		if (existing) clearTimeout(existing);
-		animationStates[playerId] = { role, card };
+		animationStates[playerId] = { id: ++animationCounter, role, card };
 		const timer = setTimeout(() => {
 			animationStates[playerId] = null;
 			animationTimers.delete(playerId);
