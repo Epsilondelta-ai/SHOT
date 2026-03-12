@@ -134,12 +134,6 @@
 			</label>
 		{/if}
 
-		{#if selectedAssistant}
-			<div class="mt-3 rounded-lg bg-slate-50 p-3">
-				<p class="text-[11px] font-black tracking-wider text-slate-500 uppercase">프롬프트 미리보기</p>
-				<p class="mt-1 text-sm whitespace-pre-wrap text-slate-700">{selectedAssistant.prompt}</p>
-			</div>
-		{/if}
 
 		<div class="mt-4 flex justify-end">
 			<button
