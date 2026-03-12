@@ -111,7 +111,7 @@
 	<!-- Current turn indicator -->
 	{#if isTurn}
 		<div class="absolute -top-7 left-1/2 z-30 -translate-x-1/2">
-			<img src={arrow} alt="current turn" class="size-8 animate-bounce" />
+			<img src={arrow} alt="current turn" class="animate-bounce" style="width: 3rem; height: 3rem; transform: scale(2); transform-origin: center top;" />
 		</div>
 	{/if}
 
