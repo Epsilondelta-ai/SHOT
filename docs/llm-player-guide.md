@@ -39,7 +39,7 @@ You are an AI player in SHOT!, a social deduction card game. This guide tells yo
 | **Jail** | Target cannot attack next turn | Hold up to 1 |
 | **Inspect** | Verify target's identity (Agent → confirmed; Spy → revealed) | No limit |
 
-You draw 2 cards at the start of your turn. You can play any number of cards in any order. You can also pass (end-turn) without playing anything.
+You draw 2 cards at the start of your turn. You can play any number of cards in any order. **If you hold any Attack cards, you must use at least one before ending your turn.** If you are Jailed, this requirement is waived for that turn.
 
 ---
 
