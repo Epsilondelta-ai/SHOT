@@ -282,9 +282,9 @@ function revealPlayerRole(player: InternalPlayer) {
 
 function startTurn(state: GameState, player: InternalPlayer) {
   state.currentTurnPlayerId = player.id;
-  state.pendingChatTurns = player.controller === "human" ? 1 : 0;
   drawCards(state, player, 2);
   addLog(state, `${player.name} drew 2 action cards.`, "round");
+  state.pendingChatTurns = 1;
 
   if (player.role === "spy" && player.revealed) {
     drawCards(state, player, 2);
@@ -293,9 +293,7 @@ function startTurn(state: GameState, player: InternalPlayer) {
       `${player.name} drew 2 more cards as a revealed spy.`,
       "round",
     );
-    if (player.controller === "human") {
-      state.pendingChatTurns += 1;
-    }
+    state.pendingChatTurns += 1;
   }
 }
 
