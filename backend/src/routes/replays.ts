@@ -1,7 +1,7 @@
 import Elysia from "elysia";
 import { desc, eq, isNotNull } from "drizzle-orm";
 import { db } from "../db";
-import { gameRecord, gameReplayFrame } from "../db/schema";
+import { gameRecord } from "../db/schema";
 
 export const replayRoutes = new Elysia()
   .get("/api/replays", async () => {
@@ -24,24 +24,25 @@ export const replayRoutes = new Elysia()
   })
 
   .get("/api/replays/:roomId/frames", async ({ params, set }) => {
-    const frames = await db
+    const record = db
       .select()
-      .from(gameReplayFrame)
-      .where(eq(gameReplayFrame.roomId, params.roomId))
-      .orderBy(gameReplayFrame.seq);
+      .from(gameRecord)
+      .where(eq(gameRecord.roomId, params.roomId))
+      .get();
 
-    if (frames.length === 0) {
+    if (!record?.replayData) {
       set.status = 404;
       return { error: "No frames found" };
     }
 
+    type FrameEntry = { snapshot: unknown; actionSummary: string | null };
+    const frames = JSON.parse(record.replayData) as FrameEntry[];
+
     return {
-      frames: frames.map((f) => ({
-        id: f.id,
-        seq: f.seq,
-        snapshot: JSON.parse(f.snapshot),
+      frames: frames.map((f, i) => ({
+        seq: i,
+        snapshot: f.snapshot,
         actionSummary: f.actionSummary,
-        createdAt: f.createdAt instanceof Date ? f.createdAt.getTime() : f.createdAt,
       })),
     };
   });

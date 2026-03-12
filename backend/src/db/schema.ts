@@ -248,6 +248,7 @@ export const gameRecord = sqliteTable("game_record", {
   winnerTeam: text("winner_team"), // null until game ends
   startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
   finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
+  replayData: text("replay_data"), // JSON array of {snapshot, actionSummary}, written at game end
 });
 
 export const gameReplayFrame = sqliteTable(
