@@ -175,7 +175,7 @@
 	<title>{m.game_title()}</title>
 </svelte:head>
 
-<div class="flex min-h-screen flex-col bg-background-dark font-display text-white">
+<div class="flex h-screen flex-col bg-background-dark font-display text-white">
 	<GameHeader round={game.round} {timeLeft} totalTime={120} />
 
 	<!-- Desktop: side-by-side layout; Mobile: stacked -->
