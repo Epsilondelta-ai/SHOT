@@ -3,7 +3,7 @@ import type { SerializedRoomPlayer } from "./roomPlayers";
 export type ActionCard = "attack" | "heal" | "jail" | "verify";
 type HiddenRole = "leader" | "agent" | "spy";
 type Controller = "human" | "llm" | "bot";
-type WinnerTeam = "agents" | "spies";
+type WinnerTeam = "agents" | "spies" | "draw";
 
 type InternalPlayer = {
   id: string;
@@ -239,8 +239,8 @@ function maybeFinishGame(state: GameState) {
   }
 
   if (state.round >= state.maxRound) {
-    state.winnerTeam = "spies";
-    addLog(state, "Time ran out. Spies win by default.", "result");
+    state.winnerTeam = "draw";
+    addLog(state, "Time ran out. The game ends in a draw.", "result");
     return true;
   }
 

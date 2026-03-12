@@ -1,7 +1,7 @@
 export type ActionCard = 'attack' | 'heal' | 'jail' | 'verify';
 export type SpecialCard = 'heal' | 'jail' | 'verify';
 export type Role = 'normal' | 'spy' | 'leader' | 'revealed';
-export type WinnerTeam = 'agents' | 'spies';
+export type WinnerTeam = 'agents' | 'spies' | 'draw';
 
 export type GamePlayerData = {
 	id: string;

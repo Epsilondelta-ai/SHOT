@@ -154,7 +154,7 @@
 			phase: 'chatting' | 'acting' | 'finished';
 			remainingChatTurns: number;
 			canReveal: boolean;
-			winnerTeam: 'agents' | 'spies' | null;
+			winnerTeam: 'agents' | 'spies' | 'draw' | null;
 			myTeam: 'agents' | 'spies' | null;
 			myPlayerId: string | null;
 		}> = {}

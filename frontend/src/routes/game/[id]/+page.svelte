@@ -157,9 +157,17 @@
 	}
 
 	const winnerLabel = $derived(
-		game.winnerTeam === 'agents' ? 'Agents' : game.winnerTeam === 'spies' ? 'Spies' : undefined
+		game.winnerTeam === 'agents'
+			? 'Agents'
+			: game.winnerTeam === 'spies'
+				? 'Spies'
+				: game.winnerTeam === 'draw'
+					? 'Draw'
+					: undefined
 	);
-	const isMyWin = $derived(game.winnerTeam !== null && game.winnerTeam === game.myTeam);
+	const isMyWin = $derived(
+		game.winnerTeam !== null && game.winnerTeam !== 'draw' && game.winnerTeam === game.myTeam
+	);
 	const isSpectatorView = $derived(game.viewerMode === 'spectator');
 </script>
 
