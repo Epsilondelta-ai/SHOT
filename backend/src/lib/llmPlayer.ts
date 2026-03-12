@@ -175,14 +175,17 @@ function buildPrompt(
   const recentLogs = snapshot.logs.slice(-10);
   const recentChats = snapshot.chatMessages.slice(-10);
 
+  const displayRole = (role: string) =>
+    role === "revealed" ? "revealed(spy)" : role;
+
   const myStatus = me
-    ? `name=${me.name}, hp=${me.hp}/${me.maxHp}, alive=${me.alive}, jailed=${me.isJailed}, attacks=${me.attacks}, cards=${me.cards.join(",")}, role=${me.role}`
+    ? `name=${me.name}, hp=${me.hp}/${me.maxHp}, alive=${me.alive}, jailed=${me.isJailed}, attacks=${me.attacks}, cards=${me.cards.join(",")}, role=${displayRole(me.role)}`
     : "unknown";
 
   const playerList = snapshot.players
     .map(
       (p) =>
-        `  - ${p.name}: hp=${p.hp}/${p.maxHp}, alive=${p.alive}, role=${p.role}, jailed=${p.isJailed}`,
+        `  - ${p.name}: hp=${p.hp}/${p.maxHp}, alive=${p.alive}, role=${displayRole(p.role)}, jailed=${p.isJailed}`,
     )
     .join("\n");
 
