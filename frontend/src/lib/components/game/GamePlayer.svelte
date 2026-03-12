@@ -169,8 +169,8 @@
 			<span class="rounded-full bg-red-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
 				>SPY</span
 			>
-		{:else if !alive && verified}
-			<span class="rounded-full bg-slate-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
+		{:else if verified}
+			<span class="rounded-full bg-green-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
 				>AGENT</span
 			>
 		{/if}
