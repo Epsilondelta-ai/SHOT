@@ -21,6 +21,15 @@
 	const game = $derived<GameSnapshot | null>(currentFrame?.snapshot ?? null);
 	const totalFrames = frames.length;
 
+	const replayChatBubbles = $derived.by(() => {
+		const map = new Map<string, string>();
+		if (!game) return map;
+		for (const msg of game.chatMessages) {
+			map.set(msg.playerId, msg.text);
+		}
+		return map;
+	});
+
 	let playInterval: ReturnType<typeof setInterval> | null = null;
 
 	function clearPlay() {
@@ -121,7 +130,7 @@
 					{/if}
 
 					<section>
-						<div class="grid grid-cols-2 gap-2 pt-8 sm:grid-cols-4">
+						<div class="grid grid-cols-2 gap-2 pt-24 sm:grid-cols-4">
 							{#each game.players as player (player.id)}
 								<GamePlayer
 									name={player.name}
@@ -138,6 +147,7 @@
 									verified={player.verified}
 									isMe={false}
 									isTurn={player.id === game.currentTurnPlayerId && game.phase !== 'finished'}
+					chatBubble={replayChatBubbles.get(player.id) ?? null}
 								/>
 							{/each}
 						</div>

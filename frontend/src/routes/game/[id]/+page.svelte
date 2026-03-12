@@ -42,6 +42,20 @@
 	let actionPending = $state(false);
 	let timeLeft = $state(120);
 	let redirectCountdown = $state(30);
+	let chatBubbles = $state<Record<string, string>>({});
+	const seenMessageIds = new Set<string>();
+
+	$effect(() => {
+		for (const msg of game.chatMessages) {
+			if (seenMessageIds.has(msg.id)) continue;
+			seenMessageIds.add(msg.id);
+			chatBubbles[msg.playerId] = msg.text;
+			const { playerId } = msg;
+			setTimeout(() => {
+				delete chatBubbles[playerId];
+			}, 6000);
+		}
+	});
 
 	let socket = $state<ReturnType<typeof createGameSocket> | null>(null);
 
@@ -250,7 +264,7 @@
 				{/if}
 
 				<section>
-					<div class="grid grid-cols-2 gap-2 pt-8 sm:grid-cols-4">
+					<div class="grid grid-cols-2 gap-2 pt-24 sm:grid-cols-4">
 						{#each game.players as player (player.id)}
 							<GamePlayer
 								name={player.name}
@@ -267,6 +281,7 @@
 								verified={player.verified}
 								isMe={player.id === game.myPlayerId}
 								isTurn={player.id === game.currentTurnPlayerId && !isFinished}
+							chatBubble={chatBubbles[player.id] ?? null}
 							/>
 						{/each}
 					</div>

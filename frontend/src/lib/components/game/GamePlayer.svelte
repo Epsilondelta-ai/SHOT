@@ -16,6 +16,7 @@
 		alive,
 		isMe = false,
 		isTurn = false,
+		chatBubble = null,
 		selected = false,
 		selectable = false,
 		onselect,
@@ -31,6 +32,7 @@
 		alive: boolean;
 		isMe?: boolean;
 		isTurn?: boolean;
+		chatBubble?: string | null;
 		selected?: boolean;
 		selectable?: boolean;
 		onselect?: () => void;
@@ -108,6 +110,17 @@
 	disabled={!selectable || !alive || isMe}
 	onclick={onselect}
 >
+	<!-- Chat bubble -->
+	{#if chatBubble}
+		<div class="absolute bottom-full left-1/2 z-40 mb-2 w-32 -translate-x-1/2">
+			<div class="relative rounded-xl border-2 border-slate-900 bg-white px-2 py-1.5 text-center text-xs font-bold text-slate-900 shadow-md">
+				<span class="line-clamp-3 break-words">{chatBubble}</span>
+				<div class="absolute -bottom-[9px] left-1/2 h-0 w-0 -translate-x-1/2 border-x-[6px] border-t-[9px] border-x-transparent border-t-slate-900"></div>
+				<div class="absolute -bottom-[6px] left-1/2 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[7px] border-x-transparent border-t-white"></div>
+			</div>
+		</div>
+	{/if}
+
 	<!-- Current turn indicator -->
 	{#if isTurn}
 		<div class="absolute -top-7 left-1/2 z-30 -translate-x-1/2">
