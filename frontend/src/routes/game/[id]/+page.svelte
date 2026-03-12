@@ -77,11 +77,21 @@
 
 	const animationTimers = new Map<string, ReturnType<typeof setTimeout>>();
 	let animationCounter = 0;
+	let bgFlash = $state<'attack' | 'heal' | null>(null);
+	let bgFlashId = $state(0);
+	let bgFlashTimer: ReturnType<typeof setTimeout> | null = null;
 
 	function triggerAnimation(playerId: string, role: 'actor' | 'target', card: ActionCard): void {
 		const existing = animationTimers.get(playerId);
 		if (existing) clearTimeout(existing);
 		animationStates[playerId] = { id: ++animationCounter, role, card };
+
+		if (role === 'target' && playerId === game.myPlayerId && (card === 'attack' || card === 'heal')) {
+			if (bgFlashTimer) clearTimeout(bgFlashTimer);
+			bgFlash = card;
+			bgFlashId += 1;
+			bgFlashTimer = setTimeout(() => { bgFlash = null; }, 1200);
+		}
 		const timer = setTimeout(() => {
 			animationStates[playerId] = null;
 			animationTimers.delete(playerId);
@@ -289,7 +299,12 @@
 	<title>{m.game_title()}</title>
 </svelte:head>
 
-<div class="flex h-screen flex-col bg-background-dark font-display text-white">
+<div class="relative flex h-screen flex-col bg-background-dark font-display text-white">
+	{#if bgFlash}
+		{#key bgFlashId}
+			<div class="bg-flash pointer-events-none fixed inset-0 z-[100] {bgFlash === 'attack' ? 'bg-red-500/40' : 'bg-green-500/40'}"></div>
+		{/key}
+	{/if}
 	<GameHeader round={game.round} {timeLeft} totalTime={120} />
 
 	<!-- Desktop: side-by-side layout; Mobile: stacked -->
@@ -561,3 +576,16 @@
 {#if isFinished}
 	<GameResult winner={winnerLabel} {isMyWin} isDraw={false} countdown={redirectCountdown} {roomId} />
 {/if}
+
+<style>
+	@keyframes bg-flash {
+		0% { opacity: 0; }
+		20% { opacity: 1; }
+		70% { opacity: 1; }
+		100% { opacity: 0; }
+	}
+
+	.bg-flash {
+		animation: bg-flash 1s ease-in-out forwards;
+	}
+</style>
