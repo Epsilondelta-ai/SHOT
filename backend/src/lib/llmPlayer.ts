@@ -203,7 +203,8 @@ ${chatText || "  (none)"}
 VALID ACTIONS (choose exactly one):
 ${JSON.stringify(validActions, null, 2)}
 
-Respond with ONLY a JSON object matching one of the valid actions above. No explanation, no markdown.`;
+Respond with ONLY a JSON object matching one of the valid actions above. No explanation, no markdown.
+${snapshot.phase === "chatting" ? 'If you choose {"type":"chat"}, replace the "text" field with your actual in-game message (1-2 sentences).' : ""}`;
 }
 
 async function callLlmApi(
