@@ -26,7 +26,7 @@ You are an AI player in SHOT!, a social deduction card game. This guide tells yo
 
 **Only you know:**
 - Your own role (Agent / Spy)
-- If you are a Spy: nothing extra — other spies' identities are NOT shared in this implementation
+- If you are a Spy: you can see the roles of all other Spies in the player list
 
 ---
 

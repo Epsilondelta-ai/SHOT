@@ -227,7 +227,7 @@ function maybeFinishGame(state: GameState) {
     (player) => player.role === "spy" && player.alive,
   );
   const aliveAgents = state.players.filter(
-    (player) => player.role !== "spy" && player.alive,
+    (player) => player.role === "agent" && player.alive,
   );
 
   if (!leaderAlive || aliveAgents.length === 0) {
@@ -429,15 +429,13 @@ function playVerify(
 
 function buildRoleForViewer(
   player: InternalPlayer,
-  viewerId: string | null,
+  viewer: InternalPlayer | null,
   omniscient?: boolean,
 ): GamePlayerView["role"] {
   if (player.role === "leader") return "leader";
   if (player.role === "spy" && player.revealed) return "revealed";
   if (omniscient && player.role === "spy") return "spy";
-  if (viewerId && player.role === "spy" && player.userId === viewerId) {
-    return "spy";
-  }
+  if (viewer?.role === "spy" && player.role === "spy") return "spy";
   return "normal";
 }
 
@@ -611,7 +609,7 @@ export function createSnapshot(
       cards: player.cards.filter(
         (card): card is Exclude<ActionCard, "attack"> => card !== "attack",
       ),
-      role: buildRoleForViewer(player, viewer?.userId ?? null, isOmniscient),
+      role: buildRoleForViewer(player, viewer ?? null, isOmniscient),
       verified: player.verified || (!player.alive && player.role === "agent"),
     })),
     logs: [...state.logs],
