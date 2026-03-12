@@ -37,8 +37,7 @@
 	let game = $state<GameSnapshot>(initialGame);
 	let selectedCard = $state<ActionCard | null>(null);
 	let selectedTargetId = $state<string | null>(null);
-	let isLogOpen = $state(false);
-	let isChatOpen = $state(false);
+	let mobileTab = $state<'log' | 'chat' | null>(null);
 	let actionError = $state('');
 	let actionPending = $state(false);
 	let timeLeft = $state(120);
@@ -199,7 +198,7 @@
 	<!-- Desktop: side-by-side layout; Mobile: stacked -->
 	<div class="flex flex-1 overflow-hidden">
 		<main class="flex-1 overflow-y-auto">
-			<div class="mx-auto w-full max-w-2xl space-y-5 p-4 lg:max-w-none">
+			<div class="mx-auto w-full max-w-2xl space-y-5 p-4 pb-16 lg:max-w-none lg:pb-4">
 				<div class="comic-border-sm rounded-xl bg-slate-800 px-4 py-3 text-center">
 					<p class="text-xs font-black tracking-[0.25em] text-slate-400 uppercase">Current Turn</p>
 					<p class="mt-2 text-lg font-black text-white">
@@ -259,7 +258,7 @@
 							<div class="mt-4 flex flex-wrap items-center justify-center gap-3">
 								<button
 									class="comic-button rounded-xl border-2 border-slate-900 bg-primary px-5 py-3 text-sm font-black text-white uppercase"
-									onclick={() => (isChatOpen = true)}
+									onclick={() => (mobileTab = 'chat')}
 								>
 									Open Chat
 								</button>
@@ -405,18 +404,57 @@
 		</aside>
 	</div>
 
-	<!-- Mobile: FAB + bottom sheet (hidden on desktop) -->
+	<!-- Mobile: Tab bar + bottom sheet (hidden on desktop) -->
 	<div class="lg:hidden">
-		<GameLog logs={game.logs} isOpen={isLogOpen} ontoggle={() => (isLogOpen = !isLogOpen)} />
+		<!-- Overlay -->
+		{#if mobileTab !== null}
+			<div
+				class="fixed inset-0 z-30 bg-black/40"
+				role="presentation"
+				onclick={() => (mobileTab = null)}
+				onkeydown={(e) => e.key === 'Escape' && (mobileTab = null)}
+			></div>
+		{/if}
 
-		<GameChat
-			messages={game.chatMessages}
-			myId={game.myPlayerId ?? ''}
-			isOpen={isChatOpen}
-			canSend={canSendChat}
-			ontoggle={() => (isChatOpen = !isChatOpen)}
-			onsend={sendChat}
-		/>
+		<!-- Bottom Sheet -->
+		<div
+			class="comic-border fixed inset-x-0 bottom-12 z-30 flex max-h-[60vh] flex-col rounded-t-2xl bg-white transition-transform duration-300"
+			style="transform: translateY({mobileTab !== null ? '0%' : '100%'})"
+		>
+			{#if mobileTab === 'log'}
+				<GameLog logs={game.logs} inline={true} />
+			{:else if mobileTab === 'chat'}
+				<GameChat
+					messages={game.chatMessages}
+					myId={game.myPlayerId ?? ''}
+					canSend={canSendChat}
+					onsend={sendChat}
+					inline={true}
+				/>
+			{/if}
+		</div>
+
+		<!-- Tab Bar -->
+		<div class="fixed inset-x-0 bottom-0 z-40 flex border-t-2 border-slate-700 bg-slate-900">
+			<button
+				class="flex flex-1 flex-col items-center gap-0.5 py-2 transition-colors"
+				class:text-primary={mobileTab === 'log'}
+				class:text-slate-400={mobileTab !== 'log'}
+				onclick={() => (mobileTab = mobileTab === 'log' ? null : 'log')}
+			>
+				<span class="material-symbols-outlined text-xl">menu_book</span>
+				<span class="text-[10px] font-black uppercase">로그</span>
+			</button>
+			<button
+				class="flex flex-1 flex-col items-center gap-0.5 py-2 transition-colors"
+				class:text-primary={mobileTab === 'chat'}
+				class:text-slate-400={mobileTab !== 'chat'}
+				onclick={() => (mobileTab = mobileTab === 'chat' ? null : 'chat')}
+			>
+				<span class="material-symbols-outlined text-xl">chat</span>
+				<span class="text-[10px] font-black uppercase">채팅</span>
+			</button>
+		</div>
 	</div>
 </div>
 
