@@ -84,6 +84,31 @@
 		timeLeft = round >= 0 ? 120 : 120;
 		const timer = setInterval(() => {
 			timeLeft = Math.max(0, timeLeft - 1);
+			if (timeLeft > 0) return;
+			clearInterval(timer);
+			if (!isMyTurn || isFinished) return;
+
+			if (game.phase === 'chatting') {
+				skipChatTurn();
+			} else if (game.phase === 'acting') {
+				if (game.mustUseAttack) {
+					const myRole = myPlayer?.role;
+					const validTargets = game.players.filter((p) => {
+						if (!p.alive || p.id === game.myPlayerId) return false;
+						if (p.role === 'leader' && myRole !== 'revealed') return false;
+						return true;
+					});
+					if (validTargets.length > 0) {
+						const target = validTargets[Math.floor(Math.random() * validTargets.length)];
+						dispatchAction({ type: 'play-card', card: 'attack', targetId: target.id });
+						setTimeout(() => endTurn(), 1000);
+					} else {
+						endTurn();
+					}
+				} else {
+					endTurn();
+				}
+			}
 		}, 1000);
 
 		return () => clearInterval(timer);
