@@ -45,6 +45,8 @@
 	};
 
 	const roleColor = $derived.by(() => {
+		if (verified && role === 'normal')
+			return alive ? 'bg-green-100 border-green-400' : 'bg-green-200 border-green-500';
 		switch (role) {
 			case 'spy':
 				return alive ? 'bg-red-100 border-red-400' : 'bg-red-200 border-red-500';
@@ -58,6 +60,7 @@
 	});
 
 	const roleTextColor = $derived.by(() => {
+		if (verified && role === 'normal') return 'text-green-700';
 		switch (role) {
 			case 'spy':
 				return 'text-red-700';
@@ -95,7 +98,9 @@
 				? '#2563eb'
 				: role === 'revealed'
 					? '#dc2626'
-					: '#0f172a'}"
+					: verified
+						? '#16a34a'
+						: '#0f172a'}"
 	disabled={!selectable || !alive || isMe}
 	onclick={onselect}
 >
