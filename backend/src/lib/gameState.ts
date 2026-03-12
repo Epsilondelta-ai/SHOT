@@ -444,15 +444,16 @@ export function initializeGame(
   }
 
   const spyCount = getSpyCount(roomPlayers.length);
-  const leaderPlayer = roomPlayers[0];
+  const shuffledPlayers = shuffle(roomPlayers);
+  const leaderPlayer = shuffledPlayers[0];
   if (!leaderPlayer) {
     throw new Error("No players found.");
   }
 
   const spyIds = new Set(
-    roomPlayers.slice(-spyCount).map((player) => player.id),
+    shuffledPlayers.slice(-spyCount).map((player) => player.id),
   );
-  const players: InternalPlayer[] = roomPlayers.map((player) => {
+  const players: InternalPlayer[] = shuffledPlayers.map((player) => {
     const isLeader = player.id === leaderPlayer.id;
     const role: HiddenRole = isLeader
       ? "leader"
