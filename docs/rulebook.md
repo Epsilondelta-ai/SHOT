@@ -35,7 +35,7 @@ SHOT! is an online strategy card game where players are divided into the Agent T
 
 - Spy Team wins immediately if the Captain is killed.
 - Spy Team wins immediately if all Agents (excluding Spies) are killed.
-- Spy Team wins by default if the game reaches the maximum number of turns (Players × 3) without a winner.
+- The game ends in a **Draw** if it reaches the maximum number of turns (Players × 3) without a winner.
 
 ---
 
@@ -70,7 +70,7 @@ SHOT! is an online strategy card game where players are divided into the Agent T
 ### Turn Structure
 
 1. **Draw Phase:** Draw 2 cards.
-2. **Action Phase:** Use cards. No limit on usage per turn. Cards are used sequentially one by one, and multiple players can be attacked in a single turn. You can also skip your turn without using any cards. Once per turn, you may send one chat message at any point during the Action Phase.
+2. **Action Phase:** Use cards. Cards are used sequentially one by one, and multiple players can be attacked in a single turn. **If you have Attack cards, you must use at least one Attack card before ending your turn.** Once per turn, you may send one chat message at any point during the Action Phase.
 3. **End Turn:** The turn passes to the next player.
 
 A player in the Jail state cannot use Attack cards, but can use other cards (Heal, Inspect, Jail). The Jail state is lifted at the end of their next turn.
@@ -143,9 +143,9 @@ If the Agent Team (Captain/Agent) or a hidden Spy kills an Agent, they enter the
 | HP                        | Captain 5 / Agent 3 / Spy 3                                                                        |
 | Initial Hand              | 2 cards                                                                                            |
 | Draw per Turn             | 2 cards                                                                                            |
-| Card Usage Limit per Turn | None (Unlimited)                                                                                   |
+| Card Usage Limit per Turn | No upper limit, but must use at least 1 Attack card if held                                        |
 | Card Usage Method         | Sequentially one by one                                                                            |
 | Card Visibility           | All held cards are revealed                                                                        |
 | Turn Order                | Clockwise from Captain                                                                             |
 | Max Turns                 | Players × 3                                                                                        |
-| Victory Conditions        | Agent Team: All Spies eliminated / Spy Team: Captain dies, all Agents eliminated, or time runs out |
+| Victory Conditions        | Agent Team: All Spies eliminated / Spy Team: Captain dies or all Agents eliminated / Draw: max turns reached |
