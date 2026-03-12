@@ -45,6 +45,43 @@
 	let chatBubbles = $state<Record<string, string>>({});
 	const seenMessageIds = new Set<string>();
 
+	// Animation state: keyed by playerId
+	let animationStates = $state<Record<string, import('$lib/components/game/GamePlayer.svelte').AnimationState | null>>({});
+	const seenLogIds = new Set<string>(initialGame.logs.map((l) => l.id));
+
+	/**
+	 * Parse a new log entry to extract actor/target player names and card type.
+	 * Matches Korean log strings produced by gameState.ts:
+	 *   "{actor}이(가) {target}을(를) 공격했습니다." -> attack
+	 *   "{actor}이(가) {target}을(를) 치료했습니다."  -> heal
+	 *   "{actor}이(가) {target}을(를) 구금했습니다."  -> jail
+	 *   "{actor}이(가) {target}을(를) 스파이로 밝혀냈습니다." -> verify
+	 *   "{actor}이(가) {target}을(를) 대원으로 확인했습니다." -> verify
+	 */
+	function parseActionLog(
+		text: string
+	): { actorName: string; targetName: string; card: ActionCard } | null {
+		const patterns: { re: RegExp; card: ActionCard }[] = [
+			{ re: /^(.+)이\(가\) (.+)을\(를\) 공격했습니다\.$/, card: 'attack' },
+			{ re: /^(.+)이\(가\) (.+)을\(를\) 치료했습니다\.$/, card: 'heal' },
+			{ re: /^(.+)이\(가\) (.+)을\(를\) 구금했습니다\.$/, card: 'jail' },
+			{ re: /^(.+)이\(가\) (.+)을\(를\) 스파이로 밝혀냈습니다\.$/, card: 'verify' },
+			{ re: /^(.+)이\(가\) (.+)을\(를\) 대원으로 확인했습니다\.$/, card: 'verify' }
+		];
+		for (const { re, card } of patterns) {
+			const match = text.match(re);
+			if (match) return { actorName: match[1]!, targetName: match[2]!, card };
+		}
+		return null;
+	}
+
+	function triggerAnimation(playerId: string, role: 'actor' | 'target', card: ActionCard): void {
+		animationStates[playerId] = { role, card };
+		setTimeout(() => {
+			animationStates[playerId] = null;
+		}, 1200);
+	}
+
 	$effect(() => {
 		for (const msg of game.chatMessages) {
 			if (seenMessageIds.has(msg.id)) continue;
@@ -64,6 +101,20 @@
 			roomId,
 			{
 				onGameState: (snapshot) => {
+					// Detect new log entries before updating game state
+					for (const log of snapshot.logs) {
+						if (seenLogIds.has(log.id)) continue;
+						seenLogIds.add(log.id);
+
+						const parsed = parseActionLog(log.text);
+						if (!parsed) continue;
+
+						const actorPlayer = snapshot.players.find((p) => p.name === parsed.actorName);
+						const targetPlayer = snapshot.players.find((p) => p.name === parsed.targetName);
+						if (actorPlayer) triggerAnimation(actorPlayer.id, 'actor', parsed.card);
+						if (targetPlayer) triggerAnimation(targetPlayer.id, 'target', parsed.card);
+					}
+
 					game = snapshot;
 					actionPending = false;
 					selectedCard = null;
@@ -282,6 +333,7 @@
 								isMe={player.id === game.myPlayerId}
 								isTurn={player.id === game.currentTurnPlayerId && !isFinished}
 							chatBubble={chatBubbles[player.id] ?? null}
+							animation={animationStates[player.id] ?? null}
 							/>
 						{/each}
 					</div>

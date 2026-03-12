@@ -5,9 +5,15 @@
 	import handcuffs from '$lib/assets/handcuffs.png';
 	import heal from '$lib/assets/heal.png';
 	import magnifier from '$lib/assets/magnifier.png';
+	import type { ActionCard } from '$lib/types/game';
 
 	type Card = 'heal' | 'jail' | 'verify';
 	type Role = 'normal' | 'spy' | 'leader' | 'revealed';
+
+	export type AnimationState = {
+		role: 'actor' | 'target';
+		card: ActionCard;
+	};
 
 	let {
 		name,
@@ -24,7 +30,8 @@
 		attacks = 1,
 		cards = [],
 		role = 'normal',
-		verified = false
+		verified = false,
+		animation = null
 	}: {
 		name: string;
 		hp: number;
@@ -41,7 +48,15 @@
 		cards?: Card[];
 		role?: Role;
 		verified?: boolean;
+		animation?: AnimationState | null;
 	} = $props();
+
+	const actorCardImages: Record<ActionCard, { src: string; alt: string }> = {
+		attack: { src: bullet, alt: 'bullet' },
+		heal: { src: heal, alt: 'heal' },
+		jail: { src: handcuffs, alt: 'handcuffs' },
+		verify: { src: magnifier, alt: 'magnifier' }
+	};
 
 	const cardImages: Record<Card, { src: string; alt: string }> = {
 		heal: { src: heal, alt: 'heal' },
@@ -249,4 +264,138 @@
 	{:else}
 		<span class="text-[10px] font-black text-red-600 uppercase">{m.game_dead()}</span>
 	{/if}
+
+	<!-- Action animation overlay -->
+	{#if animation}
+		{#if animation.role === 'actor'}
+			<!-- Actor: show the card image centered, fade in/out -->
+			<div class="animation-actor pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-xl">
+				<img
+					src={actorCardImages[animation.card].src}
+					alt={animation.card}
+					class="size-12 object-contain drop-shadow-lg"
+				/>
+			</div>
+		{:else}
+			<!-- Target: show card-specific effect -->
+			{#if animation.card === 'attack'}
+				<!-- Bullet hole: dark circle with ragged CSS border -->
+				<div class="animation-target pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-xl">
+					<div class="bullet-hole"></div>
+				</div>
+			{:else if animation.card === 'heal'}
+				<!-- Green cross flash -->
+				<div class="animation-target pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-xl">
+					<span class="heal-cross">+</span>
+				</div>
+			{:else if animation.card === 'jail'}
+				<!-- Bars slam down from top -->
+				<div class="pointer-events-none absolute inset-0 z-50 overflow-hidden rounded-xl">
+					<div class="jail-bars absolute inset-0 flex gap-[14%]">
+						{#each Array.from({ length: 5 }) as _, i (i)}
+							<div class="h-full flex-1 rounded-b-sm bg-slate-700 opacity-80"></div>
+						{/each}
+					</div>
+				</div>
+			{:else if animation.card === 'verify'}
+				<!-- Magnifier flash -->
+				<div class="animation-target pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-xl">
+					<img src={actorCardImages.verify.src} alt="verify" class="verify-flash size-12 object-contain" />
+				</div>
+			{/if}
+		{/if}
+	{/if}
 </button>
+
+<style>
+	/* Actor overlay: fade in, hold, fade out over ~1s */
+	@keyframes actor-flash {
+		0% { opacity: 0; transform: scale(0.6); }
+		20% { opacity: 1; transform: scale(1.15); }
+		60% { opacity: 1; transform: scale(1); }
+		100% { opacity: 0; transform: scale(0.9); }
+	}
+
+	.animation-actor {
+		animation: actor-flash 1s ease-in-out forwards;
+		background: rgba(0, 0, 0, 0.3);
+	}
+
+	/* Target overlay: fade in/out */
+	@keyframes target-flash {
+		0% { opacity: 0; }
+		15% { opacity: 1; }
+		70% { opacity: 1; }
+		100% { opacity: 0; }
+	}
+
+	.animation-target {
+		animation: target-flash 1s ease-in-out forwards;
+	}
+
+	/* Bullet hole */
+	@keyframes bullet-appear {
+		0% { opacity: 0; transform: scale(0); }
+		30% { opacity: 1; transform: scale(1.2); }
+		60% { opacity: 1; transform: scale(1); }
+		100% { opacity: 0.8; transform: scale(1); }
+	}
+
+	.bullet-hole {
+		width: 2.5rem;
+		height: 2.5rem;
+		background: #1a1a1a;
+		border-radius: 50%;
+		box-shadow:
+			0 0 0 3px #333,
+			0 0 0 5px #1a1a1a,
+			2px -3px 0 4px #333,
+			-3px 2px 0 4px #111,
+			3px 3px 0 3px #222,
+			-2px -2px 0 4px #2a2a2a;
+		animation: bullet-appear 1s ease-out forwards;
+	}
+
+	/* Heal cross */
+	@keyframes heal-pop {
+		0% { opacity: 0; transform: scale(0.5); }
+		30% { opacity: 1; transform: scale(1.3); }
+		60% { opacity: 1; transform: scale(1); }
+		100% { opacity: 0; transform: scale(1.1); }
+	}
+
+	.heal-cross {
+		font-size: 3.5rem;
+		font-weight: 900;
+		color: #22c55e;
+		text-shadow: 0 0 12px #16a34a, 0 0 4px #fff;
+		line-height: 1;
+		animation: heal-pop 1s ease-in-out forwards;
+	}
+
+	/* Jail bars slam down */
+	@keyframes bars-slam {
+		0% { transform: translateY(-100%); }
+		40% { transform: translateY(8%); }
+		60% { transform: translateY(-3%); }
+		80% { transform: translateY(2%); }
+		100% { transform: translateY(0%); }
+	}
+
+	.jail-bars {
+		animation: bars-slam 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+	}
+
+	/* Verify magnifier flash */
+	@keyframes verify-reveal {
+		0% { opacity: 0; transform: scale(0.5) rotate(-20deg); }
+		30% { opacity: 1; transform: scale(1.2) rotate(5deg); }
+		60% { opacity: 1; transform: scale(1) rotate(0deg); }
+		100% { opacity: 0; transform: scale(0.9) rotate(0deg); }
+	}
+
+	.verify-flash {
+		animation: verify-reveal 1s ease-in-out forwards;
+		filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.8));
+	}
+</style>
