@@ -655,6 +655,9 @@ export function applyGameAction(
     if (!text) {
       throw new Error("Chat message is empty.");
     }
+    if (text.length > 200) {
+      throw new Error("Chat message is too long (max 200 characters).");
+    }
     state.chatMessages.push({
       id: createId(),
       playerId: actor.id,

@@ -84,6 +84,7 @@
 			<input
 				class="min-w-0 flex-1 rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-bold text-white placeholder:text-slate-500 focus:outline-none"
 				type="text"
+				maxlength={200}
 				placeholder={canSend ? m.game_chat_placeholder() : 'No chat available right now'}
 				bind:value={inputText}
 				disabled={!canSend}
@@ -165,6 +166,7 @@
 			<input
 				class="comic-border-sm min-w-0 flex-1 rounded-xl px-3 py-2 text-sm font-bold placeholder:text-slate-400 focus:outline-none"
 				type="text"
+				maxlength={200}
 				placeholder={canSend ? m.game_chat_placeholder() : 'No chat available right now'}
 				bind:value={inputText}
 				disabled={!canSend}
