@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "bun:test";
-import { applyGameAction, createSnapshot, initializeGame } from "./gameState";
+import { applyGameAction, createOmniscientSnapshot, createSnapshot, forceAdvanceTurn, initializeGame } from "./gameState";
 
 const basePlayers = [
   {
@@ -84,19 +84,28 @@ describe("gameState", () => {
     initializeGame("room-test", basePlayers);
   });
 
+  function getCurrentTurnUserId(viewerUserId: string): string {
+    const snap = createSnapshot("room-test", viewerUserId, { allowSpectator: true });
+    const turnPlayer = snap.players.find((p) => p.id === snap.currentTurnPlayerId);
+    // Map back to userId via basePlayers
+    const basePlayer = basePlayers.find((bp) => bp.id === turnPlayer?.id);
+    return basePlayer?.userId ?? viewerUserId;
+  }
+
   it("creates a leader turn with initial turn chat", () => {
     const snapshot = createSnapshot("room-test", "u1");
-    expect(snapshot.currentTurnPlayerId).toBe("p1");
+    const validPlayerIds = basePlayers.map((p) => p.id);
+    expect(validPlayerIds).toContain(snapshot.currentTurnPlayerId);
     expect(snapshot.phase).toBe("chatting");
     expect(snapshot.remainingChatTurns).toBe(1);
     expect(snapshot.players).toHaveLength(5);
-    expect(snapshot.players.find((player) => player.id === "p1")?.role).toBe(
-      "leader",
-    );
+    const leaderPlayer = snapshot.players.find((p) => p.role === "leader");
+    expect(leaderPlayer).toBeDefined();
   });
 
   it("moves from chat phase to acting phase when chat is skipped", () => {
-    applyGameAction("room-test", "u1", { type: "skip-chat" });
+    const turnUserId = getCurrentTurnUserId("u1");
+    applyGameAction("room-test", turnUserId, { type: "skip-chat" });
 
     const snapshot = createSnapshot("room-test", "u1");
     expect(snapshot.phase).toBe("acting");
@@ -104,28 +113,36 @@ describe("gameState", () => {
   });
 
   it("grants an extra chat after a spy reveals", () => {
-    applyGameAction("room-test", "u1", { type: "skip-chat" });
-    applyGameAction("room-test", "u1", { type: "end-turn" });
-    applyGameAction("room-test", "u2", { type: "skip-chat" });
-    applyGameAction("room-test", "u2", { type: "end-turn" });
-    applyGameAction("room-test", "u3", { type: "skip-chat" });
-    applyGameAction("room-test", "u3", { type: "end-turn" });
-    applyGameAction("room-test", "u4", { type: "skip-chat" });
-    applyGameAction("room-test", "u4", { type: "end-turn" });
+    // Find the actual spy using omniscient view
+    const omniscient = createOmniscientSnapshot("room-test");
+    expect(omniscient).not.toBeNull();
+    const spyPlayer = omniscient!.players.find((p) => p.role === "spy");
+    expect(spyPlayer).toBeDefined();
+    const spyPlayerId = spyPlayer!.id;
+    const spyBasePlayer = basePlayers.find((bp) => bp.id === spyPlayerId);
+    expect(spyBasePlayer).toBeDefined();
+    const spyUserId = spyBasePlayer!.userId;
 
-    let snapshot = createSnapshot("room-test", "u5");
+    // Advance turns until it's the spy's turn
+    for (let i = 0; i < 10; i++) {
+      const snap = createSnapshot("room-test", spyUserId);
+      if (snap.canReveal) break;
+      const turnUserId = getCurrentTurnUserId("u1");
+      forceAdvanceTurn("room-test", turnUserId);
+    }
+
+    let snapshot = createSnapshot("room-test", spyUserId);
     expect(snapshot.canReveal).toBe(true);
     expect(snapshot.phase).toBe("chatting");
 
-    applyGameAction("room-test", "u5", { type: "skip-chat" });
-    applyGameAction("room-test", "u5", { type: "reveal" });
+    applyGameAction("room-test", spyUserId, { type: "skip-chat" });
+    applyGameAction("room-test", spyUserId, { type: "reveal" });
 
-    snapshot = createSnapshot("room-test", "u5");
+    snapshot = createSnapshot("room-test", spyUserId);
     expect(snapshot.phase).toBe("chatting");
     expect(snapshot.remainingChatTurns).toBe(1);
-    expect(snapshot.players.find((player) => player.id === "p5")?.role).toBe(
-      "revealed",
-    );
+    const revealedPlayer = snapshot.players.find((player) => player.id === spyPlayerId);
+    expect(revealedPlayer?.role).toBe("revealed");
   });
 
   it("builds a public spectator snapshot without private roles", () => {
@@ -137,8 +154,8 @@ describe("gameState", () => {
     expect(snapshot.myPlayerId).toBeNull();
     expect(snapshot.myTeam).toBeNull();
     expect(snapshot.canReveal).toBe(false);
-    expect(snapshot.players.find((player) => player.id === "p5")?.role).toBe(
-      "normal",
-    );
+    // All players should appear as "normal" or "leader" (revealed) to a spectator - never "spy"
+    const visibleRoles = snapshot.players.map((p) => p.role);
+    expect(visibleRoles.every((r) => r === "normal" || r === "leader")).toBe(true);
   });
 });

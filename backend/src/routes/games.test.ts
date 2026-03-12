@@ -44,6 +44,7 @@ mock.module("../db/schema", () => ({
   llmProvider: { provider: "llmProvider.provider", apiKey: "llmProvider.apiKey", active: "llmProvider.active" },
   llmModel: { id: "llmModel.id", provider: "llmModel.provider", apiModelName: "llmModel.apiModelName", displayName: "llmModel.displayName", active: "llmModel.active" },
   gameRulebook: { id: "gameRulebook.id", name: "gameRulebook.name", content: "gameRulebook.content", active: "gameRulebook.active" },
+  gameParticipant: { id: "gameParticipant.id", roomId: "gameParticipant.roomId", userId: "gameParticipant.userId", participationType: "gameParticipant.participationType", createdAt: "gameParticipant.createdAt" },
   userRelations: {}, banHistoryRelations: {}, sessionRelations: {}, accountRelations: {}, roomRelations: {}, roomPlayerRelations: {},
 }));
 
@@ -61,6 +62,8 @@ mock.module("drizzle-orm", () => ({
 
 mock.module("../lib/getUser", () => ({
   getUser: mockGetUser,
+  requireUser: mockGetUser,
+  requireAdmin: mockGetUser,
 }));
 
 mock.module("../lib/roomState", () => ({
@@ -94,6 +97,13 @@ mock.module("../ws/gameWs", () => ({
 mock.module("../lib/llmPlayer", () => ({
   maybeRunLlmTurn: mock(async () => {}),
   clearConversationHistory: mock(() => {}),
+}));
+
+mock.module("../lib/replayStore", () => ({
+  recordGameStart: mock(() => {}),
+  recordSpectator: mock(() => {}),
+  recordFrame: mock(() => {}),
+  recordGameEnd: mock(() => {}),
 }));
 
 const { gameRoutes } = await import("./games");

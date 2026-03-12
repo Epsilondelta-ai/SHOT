@@ -104,7 +104,8 @@ describe('createRoomSocket', () => {
 					ready: false
 				}
 			],
-			{ hostUserId: 'u1', maxPlayers: 5, status: 'in_progress' }
+			{ hostUserId: 'u1', maxPlayers: 5, status: 'in_progress' },
+			undefined
 		);
 	});
 
