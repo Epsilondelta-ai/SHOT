@@ -3,7 +3,7 @@
 	import GameHeader from '$lib/components/game/GameHeader.svelte';
 	import GameLog from '$lib/components/game/GameLog.svelte';
 	import GamePlayer from '$lib/components/game/GamePlayer.svelte';
-	import type { Replay프레임 } from '$lib/types/replay';
+	import type { ReplayFrame } from '$lib/types/replay';
 	import type { GameSnapshot } from '$lib/types/game';
 
 	let { data } = $props();
@@ -16,7 +16,7 @@
 
 	const speeds = [0.5, 1, 2, 4];
 
-	const current프레임 = $derived(frames[currentIndex] ?? null);
+	const currentFrame = $derived(frames[currentIndex] ?? null);
 	const game = $derived<GameSnapshot | null>(currentFrame?.snapshot ?? null);
 	const totalFrames = $derived(frames.length);
 
