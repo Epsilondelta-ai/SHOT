@@ -44,11 +44,17 @@
 		return null;
 	}
 
+	const animationTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
 	function triggerAnimation(playerId: string, role: 'actor' | 'target', card: ActionCard): void {
+		const existing = animationTimers.get(playerId);
+		if (existing) clearTimeout(existing);
 		animationStates[playerId] = { role, card };
-		setTimeout(() => {
+		const timer = setTimeout(() => {
 			animationStates[playerId] = null;
+			animationTimers.delete(playerId);
 		}, 1200);
+		animationTimers.set(playerId, timer);
 	}
 
 	// Detect new logs when frame advances forward
