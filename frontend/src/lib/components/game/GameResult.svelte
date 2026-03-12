@@ -5,12 +5,14 @@
 		winner,
 		isMyWin = false,
 		isDraw = false,
-		countdown = null
+		countdown = null,
+		roomId = null
 	}: {
 		winner?: string;
 		isMyWin?: boolean;
 		isDraw?: boolean;
 		countdown?: number | null;
+		roomId?: string | null;
 	} = $props();
 </script>
 
@@ -51,7 +53,7 @@
 		{/if}
 
 		<a
-			href="/lobby"
+			href={roomId ? `/room/${roomId}` : '/lobby'}
 			class="comic-button w-full rounded-xl border-3 border-slate-900 bg-primary px-6 py-4 text-center font-black text-white uppercase italic shadow-[3px_3px_0px_#221910]"
 		>
 			{m.game_back_to_lobby()}

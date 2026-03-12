@@ -73,7 +73,7 @@
 			redirectCountdown -= 1;
 			if (redirectCountdown <= 0) {
 				clearInterval(timer);
-				goto('/lobby');
+				goto(`/room/${roomId}`);
 			}
 		}, 1000);
 		return () => clearInterval(timer);
@@ -420,5 +420,5 @@
 </div>
 
 {#if isFinished}
-	<GameResult winner={winnerLabel} {isMyWin} isDraw={false} countdown={redirectCountdown} />
+	<GameResult winner={winnerLabel} {isMyWin} isDraw={false} countdown={redirectCountdown} {roomId} />
 {/if}

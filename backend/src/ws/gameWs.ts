@@ -40,7 +40,7 @@ function scheduleGameEnd(roomId: string): void {
     const ids = gameSockets.get(roomId);
     if (ids) {
       for (const id of ids) {
-        wsById.get(id)?.send(JSON.stringify({ type: "redirect", url: "/lobby" }));
+        wsById.get(id)?.send(JSON.stringify({ type: "redirect", url: `/room/${roomId}` }));
       }
     }
     // Reset room status and clean up in-memory state
