@@ -153,8 +153,8 @@ function getValidActions(snapshot: GameSnapshot, userId: string): GameAction[] {
     }
 
     if (me.cards.includes("verify")) {
-      const verifyTargets = alivePlayers.filter(
-        (p) => p.role === "normal" && !p.isJailed,
+      const verifyTargets = snapshot.players.filter(
+        (p) => p.alive && p.role === "normal" && !p.isJailed,
       );
       for (const target of verifyTargets) {
         actions.push({ type: "play-card", card: "verify", targetId: target.id });

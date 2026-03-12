@@ -711,7 +711,7 @@ export function applyGameAction(
       return;
     }
 
-    const target = ensureTarget(state, action.targetId);
+    const target = ensureTarget(state, action.targetId, { allowSelf: true });
     playVerify(state, actor, target);
     return;
   }

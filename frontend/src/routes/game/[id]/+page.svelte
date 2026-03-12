@@ -234,7 +234,7 @@
 								maxHp={player.maxHp}
 								alive={player.alive}
 								selected={selectedTargetId === player.id}
-								selectable={canAct && player.id !== game.myPlayerId}
+								selectable={canAct && (player.id !== game.myPlayerId || selectedCard === 'verify')}
 								onselect={() => selectTarget(player.id)}
 								isJailed={player.isJailed}
 								attacks={player.attacks}
