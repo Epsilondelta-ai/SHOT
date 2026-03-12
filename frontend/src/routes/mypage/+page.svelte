@@ -5,6 +5,7 @@
 	import ProfileCard from '$lib/components/mypage/ProfileCard.svelte';
 	import StatsCard from '$lib/components/mypage/StatsCard.svelte';
 	import RecentMatches from '$lib/components/mypage/RecentMatches.svelte';
+	import GameHistory from '$lib/components/mypage/GameHistory.svelte';
 	import SettingsSection from '$lib/components/mypage/SettingsSection.svelte';
 
 	let { data } = $props();
@@ -37,6 +38,8 @@
 		<StatsCard games={data.stats.games} wins={data.stats.wins} streak={data.stats.streak} />
 
 		<RecentMatches matches={data.recentMatches} />
+
+		<GameHistory replays={data.myReplays} />
 
 		<SettingsSection items={settingsItems} />
 	</main>

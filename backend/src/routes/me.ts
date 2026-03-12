@@ -1,7 +1,7 @@
 import Elysia from 'elysia';
 import { db } from '../db';
-import { eq } from 'drizzle-orm';
-import { user } from '../db/schema';
+import { eq, inArray } from 'drizzle-orm';
+import { gameParticipant, gameRecord, user } from '../db/schema';
 import { requireUser } from '../lib/getUser';
 
 export const meRoutes = new Elysia()
@@ -90,4 +90,45 @@ export const meRoutes = new Elysia()
 
 		await db.update(user).set(updateData).where(eq(user.id, u.id));
 		return { success: true };
+	})
+
+	.get('/api/me/replays', async ({ request, set }) => {
+		let u;
+		try {
+			u = await requireUser(request);
+		} catch {
+			set.status = 401;
+			return { error: 'Unauthorized' };
+		}
+
+		const participations = db
+			.select({ roomId: gameParticipant.roomId, participationType: gameParticipant.participationType })
+			.from(gameParticipant)
+			.where(eq(gameParticipant.userId, u.id))
+			.all();
+
+		if (participations.length === 0) return { replays: [] };
+
+		const roomIds = [...new Set(participations.map((p) => p.roomId))];
+		const typeByRoom = new Map(participations.map((p) => [p.roomId, p.participationType]));
+
+		const records = db
+			.select()
+			.from(gameRecord)
+			.where(inArray(gameRecord.roomId, roomIds))
+			.all()
+			.filter((r) => r.finishedAt !== null)
+			.sort((a, b) => (b.startedAt?.getTime() ?? 0) - (a.startedAt?.getTime() ?? 0));
+
+		return {
+			replays: records.map((r) => ({
+				roomId: r.roomId,
+				playerCount: r.playerCount,
+				playerNames: JSON.parse(r.playerNames) as string[],
+				winnerTeam: r.winnerTeam,
+				startedAt: r.startedAt?.getTime() ?? 0,
+				finishedAt: r.finishedAt?.getTime() ?? null,
+				participationType: typeByRoom.get(r.roomId) ?? 'spectator',
+			})),
+		};
 	});

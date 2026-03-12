@@ -1,13 +1,17 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../db";
-import { gameRecord, gameReplayFrame } from "../db/schema";
+import { gameParticipant, gameRecord, gameReplayFrame } from "../db/schema";
 import { createOmniscientSnapshot } from "./gameState";
 
 // In-memory seq counter per room
 const frameCounters = new Map<string, number>();
 
-export function recordGameStart(roomId: string, playerNames: string[]): void {
+export function recordGameStart(
+  roomId: string,
+  players: Array<{ userId: string; name: string }>,
+): void {
   frameCounters.set(roomId, 0);
+  const playerNames = players.map((p) => p.name);
   db.insert(gameRecord)
     .values({
       roomId,
@@ -16,7 +20,36 @@ export function recordGameStart(roomId: string, playerNames: string[]): void {
       startedAt: new Date(),
     })
     .run();
+  for (const player of players) {
+    db.insert(gameParticipant)
+      .values({
+        id: crypto.randomUUID(),
+        roomId,
+        userId: player.userId,
+        participationType: "player",
+      })
+      .run();
+  }
   recordFrame(roomId, "Game started");
+}
+
+export function recordSpectator(roomId: string, userId: string): void {
+  const existing = db
+    .select()
+    .from(gameParticipant)
+    .where(and(eq(gameParticipant.roomId, roomId), eq(gameParticipant.userId, userId)))
+    .get();
+  if (existing) return;
+  const record = db.select().from(gameRecord).where(eq(gameRecord.roomId, roomId)).get();
+  if (!record) return;
+  db.insert(gameParticipant)
+    .values({
+      id: crypto.randomUUID(),
+      roomId,
+      userId,
+      participationType: "spectator",
+    })
+    .run();
 }
 
 export function recordFrame(roomId: string, actionSummary: string | null): void {

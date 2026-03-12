@@ -265,6 +265,23 @@ export const gameReplayFrame = sqliteTable(
   (table) => [index("game_replay_frame_roomId_seq_idx").on(table.roomId, table.seq)],
 );
 
+export const gameParticipant = sqliteTable(
+  "game_participant",
+  {
+    id: text("id").primaryKey(),
+    roomId: text("room_id").notNull(),
+    userId: text("user_id").notNull(),
+    participationType: text("participation_type").notNull(), // 'player' | 'spectator'
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+      .notNull(),
+  },
+  (table) => [
+    index("game_participant_userId_idx").on(table.userId),
+    index("game_participant_roomId_idx").on(table.roomId),
+  ],
+);
+
 // ── Relations ────────────────────────────────────────────────────────────────
 
 export const userRelations = relations(user, ({ many }) => ({

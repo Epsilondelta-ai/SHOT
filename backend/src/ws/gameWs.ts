@@ -10,7 +10,7 @@ import {
   type GameAction,
 } from "../lib/gameState";
 import { maybeRunLlmTurn } from "../lib/llmPlayer";
-import { recordFrame, recordGameEnd } from "../lib/replayStore";
+import { recordFrame, recordGameEnd, recordSpectator } from "../lib/replayStore";
 
 type WsUser = {
   userId: string;
@@ -114,6 +114,10 @@ export const gameWsPlugin = new Elysia().ws("/ws/game/:roomId", {
 
     if (!gameSockets.has(roomId)) gameSockets.set(roomId, new Set());
     gameSockets.get(roomId)!.add(wsId);
+
+    if (isSpectator) {
+      recordSpectator(roomId, sess.userId);
+    }
 
     try {
       const snapshot = createSnapshot(roomId, sess.userId, { allowSpectator: isSpectator });

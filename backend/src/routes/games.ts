@@ -78,7 +78,7 @@ export const gameRoutes = new Elysia()
 
     clearConversationHistory(params.id);
     initializeGame(params.id, players);
-    recordGameStart(params.id, players.map((p) => p.name));
+    recordGameStart(params.id, players.map((p) => ({ userId: p.userId, name: p.name })));
     await db
       .update(room)
       .set({ status: "in_progress" })
