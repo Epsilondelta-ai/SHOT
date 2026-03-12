@@ -305,6 +305,16 @@ function parseActionFromResponse(
   }
 }
 
+function buildRoleSection(role: "normal" | "spy" | "leader" | "revealed"): string {
+  if (role === "leader") {
+    return "== YOUR ROLE ==\nYou are the Captain. You lead the Agent team. Your identity is publicly known. If you are eliminated, the Spies win immediately.";
+  }
+  if (role === "spy" || role === "revealed") {
+    return "== YOUR ROLE ==\nYou are a Spy. You are secretly working against the Agent team. Your goal is to assassinate the Captain or eliminate all Agents. Blend in and avoid suspicion.";
+  }
+  return "== YOUR ROLE ==\nYou are an Agent. Your goal is to find and eliminate all Spies before they assassinate the Captain.";
+}
+
 function forceEndTurn(roomId: string, userId: string): void {
   try {
     applyGameAction(roomId, userId, { type: "end-turn" });
@@ -378,8 +388,12 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
       return;
     }
 
+    const me = snapshot.players.find((p) => p.userId === info.userId);
+    const systemPrompt = me
+      ? `${ctx.systemPrompt}\n\n${buildRoleSection(me.role)}`
+      : ctx.systemPrompt;
     const userPrompt = buildPrompt(snapshot, validActions, info.userId);
-    const playerName = snapshot.players.find((p) => p.userId === info.userId)?.name ?? info.playerId;
+    const playerName = me?.name ?? info.playerId;
 
     const history = getHistory(roomId, info.playerId);
     const messages: ConversationMessage[] = [
@@ -399,7 +413,7 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
         provider: ctx.provider,
         model: ctx.apiModelName,
       },
-      systemPrompt: ctx.systemPrompt,
+      systemPrompt,
       userPrompt,
       historyLength: history.length,
     };
@@ -414,7 +428,7 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
           ctx.provider,
           ctx.apiKey,
           ctx.apiModelName,
-          ctx.systemPrompt,
+          systemPrompt,
           messages,
         );
         lastRawResponse = responseText;
