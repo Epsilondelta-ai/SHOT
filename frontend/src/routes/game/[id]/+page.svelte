@@ -306,10 +306,11 @@
 									</button>
 								{/if}
 								<button
-									class="comic-button rounded-xl border-2 border-slate-900 bg-slate-200 px-5 py-3 text-sm font-black text-slate-900 uppercase"
+									class="comic-button rounded-xl border-2 border-slate-900 bg-slate-200 px-5 py-3 text-sm font-black text-slate-900 uppercase disabled:opacity-50"
+									disabled={game.mustUseAttack}
 									onclick={endTurn}
 								>
-									End Turn
+									{game.mustUseAttack ? "Use Attack First" : "End Turn"}
 								</button>
 							</div>
 						</div>

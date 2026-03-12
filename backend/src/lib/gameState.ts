@@ -42,6 +42,7 @@ type GameState = {
   maxRound: number;
   currentTurnPlayerId: string;
   pendingChatTurns: number;
+  attackUsedThisTurn: boolean;
   players: InternalPlayer[];
   deck: ActionCard[];
   discard: ActionCard[];
@@ -75,6 +76,7 @@ export type GameSnapshot = {
   phase: "chatting" | "acting" | "finished";
   remainingChatTurns: number;
   canReveal: boolean;
+  mustUseAttack: boolean;
   winnerTeam: WinnerTeam | null;
   players: GamePlayerView[];
   logs: GameLog[];
@@ -284,6 +286,7 @@ function revealPlayerRole(player: InternalPlayer) {
 
 function startTurn(state: GameState, player: InternalPlayer) {
   state.currentTurnPlayerId = player.id;
+  state.attackUsedThisTurn = false;
   drawCards(state, player, 2);
   addLog(state, `${player.name} drew 2 action cards.`, "round");
   state.pendingChatTurns = 1;
@@ -487,6 +490,7 @@ export function initializeGame(
     maxRound: players.length * 3,
     currentTurnPlayerId: leaderPlayer.id,
     pendingChatTurns: 0,
+    attackUsedThisTurn: false,
     players,
     deck: createDeck(players.length, spyCount),
     discard: [],
@@ -565,6 +569,12 @@ export function createSnapshot(
       viewer.role === "spy" &&
       !viewer.revealed &&
       viewer.alive,
+    mustUseAttack:
+      viewer !== undefined &&
+      state.currentTurnPlayerId === viewer.id &&
+      !state.attackUsedThisTurn &&
+      !viewer.isJailed &&
+      getAttackCount(viewer) > 0,
     winnerTeam: state.winnerTeam,
     players: state.players.map((player) => ({
       id: player.id,
@@ -653,6 +663,7 @@ export function applyGameAction(
         allowLeader: true,
       });
       playAttack(state, actor, target);
+      state.attackUsedThisTurn = true;
       return;
     }
 
@@ -677,5 +688,14 @@ export function applyGameAction(
   }
 
   ensureActionPhase(state);
+  if (
+    !state.attackUsedThisTurn &&
+    !actor.isJailed &&
+    getAttackCount(actor) > 0
+  ) {
+    throw new Error(
+      "You must use at least one attack card before ending your turn.",
+    );
+  }
   endTurn(state);
 }

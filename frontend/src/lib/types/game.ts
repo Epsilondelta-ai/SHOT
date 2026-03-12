@@ -40,6 +40,7 @@ export type GameSnapshot = {
 	phase: 'chatting' | 'acting' | 'finished';
 	remainingChatTurns: number;
 	canReveal: boolean;
+	mustUseAttack: boolean;
 	winnerTeam: WinnerTeam | null;
 	players: GamePlayerData[];
 	logs: LogEntry[];
