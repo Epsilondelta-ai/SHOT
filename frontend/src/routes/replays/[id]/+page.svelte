@@ -3,8 +3,9 @@
 	import GameHeader from '$lib/components/game/GameHeader.svelte';
 	import GameLog from '$lib/components/game/GameLog.svelte';
 	import GamePlayer from '$lib/components/game/GamePlayer.svelte';
+	import type { AnimationState } from '$lib/components/game/GamePlayer.svelte';
 	import type { ReplayFrame } from '$lib/types/replay';
-	import type { GameSnapshot } from '$lib/types/game';
+	import type { GameSnapshot, ActionCard } from '$lib/types/game';
 
 	let { data } = $props();
 	const frames: ReplayFrame[] = data.frames;
@@ -24,6 +25,52 @@
 	let replayChatBubbles = $state<Record<string, string>>({});
 	const bubbleTimers = new Map<string, ReturnType<typeof setTimeout>>();
 	let prevMsgCount = 0;
+
+	let animationStates = $state<Record<string, AnimationState | null>>({});
+	let prevLogCount = 0;
+
+	function parseActionLog(text: string): { actorName: string; targetName: string; card: ActionCard } | null {
+		const patterns: { re: RegExp; card: ActionCard }[] = [
+			{ re: /^(.+)이\(가\) (.+)을\(를\) 공격했습니다\.$/, card: 'attack' },
+			{ re: /^(.+)이\(가\) (.+)을\(를\) 치료했습니다\.$/, card: 'heal' },
+			{ re: /^(.+)이\(가\) (.+)을\(를\) 구금했습니다\.$/, card: 'jail' },
+			{ re: /^(.+)이\(가\) (.+)을\(를\) 스파이로 밝혀냈습니다\.$/, card: 'verify' },
+			{ re: /^(.+)이\(가\) (.+)을\(를\) 대원으로 확인했습니다\.$/, card: 'verify' }
+		];
+		for (const { re, card } of patterns) {
+			const match = text.match(re);
+			if (match) return { actorName: match[1]!, targetName: match[2]!, card };
+		}
+		return null;
+	}
+
+	function triggerAnimation(playerId: string, role: 'actor' | 'target', card: ActionCard): void {
+		animationStates[playerId] = { role, card };
+		setTimeout(() => {
+			animationStates[playerId] = null;
+		}, 1200);
+	}
+
+	// Detect new logs when frame advances forward
+	$effect(() => {
+		const logs = game?.logs ?? [];
+		const count = logs.length;
+		if (count <= prevLogCount) {
+			// Stepped backward or same frame — clear animations
+			animationStates = {};
+			prevLogCount = count;
+			return;
+		}
+		for (let i = prevLogCount; i < count; i++) {
+			const parsed = parseActionLog(logs[i].text);
+			if (!parsed || !game) continue;
+			const actorPlayer = game.players.find((p) => p.name === parsed.actorName);
+			const targetPlayer = game.players.find((p) => p.name === parsed.targetName);
+			if (actorPlayer) triggerAnimation(actorPlayer.id, 'actor', parsed.card);
+			if (targetPlayer) triggerAnimation(targetPlayer.id, 'target', parsed.card);
+		}
+		prevLogCount = count;
+	});
 
 	function scheduleBubbleHide(playerId: string) {
 		const existing = bubbleTimers.get(playerId);
@@ -175,6 +222,7 @@
 									isMe={false}
 									isTurn={player.id === game.currentTurnPlayerId && game.phase !== 'finished'}
 					chatBubble={replayChatBubbles[player.id] ?? null}
+					animation={animationStates[player.id] ?? null}
 								/>
 							{/each}
 						</div>
