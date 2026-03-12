@@ -4,10 +4,12 @@
 	let {
 		logs,
 		isOpen = false,
+		inline = false,
 		ontoggle
 	}: {
 		logs: { id: string; text: string; type: 'shot' | 'eliminated' | 'round' | 'result' }[];
 		isOpen?: boolean;
+		inline?: boolean;
 		ontoggle?: () => void;
 	} = $props();
 
@@ -34,55 +36,77 @@
 	}
 </script>
 
-<!-- FAB Toggle Button (우측 하단) -->
-<button
-	class="comic-button fixed right-4 bottom-6 z-40 flex items-center justify-center gap-2 rounded-full border-2 border-slate-900 bg-primary px-4 py-4 shadow-lg transition-colors hover:bg-primary/90"
-	onclick={ontoggle}
-	title={isOpen ? '전투 기록 닫기' : '전투 기록 보기'}
->
-	<span class="material-symbols-outlined text-xl text-white">
-		{isOpen ? 'close' : 'menu_book'}
-	</span>
-</button>
-
-<!-- Background Overlay (바텀 시트 열릴 때) -->
-{#if isOpen}
-	<div
-		class="fixed inset-0 z-30 bg-black/40 transition-opacity duration-300"
-		onclick={ontoggle}
-	></div>
-{/if}
-
-<!-- Bottom Sheet -->
-<div
-	class="comic-border fixed inset-x-0 bottom-0 z-30 max-h-[60vh] rounded-t-2xl bg-white transition-transform duration-300"
-	style="transform: translateY({isOpen ? '0%' : '100%'})"
->
-	<!-- Header -->
-	<div
-		class="flex items-center justify-between gap-2 rounded-t-2xl border-b-2 border-slate-900 bg-background-dark px-4 py-3"
-	>
-		<div class="flex items-center gap-2">
+{#if inline}
+	<!-- Inline panel for desktop sidebar -->
+	<div class="flex flex-1 flex-col overflow-hidden">
+		<!-- Header -->
+		<div class="flex items-center gap-2 border-b-2 border-slate-700 bg-slate-900 px-4 py-3">
 			<span class="material-symbols-outlined text-sm text-primary">menu_book</span>
 			<span class="text-xs font-black tracking-widest text-white uppercase"
 				>{m.game_action_log()}</span
 			>
 		</div>
-		<button
-			class="material-symbols-outlined text-xl text-white transition-colors hover:text-slate-300"
-			onclick={ontoggle}
-		>
-			expand_more
-		</button>
+		<!-- Scrollable Content -->
+		<div use:scrollToBottom class="flex flex-1 flex-col gap-1.5 overflow-y-auto p-3">
+			{#each logs as log (log.id)}
+				<div class="flex items-start gap-2 text-sm {typeStyles[log.type]}">
+					<span class="material-symbols-outlined mt-0.5 text-sm">{typeIcons[log.type]}</span>
+					<span class="font-bold">{log.text}</span>
+				</div>
+			{/each}
+		</div>
 	</div>
+{:else}
+	<!-- FAB Toggle Button (우측 하단) -->
+	<button
+		class="comic-button fixed right-4 bottom-6 z-40 flex items-center justify-center gap-2 rounded-full border-2 border-slate-900 bg-primary px-4 py-4 shadow-lg transition-colors hover:bg-primary/90"
+		onclick={ontoggle}
+		title={isOpen ? '전투 기록 닫기' : '전투 기록 보기'}
+	>
+		<span class="material-symbols-outlined text-xl text-white">
+			{isOpen ? 'close' : 'menu_book'}
+		</span>
+	</button>
 
-	<!-- Scrollable Content -->
-	<div use:scrollToBottom class="flex h-[calc(60vh-60px)] flex-col gap-1.5 overflow-y-auto p-3">
-		{#each logs as log (log.id)}
-			<div class="flex items-start gap-2 text-sm {typeStyles[log.type]}">
-				<span class="material-symbols-outlined mt-0.5 text-sm">{typeIcons[log.type]}</span>
-				<span class="font-bold">{log.text}</span>
+	<!-- Background Overlay (바텀 시트 열릴 때) -->
+	{#if isOpen}
+		<div
+			class="fixed inset-0 z-30 bg-black/40 transition-opacity duration-300"
+			onclick={ontoggle}
+		></div>
+	{/if}
+
+	<!-- Bottom Sheet -->
+	<div
+		class="comic-border fixed inset-x-0 bottom-0 z-30 max-h-[60vh] rounded-t-2xl bg-white transition-transform duration-300"
+		style="transform: translateY({isOpen ? '0%' : '100%'})"
+	>
+		<!-- Header -->
+		<div
+			class="flex items-center justify-between gap-2 rounded-t-2xl border-b-2 border-slate-900 bg-background-dark px-4 py-3"
+		>
+			<div class="flex items-center gap-2">
+				<span class="material-symbols-outlined text-sm text-primary">menu_book</span>
+				<span class="text-xs font-black tracking-widest text-white uppercase"
+					>{m.game_action_log()}</span
+				>
 			</div>
-		{/each}
+			<button
+				class="material-symbols-outlined text-xl text-white transition-colors hover:text-slate-300"
+				onclick={ontoggle}
+			>
+				expand_more
+			</button>
+		</div>
+
+		<!-- Scrollable Content -->
+		<div use:scrollToBottom class="flex h-[calc(60vh-60px)] flex-col gap-1.5 overflow-y-auto p-3">
+			{#each logs as log (log.id)}
+				<div class="flex items-start gap-2 text-sm {typeStyles[log.type]}">
+					<span class="material-symbols-outlined mt-0.5 text-sm">{typeIcons[log.type]}</span>
+					<span class="font-bold">{log.text}</span>
+				</div>
+			{/each}
+		</div>
 	</div>
-</div>
+{/if}
