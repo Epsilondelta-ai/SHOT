@@ -54,7 +54,6 @@
 				language: selectedLanguage,
 			});
 			selectedAssistantId = '';
-			selectedModelId = '';
 			customName = '';
 		} finally {
 			isSubmitting = false;
