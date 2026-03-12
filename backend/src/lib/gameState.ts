@@ -308,6 +308,7 @@ function endTurn(state: GameState) {
   if (!nextPlayer) return;
 
   state.round += 1;
+  if (maybeFinishGame(state)) return;
   startTurn(state, nextPlayer);
 }
 
