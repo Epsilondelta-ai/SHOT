@@ -239,7 +239,7 @@ function maybeFinishGame(state: GameState) {
     return true;
   }
 
-  if (state.round >= state.maxRound) {
+  if (state.round > state.maxRound) {
     state.winnerTeam = "draw";
     addLog(state, "Time ran out. The game ends in a draw.", "result");
     return true;
