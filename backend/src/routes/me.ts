@@ -68,6 +68,16 @@ export const meRoutes = new Elysia()
 			const imageFile = formData.get('image') as File | null;
 
 			if (imageFile && imageFile.size > 0) {
+				const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
+				const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+				if (imageFile.size > MAX_IMAGE_SIZE) {
+					set.status = 400;
+					return { error: '이미지 크기는 1MB 이하여야 합니다.' };
+				}
+				if (!ALLOWED_TYPES.includes(imageFile.type)) {
+					set.status = 400;
+					return { error: '허용되지 않는 이미지 형식입니다. (JPEG, PNG, WebP만 가능)' };
+				}
 				const buffer = await imageFile.arrayBuffer();
 				const base64 = Buffer.from(buffer).toString('base64');
 				imageData = `data:${imageFile.type};base64,${base64}`;
@@ -76,11 +86,19 @@ export const meRoutes = new Elysia()
 			const body = (await request.json()) as { name?: string; image?: string };
 			name = body.name;
 			imageData = body.image;
+			if (imageData && imageData.length > 1_500_000) {
+				set.status = 400;
+				return { error: '이미지 크기는 1MB 이하여야 합니다.' };
+			}
 		}
 
 		if (!name?.trim()) {
 			set.status = 400;
 			return { error: '닉네임을 입력해주세요.' };
+		}
+		if (name.trim().length > 20) {
+			set.status = 400;
+			return { error: '닉네임은 20자 이하여야 합니다.' };
 		}
 
 		const updateData: { name: string; image?: string } = { name: name.trim() };

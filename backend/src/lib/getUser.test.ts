@@ -85,7 +85,7 @@ describe('getUser', () => {
 	});
 
 	it('returns user when session and user found', async () => {
-		const mockUser = { id: 'u1', name: 'Alice', email: 'alice@test.com', role: 'user', image: null };
+		const mockUser = { id: 'u1', name: 'Alice', email: 'alice@test.com', role: 'user', image: null, banEnd: null };
 		mockGetSession.mockImplementationOnce(async () => ({ user: { id: 'u1' } }));
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({ where: async () => [mockUser] })
@@ -101,7 +101,7 @@ describe('requireUser', () => {
 	});
 
 	it('returns user when authenticated', async () => {
-		const mockUser = { id: 'u1', name: 'Bob', email: 'bob@test.com', role: 'user', image: null };
+		const mockUser = { id: 'u1', name: 'Bob', email: 'bob@test.com', role: 'user', image: null, banEnd: null };
 		mockGetSession.mockImplementationOnce(async () => ({ user: { id: 'u1' } }));
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({ where: async () => [mockUser] })
@@ -117,7 +117,7 @@ describe('requireAdmin', () => {
 	});
 
 	it('throws Forbidden when user is not admin', async () => {
-		const mockUser = { id: 'u1', name: 'Bob', email: 'bob@test.com', role: 'user', image: null };
+		const mockUser = { id: 'u1', name: 'Bob', email: 'bob@test.com', role: 'user', image: null, banEnd: null };
 		mockGetSession.mockImplementationOnce(async () => ({ user: { id: 'u1' } }));
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({ where: async () => [mockUser] })
@@ -126,7 +126,7 @@ describe('requireAdmin', () => {
 	});
 
 	it('returns user when role is admin', async () => {
-		const adminUser = { id: 'a1', name: 'Admin', email: 'admin@test.com', role: 'admin', image: null };
+		const adminUser = { id: 'a1', name: 'Admin', email: 'admin@test.com', role: 'admin', image: null, banEnd: null };
 		mockGetSession.mockImplementationOnce(async () => ({ user: { id: 'a1' } }));
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({ where: async () => [adminUser] })

@@ -132,7 +132,12 @@ async function getRoomManagementContext(roomId: string, userId: string) {
 }
 
 export const roomRoutes = new Elysia()
-  .get("/api/rooms", async () => {
+  .get("/api/rooms", async ({ request, set }) => {
+    const u = await getUser(request);
+    if (!u) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
     const rooms = await db
       .select({
         id: room.id,
@@ -165,6 +170,10 @@ export const roomRoutes = new Elysia()
     if (!body.name?.trim()) {
       set.status = 400;
       return { error: "Name is required" };
+    }
+    if (body.name.trim().length > 30) {
+      set.status = 400;
+      return { error: "Room name must be 30 characters or less" };
     }
 
     const maxPlayers =

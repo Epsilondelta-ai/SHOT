@@ -8,7 +8,7 @@ export async function getUser(request: Request) {
 	if (!result) return null;
 
 	const [u] = await db
-		.select({ id: user.id, name: user.name, email: user.email, role: user.role, image: user.image })
+		.select({ id: user.id, name: user.name, email: user.email, role: user.role, image: user.image, banEnd: user.banEnd })
 		.from(user)
 		.where(eq(user.id, result.user.id));
 
@@ -18,6 +18,7 @@ export async function getUser(request: Request) {
 export async function requireUser(request: Request) {
 	const u = await getUser(request);
 	if (!u) throw new Error('Unauthorized');
+	if (u.banEnd && u.banEnd > new Date()) throw new Error('Banned');
 	return u;
 }
 

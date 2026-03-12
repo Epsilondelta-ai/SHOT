@@ -582,7 +582,8 @@ describe('GET /api/admin/llm-providers', () => {
 		expect(body.llmProviders).toBeArray();
 		expect(body.llmProviders.length).toBe(4);
 		const openai = body.llmProviders.find((p: { provider: string }) => p.provider === 'openai');
-		expect(openai.apiKey).toBe('sk-xxx');
+		expect(openai.apiKey).toBe('****');
+		expect(openai.hasKey).toBe(true);
 		expect(openai.active).toBe(true);
 		expect(body.llmModels[0].id).toBe('m1');
 		expect(body.llmModels[0].displayName).toBe('GPT-4');

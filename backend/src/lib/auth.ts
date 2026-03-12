@@ -15,7 +15,10 @@ export const auth = betterAuth({
 	secret: BETTER_AUTH_SECRET,
 	trustedOrigins: [process.env.FRONTEND_URL ?? 'http://localhost:5173'],
 	database: drizzleAdapter(db, { provider: 'sqlite' }),
-	emailAndPassword: { enabled: true },
+	emailAndPassword: {
+		enabled: true,
+		minPasswordLength: 8,
+	},
 	databaseHooks: {
 		user: {
 			create: {

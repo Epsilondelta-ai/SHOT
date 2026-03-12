@@ -24,6 +24,12 @@ const roomSockets = new Map<string, Set<string>>();
 const wsById = new Map<string, any>();
 // ws id → authenticated user data
 const wsUserData = new Map<string, WsUser>();
+// userId → Set of ws ids (per-user connection limit)
+const userConnections = new Map<string, Set<string>>();
+const MAX_CONNECTIONS_PER_USER = 5;
+// ws id → message timestamps for rate limiting
+const wsMessageTimestamps = new Map<string, number[]>();
+const WS_RATE_LIMIT = 30; // messages per minute
 
 function broadcast(roomId: string, payload: unknown, excludeId?: string) {
   const ids = roomSockets.get(roomId);
@@ -86,7 +92,7 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
       with: { user: true },
     });
 
-    if (!sess) {
+    if (!sess || sess.expiresAt < new Date()) {
       ws.close();
       return;
     }
@@ -95,6 +101,15 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
     // Use ws.id (Elysia's built-in unique connection ID) as the key
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const wsId = (ws as any).id as string;
+
+    const userConns = userConnections.get(sess.userId) ?? new Set();
+    if (userConns.size >= MAX_CONNECTIONS_PER_USER) {
+      ws.close();
+      return;
+    }
+    userConns.add(wsId);
+    userConnections.set(sess.userId, userConns);
+
     wsById.set(wsId, ws);
     wsUserData.set(wsId, {
       userId: sess.userId,
@@ -115,6 +130,13 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
     const userData = wsUserData.get(wsId);
     if (!userData) return;
 
+    const now = Date.now();
+    const timestamps = wsMessageTimestamps.get(wsId) ?? [];
+    const recentTimestamps = timestamps.filter(t => now - t < 60_000);
+    if (recentTimestamps.length >= WS_RATE_LIMIT) return;
+    recentTimestamps.push(now);
+    wsMessageTimestamps.set(wsId, recentTimestamps);
+
     const { roomId, userId, userName, isSpectator } = userData;
 
     let msg: RoomMessage;
@@ -133,6 +155,7 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
     }
 
     if (msg.type === "chat") {
+      if (!msg.text || typeof msg.text !== 'string' || msg.text.length > 500) return;
       broadcast(roomId, {
         type: "chat",
         userId,
@@ -199,6 +222,15 @@ export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
     wsById.delete(wsId);
     wsUserData.delete(wsId);
     if (roomId && roomSockets.get(roomId)?.size === 0) roomSockets.delete(roomId);
+
+    if (userData) {
+      const userConns = userConnections.get(userData.userId);
+      if (userConns) {
+        userConns.delete(wsId);
+        if (userConns.size === 0) userConnections.delete(userData.userId);
+      }
+    }
+    wsMessageTimestamps.delete(wsId);
 
     if (!userData || userData.isSpectator) {
       return;
