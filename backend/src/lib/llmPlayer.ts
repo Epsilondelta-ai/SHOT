@@ -5,6 +5,7 @@ import {
   applyGameAction,
   createSnapshot,
   getCurrentTurnController,
+  forceAdvanceTurn,
   type GameAction,
   type GameSnapshot,
 } from "./gameState";
@@ -327,11 +328,7 @@ function buildRoleSection(role: "normal" | "spy" | "leader" | "revealed"): strin
 }
 
 function forceEndTurn(roomId: string, userId: string): void {
-  try {
-    applyGameAction(roomId, userId, { type: "end-turn" });
-  } catch {
-    // ignore if already ended
-  }
+  forceAdvanceTurn(roomId, userId);
 }
 
 // @MX:ANCHOR: maybeRunLlmTurn is called from gameWs message handler and games.ts routes

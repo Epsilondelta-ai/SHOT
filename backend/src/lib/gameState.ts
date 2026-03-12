@@ -537,6 +537,17 @@ export function getGame(roomId: string) {
   return games.get(roomId) ?? null;
 }
 
+export function forceAdvanceTurn(roomId: string, userId: string): void {
+  const state = getGame(roomId);
+  if (!state) return;
+  const actor = state.players.find((p) => p.userId === userId);
+  if (!actor || state.currentTurnPlayerId !== actor.id) return;
+  if (!actor.alive || state.winnerTeam) return;
+  state.attackUsedThisTurn = true;
+  state.pendingChatTurns = 0;
+  endTurn(state);
+}
+
 export function createSnapshot(
   roomId: string,
   viewerUserId: string,
