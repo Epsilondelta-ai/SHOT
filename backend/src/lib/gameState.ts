@@ -20,6 +20,7 @@ type InternalPlayer = {
   hp: number;
   maxHp: number;
   isJailed: boolean;
+  pendingJail: boolean;
   cards: ActionCard[];
 };
 
@@ -271,7 +272,7 @@ function maybeApplyFriendlyFirePenalty(
   if (target.role === "spy") return;
   if (actor.role === "spy" && actor.revealed) return;
 
-  actor.isJailed = true;
+  actor.pendingJail = true;
   addLog(state, `${actor.name}이(가) 아군 오사로 구금되었습니다.`, "round");
 }
 
@@ -306,7 +307,8 @@ function endTurn(state: GameState) {
   const currentPlayer = getCurrentPlayer(state);
   if (!currentPlayer) return;
 
-  currentPlayer.isJailed = false;
+  currentPlayer.isJailed = currentPlayer.pendingJail;
+  currentPlayer.pendingJail = false;
   const nextPlayer = getNextAlivePlayer(state, currentPlayer.id);
   if (!nextPlayer) return;
 
@@ -480,6 +482,7 @@ export function initializeGame(
       hp: maxHp,
       maxHp,
       isJailed: false,
+      pendingJail: false,
       cards: [],
     };
   });
