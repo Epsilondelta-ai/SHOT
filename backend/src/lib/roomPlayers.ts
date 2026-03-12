@@ -13,6 +13,7 @@ export type SerializedRoomPlayer = {
   assistantName: string | null;
   llmModelId: string | null;
   modelName: string | null;
+  language: string | null;
   botId: string | null;
   ready: boolean;
 };
@@ -89,6 +90,7 @@ export async function getSerializedRoomPlayers(
         assistantName: assistantMap.get(player.assistantId ?? "")?.name ?? null,
         llmModelId: player.llmModelId ?? null,
         modelName: modelMap.get(player.llmModelId ?? "")?.displayName ?? null,
+        language: player.language ?? null,
         botId: null,
         ready: true,
       };
@@ -109,6 +111,7 @@ export async function getSerializedRoomPlayers(
         assistantName: null,
         llmModelId: null,
         modelName: null,
+        language: null,
         botId: player.botId ?? null,
         ready: true,
       };
@@ -126,6 +129,7 @@ export async function getSerializedRoomPlayers(
       assistantName: null,
       llmModelId: null,
       modelName: null,
+      language: null,
       botId: null,
       ready: player.ready,
     };

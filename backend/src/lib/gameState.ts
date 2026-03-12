@@ -12,6 +12,7 @@ type InternalPlayer = {
   controller: Controller;
   assistantId: string | null;
   llmModelId: string | null;
+  language: string | null;
   role: HiddenRole;
   revealed: boolean;
   verified: boolean;
@@ -466,6 +467,7 @@ export function initializeGame(
       controller: player.type,
       assistantId: player.assistantId ?? null,
       llmModelId: player.llmModelId ?? null,
+      language: player.language ?? null,
       role,
       revealed: isLeader,
       verified: isLeader,
@@ -507,6 +509,7 @@ export function getCurrentTurnController(roomId: string): {
   userId: string;
   assistantId: string | null;
   llmModelId: string | null;
+  language: string | null;
 } | null {
   const state = games.get(roomId);
   if (!state || state.winnerTeam) return null;
@@ -520,6 +523,7 @@ export function getCurrentTurnController(roomId: string): {
     userId: player.userId,
     assistantId: player.assistantId,
     llmModelId: player.llmModelId,
+    language: player.language,
   };
 }
 

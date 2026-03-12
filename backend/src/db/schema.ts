@@ -165,6 +165,7 @@ export const roomPlayer = sqliteTable("room_player", {
   llmModelId: text("llm_model_id").references(() => llmModel.id, {
     onDelete: "set null",
   }),
+  language: text("language"),
   botId: text("bot_id").references(() => bot.id, { onDelete: "set null" }),
 });
 

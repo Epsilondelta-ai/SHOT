@@ -389,9 +389,12 @@ export async function maybeRunLlmTurn(roomId: string): Promise<void> {
     }
 
     const me = snapshot.players.find((p) => p.userId === info.userId);
+    const languageInstruction = info.language
+      ? `\n\n== LANGUAGE ==\nYou MUST communicate exclusively in ${info.language}. All chat messages and in-game communication must be in ${info.language}.`
+      : "";
     const systemPrompt = me
-      ? `${ctx.systemPrompt}\n\n${buildRoleSection(me.role)}`
-      : ctx.systemPrompt;
+      ? `${ctx.systemPrompt}\n\n${buildRoleSection(me.role)}${languageInstruction}`
+      : `${ctx.systemPrompt}${languageInstruction}`;
     const userPrompt = buildPrompt(snapshot, validActions, info.userId);
     const playerName = me?.name ?? info.playerId;
 

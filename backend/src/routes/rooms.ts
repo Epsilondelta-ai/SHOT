@@ -538,6 +538,7 @@ export const roomRoutes = new Elysia()
     const body = (await request.json()) as {
       assistantId?: string;
       llmModelId?: string;
+      language?: string;
     };
     if (!body.assistantId || !body.llmModelId) {
       set.status = 400;
@@ -585,6 +586,7 @@ export const roomRoutes = new Elysia()
         displayName,
         assistantId: selectedAssistant.id,
         llmModelId: selectedModel.id,
+        language: body.language ?? null,
       })
       .returning();
 
@@ -603,6 +605,7 @@ export const roomRoutes = new Elysia()
         assistantName: selectedAssistant.name,
         llmModelId: selectedModel.id,
         modelName: selectedModel.displayName,
+        language: body.language ?? null,
         botId: null,
         ready: true,
       },

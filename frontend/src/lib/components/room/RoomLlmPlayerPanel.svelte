@@ -22,11 +22,12 @@
 		assistants?: AssistantOption[];
 		llmModels?: ModelOption[];
 		disabled?: boolean;
-		onadd?: (payload: { assistantId: string; llmModelId: string }) => Promise<void> | void;
+		onadd?: (payload: { assistantId: string; llmModelId: string; language: string }) => Promise<void> | void;
 	} = $props();
 
 	let selectedAssistantId = $state('');
 	let selectedModelId = $state('');
+	let selectedLanguage = $state('English');
 	let isSubmitting = $state(false);
 
 	const selectedAssistant = $derived(
@@ -40,7 +41,7 @@
 
 		isSubmitting = true;
 		try {
-			await onadd?.({ assistantId: selectedAssistantId, llmModelId: selectedModelId });
+			await onadd?.({ assistantId: selectedAssistantId, llmModelId: selectedModelId, language: selectedLanguage });
 			selectedAssistantId = '';
 			selectedModelId = '';
 		} finally {
@@ -65,7 +66,7 @@
 				: '사용 가능한 어시스턴트 프롬프트가 없습니다. 설정 페이지에서 어시스턴트를 먼저 추가하세요.'}
 		</p>
 	{:else}
-		<div class="mt-4 grid gap-3 sm:grid-cols-2">
+		<div class="mt-4 grid gap-3 sm:grid-cols-3">
 			<label class="space-y-1">
 				<span class="text-[11px] font-black tracking-wider text-slate-500 uppercase">모델</span>
 				<select
@@ -93,6 +94,19 @@
 							{assistant.name} {assistant.scope === 'personal' ? '(내 설정)' : '(전역)'}
 						</option>
 					{/each}
+				</select>
+			</label>
+
+		<label class="space-y-1">
+			<span class="text-[11px] font-black tracking-wider text-slate-500 uppercase">언어</span>
+				<select
+					class="comic-border-sm w-full rounded-lg bg-white px-3 py-2 text-sm font-bold text-slate-900"
+					bind:value={selectedLanguage}
+				>
+					<option value="Korean">한국어</option>
+					<option value="English">English</option>
+					<option value="Japanese">日本語</option>
+					<option value="Chinese">中文</option>
 				</select>
 			</label>
 		</div>
