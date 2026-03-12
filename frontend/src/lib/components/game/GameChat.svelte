@@ -80,23 +80,30 @@
 		</div>
 
 		<!-- Input -->
-		<div class="flex gap-2 border-t-2 border-slate-700 p-3">
-			<input
-				class="min-w-0 flex-1 rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-bold text-white placeholder:text-slate-500 focus:outline-none"
-				type="text"
-				maxlength={200}
-				placeholder={canSend ? m.game_chat_placeholder() : 'No chat available right now'}
-				bind:value={inputText}
-				disabled={!canSend}
-				onkeydown={handleKeydown}
-			/>
-			<button
-				class="comic-button shrink-0 rounded-xl border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase disabled:opacity-40"
-				disabled={!canSend || !inputText.trim()}
-				onclick={handleSend}
-			>
-				{m.game_chat_send()}
-			</button>
+		<div class="flex flex-col gap-1 border-t-2 border-slate-700 p-3">
+			<div class="flex gap-2">
+				<input
+					class="min-w-0 flex-1 rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm font-bold text-white placeholder:text-slate-500 focus:outline-none"
+					type="text"
+					maxlength={200}
+					placeholder={canSend ? m.game_chat_placeholder() : 'No chat available right now'}
+					bind:value={inputText}
+					disabled={!canSend}
+					onkeydown={handleKeydown}
+				/>
+				<button
+					class="comic-button shrink-0 rounded-xl border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase disabled:opacity-40"
+					disabled={!canSend || !inputText.trim()}
+					onclick={handleSend}
+				>
+					{m.game_chat_send()}
+				</button>
+			</div>
+			{#if inputText.length > 0}
+				<span class="text-right text-[10px] font-bold {inputText.length >= 190 ? 'text-red-400' : 'text-slate-500'}">
+					{200 - inputText.length}
+				</span>
+			{/if}
 		</div>
 	</div>
 {:else}
@@ -162,23 +169,30 @@
 		</div>
 
 		<!-- Input -->
-		<div class="flex gap-2 border-t-2 border-slate-200 p-3">
-			<input
-				class="comic-border-sm min-w-0 flex-1 rounded-xl px-3 py-2 text-sm font-bold placeholder:text-slate-400 focus:outline-none"
-				type="text"
-				maxlength={200}
-				placeholder={canSend ? m.game_chat_placeholder() : 'No chat available right now'}
-				bind:value={inputText}
-				disabled={!canSend}
-				onkeydown={handleKeydown}
-			/>
-			<button
-				class="comic-button shrink-0 rounded-xl border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase disabled:opacity-40"
-				disabled={!canSend || !inputText.trim()}
-				onclick={handleSend}
-			>
-				{m.game_chat_send()}
-			</button>
+		<div class="flex flex-col gap-1 border-t-2 border-slate-200 p-3">
+			<div class="flex gap-2">
+				<input
+					class="comic-border-sm min-w-0 flex-1 rounded-xl px-3 py-2 text-sm font-bold placeholder:text-slate-400 focus:outline-none"
+					type="text"
+					maxlength={200}
+					placeholder={canSend ? m.game_chat_placeholder() : 'No chat available right now'}
+					bind:value={inputText}
+					disabled={!canSend}
+					onkeydown={handleKeydown}
+				/>
+				<button
+					class="comic-button shrink-0 rounded-xl border-2 border-slate-900 bg-primary px-4 py-2 text-xs font-black text-white uppercase disabled:opacity-40"
+					disabled={!canSend || !inputText.trim()}
+					onclick={handleSend}
+				>
+					{m.game_chat_send()}
+				</button>
+			</div>
+			{#if inputText.length > 0}
+				<span class="text-right text-[10px] font-bold {inputText.length >= 190 ? 'text-red-400' : 'text-slate-500'}">
+					{200 - inputText.length}
+				</span>
+			{/if}
 		</div>
 	</div>
 {/if}
