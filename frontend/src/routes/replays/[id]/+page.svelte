@@ -18,7 +18,7 @@
 
 	const currentFrame = $derived(frames[currentIndex] ?? null);
 	const game = $derived<GameSnapshot | null>(currentFrame?.snapshot ?? null);
-	const totalFrames = $derived(frames.length);
+	const totalFrames = frames.length;
 
 	let playInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -29,7 +29,7 @@
 		}
 	}
 
-	function startPlay() {
+	function startPlay(ms: number) {
 		clearPlay();
 		playInterval = setInterval(() => {
 			if (currentIndex >= totalFrames - 1) {
@@ -38,39 +38,41 @@
 				return;
 			}
 			currentIndex += 1;
-		}, 1000 / speed);
+		}, ms);
 	}
 
-	$effect(() => {
-		if (playing) {
-			startPlay();
-		} else {
-			clearPlay();
-		}
-		return () => clearPlay();
-	});
+	// cleanup on unmount only
+	$effect(() => () => clearPlay());
 
 	function togglePlay() {
 		if (currentIndex >= totalFrames - 1) {
 			currentIndex = 0;
 		}
-		playing = !playing;
+		if (playing) {
+			playing = false;
+			clearPlay();
+		} else {
+			playing = true;
+			startPlay(1000 / speed);
+		}
 	}
 
 	function stepBack() {
 		playing = false;
+		clearPlay();
 		currentIndex = Math.max(0, currentIndex - 1);
 	}
 
 	function stepForward() {
 		playing = false;
+		clearPlay();
 		currentIndex = Math.min(totalFrames - 1, currentIndex + 1);
 	}
 
 	function setSpeed(s: number) {
 		speed = s;
 		if (playing) {
-			startPlay();
+			startPlay(1000 / s);
 		}
 	}
 </script>

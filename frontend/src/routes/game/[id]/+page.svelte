@@ -20,6 +20,7 @@
 		phase: 'acting',
 		remainingChatTurns: 0,
 		canReveal: false,
+		mustUseAttack: false,
 		winnerTeam: null,
 		players: [],
 		logs: [],
