@@ -5,6 +5,8 @@ import { createOmniscientSnapshot } from "./gameState";
 
 // In-memory seq counter per room
 const frameCounters = new Map<string, number>();
+// Guard against recording game end twice
+const finishedRooms = new Set<string>();
 
 export function recordGameStart(
   roomId: string,
@@ -71,10 +73,13 @@ export function recordFrame(roomId: string, actionSummary: string | null): void 
 }
 
 export function recordGameEnd(roomId: string, winnerTeam: string): void {
+  if (finishedRooms.has(roomId)) return;
+  finishedRooms.add(roomId);
   db.update(gameRecord)
     .set({ winnerTeam, finishedAt: new Date() })
     .where(eq(gameRecord.roomId, roomId))
     .run();
   recordFrame(roomId, `Game over: ${winnerTeam} win`);
   frameCounters.delete(roomId);
+  finishedRooms.delete(roomId);
 }

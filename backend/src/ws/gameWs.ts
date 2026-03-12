@@ -12,6 +12,7 @@ import {
 import { maybeRunLlmTurn } from "../lib/llmPlayer";
 import { recordFrame, recordGameEnd, recordSpectator } from "../lib/replayStore";
 
+
 type WsUser = {
   userId: string;
   roomId: string;
@@ -72,7 +73,10 @@ export async function broadcastGameState(roomId: string): Promise<void> {
     }
   }
 
-  if (state?.winnerTeam) scheduleGameEnd(roomId);
+  if (state?.winnerTeam) {
+    recordGameEnd(roomId, state.winnerTeam);
+    scheduleGameEnd(roomId);
+  }
 }
 
 export const gameWsPlugin = new Elysia().ws("/ws/game/:roomId", {
