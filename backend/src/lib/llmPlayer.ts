@@ -161,7 +161,9 @@ function getValidActions(snapshot: GameSnapshot, userId: string): GameAction[] {
       }
     }
 
-    actions.push({ type: "end-turn" });
+    if (!snapshot.mustUseAttack) {
+      actions.push({ type: "end-turn" });
+    }
   }
 
   return actions;
