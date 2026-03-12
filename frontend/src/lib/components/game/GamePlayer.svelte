@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import arrow from '$lib/assets/arrow.png';
 	import bullet from '$lib/assets/bullet.png';
+	import bulletHole from '$lib/assets/bullet_hole.png';
 	import handcuffs from '$lib/assets/handcuffs.png';
 	import heal from '$lib/assets/heal.png';
 	import magnifier from '$lib/assets/magnifier.png';
@@ -279,9 +280,9 @@
 		{:else}
 			<!-- Target: show card-specific effect -->
 			{#if animation.card === 'attack'}
-				<!-- Bullet hole: dark circle with ragged CSS border -->
+				<!-- Bullet hole image -->
 				<div class="animation-target pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-xl">
-					<div class="bullet-hole"></div>
+					<img src={bulletHole} alt="bullet hole" class="size-16 object-contain" />
 				</div>
 			{:else if animation.card === 'heal'}
 				<!-- Green cross flash -->
@@ -331,29 +332,6 @@
 
 	.animation-target {
 		animation: target-flash 1s ease-in-out forwards;
-	}
-
-	/* Bullet hole */
-	@keyframes bullet-appear {
-		0% { opacity: 0; transform: scale(0); }
-		30% { opacity: 1; transform: scale(1.2); }
-		60% { opacity: 1; transform: scale(1); }
-		100% { opacity: 0.8; transform: scale(1); }
-	}
-
-	.bullet-hole {
-		width: 2.5rem;
-		height: 2.5rem;
-		background: #1a1a1a;
-		border-radius: 50%;
-		box-shadow:
-			0 0 0 3px #333,
-			0 0 0 5px #1a1a1a,
-			2px -3px 0 4px #333,
-			-3px 2px 0 4px #111,
-			3px 3px 0 3px #222,
-			-2px -2px 0 4px #2a2a2a;
-		animation: bullet-appear 1s ease-out forwards;
 	}
 
 	/* Heal cross */
