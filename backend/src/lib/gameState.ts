@@ -579,7 +579,7 @@ export function createSnapshot(
         (card): card is Exclude<ActionCard, "attack"> => card !== "attack",
       ),
       role: buildRoleForViewer(player, viewer?.userId ?? null),
-      verified: player.verified,
+      verified: player.verified || (!player.alive && player.role === "agent"),
     })),
     logs: [...state.logs],
     chatMessages: [...state.chatMessages],

@@ -222,6 +222,7 @@
 								attacks={player.attacks}
 								cards={player.cards}
 								role={player.role}
+								verified={player.verified}
 								isMe={player.id === game.myPlayerId}
 							/>
 						{/each}

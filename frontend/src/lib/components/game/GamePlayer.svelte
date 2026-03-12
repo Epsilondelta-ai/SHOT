@@ -20,7 +20,8 @@
 		isJailed = false,
 		attacks = 1,
 		cards = [],
-		role = 'normal'
+		role = 'normal',
+		verified = false
 	}: {
 		name: string;
 		hp: number;
@@ -34,6 +35,7 @@
 		attacks?: number;
 		cards?: Card[];
 		role?: Role;
+		verified?: boolean;
 	} = $props();
 
 	const cardImages: Record<Card, { src: string; alt: string }> = {
@@ -166,6 +168,10 @@
 		{:else if role === 'revealed'}
 			<span class="rounded-full bg-red-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
 				>SPY</span
+			>
+		{:else if !alive && verified}
+			<span class="rounded-full bg-slate-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
+				>AGENT</span
 			>
 		{/if}
 	</div>
