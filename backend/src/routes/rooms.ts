@@ -575,7 +575,7 @@ export const roomRoutes = new Elysia()
       return { error: "Invalid assistant or model" };
     }
 
-    const displayName = `${selectedAssistant.name} (${selectedModel.displayName})`;
+    const displayName = selectedAssistant.name;
     const [newPlayer] = await db
       .insert(roomPlayer)
       .values({
