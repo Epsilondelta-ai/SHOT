@@ -181,6 +181,7 @@ function makePlayer(overrides: Partial<GameSnapshot['players'][0]> = {}): GameSn
 		isJailed: false,
 		attacks: 2,
 		cards: [],
+		verified: false,
 		...overrides,
 	};
 }
@@ -189,9 +190,16 @@ function makeSnapshot(overrides: Partial<GameSnapshot> = {}): GameSnapshot {
 	return {
 		roomId: 'room-1',
 		round: 1,
+		maxRound: 10,
 		phase: 'acting',
 		currentTurnPlayerId: 'p1',
+		viewerMode: 'player',
+		myPlayerId: 'p1',
+		myTeam: null,
+		remainingChatTurns: 0,
 		canReveal: false,
+		mustUseAttack: false,
+		winnerTeam: null,
 		players: [makePlayer()],
 		logs: [],
 		chatMessages: [],

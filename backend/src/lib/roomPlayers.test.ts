@@ -2,11 +2,11 @@ import { describe, it, expect, mock, beforeEach } from 'bun:test';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-const mockRoomPlayerFindMany = mock(async (): Promise<unknown[]> => []);
-const mockUserFindMany = mock(async (): Promise<unknown[]> => []);
-const mockAssistantFindMany = mock(async (): Promise<unknown[]> => []);
-const mockLlmModelFindMany = mock(async (): Promise<unknown[]> => []);
-const mockBotFindMany = mock(async (): Promise<unknown[]> => []);
+const mockRoomPlayerFindMany = mock(async (_filter?: unknown): Promise<unknown[]> => []);
+const mockUserFindMany = mock(async (_filter?: unknown): Promise<unknown[]> => []);
+const mockAssistantFindMany = mock(async (_filter?: unknown): Promise<unknown[]> => []);
+const mockLlmModelFindMany = mock(async (_filter?: unknown): Promise<unknown[]> => []);
+const mockBotFindMany = mock(async (_filter?: unknown): Promise<unknown[]> => []);
 
 mock.module('../db', () => ({
 	db: {

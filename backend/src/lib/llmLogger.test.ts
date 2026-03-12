@@ -70,7 +70,7 @@ const sampleLogEntry = {
 	systemPrompt: 'You are a game player',
 	userPrompt: 'Choose an action',
 	rawResponse: '{"type":"end-turn"}',
-	parsedAction: { type: 'end-turn' } as Record<string, unknown>,
+	parsedAction: { type: 'end-turn' } as const,
 	success: true,
 	error: null,
 	outcome: 'action_applied' as const,

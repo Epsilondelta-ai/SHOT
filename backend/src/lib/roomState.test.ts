@@ -2,7 +2,7 @@ import { describe, it, expect, mock, beforeEach } from 'bun:test';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
-const mockRoomPlayerFindMany = mock(async (): Promise<unknown[]> => []);
+const mockRoomPlayerFindMany = mock(async (_filter?: unknown): Promise<unknown[]> => []);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockSelect = mock((..._args: any[]): any => ({
