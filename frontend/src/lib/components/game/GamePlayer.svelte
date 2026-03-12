@@ -49,7 +49,7 @@
 			case 'leader':
 				return alive ? 'bg-blue-100 border-blue-400' : 'bg-blue-50 border-blue-300';
 			case 'revealed':
-				return alive ? 'bg-green-100 border-green-400' : 'bg-green-200 border-green-500';
+				return alive ? 'bg-red-100 border-red-400' : 'bg-red-200 border-red-500';
 			default:
 				return alive ? 'bg-white border-slate-900' : 'bg-slate-50 border-slate-400';
 		}
@@ -62,7 +62,7 @@
 			case 'leader':
 				return 'text-blue-700';
 			case 'revealed':
-				return 'text-green-700';
+				return 'text-red-700';
 			default:
 				return 'text-slate-900';
 		}
@@ -73,7 +73,7 @@
 			case 'spy':
 				return 'bg-slate-500/70';
 			case 'revealed':
-				return 'bg-slate-400/65';
+				return 'bg-slate-500/70';
 			default:
 				return 'bg-slate-300/70';
 		}
@@ -92,7 +92,7 @@
 			: role === 'leader'
 				? '#2563eb'
 				: role === 'revealed'
-					? '#16a34a'
+					? '#dc2626'
 					: '#0f172a'}"
 	disabled={!selectable || !alive || isMe}
 	onclick={onselect}
@@ -164,7 +164,7 @@
 				>CAPTAIN</span
 			>
 		{:else if role === 'revealed'}
-			<span class="rounded-full bg-green-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
+			<span class="rounded-full bg-red-500 px-2 py-0.5 text-[9px] font-black text-white uppercase"
 				>SPY</span
 			>
 		{/if}
