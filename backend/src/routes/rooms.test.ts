@@ -18,6 +18,9 @@ const mockParseRoomCapacity = mock((v: unknown): number | null => {
 const mockSyncRoomAfterHumanDeparture = mock(async () => ({ deleted: false, hostUserId: null }));
 
 const mockRoomPlayerFindMany = mock(async (): Promise<unknown[]> => []);
+const mockRoomPlayerFindFirst = mock(async (): Promise<unknown | null> => null);
+const mockBotFindMany = mock(async (): Promise<unknown[]> => []);
+const mockBotFindFirst = mock(async (): Promise<unknown | null> => null);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockSelect = mock((..._args: any[]): any => ({
@@ -54,16 +57,16 @@ mock.module('../db', () => ({
 		insert: mockInsert,
 		update: mockUpdate,
 		delete: mockDelete,
-		query: {
-			roomPlayer: { findMany: mockRoomPlayerFindMany },
-			user: { findMany: mock(async () => []) },
-			assistant: { findMany: mock(async () => []), findFirst: mock(async () => null) },
-			llmModel: { findMany: mock(async () => []) },
-			bot: { findFirst: mock(async () => null) },
-			session: { findFirst: mock(async () => null) }
+			query: {
+				roomPlayer: { findMany: mockRoomPlayerFindMany, findFirst: mockRoomPlayerFindFirst },
+				user: { findMany: mock(async () => []) },
+				assistant: { findMany: mock(async () => []), findFirst: mock(async () => null) },
+				llmModel: { findMany: mock(async () => []) },
+				bot: { findMany: mockBotFindMany, findFirst: mockBotFindFirst },
+				session: { findFirst: mock(async () => null) }
+			}
 		}
-	}
-}));
+	}));
 
 mock.module('../db/schema', () => ({
 	user: { id: 'user.id', name: 'user.name', email: 'user.email', role: 'user.role', image: 'user.image', createdAt: 'user.createdAt', updatedAt: 'user.updatedAt', banStart: 'user.banStart', banEnd: 'user.banEnd', banReason: 'user.banReason', lastSeenAt: 'user.lastSeenAt', emailVerified: 'user.emailVerified' },
@@ -79,6 +82,9 @@ mock.module('../db/schema', () => ({
 	llmProvider: { provider: 'llmProvider.provider', apiKey: 'llmProvider.apiKey', active: 'llmProvider.active', updatedAt: 'llmProvider.updatedAt' },
 	llmModel: { id: 'llmModel.id', provider: 'llmModel.provider', apiModelName: 'llmModel.apiModelName', displayName: 'llmModel.displayName', active: 'llmModel.active', createdAt: 'llmModel.createdAt' },
 	gameRulebook: { id: 'gameRulebook.id', name: 'gameRulebook.name', content: 'gameRulebook.content', active: 'gameRulebook.active', createdAt: 'gameRulebook.createdAt', updatedAt: 'gameRulebook.updatedAt' },
+	gameRecord: { roomId: 'gameRecord.roomId', playerCount: 'gameRecord.playerCount', playerNames: 'gameRecord.playerNames', winnerTeam: 'gameRecord.winnerTeam', startedAt: 'gameRecord.startedAt', finishedAt: 'gameRecord.finishedAt', replayData: 'gameRecord.replayData' },
+	gameReplayFrame: { id: 'gameReplayFrame.id', roomId: 'gameReplayFrame.roomId', seq: 'gameReplayFrame.seq', snapshot: 'gameReplayFrame.snapshot', actionSummary: 'gameReplayFrame.actionSummary', createdAt: 'gameReplayFrame.createdAt' },
+	gameParticipant: { roomId: 'gameParticipant.roomId', userId: 'gameParticipant.userId', playerName: 'gameParticipant.playerName', participationType: 'gameParticipant.participationType' },
 	userRelations: {}, banHistoryRelations: {}, sessionRelations: {}, accountRelations: {}, roomRelations: {}, roomPlayerRelations: {}
 }));
 
@@ -129,6 +135,12 @@ beforeEach(() => {
 	mockBroadcastPlayers.mockReset();
 	mockRoomPlayerFindMany.mockReset();
 	mockRoomPlayerFindMany.mockResolvedValue([]);
+	mockRoomPlayerFindFirst.mockReset();
+	mockRoomPlayerFindFirst.mockResolvedValue(null);
+	mockBotFindMany.mockReset();
+	mockBotFindMany.mockResolvedValue([]);
+	mockBotFindFirst.mockReset();
+	mockBotFindFirst.mockResolvedValue(null);
 	mockGetRoomById.mockReset();
 	mockGetRoomById.mockResolvedValue(null);
 	mockGetHumanRoomPlayer.mockReset();
@@ -389,17 +401,14 @@ describe('GET /api/rooms/:id', () => {
 		mockGetSerializedRoomPlayers.mockResolvedValueOnce([
 			{ id: 'p1', userId: 'u1', name: 'Alice', avatarSrc: null, type: 'human', assistantId: null, assistantName: null, llmModelId: null, modelName: null, ready: false }
 		]);
-		// getRoomOptions: 1) providers, 2) assistants, 3) bots (models skipped when no providers)
-		mockSelect
-			.mockImplementationOnce(() => ({
-				from: () => ({ where: () => Promise.resolve([]) })
-			}))
-			.mockImplementationOnce(() => ({
-				from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
-			}))
-			.mockImplementationOnce(() => ({
-				from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
-			}));
+			// getRoomOptions: 1) providers, 2) assistants; bots come from listRoomBotsForUser
+			mockSelect
+				.mockImplementationOnce(() => ({
+					from: () => ({ where: () => Promise.resolve([]) })
+				}))
+				.mockImplementationOnce(() => ({
+					from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
+				}));
 
 		const app = makeApp();
 		const res = await app.handle(new Request('http://localhost/api/rooms/r1'));
@@ -424,17 +433,14 @@ describe('GET /api/rooms/:id', () => {
 		mockInsert.mockImplementationOnce(() => ({
 			values: () => Promise.resolve()
 		}));
-		// getRoomOptions: 1) providers, 2) assistants, 3) bots
-		mockSelect
-			.mockImplementationOnce(() => ({
-				from: () => ({ where: () => Promise.resolve([]) })
-			}))
-			.mockImplementationOnce(() => ({
-				from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
-			}))
-			.mockImplementationOnce(() => ({
-				from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
-			}));
+			// getRoomOptions: 1) providers, 2) assistants; bots come from listRoomBotsForUser
+			mockSelect
+				.mockImplementationOnce(() => ({
+					from: () => ({ where: () => Promise.resolve([]) })
+				}))
+				.mockImplementationOnce(() => ({
+					from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
+				}));
 
 		const app = makeApp();
 		const res = await app.handle(new Request('http://localhost/api/rooms/r1'));
@@ -486,16 +492,13 @@ describe('GET /api/rooms/:id', () => {
 				ready: true
 			}
 		]);
-		mockSelect
-			.mockImplementationOnce(() => ({
-				from: () => ({ where: () => Promise.resolve([]) })
-			}))
-			.mockImplementationOnce(() => ({
-				from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
-			}))
-			.mockImplementationOnce(() => ({
-				from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
-			}));
+			mockSelect
+				.mockImplementationOnce(() => ({
+					from: () => ({ where: () => Promise.resolve([]) })
+				}))
+				.mockImplementationOnce(() => ({
+					from: () => ({ where: () => ({ orderBy: () => Promise.resolve([]) }) })
+				}));
 
 		const app = makeApp();
 		const res = await app.handle(new Request('http://localhost/api/rooms/r1?spectator=1'));
@@ -780,9 +783,9 @@ describe('POST /api/rooms/:id/llm-players', () => {
 		);
 		expect(res.status).toBe(400);
 		const body = await res.json();
-		expect(body.error).toBe('Assistant and model are required');
+			expect(body.error).toBe('Model is required');
+		});
 	});
-});
 
 describe('POST /api/rooms/:id/bot-players', () => {
 	it('returns 401 when not authenticated', async () => {

@@ -3,8 +3,10 @@ import { cors } from "@elysiajs/cors";
 import { auth } from "./lib/auth";
 import { roomWsPlugin } from "./ws/roomWs";
 import { gameWsPlugin } from "./ws/gameWs";
+import { botConnectorWsPlugin } from "./ws/botConnectorWs";
 import { roomRoutes } from "./routes/rooms";
 import { gameRoutes } from "./routes/games";
+import { botRoutes } from "./routes/bots";
 import { adminRoutes } from "./routes/admin";
 import { configRoutes } from "./routes/config";
 import { meRoutes } from "./routes/me";
@@ -15,29 +17,25 @@ const PORT = Number(process.env.PORT ?? 3001);
 const IS_DEV = process.env.NODE_ENV === "development";
 
 const app = new Elysia()
-  // ── CORS ──────────────────────────────────────────────────────────────────
-  .use(cors({
-    origin: IS_DEV ? true : FRONTEND_URL,
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  }))
-
-  // ── Auth (better-auth handles all /api/auth/* routes) ─────────────────────
+  .use(
+    cors({
+      origin: IS_DEV ? true : FRONTEND_URL,
+      credentials: true,
+      allowedHeaders: ["Content-Type", "Authorization"],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    }),
+  )
   .all("/api/auth/*", ({ request }) => auth.handler(request))
-
-  // ── Routes ────────────────────────────────────────────────────────────────
   .use(roomRoutes)
   .use(gameRoutes)
+  .use(botRoutes)
   .use(adminRoutes)
   .use(configRoutes)
   .use(meRoutes)
   .use(replayRoutes)
-
-  // ── WebSocket ─────────────────────────────────────────────────────────────
   .use(roomWsPlugin)
   .use(gameWsPlugin)
-
+  .use(botConnectorWsPlugin)
   .listen(PORT);
 
 console.log(`Backend running at http://localhost:${PORT}`);

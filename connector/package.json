@@ -1,0 +1,10 @@
+{
+  "name": "shot-openclaw-connector",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --target bun"
+  }
+}

@@ -28,10 +28,17 @@
 	type Bot = {
 		id: string;
 		name: string;
-		apiKey: string;
 		active: boolean;
-		created: string;
-		updated: string;
+		pairingStatus: 'unpaired' | 'pairing' | 'paired' | 'error';
+		presenceStatus: 'online' | 'offline';
+		created: string | null;
+		updated: string | null;
+		lastSeenAt: string | null;
+		pairingCodeExpiresAt: string | null;
+		connectorName: string | null;
+		connectorVersion?: string | null;
+		deviceId?: string | null;
+		busy?: boolean;
 	};
 
 	let activeTab: Tab = $state('assistant');
@@ -39,6 +46,7 @@
 	let editingAssistant: Assistant | null = $state(null);
 	let showBotForm = $state(false);
 	let editingBot: Bot | null = $state(null);
+	let pairingCodes = $state<Record<string, { code: string; expiresAt: string } | undefined>>({});
 	let showConfirmModal = $state(false);
 	let confirmCallback = $state<(() => void) | null>(null);
 
@@ -87,11 +95,11 @@
 		editingAssistant = null;
 	}
 
-	async function saveBot(bot: Omit<Bot, 'id' | 'created' | 'updated'>) {
+	async function saveBot(bot: { name: string; active: boolean }) {
 		if (editingBot) {
-			await apiPut(`/api/config/bots/${editingBot.id}`, bot);
+			await apiPut(`/api/bots/${editingBot.id}`, bot);
 		} else {
-			await apiPost('/api/config/bots', bot);
+			await apiPost('/api/bots', bot);
 		}
 
 		await invalidateAll();
@@ -106,9 +114,29 @@
 
 	function deleteBot(botId: string) {
 		openConfirm(async () => {
-			await apiDelete(`/api/config/bots/${botId}`);
+			await apiDelete(`/api/bots/${botId}`);
 			await invalidateAll();
 		});
+	}
+
+	async function startPairing(botId: string) {
+		const result = await apiPost<{ pairingCode: string; expiresAt: string }>(
+			`/api/bots/${botId}/pair/start`
+		);
+		pairingCodes = {
+			...pairingCodes,
+			[botId]: { code: result.pairingCode, expiresAt: result.expiresAt }
+		};
+		await invalidateAll();
+	}
+
+	async function cancelPairing(botId: string) {
+		await apiPost(`/api/bots/${botId}/pair/cancel`);
+		pairingCodes = {
+			...pairingCodes,
+			[botId]: undefined
+		};
+		await invalidateAll();
 	}
 
 	function closeBotForm() {
@@ -157,9 +185,16 @@
 						editingBot = null;
 						showBotForm = true;
 					}}
-				/>
-			</div>
-			<ConfigBotList bots={data.bots} onedit={editBot} ondelete={deleteBot} />
+					/>
+				</div>
+			<ConfigBotList
+				bots={data.bots}
+				{pairingCodes}
+				onedit={editBot}
+				ondelete={deleteBot}
+				onpairstart={startPairing}
+				onpaircancel={cancelPairing}
+			/>
 			{#if showBotForm}
 				<ConfigBotForm isOpen={showBotForm} {editingBot} onsave={saveBot} oncancel={closeBotForm} />
 			{/if}

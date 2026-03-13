@@ -87,8 +87,8 @@ describe('createRoomSocket', () => {
 			})
 		} as MessageEvent);
 
-		expect(onPlayers).toHaveBeenCalledWith(
-			[
+			expect(onPlayers).toHaveBeenCalledWith(
+				[
 				{
 					id: '1',
 					userId: 'u1',
@@ -103,10 +103,11 @@ describe('createRoomSocket', () => {
 					botId: null,
 					ready: false
 				}
-			],
-			{ hostUserId: 'u1', maxPlayers: 5, status: 'in_progress' }
-		);
-	});
+				],
+				{ hostUserId: 'u1', maxPlayers: 5, status: 'in_progress' },
+				undefined
+			);
+		});
 
 	it('calls onChat callback when chat message received', () => {
 		const onChat = vi.fn();

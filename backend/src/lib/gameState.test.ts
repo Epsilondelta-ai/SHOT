@@ -79,6 +79,36 @@ const basePlayers = [
   },
 ];
 
+function finishTurn(userId: string) {
+  const snapshot = createSnapshot("room-test", userId);
+  const me = snapshot.players.find((player) => player.userId === userId);
+  if (!me) throw new Error("Missing player in snapshot");
+
+  if (snapshot.phase === "chatting") {
+    applyGameAction("room-test", userId, { type: "skip-chat" });
+  }
+
+  const actingSnapshot = createSnapshot("room-test", userId);
+  const attackTarget = actingSnapshot.players.find(
+    (player) => player.id !== me.id && player.alive && player.role !== 'leader',
+  );
+
+  if (actingSnapshot.mustUseAttack && attackTarget) {
+    applyGameAction("room-test", userId, {
+      type: "play-card",
+      card: "attack",
+      targetId: attackTarget.id,
+    });
+    const postAttack = createSnapshot("room-test", userId);
+    if (postAttack.currentTurnPlayerId === me.id && postAttack.phase === 'acting') {
+      applyGameAction("room-test", userId, { type: "end-turn" });
+    }
+    return;
+  }
+
+  applyGameAction("room-test", userId, { type: "end-turn" });
+}
+
 describe("gameState", () => {
   beforeEach(() => {
     initializeGame("room-test", basePlayers);
@@ -104,28 +134,35 @@ describe("gameState", () => {
   });
 
   it("grants an extra chat after a spy reveals", () => {
-    applyGameAction("room-test", "u1", { type: "skip-chat" });
-    applyGameAction("room-test", "u1", { type: "end-turn" });
-    applyGameAction("room-test", "u2", { type: "skip-chat" });
-    applyGameAction("room-test", "u2", { type: "end-turn" });
-    applyGameAction("room-test", "u3", { type: "skip-chat" });
-    applyGameAction("room-test", "u3", { type: "end-turn" });
-    applyGameAction("room-test", "u4", { type: "skip-chat" });
-    applyGameAction("room-test", "u4", { type: "end-turn" });
+    let currentSpyUserId = '';
 
-    let snapshot = createSnapshot("room-test", "u5");
+    for (let turn = 0; turn < 10; turn += 1) {
+      const leaderView = createSnapshot("room-test", "u1");
+      const currentUserId =
+        leaderView.players.find((player) => player.id === leaderView.currentTurnPlayerId)?.userId ?? '';
+      const currentView = createSnapshot("room-test", currentUserId);
+
+      if (currentView.myTeam === 'spies' && currentView.canReveal) {
+        currentSpyUserId = currentUserId;
+        break;
+      }
+
+      finishTurn(currentUserId);
+    }
+
+    expect(currentSpyUserId).not.toBe('');
+
+    let snapshot = createSnapshot("room-test", currentSpyUserId);
     expect(snapshot.canReveal).toBe(true);
     expect(snapshot.phase).toBe("chatting");
 
-    applyGameAction("room-test", "u5", { type: "skip-chat" });
-    applyGameAction("room-test", "u5", { type: "reveal" });
+    applyGameAction("room-test", currentSpyUserId, { type: "skip-chat" });
+    applyGameAction("room-test", currentSpyUserId, { type: "reveal" });
 
-    snapshot = createSnapshot("room-test", "u5");
+    snapshot = createSnapshot("room-test", currentSpyUserId);
     expect(snapshot.phase).toBe("chatting");
     expect(snapshot.remainingChatTurns).toBe(1);
-    expect(snapshot.players.find((player) => player.id === "p5")?.role).toBe(
-      "revealed",
-    );
+    expect(snapshot.players.find((player) => player.id === snapshot.myPlayerId)?.role).toBe("revealed");
   });
 
   it("builds a public spectator snapshot without private roles", () => {

@@ -10,7 +10,7 @@ export const load: PageLoad = async ({ fetch }) => {
 
 	const [assistantsRes, botsRes, meRes] = await Promise.all([
 		fetch(`${BACKEND_URL}/api/config/assistants`, { credentials: 'include' }),
-		fetch(`${BACKEND_URL}/api/config/bots`, { credentials: 'include' }),
+		fetch(`${BACKEND_URL}/api/bots`, { credentials: 'include' }),
 		fetch(`${BACKEND_URL}/api/me`, { credentials: 'include' })
 	]);
 

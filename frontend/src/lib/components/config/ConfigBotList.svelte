@@ -4,21 +4,53 @@
 	type Bot = {
 		id: string;
 		name: string;
-		apiKey: string;
 		active: boolean;
-		created: string;
-		updated: string;
+		pairingStatus: 'unpaired' | 'pairing' | 'paired' | 'error';
+		presenceStatus: 'online' | 'offline';
+		created: string | null;
+		updated: string | null;
+		lastSeenAt: string | null;
+		pairingCodeExpiresAt: string | null;
+		connectorName: string | null;
+		connectorVersion?: string | null;
+		deviceId?: string | null;
+		busy?: boolean;
 	};
 
 	let {
 		bots = [],
+		pairingCodes = {},
 		onedit,
-		ondelete
-	}: { bots?: Bot[]; onedit?: (bot: Bot) => void; ondelete?: (botId: string) => void } = $props();
+		ondelete,
+		onpairstart,
+		onpaircancel
+	}: {
+		bots?: Bot[];
+		pairingCodes?: Record<string, { code: string; expiresAt: string } | undefined>;
+		onedit?: (bot: Bot) => void;
+		ondelete?: (botId: string) => void;
+		onpairstart?: (botId: string) => Promise<void> | void;
+		onpaircancel?: (botId: string) => Promise<void> | void;
+	} = $props();
 
-	function maskApiKey(apiKey: string): string {
-		if (apiKey.length <= 8) return '•'.repeat(apiKey.length);
-		return apiKey.slice(0, 3) + '•'.repeat(apiKey.length - 7) + apiKey.slice(-4);
+	function presenceLabel(bot: Bot) {
+		if (bot.pairingStatus === 'pairing') return '페어링 대기';
+		if (bot.pairingStatus === 'unpaired') return '미페어링';
+		if (bot.pairingStatus === 'error') return '오류';
+		return bot.presenceStatus === 'online' ? '온라인' : '오프라인';
+	}
+
+	function presenceClass(bot: Bot) {
+		if (bot.pairingStatus === 'paired' && bot.presenceStatus === 'online') {
+			return 'bg-green-100 text-green-700';
+		}
+		if (bot.pairingStatus === 'pairing') {
+			return 'bg-yellow-100 text-yellow-700';
+		}
+		if (bot.pairingStatus === 'error') {
+			return 'bg-red-100 text-red-700';
+		}
+		return 'bg-slate-100 text-slate-600';
 	}
 </script>
 
@@ -33,21 +65,25 @@
 	{:else}
 		{#each bots as bot (bot.id)}
 			<div class="comic-border rounded-lg border-2 border-slate-900 bg-white p-4">
-				<div class="mb-3 flex items-start justify-between">
+				<div class="mb-3 flex items-start justify-between gap-3">
 					<div class="flex-1">
 						<h3 class="font-black text-slate-900 uppercase">{bot.name}</h3>
-						<div class="mt-1 flex gap-2">
+						<div class="mt-2 flex flex-wrap gap-2">
+							<span class={`rounded-full px-2 py-1 text-xs font-black uppercase ${presenceClass(bot)}`}>
+								{presenceLabel(bot)}
+							</span>
 							{#if bot.active}
-								<span
-									class="rounded-full bg-green-100 px-2 py-1 text-xs font-black text-green-700 uppercase"
-								>
+								<span class="rounded-full bg-blue-100 px-2 py-1 text-xs font-black text-blue-700 uppercase">
 									{m.config_bot_active()}
 								</span>
 							{:else}
-								<span
-									class="rounded-full bg-gray-100 px-2 py-1 text-xs font-black text-gray-700 uppercase"
-								>
+								<span class="rounded-full bg-gray-100 px-2 py-1 text-xs font-black text-gray-700 uppercase">
 									{m.config_bot_inactive()}
+								</span>
+							{/if}
+							{#if bot.busy}
+								<span class="rounded-full bg-orange-100 px-2 py-1 text-xs font-black text-orange-700 uppercase">
+									in room
 								</span>
 							{/if}
 						</div>
@@ -70,15 +106,48 @@
 					</div>
 				</div>
 
-				<!-- API Key Section -->
-				<div class="mb-2 space-y-1 text-sm">
-					<p class="text-xs font-black text-slate-500 uppercase">{m.config_bot_api_key()}</p>
-					<p class="font-mono text-sm font-bold text-slate-700">{maskApiKey(bot.apiKey)}</p>
+				<div class="rounded-lg bg-slate-50 p-3 text-xs font-bold text-slate-600">
+					<p>Provider: OpenClaw</p>
+					<p>Connector: {bot.connectorName ?? '미연결'}</p>
+					<p>Last seen: {bot.lastSeenAt ?? '기록 없음'}</p>
+					{#if bot.deviceId}
+						<p>Device: {bot.deviceId}</p>
+					{/if}
 				</div>
 
-				<!-- Metadata -->
+				{#if pairingCodes[bot.id]}
+					<div class="mt-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3">
+						<p class="text-[11px] font-black tracking-wider text-slate-500 uppercase">pairing code</p>
+						<p class="mt-1 font-mono text-lg font-black text-primary">
+							{pairingCodes[bot.id]?.code}
+						</p>
+						<p class="mt-1 text-xs font-bold text-slate-500">
+							만료: {pairingCodes[bot.id]?.expiresAt}
+						</p>
+					</div>
+				{/if}
+
+				<div class="mt-3 flex flex-wrap gap-2">
+					<button
+						type="button"
+						class="comic-button rounded-xl border-2 border-slate-900 bg-primary px-3 py-2 text-[11px] font-black text-white uppercase"
+						onclick={() => onpairstart?.(bot.id)}
+					>
+						{bot.pairingStatus === 'paired' ? '재페어링 코드 발급' : '페어링 시작'}
+					</button>
+					{#if bot.pairingStatus === 'pairing'}
+						<button
+							type="button"
+							class="comic-button rounded-xl border-2 border-slate-900 bg-white px-3 py-2 text-[11px] font-black text-slate-700 uppercase"
+							onclick={() => onpaircancel?.(bot.id)}
+						>
+							페어링 취소
+						</button>
+					{/if}
+				</div>
+
 				<div class="mt-3 border-t border-slate-200 pt-2 text-xs text-slate-500">
-					<p>생성: {bot.created} | 수정: {bot.updated}</p>
+					<p>생성: {bot.created ?? '-'} | 수정: {bot.updated ?? '-'}</p>
 				</div>
 			</div>
 		{/each}

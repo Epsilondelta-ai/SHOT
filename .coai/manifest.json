@@ -1,0 +1,2000 @@
+{
+  "files": {
+    ".claude/agents/moai/builder-agent.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/builder-plugin.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/builder-skill.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/expert-backend.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/expert-debug.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/expert-devops.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/expert-frontend.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/expert-performance.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/expert-refactoring.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/expert-security.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/expert-testing.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/manager-ddd.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/manager-docs.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/manager-git.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/manager-project.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/manager-quality.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/manager-spec.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/manager-strategy.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/manager-tdd.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/team-coder.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/team-designer.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/team-reader.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/team-tester.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/agents/moai/team-validator.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/clean.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/codemaps.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/coverage.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/e2e.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/feedback.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/fix.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/loop.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/mx.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/plan.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/project.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/review.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/run.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/commands/moai/sync.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-agent-hook.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-compact.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-notification.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-permission-request.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-post-tool-failure.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-post-tool.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-pre-tool.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-session-end.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-session-start.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-stop.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-subagent-start.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-subagent-stop.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-task-completed.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-teammate-idle.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-user-prompt-submit.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-worktree-create.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/hooks/moai/handle-worktree-remove.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/output-styles/moai/moai.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/output-styles/moai/r2d2.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/output-styles/moai/yoda.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/core/agent-hooks.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/core/hooks-system.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/core/moai-constitution.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/core/settings-management.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/development/agent-authoring.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/development/coding-standards.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/development/model-policy.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/development/skill-authoring.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/cpp.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/csharp.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/elixir.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/flutter.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/go.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/java.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/javascript.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/kotlin.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/php.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/python.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/r.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/ruby.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/rust.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/scala.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/swift.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/languages/typescript.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/workflow/file-reading-optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/workflow/moai-memory.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/workflow/mx-tag-protocol.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/workflow/spec-workflow.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/workflow/team-protocol.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/workflow/workflow-modes.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/rules/moai/workflow/worktree-integration.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/settings.json": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-design-tools/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-design-tools/reference/comparison.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-design-tools/reference/figma.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-design-tools/reference/pencil-code.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-design-tools/reference/pencil-renderer.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-docs-generation/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-docs-generation/modules/INDEX.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-docs-generation/modules/api-documentation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-docs-generation/modules/code-documentation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-docs-generation/modules/multi-format-output.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-docs-generation/modules/user-guides.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-docs-generation/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-docs-generation/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-backend/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-backend/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-backend/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-database/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-database/modules/INDEX.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-database/modules/mongodb.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-database/modules/oracle.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-database/modules/postgresql.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-database/modules/redis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-database/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-database/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-frontend/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-frontend/modules/component-architecture.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-frontend/modules/nextjs16-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-frontend/modules/performance-optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-frontend/modules/react19-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-frontend/modules/state-management.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-frontend/modules/vercel-react-best-practices.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-frontend/modules/vue35-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-frontend/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-frontend/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-uiux/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-uiux/modules/accessibility-wcag.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-uiux/modules/component-architecture.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-uiux/modules/design-system-tokens.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-uiux/modules/icon-libraries.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-uiux/modules/theming-system.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-uiux/modules/web-interface-guidelines.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-uiux/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-domain-uiux/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-formats-data/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-formats-data/modules/INDEX.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-formats-data/modules/SKILL-MODULARIZATION-TEMPLATE.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-formats-data/modules/caching-performance.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-formats-data/modules/data-validation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-formats-data/modules/json-optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-formats-data/modules/toon-encoding.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-formats-data/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-formats-data/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/advanced-agent-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/best-practices-checklist.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-cli-reference-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-custom-slash-commands-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-devcontainers-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-discover-plugins-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-headless-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-hooks-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-iam-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-memory-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-plugin-marketplaces-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-plugins-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-sandboxing-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-settings-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-skills-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-statusline-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/claude-code-sub-agents-official.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/complete-configuration-guide.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/skill-examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/skill-formatting-guide.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/sub-agents/sub-agent-examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/sub-agents/sub-agent-formatting-guide.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/reference/sub-agents/sub-agent-integration-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-claude/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-context/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-context/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-context/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/INDEX.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/agents-reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/commands-reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/delegation-advanced.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/delegation-implementation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/delegation-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/execution-rules.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/modular-system.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/progressive-disclosure.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/spec-ddd-implementation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/spec-ears-format.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/spec-first-ddd.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/token-optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/trust-5-framework.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/trust-5-implementation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/modules/trust-5-validation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-core/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-philosopher/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-philosopher/modules/assumption-matrix.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-philosopher/modules/cognitive-bias.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-philosopher/modules/first-principles.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-philosopher/modules/trade-off-analysis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-philosopher/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-philosopher/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-quality/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-quality/modules/best-practices.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-quality/modules/integration-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-quality/modules/proactive-analysis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-quality/modules/trust5-validation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-quality/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-quality/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-thinking/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-thinking/modules/critical-evaluation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-thinking/modules/deep-questioning.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-thinking/modules/diverge-converge.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-foundation-thinking/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-framework-electron/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-framework-electron/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-framework-electron/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-cpp/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-cpp/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-cpp/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-cpp/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-csharp/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-csharp/modules/aspnet-core.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-csharp/modules/blazor-components.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-csharp/modules/cqrs-validation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-csharp/modules/csharp12-features.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-csharp/modules/efcore-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-csharp/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-csharp/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-elixir/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-elixir/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-elixir/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-elixir/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-flutter/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-flutter/reference/adaptive.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-flutter/reference/animations.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-flutter/reference/expert.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-flutter/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-flutter/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-go/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-go/reference/advanced.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-go/reference/testing.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-go/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-go/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-java/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-java/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-java/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-javascript/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-javascript/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-javascript/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-kotlin/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-kotlin/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-kotlin/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-php/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-php/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-php/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-php/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-python/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-python/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-python/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-r/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-r/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-r/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-r/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-ruby/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-ruby/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-ruby/modules/testing-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-ruby/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-ruby/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-rust/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-rust/reference/engineering.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-rust/reference/guidelines.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-rust/reference/performance.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-rust/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-rust/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-scala/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-scala/modules/akka-actors.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-scala/modules/cats-effect.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-scala/modules/functional-programming.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-scala/modules/spark-data.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-scala/modules/zio-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-scala/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-scala/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-swift/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-swift/modules/combine-reactive.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-swift/modules/concurrency.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-swift/modules/swift6-features.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-swift/modules/swiftui-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-swift/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-swift/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-typescript/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-typescript/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-lang-typescript/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-mermaid/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-mermaid/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-mermaid/modules/optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-mermaid/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-mermaid/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/modules/advanced-deployment-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/modules/configuration.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/modules/content-architecture-optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/modules/deployment.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/modules/framework-core-configuration.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/modules/i18n-setup.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/modules/mdx-components.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/modules/optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-nextra/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-shadcn/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-shadcn/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-shadcn/modules/optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-shadcn/modules/shadcn-components.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-shadcn/modules/shadcn-theming.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-shadcn/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-library-shadcn/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-auth/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-auth/reference/auth0.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-auth/reference/clerk.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-auth/reference/comparison.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-auth/reference/firebase-auth.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-chrome-extension/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-chrome-extension/modules/apis-quick-reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-chrome-extension/modules/content-scripts-guide.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-chrome-extension/modules/manifest-v3-reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-chrome-extension/modules/messaging-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-chrome-extension/modules/publishing-guide.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-chrome-extension/modules/security-csp.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-chrome-extension/modules/service-worker-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-chrome-extension/modules/ui-components.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-database-cloud/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-database-cloud/reference/comparison.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-database-cloud/reference/firestore.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-database-cloud/reference/neon.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-database-cloud/reference/supabase.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-deployment/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-deployment/reference/comparison.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-deployment/reference/convex.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-deployment/reference/railway.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-platform-deployment/reference/vercel.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-ast-grep/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-ast-grep/modules/language-specific.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-ast-grep/modules/pattern-syntax.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-ast-grep/modules/refactoring-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-ast-grep/modules/security-rules.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-ast-grep/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-ast-grep/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-svg/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-svg/modules/INDEX.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-svg/modules/svg-animation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-svg/modules/svg-basics.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-svg/modules/svg-optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-svg/modules/svg-styling.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-svg/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-tool-svg/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-ddd/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-jit-docs/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-jit-docs/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-jit-docs/modules/optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-jit-docs/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-jit-docs/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-loop/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-loop/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-loop/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/references/overview.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/schemas/config-schema.json": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/schemas/tab_schema.json": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/templates/config-template.json": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/templates/doc-templates/product-template.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/templates/doc-templates/structure-template.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/templates/doc-templates/tech-template.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/templates/question-templates/config-manager-setup.json": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/templates/question-templates/language-initializer.json": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/templates/question-templates/menu-project-config.json": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/templates/question-templates/project-batch-questions.json": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-project/templates/question-templates/spec-workflow-setup.json": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-spec/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-spec/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-spec/reference/migration-guide.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-spec/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-spec/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-tdd/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-tdd/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-tdd/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-templates/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-templates/modules/code-templates.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-templates/modules/feedback-templates.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-templates/modules/template-optimizer.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-templates/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-templates/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/INDEX.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/advanced-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/ai-debugging.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/automated-code-review.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/automated-code-review/context7-integration.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/automated-code-review/review-workflows.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/automated-code-review/trust5-framework.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/automated-code-review/trust5-framework/relevance-analysis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/automated-code-review/trust5-framework/safety-analysis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/automated-code-review/trust5-framework/scoring-algorithms.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/automated-code-review/trust5-framework/timeliness-analysis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/automated-code-review/trust5-framework/truthfulness-analysis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/automated-code-review/trust5-framework/usability-analysis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/code-review/analysis-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/code-review/core-classes.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/code-review/tool-integration.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/ddd-context7.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/ddd-context7/advanced-features.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/ddd-context7/analyze-preserve-improve.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/ddd-context7/test-generation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/ddd-context7/test-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/ddd/core-classes.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/debugging/debugging-workflows.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/debugging/error-analysis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/performance-optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/performance-optimization/ai-optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/performance-optimization/bottleneck-detection.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/performance-optimization/optimization-plan.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/performance-optimization/profiler-core.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/performance-optimization/real-time-monitoring.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/performance/optimization-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/performance/profiling-techniques.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/quality-metrics.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/refactoring/ai-workflows.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/refactoring/patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/security-analysis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/smart-refactoring.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/static-analysis.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/modules/trust5-validation.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/reference/playwright-best-practices.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-testing/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-thinking/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/integration-patterns.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/moai-adk-integration.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/parallel-advanced.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/parallel-development.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/parallel-workflows.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/registry-architecture.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/resource-optimization.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/tools-integration.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/troubleshooting.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/worktree-commands.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/modules/worktree-management.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/references/examples.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai-workflow-worktree/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/SKILL.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/references/mx-tag.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/references/reference.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/team/debug.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/team/glm.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/team/plan.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/team/review.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/team/run.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/team/sync.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/clean.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/codemaps.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/context.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/coverage.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/e2e.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/feedback.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/fix.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/loop.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/moai.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/mx.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/plan.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/project.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/review.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/run.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".claude/skills/moai/workflows/sync.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/compatibility.yaml": {
+      "managed": true,
+      "hash": "ae5c265ee1a4d5072aa6427857f84a97786290a68d8a7784cb14a122a518c0fb"
+    },
+    ".coai/config/sections/context.yaml": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/git-convention.yaml": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/git-strategy.yaml": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/language.yaml": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/llm.yaml": {
+      "managed": true,
+      "hash": "24b4e52038a54c7887c09f438eb41e91e3ba44fa2a7ea68d4a763c8f10195827"
+    },
+    ".coai/config/sections/mx.yaml": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/project.yaml": {
+      "managed": true,
+      "hash": "e914a278bab07c647167ec08671a7b3b540347e8f455e48f4634ed0c01a03f9e"
+    },
+    ".coai/config/sections/quality.yaml": {
+      "managed": true,
+      "hash": "fe23ac2624d6007f1ab86ebde78b32c74d75ecb4a6be7061b833698d893d03b0"
+    },
+    ".coai/config/sections/ralph.yaml": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/state.yaml": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/statusline.yaml": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/system.yaml": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/user.yaml": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/config/sections/workflow.yaml": {
+      "managed": true,
+      "hash": "4e1a5488b1e16c3a4e127d9fae6f775678e3a9c252d913782151ab6bd78dfa35"
+    },
+    ".coai/docs/MCP_OAUTH_SETUP.md": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/project/codemaps/overview.md": {
+      "managed": true,
+      "hash": "9249db489e2766f2ebc4c11925284274a90b84d87c7e40ca06e6bcdd4d5c053e"
+    },
+    ".coai/project/product.md": {
+      "managed": true,
+      "hash": "a140aa8dabd2b68f279e7bbc03f6e68d50c2d460e7f2af2633f02337dfe319c0"
+    },
+    ".coai/project/structure.md": {
+      "managed": true,
+      "hash": "d841c2db97123f64157d5462dda049c61bdd85456759cfd6a5ffac87c09c2539"
+    },
+    ".coai/project/tech.md": {
+      "managed": true,
+      "hash": "b6d5a61390ca87ba254ae9669a9c40b841039bce9a0af2a1ca2560db85f9222d"
+    },
+    ".coai/state/.gitkeep": {
+      "managed": false,
+      "hash": ""
+    },
+    ".coai/state/runtime.json": {
+      "managed": true,
+      "hash": "eef4bab72cccd54284c3b6b3aae75a97822eef6ea0a0a741570ff40f2ff1e221"
+    },
+    ".coai/status_line.sh": {
+      "managed": false,
+      "hash": ""
+    },
+    ".gitignore": {
+      "managed": false,
+      "hash": ""
+    },
+    ".mcp.json": {
+      "managed": false,
+      "hash": ""
+    },
+    "AGENTS.md": {
+      "managed": true,
+      "hash": "e49295e9679af581ceee0df1030d502f712ecfcf88a30db10901dd3b6f9cc582"
+    },
+    "CLAUDE.md": {
+      "managed": false,
+      "hash": ""
+    }
+  }
+}

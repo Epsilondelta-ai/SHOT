@@ -3,7 +3,6 @@ import { and, count, eq, inArray, isNull, or } from "drizzle-orm";
 import { db } from "../db";
 import {
   assistant,
-  bot,
   llmModel,
   llmProvider,
   room,
@@ -16,6 +15,7 @@ import {
   parseRoomCapacity,
   syncRoomAfterHumanDeparture,
 } from "../lib/roomState";
+import { getOwnedBot, isBotBusy, listRoomBotsForUser } from "../lib/bots";
 import { getSerializedRoomPlayers } from "../lib/roomPlayers";
 import { broadcastPlayers } from "../ws/roomWs";
 
@@ -46,7 +46,7 @@ async function getRoomPlayerCount(roomId: string) {
   return playerCount;
 }
 
-async function getRoomOptions(userId: string) {
+async function getRoomOptions(userId: string, roomId?: string) {
   const activeProviders = await db
     .select({ provider: llmProvider.provider })
     .from(llmProvider)
@@ -87,14 +87,7 @@ async function getRoomOptions(userId: string) {
             ),
           )
           .orderBy(llmModel.createdAt),
-    db
-      .select({
-        id: bot.id,
-        name: bot.name,
-      })
-      .from(bot)
-      .where(eq(bot.active, true))
-      .orderBy(bot.createdAt),
+    listRoomBotsForUser(userId, roomId),
   ]);
 
   return {
@@ -233,7 +226,7 @@ export const roomRoutes = new Elysia()
 
     const [players, roomOptions] = await Promise.all([
       getSerializedRoomPlayers(params.id),
-      getRoomOptions(u.id),
+      getRoomOptions(u.id, params.id),
     ]);
 
     return {
@@ -657,13 +650,35 @@ export const roomRoutes = new Elysia()
       return { error: "Bot is required" };
     }
 
-    const selectedBot = await db.query.bot.findFirst({
-      where: and(eq(bot.id, body.botId), eq(bot.active, true)),
-      columns: { id: true, name: true },
-    });
+    const selectedBot = await getOwnedBot(body.botId, u.id);
     if (!selectedBot) {
+      set.status = 404;
+      return { error: "Bot not found" };
+    }
+    if (!selectedBot.active) {
       set.status = 400;
-      return { error: "Invalid bot" };
+      return { error: "Bot is inactive" };
+    }
+    if (selectedBot.pairingStatus !== "paired") {
+      set.status = 400;
+      return { error: "Bot is not paired yet" };
+    }
+    if (selectedBot.presenceStatus !== "online") {
+      set.status = 400;
+      return { error: "Bot is offline" };
+    }
+    if (await isBotBusy(selectedBot.id, params.id)) {
+      set.status = 400;
+      return { error: "Bot is already busy in another room" };
+    }
+
+    const existingBotPlayer = await db.query.roomPlayer.findFirst({
+      where: and(eq(roomPlayer.roomId, params.id), eq(roomPlayer.botId, selectedBot.id)),
+      columns: { id: true },
+    });
+    if (existingBotPlayer) {
+      set.status = 400;
+      return { error: "Bot is already in this room" };
     }
 
     const displayName = `${selectedBot.name} (OpenClaw)`;
@@ -693,7 +708,9 @@ export const roomRoutes = new Elysia()
         assistantName: null,
         llmModelId: null,
         modelName: null,
+        language: null,
         botId: selectedBot.id,
+        presenceStatus: selectedBot.presenceStatus,
         ready: true,
       },
     };

@@ -7,6 +7,7 @@
 	import RecentMatches from '$lib/components/mypage/RecentMatches.svelte';
 	import GameHistory from '$lib/components/mypage/GameHistory.svelte';
 	import SettingsSection from '$lib/components/mypage/SettingsSection.svelte';
+	import type { ReplayRecord } from '$lib/types/replay';
 
 	let { data } = $props();
 
@@ -39,7 +40,13 @@
 
 		<RecentMatches matches={data.recentMatches} />
 
-		<GameHistory replays={data.myReplays} />
+			<GameHistory
+				replays={
+					(data.myReplays ?? []) as (ReplayRecord & {
+						participationType: 'player' | 'spectator';
+					})[]
+				}
+			/>
 
 		<SettingsSection items={settingsItems} />
 	</main>

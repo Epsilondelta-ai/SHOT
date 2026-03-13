@@ -1,6 +1,7 @@
+import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { roomPlayer } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { isBotOnline } from "./botPresence";
 
 export type SerializedRoomPlayer = {
   id: string;
@@ -15,6 +16,7 @@ export type SerializedRoomPlayer = {
   modelName: string | null;
   language: string | null;
   botId: string | null;
+  presenceStatus?: "online" | "offline" | null;
   ready: boolean;
 };
 
@@ -65,7 +67,11 @@ export async function getSerializedRoomPlayers(
       ? Promise.resolve([])
       : db.query.bot.findMany({
           where: (table, { inArray }) => inArray(table.id, botIds),
-          columns: { id: true, name: true },
+          columns: {
+            id: true,
+            name: true,
+            presenceStatus: true,
+          },
         }),
   ]);
 
@@ -92,6 +98,7 @@ export async function getSerializedRoomPlayers(
         modelName: modelMap.get(player.llmModelId ?? "")?.displayName ?? null,
         language: player.language ?? null,
         botId: null,
+        presenceStatus: null,
         ready: true,
       };
     }
@@ -113,6 +120,10 @@ export async function getSerializedRoomPlayers(
         modelName: null,
         language: null,
         botId: player.botId ?? null,
+        presenceStatus:
+          player.botId && isBotOnline(player.botId)
+            ? "online"
+            : (botMap.get(player.botId ?? "")?.presenceStatus ?? "offline"),
         ready: true,
       };
     }
@@ -131,6 +142,7 @@ export async function getSerializedRoomPlayers(
       modelName: null,
       language: null,
       botId: null,
+      presenceStatus: null,
       ready: player.ready,
     };
   });
