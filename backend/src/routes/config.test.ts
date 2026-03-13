@@ -5,6 +5,9 @@ import Elysia from 'elysia';
 
 const mockUser = { id: 'u1', name: 'Alice', email: 'alice@test.com', role: 'user', image: null };
 const mockRequireUser = mock(async (): Promise<typeof mockUser> => mockUser);
+const mockBotFindMany = mock(async (): Promise<unknown[]> => []);
+const mockBotFindFirst = mock(async (): Promise<unknown | null> => null);
+const mockGetBotForUser = mock(async (): Promise<unknown | null> => null);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockSelect = mock((..._args: any[]): any => ({
@@ -17,7 +20,26 @@ const mockSelect = mock((..._args: any[]): any => ({
 }));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockInsert = mock((..._args: any[]): any => ({
-	values: (..._: unknown[]) => Promise.resolve()
+	values: (..._: unknown[]) => ({
+		returning: () =>
+			Promise.resolve([
+				{
+					id: 'b1',
+					name: 'CreatedBot',
+					provider: 'openclaw',
+					active: true,
+					pairingStatus: 'unpaired',
+					presenceStatus: 'offline',
+					pairingCodeExpiresAt: null,
+					connectorName: null,
+					connectorVersion: null,
+					deviceId: null,
+					lastSeenAt: null,
+					createdAt: new Date(),
+					updatedAt: new Date()
+				}
+			])
+	})
 }));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockUpdate = mock((..._args: any[]): any => ({
@@ -36,11 +58,12 @@ mock.module('../db', () => ({
 		insert: mockInsert,
 		update: mockUpdate,
 		delete: mockDelete,
-		query: {
-			session: { findFirst: mock(async () => null) }
+			query: {
+				session: { findFirst: mock(async () => null) },
+				bot: { findMany: mockBotFindMany, findFirst: mockBotFindFirst }
+			}
 		}
-	}
-}));
+	}));
 
 mock.module('../db/schema', () => ({
 	user: { id: 'user.id', name: 'user.name', email: 'user.email', role: 'user.role', image: 'user.image', createdAt: 'user.createdAt', updatedAt: 'user.updatedAt', banStart: 'user.banStart', banEnd: 'user.banEnd', banReason: 'user.banReason', lastSeenAt: 'user.lastSeenAt', emailVerified: 'user.emailVerified' },
@@ -56,6 +79,9 @@ mock.module('../db/schema', () => ({
 	llmProvider: { provider: 'llmProvider.provider', apiKey: 'llmProvider.apiKey', active: 'llmProvider.active', updatedAt: 'llmProvider.updatedAt' },
 	llmModel: { id: 'llmModel.id', provider: 'llmModel.provider', apiModelName: 'llmModel.apiModelName', displayName: 'llmModel.displayName', active: 'llmModel.active', createdAt: 'llmModel.createdAt' },
 	gameRulebook: { id: 'gameRulebook.id', name: 'gameRulebook.name', content: 'gameRulebook.content', active: 'gameRulebook.active', createdAt: 'gameRulebook.createdAt', updatedAt: 'gameRulebook.updatedAt' },
+	gameRecord: { roomId: 'gameRecord.roomId', playerCount: 'gameRecord.playerCount', playerNames: 'gameRecord.playerNames', winnerTeam: 'gameRecord.winnerTeam', startedAt: 'gameRecord.startedAt', finishedAt: 'gameRecord.finishedAt', replayData: 'gameRecord.replayData' },
+	gameReplayFrame: { id: 'gameReplayFrame.id', roomId: 'gameReplayFrame.roomId', seq: 'gameReplayFrame.seq', snapshot: 'gameReplayFrame.snapshot', actionSummary: 'gameReplayFrame.actionSummary', createdAt: 'gameReplayFrame.createdAt' },
+	gameParticipant: { roomId: 'gameParticipant.roomId', userId: 'gameParticipant.userId', playerName: 'gameParticipant.playerName', participationType: 'gameParticipant.participationType' },
 	userRelations: {}, banHistoryRelations: {}, sessionRelations: {}, accountRelations: {}, roomRelations: {}, roomPlayerRelations: {}
 }));
 
@@ -75,6 +101,18 @@ mock.module('../lib/getUser', () => ({
 	requireUser: mockRequireUser
 }));
 
+mock.module('../lib/bots', () => ({
+	getOwnedBots: mock(async () => mockBotFindMany()),
+	getBotForUser: mockGetBotForUser,
+	getOwnedBot: mockGetBotForUser,
+	listBotsForUser: mock(async () => mockBotFindMany()),
+	listRoomBotsForUser: mock(async () => mockBotFindMany()),
+	isBotBusy: mock(async () => false),
+	serializeBot: (entry: unknown) => entry,
+	serializeBotSummary: (entry: unknown) => entry,
+	setBotPresence: mock(async () => {})
+}));
+
 const { configRoutes } = await import('./config');
 
 function makeApp() {
@@ -88,6 +126,26 @@ beforeEach(() => {
 	mockInsert.mockClear();
 	mockUpdate.mockClear();
 	mockDelete.mockClear();
+	mockBotFindMany.mockReset();
+	mockBotFindMany.mockResolvedValue([]);
+	mockBotFindFirst.mockReset();
+	mockBotFindFirst.mockResolvedValue(null);
+	mockGetBotForUser.mockReset();
+	mockGetBotForUser.mockResolvedValue({
+		id: 'b1',
+		name: 'BotX',
+		active: true,
+		pairingStatus: 'paired',
+		presenceStatus: 'offline',
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		pairingCodeExpiresAt: null,
+		connectorName: null,
+		connectorVersion: null,
+		deviceId: null,
+		lastSeenAt: null,
+		busy: false
+	});
 });
 
 // ── Tests ────────────────────────────────────────────────────────────────────
@@ -208,14 +266,24 @@ describe('GET /api/config/bots', () => {
 
 	it('returns bots list', async () => {
 		const now = new Date();
-		mockSelect.mockImplementationOnce(() => ({
-			from: () => ({
-				orderBy: () =>
-					Promise.resolve([
-						{ id: 'b1', name: 'BotX', apiKey: 'key123', active: true, createdAt: now, updatedAt: now }
-					])
-			})
-		}));
+		mockBotFindMany.mockResolvedValueOnce([
+			{
+				id: 'b1',
+				name: 'BotX',
+				provider: 'openclaw',
+				active: true,
+				pairingStatus: 'paired',
+				presenceStatus: 'online',
+				created: now.toISOString().split('T')[0],
+				updated: now.toISOString().split('T')[0],
+				lastSeenAt: now.toISOString(),
+				pairingCodeExpiresAt: null,
+				connectorName: 'Connector',
+				connectorVersion: '1.0.0',
+				deviceId: 'device-1',
+				busy: false
+			}
+		]);
 
 		const app = makeApp();
 		const res = await app.handle(new Request('http://localhost/api/config/bots'));
@@ -223,34 +291,34 @@ describe('GET /api/config/bots', () => {
 		const body = await res.json();
 		expect(body[0].id).toBe('b1');
 		expect(body[0].name).toBe('BotX');
-		expect(body[0].apiKey).toBe('key123');
+		expect(body[0].presenceStatus).toBe('online');
 	});
 });
 
 describe('POST /api/config/bots', () => {
-	it('returns 400 when name or apiKey missing', async () => {
+	it('returns 400 when name missing', async () => {
 		const app = makeApp();
 		const res = await app.handle(
 			new Request('http://localhost/api/config/bots', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: 'test' })
+				body: JSON.stringify({})
 			})
 		);
 		expect(res.status).toBe(400);
 		const body = await res.json();
-		expect(body.error).toBe('Name and API key are required');
+		expect(body.error).toBe('Name is required');
 	});
 
 	it('creates bot successfully', async () => {
 		const app = makeApp();
 		const res = await app.handle(
-			new Request('http://localhost/api/config/bots', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: 'NewBot', apiKey: 'sk-xxx' })
-			})
-		);
+				new Request('http://localhost/api/config/bots', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ name: 'NewBot', active: true })
+				})
+			);
 		expect(res.status).toBe(200);
 		const body = await res.json();
 		expect(body.success).toBe(true);
@@ -259,26 +327,28 @@ describe('POST /api/config/bots', () => {
 
 describe('PUT /api/config/bots/:id', () => {
 	it('returns 400 when fields missing', async () => {
+		mockBotFindFirst.mockResolvedValueOnce({ id: 'b1', userId: 'u1', name: 'BotX', active: true });
 		const app = makeApp();
 		const res = await app.handle(
 			new Request('http://localhost/api/config/bots/b1', {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: 'x' })
+				body: JSON.stringify({})
 			})
 		);
 		expect(res.status).toBe(400);
 		const body = await res.json();
-		expect(body.error).toBe('Missing fields');
+		expect(body.error).toBe('Name is required');
 	});
 
 	it('updates bot successfully', async () => {
+		mockBotFindFirst.mockResolvedValueOnce({ id: 'b1', userId: 'u1', name: 'BotX', active: true });
 		const app = makeApp();
 		const res = await app.handle(
 			new Request('http://localhost/api/config/bots/b1', {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: 'Updated', apiKey: 'new-key' })
+				body: JSON.stringify({ name: 'Updated', active: true })
 			})
 		);
 		expect(res.status).toBe(200);
@@ -289,6 +359,7 @@ describe('PUT /api/config/bots/:id', () => {
 
 describe('DELETE /api/config/bots/:id', () => {
 	it('deletes bot successfully', async () => {
+		mockBotFindFirst.mockResolvedValueOnce({ id: 'b1', userId: 'u1', name: 'BotX', active: true });
 		const app = makeApp();
 		const res = await app.handle(
 			new Request('http://localhost/api/config/bots/b1', { method: 'DELETE' })

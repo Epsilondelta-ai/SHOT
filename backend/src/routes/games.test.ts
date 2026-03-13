@@ -16,6 +16,7 @@ const mockGetGame = mock(() => ({ roomId: "room-1" }));
 const mockCreateSnapshot = mock(() => ({ roomId: "room-1" }));
 const mockApplyGameAction = mock(() => {});
 const mockBroadcastPlayers = mock(async () => {});
+const mockMaybeRunAutomatedTurn = mock(async () => {});
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockUpdate = mock((..._args: any[]): any => ({
@@ -94,16 +95,20 @@ mock.module("../ws/gameWs", () => ({
   broadcastGameState: mock(async () => {}),
 }));
 
+mock.module("../lib/replayStore", () => ({
+  recordGameStart: mock(() => {}),
+  recordFrame: mock(() => {}),
+  recordGameEnd: mock(() => {}),
+  recordSpectator: mock(() => {}),
+}));
+
 mock.module("../lib/llmPlayer", () => ({
   maybeRunLlmTurn: mock(async () => {}),
   clearConversationHistory: mock(() => {}),
 }));
 
-mock.module("../lib/replayStore", () => ({
-  recordGameStart: mock(() => {}),
-  recordSpectator: mock(() => {}),
-  recordFrame: mock(() => {}),
-  recordGameEnd: mock(() => {}),
+mock.module("../lib/botPlayer", () => ({
+  maybeRunAutomatedTurn: mockMaybeRunAutomatedTurn,
 }));
 
 const { gameRoutes } = await import("./games");

@@ -4,6 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { roomPlayer, session } from "../db/schema";
 import { getSerializedRoomPlayers } from "../lib/roomPlayers";
 import { getRoomById, syncRoomAfterHumanDeparture } from "../lib/roomState";
+import { onBotPresenceChanged } from "../lib/botPresence";
 
 type RoomMessage =
   | { type: "chat"; text: string }
@@ -70,6 +71,18 @@ export async function broadcastPlayers(roomId: string) {
   if (!ids) return;
   for (const id of ids) wsById.get(id)?.send(payload);
 }
+
+onBotPresenceChanged(async (botId) => {
+  const affectedRooms = await db
+    .select({ roomId: roomPlayer.roomId })
+    .from(roomPlayer)
+    .where(and(eq(roomPlayer.botId, botId), eq(roomPlayer.playerType, "bot")));
+
+  const roomIds = [...new Set(affectedRooms.map((entry) => entry.roomId))];
+  for (const roomId of roomIds) {
+    await broadcastPlayers(roomId);
+  }
+});
 
 export const roomWsPlugin = new Elysia().ws("/ws/room/:roomId", {
   async open(ws) {

@@ -10,6 +10,7 @@ type InternalPlayer = {
   userId: string;
   name: string;
   controller: Controller;
+  botId: string | null;
   assistantId: string | null;
   llmModelId: string | null;
   language: string | null;
@@ -134,6 +135,16 @@ function addLog(
   type: GameLog["type"] = "round",
 ) {
   state.logs.push({ id: createId(), text, type });
+}
+
+export function appendGameLog(
+  roomId: string,
+  text: string,
+  type: GameLog["type"] = "round",
+) {
+  const state = games.get(roomId);
+  if (!state) return;
+  addLog(state, text, type);
 }
 
 function getPhase(state: GameState): GameSnapshot["phase"] {
@@ -451,7 +462,7 @@ export function initializeGame(
 
   const spyCount = getSpyCount(roomPlayers.length);
   const shuffledPlayers = shuffle(roomPlayers);
-  const leaderPlayer = shuffledPlayers[0];
+  const leaderPlayer = roomPlayers[0];
   if (!leaderPlayer) {
     throw new Error("No players found.");
   }
@@ -459,7 +470,7 @@ export function initializeGame(
   const spyIds = new Set(
     shuffledPlayers.slice(-spyCount).map((player) => player.id),
   );
-  const players: InternalPlayer[] = shuffledPlayers.map((player) => {
+  const players: InternalPlayer[] = roomPlayers.map((player) => {
     const isLeader = player.id === leaderPlayer.id;
     const role: HiddenRole = isLeader
       ? "leader"
@@ -472,6 +483,7 @@ export function initializeGame(
       userId: player.userId,
       name: player.name,
       controller: player.type,
+      botId: player.botId ?? null,
       assistantId: player.assistantId ?? null,
       llmModelId: player.llmModelId ?? null,
       language: player.language ?? null,
@@ -494,7 +506,7 @@ export function initializeGame(
     currentTurnPlayerId: leaderPlayer.id,
     pendingChatTurns: 0,
     attackUsedThisTurn: false,
-    players: shuffle(players),
+    players,
     deck: createDeck(players.length, spyCount),
     discard: [],
     logs: [],
@@ -507,7 +519,10 @@ export function initializeGame(
   }
 
   addLog(state, "게임이 시작되었습니다.", "round");
-  startTurn(state, state.players[0]!);
+  startTurn(
+    state,
+    state.players.find((player) => player.id === leaderPlayer.id) ?? state.players[0]!,
+  );
   games.set(roomId, state);
   return state;
 }
@@ -516,6 +531,8 @@ export function getCurrentTurnController(roomId: string): {
   controller: "human" | "llm" | "bot";
   playerId: string;
   userId: string;
+  name: string;
+  botId: string | null;
   assistantId: string | null;
   llmModelId: string | null;
   language: string | null;
@@ -530,10 +547,78 @@ export function getCurrentTurnController(roomId: string): {
     controller: player.controller,
     playerId: player.id,
     userId: player.userId,
+    name: player.name,
+    botId: player.botId,
     assistantId: player.assistantId,
     llmModelId: player.llmModelId,
     language: player.language,
   };
+}
+
+export function getValidActionsForUser(
+  roomId: string,
+  userId: string,
+): GameAction[] {
+  const snapshot = createSnapshot(roomId, userId);
+  const me = snapshot.players.find((player) => player.userId === userId);
+  if (!me || !me.alive) return [{ type: "end-turn" }];
+  if (snapshot.currentTurnPlayerId !== me.id) return [];
+
+  const actions: GameAction[] = [];
+
+  if (snapshot.phase === "chatting") {
+    actions.push({ type: "chat", text: "" });
+    actions.push({ type: "skip-chat" });
+    return actions;
+  }
+
+  if (snapshot.phase !== "acting") {
+    return actions;
+  }
+
+  if (snapshot.canReveal) {
+    actions.push({ type: "reveal" });
+  }
+
+  const alivePlayers = snapshot.players.filter(
+    (player) => player.alive && player.id !== me.id,
+  );
+
+  if (me.attacks > 0) {
+    for (const target of alivePlayers) {
+      actions.push({ type: "play-card", card: "attack", targetId: target.id });
+    }
+  }
+
+  const healTargets = snapshot.players.filter(
+    (player) => player.alive && player.hp < player.maxHp,
+  );
+  if (me.cards.includes("heal") && healTargets.length > 0) {
+    for (const target of healTargets) {
+      actions.push({ type: "play-card", card: "heal", targetId: target.id });
+    }
+  }
+
+  if (me.cards.includes("jail")) {
+    for (const target of alivePlayers.filter((player) => !player.isJailed)) {
+      actions.push({ type: "play-card", card: "jail", targetId: target.id });
+    }
+  }
+
+  if (me.cards.includes("verify")) {
+    const verifyTargets = snapshot.players.filter(
+      (player) => player.alive && player.role === "normal" && !player.isJailed,
+    );
+    for (const target of verifyTargets) {
+      actions.push({ type: "play-card", card: "verify", targetId: target.id });
+    }
+  }
+
+  if (!snapshot.mustUseAttack) {
+    actions.push({ type: "end-turn" });
+  }
+
+  return actions;
 }
 
 export function getGame(roomId: string) {

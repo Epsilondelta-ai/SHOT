@@ -20,25 +20,27 @@
 </script>
 
 <Story name="With Match History" asChild>
-	<MypagePage
-		data={{
-			isAdmin: false,
-			username: 'Sheriff_Buck',
-			avatarSrc: '',
-			recentMatches: mockRecentMatches,
-			stats: { games: 128, wins: 87, streak: 9 }
-		}}
-	/>
+		<MypagePage
+			data={{
+				isAdmin: false,
+				username: 'Sheriff_Buck',
+				avatarSrc: '',
+				recentMatches: mockRecentMatches,
+				stats: { games: 128, wins: 87, streak: 9 },
+				myReplays: []
+			}}
+		/>
 </Story>
 
 <Story name="Empty State" asChild>
-	<MypagePage
-		data={{
-			isAdmin: false,
-			username: 'NewPlayer',
-			avatarSrc: '',
-			recentMatches: [],
-			stats: { games: 0, wins: 0, streak: 0 }
-		}}
-	/>
+		<MypagePage
+			data={{
+				isAdmin: false,
+				username: 'NewPlayer',
+				avatarSrc: '',
+				recentMatches: [],
+				stats: { games: 0, wins: 0, streak: 0 },
+				myReplays: []
+			}}
+		/>
 </Story>
