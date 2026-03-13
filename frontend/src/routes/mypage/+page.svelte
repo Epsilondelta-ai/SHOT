@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { goto } from '$app/navigation';
-	import { getLocale, locales, localizeHref } from '$lib/paraglide/runtime';
+	import { getLocale, setLocale, isLocale, locales } from '$lib/paraglide/runtime';
 	import { BACKEND_URL } from '$lib/config';
 	import LobbyHeader from '$lib/components/lobby/LobbyHeader.svelte';
 	import BottomNav from '$lib/components/lobby/BottomNav.svelte';
@@ -22,11 +22,8 @@
 		goto('/login');
 	}
 
-	function toggleLanguage() {
-		const current = getLocale();
-		const idx = locales.indexOf(current);
-		const next = locales[(idx + 1) % locales.length];
-		window.location.href = localizeHref(window.location.pathname, { locale: next });
+	function changeLanguage(locale: string) {
+		if (isLocale(locale)) setLocale(locale);
 	}
 
 	const settingsItems = $derived([
@@ -34,8 +31,9 @@
 			key: 'language',
 			label: m.mypage_settings_language(),
 			icon: 'language',
-			value: getLocale().toUpperCase(),
-			onclick: toggleLanguage
+			value: getLocale(),
+			options: locales.map((l) => ({ value: l, label: l.toUpperCase() })),
+			onchange: changeLanguage
 		},
 		{
 			key: 'signout',
