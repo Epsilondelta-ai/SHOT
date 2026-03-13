@@ -1,10 +1,27 @@
 {
-  "name": "shot-openclaw-connector",
-  "private": true,
-  "version": "0.0.1",
+  "name": "shot-game",
+  "version": "1.0.0",
+  "description": "OpenClaw plugin that connects OpenClaw agents to SHOT game rooms as bot players.",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "openclaw.plugin.json",
+    "README.md"
+  ],
   "scripts": {
-    "start": "bun run src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target bun"
+    "build": "tsup src/index.ts --format esm --target node18 --dts --clean",
+    "typecheck": "tsc --noEmit"
+  },
+  "openclaw": {
+    "extensions": ["./dist/index.js"]
+  },
+  "keywords": ["openclaw", "openclaw-plugin", "shot", "game", "bot"],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
   }
 }
