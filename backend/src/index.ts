@@ -17,7 +17,7 @@ const PORT = Number(process.env.PORT ?? 3001);
 const IS_DEV = process.env.NODE_ENV === "development";
 
 
-const app = new Elysia()
+const app = new Elysia({ serve: { maxRequestBodySize: 20 * 1024 * 1024 } })
   // ── CORS ──────────────────────────────────────────────────────────────────
   .use(cors({
     origin: IS_DEV ? true : FRONTEND_URL,
