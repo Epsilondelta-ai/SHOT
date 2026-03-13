@@ -54,3 +54,8 @@ coverage
 .claude
 .moai
 .coai
+
+# Connector build output
+connector/dist/
+connector/node_modules/
+connector/*.tgz
