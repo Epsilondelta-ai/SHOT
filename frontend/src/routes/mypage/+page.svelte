@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { goto } from '$app/navigation';
+	import { getLocale, locales, localizeHref } from '$lib/paraglide/runtime';
+	import { BACKEND_URL } from '$lib/config';
 	import LobbyHeader from '$lib/components/lobby/LobbyHeader.svelte';
 	import BottomNav from '$lib/components/lobby/BottomNav.svelte';
 	import ProfileCard from '$lib/components/mypage/ProfileCard.svelte';
@@ -11,19 +14,36 @@
 
 	let { data } = $props();
 
-	const settingsItems = [
+	async function signOut() {
+		await fetch(`${BACKEND_URL}/api/auth/sign-out`, {
+			method: 'POST',
+			credentials: 'include'
+		});
+		goto('/login');
+	}
+
+	function toggleLanguage() {
+		const current = getLocale();
+		const idx = locales.indexOf(current);
+		const next = locales[(idx + 1) % locales.length];
+		window.location.href = localizeHref(window.location.pathname, { locale: next });
+	}
+
+	const settingsItems = $derived([
 		{
 			key: 'language',
 			label: m.mypage_settings_language(),
 			icon: 'language',
-			value: 'EN'
+			value: getLocale().toUpperCase(),
+			onclick: toggleLanguage
 		},
 		{
 			key: 'signout',
 			label: m.mypage_sign_out(),
-			icon: 'logout'
+			icon: 'logout',
+			onclick: signOut
 		}
-	];
+	]);
 </script>
 
 <svelte:head>

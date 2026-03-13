@@ -44,7 +44,7 @@ mock.module('../db/schema', () => ({
 	gameRulebook: { id: 'gameRulebook.id', name: 'gameRulebook.name', content: 'gameRulebook.content', active: 'gameRulebook.active', createdAt: 'gameRulebook.createdAt', updatedAt: 'gameRulebook.updatedAt' },
 	gameRecord: { roomId: 'gameRecord.roomId', playerCount: 'gameRecord.playerCount', playerNames: 'gameRecord.playerNames', winnerTeam: 'gameRecord.winnerTeam', startedAt: 'gameRecord.startedAt', finishedAt: 'gameRecord.finishedAt', replayData: 'gameRecord.replayData' },
 	gameReplayFrame: { id: 'gameReplayFrame.id', roomId: 'gameReplayFrame.roomId', seq: 'gameReplayFrame.seq', snapshot: 'gameReplayFrame.snapshot', actionSummary: 'gameReplayFrame.actionSummary', createdAt: 'gameReplayFrame.createdAt' },
-	gameParticipant: { roomId: 'gameParticipant.roomId', userId: 'gameParticipant.userId', playerName: 'gameParticipant.playerName', participationType: 'gameParticipant.participationType' },
+	gameParticipant: { id: 'gameParticipant.id', roomId: 'gameParticipant.roomId', userId: 'gameParticipant.userId', participationType: 'gameParticipant.participationType', createdAt: 'gameParticipant.createdAt' },
 	userRelations: {}, banHistoryRelations: {}, sessionRelations: {}, accountRelations: {}, roomRelations: {}, roomPlayerRelations: {}
 }));
 
@@ -88,7 +88,7 @@ describe('getUser', () => {
 	});
 
 	it('returns user when session and user found', async () => {
-		const mockUser = { id: 'u1', name: 'Alice', email: 'alice@test.com', role: 'user', image: null };
+		const mockUser = { id: 'u1', name: 'Alice', email: 'alice@test.com', role: 'user', image: null, banEnd: null };
 		mockGetSession.mockImplementationOnce(async () => ({ user: { id: 'u1' } }));
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({ where: async () => [mockUser] })
@@ -104,7 +104,7 @@ describe('requireUser', () => {
 	});
 
 	it('returns user when authenticated', async () => {
-		const mockUser = { id: 'u1', name: 'Bob', email: 'bob@test.com', role: 'user', image: null };
+		const mockUser = { id: 'u1', name: 'Bob', email: 'bob@test.com', role: 'user', image: null, banEnd: null };
 		mockGetSession.mockImplementationOnce(async () => ({ user: { id: 'u1' } }));
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({ where: async () => [mockUser] })
@@ -120,7 +120,7 @@ describe('requireAdmin', () => {
 	});
 
 	it('throws Forbidden when user is not admin', async () => {
-		const mockUser = { id: 'u1', name: 'Bob', email: 'bob@test.com', role: 'user', image: null };
+		const mockUser = { id: 'u1', name: 'Bob', email: 'bob@test.com', role: 'user', image: null, banEnd: null };
 		mockGetSession.mockImplementationOnce(async () => ({ user: { id: 'u1' } }));
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({ where: async () => [mockUser] })
@@ -129,7 +129,7 @@ describe('requireAdmin', () => {
 	});
 
 	it('returns user when role is admin', async () => {
-		const adminUser = { id: 'a1', name: 'Admin', email: 'admin@test.com', role: 'admin', image: null };
+		const adminUser = { id: 'a1', name: 'Admin', email: 'admin@test.com', role: 'admin', image: null, banEnd: null };
 		mockGetSession.mockImplementationOnce(async () => ({ user: { id: 'a1' } }));
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({ where: async () => [adminUser] })

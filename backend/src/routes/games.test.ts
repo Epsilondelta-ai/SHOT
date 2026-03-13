@@ -31,6 +31,24 @@ mock.module("../db", () => ({
   },
 }));
 
+mock.module("../db/schema", () => ({
+  room: { id: "room.id", name: "room.name", icon: "room.icon", maxPlayers: "room.maxPlayers", status: "room.status", createdAt: "room.createdAt" },
+  roomPlayer: { id: "roomPlayer.id", roomId: "roomPlayer.roomId", userId: "roomPlayer.userId", playerType: "roomPlayer.playerType", displayName: "roomPlayer.displayName", assistantId: "roomPlayer.assistantId", llmModelId: "roomPlayer.llmModelId" },
+  user: { id: "user.id", name: "user.name", email: "user.email", role: "user.role", image: "user.image" },
+  session: { id: "session.id", token: "session.token", userId: "session.userId" },
+  account: { id: "account.id", userId: "account.userId" },
+  verification: { id: "verification.id" },
+  banHistory: { id: "banHistory.id", userId: "banHistory.userId", createdAt: "banHistory.createdAt" },
+  task: { id: "task.id" },
+  assistant: { id: "assistant.id", userId: "assistant.userId", name: "assistant.name", prompt: "assistant.prompt", active: "assistant.active" },
+  bot: { id: "bot.id", name: "bot.name", apiKey: "bot.apiKey", active: "bot.active" },
+  llmProvider: { provider: "llmProvider.provider", apiKey: "llmProvider.apiKey", active: "llmProvider.active" },
+  llmModel: { id: "llmModel.id", provider: "llmModel.provider", apiModelName: "llmModel.apiModelName", displayName: "llmModel.displayName", active: "llmModel.active" },
+  gameRulebook: { id: "gameRulebook.id", name: "gameRulebook.name", content: "gameRulebook.content", active: "gameRulebook.active" },
+  gameParticipant: { id: "gameParticipant.id", roomId: "gameParticipant.roomId", userId: "gameParticipant.userId", participationType: "gameParticipant.participationType", createdAt: "gameParticipant.createdAt" },
+  userRelations: {}, banHistoryRelations: {}, sessionRelations: {}, accountRelations: {}, roomRelations: {}, roomPlayerRelations: {},
+}));
+
 mock.module("drizzle-orm", () => ({
   eq: (a: unknown, b: unknown) => ({ op: "eq", a, b }),
   and: (...args: unknown[]) => ({ op: "and", args }),
@@ -45,6 +63,8 @@ mock.module("drizzle-orm", () => ({
 
 mock.module("../lib/getUser", () => ({
   getUser: mockGetUser,
+  requireUser: mockGetUser,
+  requireAdmin: mockGetUser,
 }));
 
 mock.module("../lib/roomState", () => ({

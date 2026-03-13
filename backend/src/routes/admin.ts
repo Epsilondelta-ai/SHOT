@@ -3,6 +3,7 @@ import { db } from '../db';
 import { eq, desc, count, isNull } from 'drizzle-orm';
 import { user, room, roomPlayer, assistant, banHistory, llmProvider, llmModel, gameRulebook } from '../db/schema';
 import { requireAdmin } from '../lib/getUser';
+import { maskApiKey } from '../lib/crypto';
 
 export const adminRoutes = new Elysia()
 	.get('/api/admin/users', async ({ request, set }) => {
@@ -311,7 +312,8 @@ export const adminRoutes = new Elysia()
 		return {
 			llmProviders: PROVIDERS.map((p) => ({
 				provider: p,
-				apiKey: llmProviderMap[p]?.apiKey ?? '',
+				apiKey: llmProviderMap[p]?.apiKey ? maskApiKey(llmProviderMap[p].apiKey) : '',
+				hasKey: !!llmProviderMap[p]?.apiKey,
 				active: llmProviderMap[p]?.active ?? false
 			})),
 			llmModels: llmModelRows.map((m) => ({

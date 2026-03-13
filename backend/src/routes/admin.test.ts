@@ -67,7 +67,7 @@ mock.module('../db/schema', () => ({
 	gameRulebook: { id: 'gameRulebook.id', name: 'gameRulebook.name', content: 'gameRulebook.content', active: 'gameRulebook.active', createdAt: 'gameRulebook.createdAt', updatedAt: 'gameRulebook.updatedAt' },
 	gameRecord: { roomId: 'gameRecord.roomId', playerCount: 'gameRecord.playerCount', playerNames: 'gameRecord.playerNames', winnerTeam: 'gameRecord.winnerTeam', startedAt: 'gameRecord.startedAt', finishedAt: 'gameRecord.finishedAt', replayData: 'gameRecord.replayData' },
 	gameReplayFrame: { id: 'gameReplayFrame.id', roomId: 'gameReplayFrame.roomId', seq: 'gameReplayFrame.seq', snapshot: 'gameReplayFrame.snapshot', actionSummary: 'gameReplayFrame.actionSummary', createdAt: 'gameReplayFrame.createdAt' },
-	gameParticipant: { roomId: 'gameParticipant.roomId', userId: 'gameParticipant.userId', playerName: 'gameParticipant.playerName', participationType: 'gameParticipant.participationType' },
+	gameParticipant: { id: 'gameParticipant.id', roomId: 'gameParticipant.roomId', userId: 'gameParticipant.userId', participationType: 'gameParticipant.participationType', createdAt: 'gameParticipant.createdAt' },
 	userRelations: {}, banHistoryRelations: {}, sessionRelations: {}, accountRelations: {}, roomRelations: {}, roomPlayerRelations: {}
 }));
 
@@ -84,7 +84,9 @@ mock.module('drizzle-orm', () => ({
 }));
 
 mock.module('../lib/getUser', () => ({
-	requireAdmin: mockRequireAdmin
+	getUser: mockRequireAdmin,
+	requireUser: mockRequireAdmin,
+	requireAdmin: mockRequireAdmin,
 }));
 
 const { adminRoutes } = await import('./admin');
@@ -585,7 +587,8 @@ describe('GET /api/admin/llm-providers', () => {
 		expect(body.llmProviders).toBeArray();
 		expect(body.llmProviders.length).toBe(4);
 		const openai = body.llmProviders.find((p: { provider: string }) => p.provider === 'openai');
-		expect(openai.apiKey).toBe('sk-xxx');
+		expect(openai.apiKey).toBe('****');
+		expect(openai.hasKey).toBe(true);
 		expect(openai.active).toBe(true);
 		expect(body.llmModels[0].id).toBe('m1');
 		expect(body.llmModels[0].displayName).toBe('GPT-4');

@@ -84,7 +84,7 @@ mock.module('../db/schema', () => ({
 	gameRulebook: { id: 'gameRulebook.id', name: 'gameRulebook.name', content: 'gameRulebook.content', active: 'gameRulebook.active', createdAt: 'gameRulebook.createdAt', updatedAt: 'gameRulebook.updatedAt' },
 	gameRecord: { roomId: 'gameRecord.roomId', playerCount: 'gameRecord.playerCount', playerNames: 'gameRecord.playerNames', winnerTeam: 'gameRecord.winnerTeam', startedAt: 'gameRecord.startedAt', finishedAt: 'gameRecord.finishedAt', replayData: 'gameRecord.replayData' },
 	gameReplayFrame: { id: 'gameReplayFrame.id', roomId: 'gameReplayFrame.roomId', seq: 'gameReplayFrame.seq', snapshot: 'gameReplayFrame.snapshot', actionSummary: 'gameReplayFrame.actionSummary', createdAt: 'gameReplayFrame.createdAt' },
-	gameParticipant: { roomId: 'gameParticipant.roomId', userId: 'gameParticipant.userId', playerName: 'gameParticipant.playerName', participationType: 'gameParticipant.participationType' },
+	gameParticipant: { id: 'gameParticipant.id', roomId: 'gameParticipant.roomId', userId: 'gameParticipant.userId', participationType: 'gameParticipant.participationType', createdAt: 'gameParticipant.createdAt' },
 	userRelations: {}, banHistoryRelations: {}, sessionRelations: {}, accountRelations: {}, roomRelations: {}, roomPlayerRelations: {}
 }));
 
@@ -101,7 +101,9 @@ mock.module('drizzle-orm', () => ({
 }));
 
 mock.module('../lib/getUser', () => ({
-	getUser: mockGetUser
+	getUser: mockGetUser,
+	requireUser: mockGetUser,
+	requireAdmin: mockGetUser,
 }));
 
 mock.module('../lib/roomState', () => ({
@@ -733,7 +735,22 @@ describe('POST /api/rooms/:id/llm-players', () => {
 		expect(body.error).toBe('Unauthorized');
 	});
 
+	it('returns 403 when not admin', async () => {
+		const app = makeApp();
+		const res = await app.handle(
+			new Request('http://localhost/api/rooms/r1/llm-players', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ assistantId: 'a1', llmModelId: 'm1' })
+			})
+		);
+		expect(res.status).toBe(403);
+		const body = await res.json();
+		expect(body.error).toBe('Only admins can add LLM players');
+	});
+
 	it('returns 404 when room not found', async () => {
+		mockGetUser.mockResolvedValueOnce({ ...mockUser, role: 'admin' });
 		mockGetRoomById.mockResolvedValueOnce(null);
 		const app = makeApp();
 		const res = await app.handle(
@@ -749,6 +766,7 @@ describe('POST /api/rooms/:id/llm-players', () => {
 	});
 
 	it('returns 403 when not a member', async () => {
+		mockGetUser.mockResolvedValueOnce({ ...mockUser, role: 'admin' });
 		mockGetRoomById.mockResolvedValueOnce({ id: 'r1', hostUserId: 'u2', maxPlayers: 5 });
 		mockGetHumanRoomPlayer.mockResolvedValueOnce(null);
 		const app = makeApp();
@@ -765,6 +783,7 @@ describe('POST /api/rooms/:id/llm-players', () => {
 	});
 
 	it('returns 400 when assistantId or llmModelId missing', async () => {
+		mockGetUser.mockResolvedValueOnce({ ...mockUser, role: 'admin' });
 		mockGetRoomById.mockResolvedValueOnce({ id: 'r1', hostUserId: 'u1', maxPlayers: 5 });
 		mockGetHumanRoomPlayer.mockResolvedValueOnce({ id: 'p1', userId: 'u1', canManageBots: true });
 		// getRoomPlayerCount
@@ -783,9 +802,9 @@ describe('POST /api/rooms/:id/llm-players', () => {
 		);
 		expect(res.status).toBe(400);
 		const body = await res.json();
-			expect(body.error).toBe('Model is required');
-		});
+		expect(body.error).toBe('Model is required');
 	});
+});
 
 describe('POST /api/rooms/:id/bot-players', () => {
 	it('returns 401 when not authenticated', async () => {
@@ -801,7 +820,22 @@ describe('POST /api/rooms/:id/bot-players', () => {
 		expect(res.status).toBe(401);
 	});
 
+	it('returns 403 when not admin', async () => {
+		const app = makeApp();
+		const res = await app.handle(
+			new Request('http://localhost/api/rooms/r1/bot-players', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ botId: 'b1' })
+			})
+		);
+		expect(res.status).toBe(403);
+		const body = await res.json();
+		expect(body.error).toBe('Only admins can add bots');
+	});
+
 	it('returns 404 when room not found', async () => {
+		mockGetUser.mockResolvedValueOnce({ ...mockUser, role: 'admin' });
 		mockGetRoomById.mockResolvedValueOnce(null);
 		const app = makeApp();
 		const res = await app.handle(
@@ -817,6 +851,7 @@ describe('POST /api/rooms/:id/bot-players', () => {
 	});
 
 	it('returns 400 when botId missing', async () => {
+		mockGetUser.mockResolvedValueOnce({ ...mockUser, role: 'admin' });
 		mockGetRoomById.mockResolvedValueOnce({ id: 'r1', hostUserId: 'u1', maxPlayers: 5 });
 		mockGetHumanRoomPlayer.mockResolvedValueOnce({ id: 'p1', userId: 'u1', canManageBots: true });
 		// getRoomPlayerCount

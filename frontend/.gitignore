@@ -9,3 +9,4 @@ src/lib/paraglide
 .env.*
 !.env.example
 !.env.test
+!.env.production

@@ -28,6 +28,12 @@ const wsById = new Map<string, any>();
 const wsUserData = new Map<string, WsUser>();
 // rooms already scheduled for cleanup
 const scheduledCleanups = new Set<string>();
+// userId → Set of ws ids (per-user connection limit)
+const userConnections = new Map<string, Set<string>>();
+const MAX_CONNECTIONS_PER_USER = 5;
+// ws id → message timestamps for rate limiting
+const wsMessageTimestamps = new Map<string, number[]>();
+const WS_RATE_LIMIT = 30; // messages per minute
 
 const GAME_END_DELAY_MS = 30_000;
 
@@ -105,10 +111,20 @@ export const gameWsPlugin = new Elysia().ws("/ws/game/:roomId", {
       with: { user: true },
     });
 
-    if (!sess) {
+    if (!sess || sess.expiresAt < new Date()) {
       ws.close();
       return;
     }
+
+    const wsId = (ws as any).id as string;
+
+    const userConns = userConnections.get(sess.userId) ?? new Set();
+    if (userConns.size >= MAX_CONNECTIONS_PER_USER) {
+      ws.close();
+      return;
+    }
+    userConns.add(wsId);
+    userConnections.set(sess.userId, userConns);
 
     if (!getGame(roomId)) {
       ws.send(JSON.stringify({ type: "error", message: "Game not found." }));
@@ -117,8 +133,6 @@ export const gameWsPlugin = new Elysia().ws("/ws/game/:roomId", {
     }
 
     const isSpectator = ctx.query?.spectator === "1";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const wsId = (ws as any).id as string;
     wsById.set(wsId, ws);
     wsUserData.set(wsId, { userId: sess.userId, roomId, isSpectator });
 
@@ -142,6 +156,13 @@ export const gameWsPlugin = new Elysia().ws("/ws/game/:roomId", {
     const wsId = (ws as any).id as string;
     const userData = wsUserData.get(wsId);
     if (!userData) return;
+
+    const now = Date.now();
+    const timestamps = wsMessageTimestamps.get(wsId) ?? [];
+    const recentTimestamps = timestamps.filter(t => now - t < 60_000);
+    if (recentTimestamps.length >= WS_RATE_LIMIT) return;
+    recentTimestamps.push(now);
+    wsMessageTimestamps.set(wsId, recentTimestamps);
 
     const { roomId, userId, isSpectator } = userData;
 
@@ -181,5 +202,14 @@ export const gameWsPlugin = new Elysia().ws("/ws/game/:roomId", {
     wsUserData.delete(wsId);
     if (roomId && gameSockets.get(roomId)?.size === 0)
       gameSockets.delete(roomId);
+
+    if (userData) {
+      const userConns = userConnections.get(userData.userId);
+      if (userConns) {
+        userConns.delete(wsId);
+        if (userConns.size === 0) userConnections.delete(userData.userId);
+      }
+    }
+    wsMessageTimestamps.delete(wsId);
   },
 });

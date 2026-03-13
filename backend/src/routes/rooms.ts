@@ -125,7 +125,12 @@ async function getRoomManagementContext(roomId: string, userId: string) {
 }
 
 export const roomRoutes = new Elysia()
-  .get("/api/rooms", async () => {
+  .get("/api/rooms", async ({ request, set }) => {
+    const u = await getUser(request);
+    if (!u) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
     const rooms = await db
       .select({
         id: room.id,
@@ -158,6 +163,10 @@ export const roomRoutes = new Elysia()
     if (!body.name?.trim()) {
       set.status = 400;
       return { error: "Name is required" };
+    }
+    if (body.name.trim().length > 30) {
+      set.status = 400;
+      return { error: "Room name must be 30 characters or less" };
     }
 
     const maxPlayers =
@@ -237,6 +246,7 @@ export const roomRoutes = new Elysia()
       maxPlayers: roomData.maxPlayers,
       hostUserId: roomData.hostUserId,
       myId: u.id,
+      isAdmin: u.role === "admin",
       isSpectator,
       hostId: getHostPlayerId(players, roomData.hostUserId),
       players,
@@ -507,7 +517,12 @@ export const roomRoutes = new Elysia()
       return { error: "Unauthorized" };
     }
 
-    const { roomData, member, isHost, canManageBots } = await getRoomManagementContext(
+    if (u.role !== "admin") {
+      set.status = 403;
+      return { error: "Only admins can add LLM players" };
+    }
+
+    const { roomData, member, isHost } = await getRoomManagementContext(
       params.id,
       u.id,
     );
@@ -518,10 +533,6 @@ export const roomRoutes = new Elysia()
     if (!member && !isHost) {
       set.status = 403;
       return { error: "You must join the room first" };
-    }
-    if (!canManageBots) {
-      set.status = 403;
-      return { error: "Only the host or approved members can add LLM players" };
     }
     if ((await getRoomPlayerCount(params.id)) >= roomData.maxPlayers) {
       set.status = 403;
@@ -623,7 +634,12 @@ export const roomRoutes = new Elysia()
       return { error: "Unauthorized" };
     }
 
-    const { roomData, member, isHost, canManageBots } = await getRoomManagementContext(
+    if (u.role !== "admin") {
+      set.status = 403;
+      return { error: "Only admins can add bots" };
+    }
+
+    const { roomData, member, isHost } = await getRoomManagementContext(
       params.id,
       u.id,
     );
@@ -634,10 +650,6 @@ export const roomRoutes = new Elysia()
     if (!member && !isHost) {
       set.status = 403;
       return { error: "You must join the room first" };
-    }
-    if (!canManageBots) {
-      set.status = 403;
-      return { error: "Only the host or approved members can add bots" };
     }
     if ((await getRoomPlayerCount(params.id)) >= roomData.maxPlayers) {
       set.status = 403;

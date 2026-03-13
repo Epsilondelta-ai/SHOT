@@ -3,8 +3,6 @@
 	import ConfigHeader from '$lib/components/config/ConfigHeader.svelte';
 	import ConfigBotList from '$lib/components/config/ConfigBotList.svelte';
 	import ConfigBotForm from '$lib/components/config/ConfigBotForm.svelte';
-	import AdminAssistantList from '$lib/components/admin/AdminAssistantList.svelte';
-	import AdminAssistantForm from '$lib/components/admin/AdminAssistantForm.svelte';
 	import BottomNav from '$lib/components/lobby/BottomNav.svelte';
 	import LobbyHeader from '$lib/components/lobby/LobbyHeader.svelte';
 	import { invalidateAll } from '$app/navigation';
@@ -14,16 +12,7 @@
 
 	let { data } = $props();
 
-	type Tab = 'assistant' | 'bot';
-
-	type Assistant = {
-		id: string;
-		name: string;
-		prompt: string;
-		active: boolean;
-		created: string;
-		updated: string;
-	};
+	type Tab = 'bot';
 
 	type Bot = {
 		id: string;
@@ -41,9 +30,7 @@
 		busy?: boolean;
 	};
 
-	let activeTab: Tab = $state('assistant');
-	let showAssistantForm = $state(false);
-	let editingAssistant: Assistant | null = $state(null);
+	let activeTab: Tab = $state('bot');
 	let showBotForm = $state(false);
 	let editingBot: Bot | null = $state(null);
 	let pairingCodes = $state<Record<string, { code: string; expiresAt: string } | undefined>>({});
@@ -66,6 +53,7 @@
 		confirmCallback = null;
 	}
 
+<<<<<<< HEAD
 	async function saveAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
 		if (editingAssistant) {
 			await apiPut(`/api/config/assistants/${editingAssistant.id}`, assistant);
@@ -96,6 +84,9 @@
 	}
 
 	async function saveBot(bot: { name: string; active: boolean }) {
+=======
+	async function saveBot(bot: Omit<Bot, 'id' | 'created' | 'updated'>) {
+>>>>>>> origin/dev
 		if (editingBot) {
 			await apiPut(`/api/bots/${editingBot.id}`, bot);
 		} else {
@@ -154,21 +145,15 @@
 	<ConfigHeader {activeTab} onchange={(tab) => (activeTab = tab)} />
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-24">
-		{#if activeTab === 'assistant'}
-			<div class="flex justify-end">
-				<AddButton
-					label={m.config_add_assistant()}
-					onclick={() => {
-						editingAssistant = null;
-						showAssistantForm = true;
-					}}
-				/>
-			</div>
-			<AdminAssistantList
-				assistants={data.assistants}
-				onedit={editAssistant}
-				ondelete={deleteAssistant}
+		<div class="flex justify-end">
+			<AddButton
+				label={m.config_add_bot()}
+				onclick={() => {
+					editingBot = null;
+					showBotForm = true;
+				}}
 			/>
+<<<<<<< HEAD
 			{#if showAssistantForm}
 				<AdminAssistantForm
 					isOpen={showAssistantForm}
@@ -198,6 +183,12 @@
 			{#if showBotForm}
 				<ConfigBotForm isOpen={showBotForm} {editingBot} onsave={saveBot} oncancel={closeBotForm} />
 			{/if}
+=======
+		</div>
+		<ConfigBotList bots={data.bots} onedit={editBot} ondelete={deleteBot} />
+		{#if showBotForm}
+			<ConfigBotForm isOpen={showBotForm} {editingBot} onsave={saveBot} oncancel={closeBotForm} />
+>>>>>>> origin/dev
 		{/if}
 	</main>
 

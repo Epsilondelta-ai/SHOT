@@ -103,11 +103,19 @@ describe('createRoomSocket', () => {
 					botId: null,
 					ready: false
 				}
+<<<<<<< HEAD
 				],
 				{ hostUserId: 'u1', maxPlayers: 5, status: 'in_progress' },
 				undefined
 			);
 		});
+=======
+			],
+			{ hostUserId: 'u1', maxPlayers: 5, status: 'in_progress' },
+			undefined
+		);
+	});
+>>>>>>> origin/dev
 
 	it('calls onChat callback when chat message received', () => {
 		const onChat = vi.fn();
