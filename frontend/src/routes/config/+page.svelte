@@ -53,40 +53,7 @@
 		confirmCallback = null;
 	}
 
-<<<<<<< HEAD
-	async function saveAssistant(assistant: Omit<Assistant, 'id' | 'created' | 'updated'>) {
-		if (editingAssistant) {
-			await apiPut(`/api/config/assistants/${editingAssistant.id}`, assistant);
-		} else {
-			await apiPost('/api/config/assistants', assistant);
-		}
-
-		await invalidateAll();
-		showAssistantForm = false;
-		editingAssistant = null;
-	}
-
-	function editAssistant(assistant: Assistant) {
-		editingAssistant = assistant;
-		showAssistantForm = true;
-	}
-
-	function deleteAssistant(assistantId: string) {
-		openConfirm(async () => {
-			await apiDelete(`/api/config/assistants/${assistantId}`);
-			await invalidateAll();
-		});
-	}
-
-	function closeAssistantForm() {
-		showAssistantForm = false;
-		editingAssistant = null;
-	}
-
-	async function saveBot(bot: { name: string; active: boolean }) {
-=======
 	async function saveBot(bot: Omit<Bot, 'id' | 'created' | 'updated'>) {
->>>>>>> origin/dev
 		if (editingBot) {
 			await apiPut(`/api/bots/${editingBot.id}`, bot);
 		} else {
@@ -153,42 +120,17 @@
 					showBotForm = true;
 				}}
 			/>
-<<<<<<< HEAD
-			{#if showAssistantForm}
-				<AdminAssistantForm
-					isOpen={showAssistantForm}
-					{editingAssistant}
-					onsave={saveAssistant}
-					oncancel={closeAssistantForm}
-				/>
-			{/if}
-		{:else if activeTab === 'bot'}
-			<div class="flex justify-end">
-				<AddButton
-					label={m.config_add_bot()}
-					onclick={() => {
-						editingBot = null;
-						showBotForm = true;
-					}}
-					/>
-				</div>
-			<ConfigBotList
-				bots={data.bots}
-				{pairingCodes}
-				onedit={editBot}
-				ondelete={deleteBot}
-				onpairstart={startPairing}
-				onpaircancel={cancelPairing}
-			/>
-			{#if showBotForm}
-				<ConfigBotForm isOpen={showBotForm} {editingBot} onsave={saveBot} oncancel={closeBotForm} />
-			{/if}
-=======
 		</div>
-		<ConfigBotList bots={data.bots} onedit={editBot} ondelete={deleteBot} />
+		<ConfigBotList
+			bots={data.bots}
+			{pairingCodes}
+			onedit={editBot}
+			ondelete={deleteBot}
+			onpairstart={startPairing}
+			onpaircancel={cancelPairing}
+		/>
 		{#if showBotForm}
 			<ConfigBotForm isOpen={showBotForm} {editingBot} onsave={saveBot} oncancel={closeBotForm} />
->>>>>>> origin/dev
 		{/if}
 	</main>
 
