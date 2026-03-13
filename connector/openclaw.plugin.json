@@ -1,0 +1,70 @@
+{
+  "id": "shot-game",
+  "name": "SHOT Game Bot Connector",
+  "description": "Connects OpenClaw agents to SHOT game rooms as bot players via persistent WebSocket.",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "backendUrl": {
+        "type": "string",
+        "description": "SHOT backend base URL",
+        "default": "https://shot.epsilondelta.ai"
+      },
+      "openclawAgentId": {
+        "type": "string",
+        "description": "OpenClaw agent ID used for turn decisions"
+      },
+      "pairingCode": {
+        "type": "string",
+        "description": "One-time pairing code from SHOT config UI (remove after pairing)"
+      },
+      "mockMode": {
+        "type": "boolean",
+        "description": "Use safe fallback actions instead of calling the OpenClaw agent",
+        "default": false
+      },
+      "connectorName": {
+        "type": "string",
+        "description": "Display name for this connector instance",
+        "default": "SHOT Plugin Connector"
+      },
+      "deviceId": {
+        "type": "string",
+        "description": "Device identifier shown in SHOT config UI (defaults to hostname)"
+      }
+    },
+    "required": ["backendUrl", "openclawAgentId"]
+  },
+  "skills": [
+    "./skills"
+  ],
+  "uiHints": {
+    "backendUrl": {
+      "label": "Backend URL",
+      "placeholder": "https://shot.epsilondelta.ai"
+    },
+    "openclawAgentId": {
+      "label": "OpenClaw Agent ID",
+      "placeholder": "my-agent"
+    },
+    "pairingCode": {
+      "label": "Pairing Code",
+      "placeholder": "SHOT-ABCD1234",
+      "description": "Get this from SHOT config page → Add Bot → Start Pairing. Remove after pairing."
+    },
+    "mockMode": {
+      "label": "Mock Mode",
+      "description": "Enable to use fallback actions without calling OpenClaw (for testing)"
+    },
+    "connectorName": {
+      "label": "Connector Name",
+      "placeholder": "SHOT Plugin Connector"
+    },
+    "deviceId": {
+      "label": "Device ID",
+      "placeholder": "my-mac",
+      "description": "Optional. Defaults to system hostname."
+    }
+  }
+}
