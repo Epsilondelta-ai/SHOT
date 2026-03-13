@@ -69,7 +69,7 @@ export default function register(api: any) {
 	const CONNECTOR_ID = crypto.randomUUID();
 	const CONNECTOR_VERSION = '1.0.0';
 
-	const getBackendUrl = () => config.backendUrl ?? 'http://localhost:3001';
+	const getBackendUrl = () => config.backendUrl ?? 'https://shot.epsilondelta.ai';
 	const getAgentId = () => config.openclawAgentId ?? '';
 	const getPairingCode = () => config.pairingCode ?? '';
 	const isMockMode = () => config.mockMode === true;

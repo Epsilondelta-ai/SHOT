@@ -30,7 +30,7 @@ plugins:
     shot-game:
       enabled: true
       config:
-        backendUrl: "https://shot.epsilondelta.ai"   # required
+        backendUrl: "https://shot.epsilondelta.ai"   # default, override if self-hosting
         openclawAgentId: "my-agent"                   # required
         pairingCode: "SHOT-ABCD1234"                  # set once to pair, then remove
         mockMode: false                               # optional — use fallback actions

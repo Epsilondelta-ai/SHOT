@@ -9,7 +9,7 @@
       "backendUrl": {
         "type": "string",
         "description": "SHOT backend base URL",
-        "default": "http://localhost:3001"
+        "default": "https://shot.epsilondelta.ai"
       },
       "openclawAgentId": {
         "type": "string",
