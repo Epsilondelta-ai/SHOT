@@ -36,6 +36,9 @@
     },
     "required": ["backendUrl", "openclawAgentId"]
   },
+  "skills": [
+    "./skills"
+  ],
   "uiHints": {
     "backendUrl": {
       "label": "Backend URL",
