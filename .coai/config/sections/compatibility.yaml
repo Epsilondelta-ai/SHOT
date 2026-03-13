@@ -1,0 +1,4 @@
+compatibility:
+  execution_style: artifact_or_exec
+  codex_exec_supported: true
+  generated_by: coai

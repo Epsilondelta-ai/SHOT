@@ -23,6 +23,7 @@
 		llmModelId: string | null;
 		modelName: string | null;
 		botId: string | null;
+		presenceStatus?: 'online' | 'offline' | null;
 	};
 
 	type ChatMessage = {
@@ -49,6 +50,10 @@
 	type BotOption = {
 		id: string;
 		name: string;
+		pairingStatus: 'unpaired' | 'pairing' | 'paired' | 'error';
+		presenceStatus: 'online' | 'offline';
+		active: boolean;
+		busy: boolean;
 	};
 
 	let { data } = $props();

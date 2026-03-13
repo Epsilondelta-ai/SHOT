@@ -1,0 +1,4 @@
+workflow:
+  execution_mode: cg
+  runtime_engine: codex
+  artifact_mode: prepare

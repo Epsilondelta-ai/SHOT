@@ -8,15 +8,16 @@
 		onkick,
 		ontoggleReady
 	}: {
-		player?: {
-			name: string;
-			avatarSrc?: string | null;
-			ready: boolean;
-			type?: 'human' | 'llm' | 'bot';
-			canManageBots?: boolean;
-			modelName?: string | null;
-			assistantName?: string | null;
-		};
+			player?: {
+				name: string;
+				avatarSrc?: string | null;
+				ready: boolean;
+				type?: 'human' | 'llm' | 'bot';
+				canManageBots?: boolean;
+				modelName?: string | null;
+				assistantName?: string | null;
+				presenceStatus?: 'online' | 'offline' | null;
+			};
 		isHost?: boolean;
 		isMe?: boolean;
 		onkick?: () => void;
@@ -74,11 +75,18 @@
 				{#if player.assistantName}
 					<p class="text-[10px] font-bold text-slate-400">{player.assistantName}</p>
 				{/if}
-				{#if player.type === 'bot'}
-					<p class="text-[10px] font-black text-slate-500 uppercase">OPENCLAW</p>
-				{/if}
-			</div>
-		{/if}
+					{#if player.type === 'bot'}
+						<p class="text-[10px] font-black text-slate-500 uppercase">OPENCLAW</p>
+						<p
+							class:text-green-600={player.presenceStatus === 'online'}
+							class:text-red-500={player.presenceStatus === 'offline'}
+							class="text-[10px] font-black uppercase"
+						>
+							{player.presenceStatus === 'offline' ? 'offline' : 'online'}
+						</p>
+					{/if}
+				</div>
+			{/if}
 
 		{#if player.type === 'human' && player.canManageBots && !isHost}
 			<span
