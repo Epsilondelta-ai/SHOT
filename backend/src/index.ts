@@ -29,6 +29,8 @@ const app = new Elysia()
 
   // ── Rate limiting ────────────────────────────────────────────────────────
   .onBeforeHandle(({ request, set }) => {
+    if (IS_DEV) return;
+
     const url = new URL(request.url);
     const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
       ?? request.headers.get("x-real-ip")
