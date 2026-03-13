@@ -6,6 +6,7 @@
 	import BottomNav from '$lib/components/lobby/BottomNav.svelte';
 	import LobbyHeader from '$lib/components/lobby/LobbyHeader.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import { onDestroy } from 'svelte';
 	import AddButton from '$lib/components/common/AddButton.svelte';
 	import ConfirmModal from '$lib/components/common/ConfirmModal.svelte';
 	import { apiPost, apiPut, apiDelete } from '$lib/api';
@@ -53,7 +54,7 @@
 		confirmCallback = null;
 	}
 
-	async function saveBot(bot: Omit<Bot, 'id' | 'created' | 'updated'>) {
+	async function saveBot(bot: { name: string; active: boolean }) {
 		if (editingBot) {
 			await apiPut(`/api/bots/${editingBot.id}`, bot);
 		} else {
@@ -101,6 +102,22 @@
 		showBotForm = false;
 		editingBot = null;
 	}
+
+	let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+	$effect(() => {
+		const hasPairing = data.bots.some((b: Bot) => b.pairingStatus === 'pairing');
+		if (hasPairing && !pollTimer) {
+			pollTimer = setInterval(() => invalidateAll(), 3000);
+		} else if (!hasPairing && pollTimer) {
+			clearInterval(pollTimer);
+			pollTimer = null;
+		}
+	});
+
+	onDestroy(() => {
+		if (pollTimer) clearInterval(pollTimer);
+	});
 </script>
 
 <svelte:head>

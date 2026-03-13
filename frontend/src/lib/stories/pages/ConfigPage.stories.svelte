@@ -44,16 +44,16 @@
 
 <Story name="Assistant Tab" asChild>
 	<ConfigPage
-		data={{ assistants: mockAssistants, bots: mockBots, username: 'Admin', avatarSrc: '', isAdmin: false }}
+		data={{ bots: mockBots, username: 'Admin', avatarSrc: '', isAdmin: false }}
 	/>
 </Story>
 
 <Story name="Bot Tab" asChild>
 	<ConfigPage
-		data={{ assistants: mockAssistants, bots: mockBots, username: 'Admin', avatarSrc: '', isAdmin: false }}
+		data={{ bots: mockBots, username: 'Admin', avatarSrc: '', isAdmin: false }}
 	/>
 </Story>
 
 <Story name="Empty State" asChild>
-	<ConfigPage data={{ assistants: [], bots: [], username: 'Admin', avatarSrc: '', isAdmin: false }} />
+	<ConfigPage data={{ bots: [], username: 'Admin', avatarSrc: '', isAdmin: false }} />
 </Story>

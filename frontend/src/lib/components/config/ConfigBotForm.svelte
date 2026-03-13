@@ -15,7 +15,7 @@
 	}: {
 		isOpen?: boolean;
 		editingBot?: Bot | null;
-		onsave?: (bot: Omit<Bot, 'id'>) => void;
+		onsave?: (bot: Omit<Bot, 'id'>) => void | Promise<void>;
 		oncancel?: () => void;
 	} = $props();
 
