@@ -68,15 +68,15 @@ export const meRoutes = new Elysia()
 			const imageFile = formData.get('image') as File | null;
 
 			if (imageFile && imageFile.size > 0) {
-				const MAX_IMAGE_SIZE = 1 * 1024 * 1024; // 1MB
+				const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 				const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 				if (imageFile.size > MAX_IMAGE_SIZE) {
 					set.status = 400;
-					return { error: '이미지 크기는 1MB 이하여야 합니다.' };
+					return { error: 'Image size must be 20MB or less.' };
 				}
 				if (!ALLOWED_TYPES.includes(imageFile.type)) {
 					set.status = 400;
-					return { error: '허용되지 않는 이미지 형식입니다. (JPEG, PNG, WebP만 가능)' };
+					return { error: 'Invalid image format. Only JPEG, PNG, and WebP are allowed.' };
 				}
 				const buffer = await imageFile.arrayBuffer();
 				const base64 = Buffer.from(buffer).toString('base64');
@@ -86,19 +86,19 @@ export const meRoutes = new Elysia()
 			const body = (await request.json()) as { name?: string; image?: string };
 			name = body.name;
 			imageData = body.image;
-			if (imageData && imageData.length > 1_500_000) {
+			if (imageData && imageData.length > 20 * 1024 * 1024 * 1.4) {
 				set.status = 400;
-				return { error: '이미지 크기는 1MB 이하여야 합니다.' };
+				return { error: 'Image size must be 20MB or less.' };
 			}
 		}
 
 		if (!name?.trim()) {
 			set.status = 400;
-			return { error: '닉네임을 입력해주세요.' };
+			return { error: 'Name is required.' };
 		}
 		if (name.trim().length > 20) {
 			set.status = 400;
-			return { error: '닉네임은 20자 이하여야 합니다.' };
+			return { error: 'Name must be 20 characters or less.' };
 		}
 
 		const updateData: { name: string; image?: string } = { name: name.trim() };
