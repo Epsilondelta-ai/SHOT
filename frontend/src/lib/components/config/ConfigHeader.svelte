@@ -1,16 +1,13 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 
-	type Tab = 'assistant' | 'bot';
+	type Tab = 'bot';
 
-	let { activeTab, onchange, isAdmin = false }: { activeTab: Tab; onchange: (tab: Tab) => void; isAdmin?: boolean } = $props();
+	let { activeTab, onchange }: { activeTab: Tab; onchange: (tab: Tab) => void } = $props();
 
-	const allTabs: { key: Tab; label: () => string; icon: string; adminOnly?: boolean }[] = [
-		{ key: 'assistant', label: () => m.config_tab_assistant(), icon: 'psychology', adminOnly: true },
+	const tabs: { key: Tab; label: () => string; icon: string }[] = [
 		{ key: 'bot', label: () => m.config_tab_bot(), icon: 'smart_toy' }
 	];
-
-	const tabs = $derived(allTabs.filter((tab) => !tab.adminOnly || isAdmin));
 </script>
 
 <header class="sticky top-0 z-50 bg-white">
