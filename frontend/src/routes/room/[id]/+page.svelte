@@ -123,7 +123,8 @@
 		players.find((player) => player.type === 'human' && player.userId === hostUserId)?.id ?? ''
 	);
 	const isHost = $derived(data.myId === hostUserId);
-	const canManageBots = $derived(isHost || myPlayer?.canManageBots === true);
+	const isAdmin = $derived(data.isAdmin === true);
+	const canManageBots = $derived(isAdmin);
 	const amReady = $derived(myPlayer?.ready ?? false);
 	const readyCount = $derived(
 		players.filter((player) => player.id === hostId || player.ready).length

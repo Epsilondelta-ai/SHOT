@@ -253,6 +253,7 @@ export const roomRoutes = new Elysia()
       maxPlayers: roomData.maxPlayers,
       hostUserId: roomData.hostUserId,
       myId: u.id,
+      isAdmin: u.role === "admin",
       isSpectator,
       hostId: getHostPlayerId(players, roomData.hostUserId),
       players,
@@ -523,7 +524,12 @@ export const roomRoutes = new Elysia()
       return { error: "Unauthorized" };
     }
 
-    const { roomData, member, isHost, canManageBots } = await getRoomManagementContext(
+    if (u.role !== "admin") {
+      set.status = 403;
+      return { error: "Only admins can add LLM players" };
+    }
+
+    const { roomData, member, isHost } = await getRoomManagementContext(
       params.id,
       u.id,
     );
@@ -534,10 +540,6 @@ export const roomRoutes = new Elysia()
     if (!member && !isHost) {
       set.status = 403;
       return { error: "You must join the room first" };
-    }
-    if (!canManageBots) {
-      set.status = 403;
-      return { error: "Only the host or approved members can add LLM players" };
     }
     if ((await getRoomPlayerCount(params.id)) >= roomData.maxPlayers) {
       set.status = 403;
@@ -639,7 +641,12 @@ export const roomRoutes = new Elysia()
       return { error: "Unauthorized" };
     }
 
-    const { roomData, member, isHost, canManageBots } = await getRoomManagementContext(
+    if (u.role !== "admin") {
+      set.status = 403;
+      return { error: "Only admins can add bots" };
+    }
+
+    const { roomData, member, isHost } = await getRoomManagementContext(
       params.id,
       u.id,
     );
@@ -650,10 +657,6 @@ export const roomRoutes = new Elysia()
     if (!member && !isHost) {
       set.status = 403;
       return { error: "You must join the room first" };
-    }
-    if (!canManageBots) {
-      set.status = 403;
-      return { error: "Only the host or approved members can add bots" };
     }
     if ((await getRoomPlayerCount(params.id)) >= roomData.maxPlayers) {
       set.status = 403;
