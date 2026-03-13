@@ -23,7 +23,8 @@
 
 	function toggleLanguage() {
 		const current = getLocale();
-		const next = locales.find((l) => l !== current) ?? locales[0];
+		const idx = locales.indexOf(current);
+		const next = locales[(idx + 1) % locales.length];
 		window.location.href = localizeHref(window.location.pathname, { locale: next });
 	}
 
