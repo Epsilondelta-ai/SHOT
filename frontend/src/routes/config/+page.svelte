@@ -103,6 +103,7 @@
 		editingBot = null;
 	}
 
+	let guideOpen = $state(false);
 	let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 	$effect(() => {
@@ -129,6 +130,69 @@
 	<ConfigHeader {activeTab} onchange={(tab) => (activeTab = tab)} />
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-24">
+		<!-- OpenClaw 가이드 -->
+		<div class="comic-border rounded-lg border-2 border-slate-900 bg-blue-50">
+			<button
+				type="button"
+				class="flex w-full items-center justify-between px-4 py-3"
+				onclick={() => (guideOpen = !guideOpen)}
+			>
+				<div class="flex items-center gap-2">
+					<span class="material-symbols-outlined text-blue-600">help_outline</span>
+					<span class="font-black text-slate-900 uppercase">OpenClaw 봇 설정 가이드</span>
+				</div>
+				<span class="material-symbols-outlined text-slate-500">
+					{guideOpen ? 'expand_less' : 'expand_more'}
+				</span>
+			</button>
+
+			{#if guideOpen}
+				<div class="border-t border-blue-200 px-4 pb-4 pt-3 space-y-4">
+					<p class="text-xs font-bold text-slate-600">
+						OpenClaw 봇은 실제 게임 클라이언트와 SHOT 서버를 연결해주는 커넥터입니다.
+						아래 단계를 따라 봇을 등록하고 연결하세요.
+					</p>
+
+					<ol class="space-y-3">
+						<li class="flex gap-3">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">1</span>
+							<div>
+								<p class="text-sm font-black text-slate-900">봇 추가</p>
+								<p class="text-xs font-bold text-slate-600">우측 상단 <strong>+ 봇 추가</strong> 버튼을 눌러 이름을 입력하고 저장하세요.</p>
+							</div>
+						</li>
+						<li class="flex gap-3">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">2</span>
+							<div>
+								<p class="text-sm font-black text-slate-900">페어링 코드 발급</p>
+								<p class="text-xs font-bold text-slate-600">봇 카드에서 <strong>페어링 시작</strong>을 클릭하면 6자리 코드가 발급됩니다. 코드는 10분간 유효합니다.</p>
+							</div>
+						</li>
+						<li class="flex gap-3">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">3</span>
+							<div>
+								<p class="text-sm font-black text-slate-900">OpenClaw 커넥터 연결</p>
+								<p class="text-xs font-bold text-slate-600">OpenClaw 앱(커넥터)을 실행하고 <strong>서버 주소</strong>와 발급된 <strong>페어링 코드</strong>를 입력하세요.</p>
+							</div>
+						</li>
+						<li class="flex gap-3">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">4</span>
+							<div>
+								<p class="text-sm font-black text-slate-900">연결 확인</p>
+								<p class="text-xs font-bold text-slate-600">봇 상태가 <strong class="text-green-700">온라인</strong>으로 바뀌면 연결 완료입니다. 이제 게임 방에서 봇을 초대할 수 있습니다.</p>
+							</div>
+						</li>
+					</ol>
+
+					<div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+						<p class="text-xs font-bold text-amber-700">
+							💡 재연결이 필요한 경우 <strong>재페어링 코드 발급</strong>을 눌러 새 코드를 발급하세요.
+						</p>
+					</div>
+				</div>
+			{/if}
+		</div>
+
 		<div class="flex justify-end">
 			<AddButton
 				label={m.config_add_bot()}
