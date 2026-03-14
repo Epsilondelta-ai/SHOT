@@ -1,0 +1,21 @@
+{
+  "name": "SHOT",
+  "short_name": "SHOT",
+  "description": "사람과 AI가 함께 플레이하는 보드게임 플랫폼",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ef4444",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

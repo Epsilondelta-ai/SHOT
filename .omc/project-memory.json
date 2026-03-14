@@ -1,0 +1,354 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1773492716574,
+  "projectRoot": "/home/pi/code/SHOT",
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 9,
+      "lastAccessed": 1773492716569,
+      "keyFiles": [
+        "bot-architecture.md",
+        "design.md",
+        "pages.md",
+        "product.md",
+        "replay.md"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "",
+      "accessCount": 11,
+      "lastAccessed": 1773494189100,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/room/[id]/page.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1773494799970,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/games/[id]/action/route.ts",
+      "accessCount": 6,
+      "lastAccessed": 1773493979434,
+      "type": "file"
+    },
+    {
+      "path": "src/app/lobby/page.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1773494196912,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/db/schema.ts",
+      "accessCount": 5,
+      "lastAccessed": 1773493918305,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/auth/session.ts",
+      "accessCount": 4,
+      "lastAccessed": 1773493918773,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/db/index.ts",
+      "accessCount": 4,
+      "lastAccessed": 1773493918871,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/auth/me/route.ts",
+      "accessCount": 4,
+      "lastAccessed": 1773494681091,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/game/events.ts",
+      "accessCount": 3,
+      "lastAccessed": 1773493620601,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/sse/broker.ts",
+      "accessCount": 3,
+      "lastAccessed": 1773493636223,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/rooms/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1773493930933,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/bot/trigger.ts",
+      "accessCount": 3,
+      "lastAccessed": 1773493975326,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(auth)/login/page.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1773494196025,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/bots/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1773494773218,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/rooms/[id]/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773493590242,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/games/[id]/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773493590940,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/rooms/[id]/bots/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773493591179,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/rooms/[id]/join/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773493595599,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/games/[id]/stream/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773493595776,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/game/engine.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773493620812,
+      "type": "file"
+    },
+    {
+      "path": "src/app/spectate/[id]/page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1773493931479,
+      "type": "file"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1773493941985,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/bots/[id]/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1773493945822,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(auth)/signup/page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1773494196494,
+      "type": "file"
+    },
+    {
+      "path": "src/app/lobby/CreateRoomForm.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1773494197322,
+      "type": "file"
+    },
+    {
+      "path": "src/components/NavBar.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1773494207195,
+      "type": "file"
+    },
+    {
+      "path": "docs/product.md",
+      "accessCount": 1,
+      "lastAccessed": 1773492738539,
+      "type": "file"
+    },
+    {
+      "path": "docs/technical-architecture.md",
+      "accessCount": 1,
+      "lastAccessed": 1773492739035,
+      "type": "file"
+    },
+    {
+      "path": "docs/pages.md",
+      "accessCount": 1,
+      "lastAccessed": 1773492739702,
+      "type": "file"
+    },
+    {
+      "path": "docs/user-flows.md",
+      "accessCount": 1,
+      "lastAccessed": 1773492740099,
+      "type": "file"
+    },
+    {
+      "path": "docs/bot-architecture.md",
+      "accessCount": 1,
+      "lastAccessed": 1773492744277,
+      "type": "file"
+    },
+    {
+      "path": "docs/replay.md",
+      "accessCount": 1,
+      "lastAccessed": 1773492744709,
+      "type": "file"
+    },
+    {
+      "path": "docs/vision.md",
+      "accessCount": 1,
+      "lastAccessed": 1773492745322,
+      "type": "file"
+    },
+    {
+      "path": "docs/design.md",
+      "accessCount": 1,
+      "lastAccessed": 1773492745606,
+      "type": "file"
+    },
+    {
+      "path": "docs/roadmap.md",
+      "accessCount": 1,
+      "lastAccessed": 1773492749006,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 1,
+      "lastAccessed": 1773492826226,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/auth/signup/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493412500,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/auth/login/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493416529,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/auth/logout/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493417699,
+      "type": "file"
+    },
+    {
+      "path": "src/middleware.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493424780,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(auth)/layout.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773493425601,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/rooms/[id]/start/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493461391,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/bot/adapters/types.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493657673,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/bot/adapters/shot-llm.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493667815,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/bot/adapters/external.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493670930,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/bot/worker.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493702426,
+      "type": "file"
+    },
+    {
+      "path": "src/app/game/[id]/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1773493796622,
+      "type": "file"
+    },
+    {
+      "path": "next.config.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493942240,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/replays/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493955630,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/replays/[id]/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1773493977908,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
