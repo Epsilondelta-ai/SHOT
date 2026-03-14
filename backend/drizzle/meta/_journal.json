@@ -36,6 +36,13 @@
       "when": 1773472077827,
       "tag": "0004_nice_pet_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1773999999999,
+      "tag": "0005_remove_bot_mode",
+      "breakpoints": true
     }
   ]
 }

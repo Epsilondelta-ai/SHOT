@@ -5,8 +5,6 @@
 		id: string;
 		name: string;
 		active: boolean;
-		clientMode: 'autonomous' | 'follow-owner' | null;
-		followUserId: string | null;
 		presenceStatus: 'online' | 'offline';
 		created: string | null;
 		updated: string | null;
@@ -27,11 +25,6 @@
 	function presenceClass(status: 'online' | 'offline') {
 		return status === 'online' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600';
 	}
-
-	function clientModeLabel(mode: 'autonomous' | 'follow-owner' | null) {
-		if (mode === 'follow-owner') return '팔로우';
-		return '자율';
-	}
 </script>
 
 <div class="space-y-3">
@@ -51,9 +44,6 @@
 						<div class="mt-2 flex flex-wrap gap-2">
 							<span class={`rounded-full px-2 py-1 text-xs font-black uppercase ${presenceClass(bot.presenceStatus)}`}>
 								{bot.presenceStatus === 'online' ? '온라인' : '오프라인'}
-							</span>
-							<span class="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-700 uppercase">
-								{clientModeLabel(bot.clientMode)}
 							</span>
 							{#if bot.active}
 								<span class="rounded-full bg-blue-100 px-2 py-1 text-xs font-black text-blue-700 uppercase">
@@ -89,10 +79,7 @@
 					</div>
 				</div>
 
-				<div class="rounded-lg bg-slate-50 p-3 text-xs font-bold text-slate-600 space-y-1">
-					{#if bot.clientMode === 'follow-owner' && bot.followUserId}
-						<p>팔로우 대상: <span class="font-mono text-slate-800">{bot.followUserId}</span></p>
-					{/if}
+				<div class="rounded-lg bg-slate-50 p-3 text-xs font-bold text-slate-600">
 					<p>Last seen: {bot.lastSeenAt ?? '기록 없음'}</p>
 				</div>
 
