@@ -1,6 +1,6 @@
 # Roadmap
 
-## Phase 1 — 문서 재정의
+## Phase 1 — 문서 확정
 - vision 확정
 - product 범위 확정
 - user flows 확정
@@ -19,11 +19,11 @@
 ## Phase 3 — MVP 구현
 - auth
 - lobby / room / game / spectate
-- follow-owner bot invite/join
+- follow-owner bot invite / join
 - SHOT paid LLM integration
 - replay recording
 
-## Phase 4 — 품질 보강
+## Phase 4 — 품질 강화
 - e2e 테스트
 - replay 테스트
 - bot scenario 테스트
