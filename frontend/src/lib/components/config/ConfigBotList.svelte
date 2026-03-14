@@ -5,52 +5,32 @@
 		id: string;
 		name: string;
 		active: boolean;
-		pairingStatus: 'unpaired' | 'pairing' | 'paired' | 'error';
+		clientMode: 'autonomous' | 'follow-owner' | null;
+		followUserId: string | null;
 		presenceStatus: 'online' | 'offline';
 		created: string | null;
 		updated: string | null;
 		lastSeenAt: string | null;
-		pairingCodeExpiresAt: string | null;
-		connectorName: string | null;
-		connectorVersion?: string | null;
-		deviceId?: string | null;
 		busy?: boolean;
 	};
 
 	let {
 		bots = [],
-		pairingCodes = {},
 		onedit,
-		ondelete,
-		onpairstart,
-		onpaircancel
+		ondelete
 	}: {
 		bots?: Bot[];
-		pairingCodes?: Record<string, { code: string; expiresAt: string } | undefined>;
 		onedit?: (bot: Bot) => void;
 		ondelete?: (botId: string) => void;
-		onpairstart?: (botId: string) => Promise<void> | void;
-		onpaircancel?: (botId: string) => Promise<void> | void;
 	} = $props();
 
-	function presenceLabel(bot: Bot) {
-		if (bot.pairingStatus === 'pairing') return '페어링 대기';
-		if (bot.pairingStatus === 'unpaired') return '미페어링';
-		if (bot.pairingStatus === 'error') return '오류';
-		return bot.presenceStatus === 'online' ? '온라인' : '오프라인';
+	function presenceClass(status: 'online' | 'offline') {
+		return status === 'online' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600';
 	}
 
-	function presenceClass(bot: Bot) {
-		if (bot.pairingStatus === 'paired' && bot.presenceStatus === 'online') {
-			return 'bg-green-100 text-green-700';
-		}
-		if (bot.pairingStatus === 'pairing') {
-			return 'bg-yellow-100 text-yellow-700';
-		}
-		if (bot.pairingStatus === 'error') {
-			return 'bg-red-100 text-red-700';
-		}
-		return 'bg-slate-100 text-slate-600';
+	function clientModeLabel(mode: 'autonomous' | 'follow-owner' | null) {
+		if (mode === 'follow-owner') return '팔로우';
+		return '자율';
 	}
 </script>
 
@@ -69,8 +49,11 @@
 					<div class="flex-1">
 						<h3 class="font-black text-slate-900 uppercase">{bot.name}</h3>
 						<div class="mt-2 flex flex-wrap gap-2">
-							<span class={`rounded-full px-2 py-1 text-xs font-black uppercase ${presenceClass(bot)}`}>
-								{presenceLabel(bot)}
+							<span class={`rounded-full px-2 py-1 text-xs font-black uppercase ${presenceClass(bot.presenceStatus)}`}>
+								{bot.presenceStatus === 'online' ? '온라인' : '오프라인'}
+							</span>
+							<span class="rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-700 uppercase">
+								{clientModeLabel(bot.clientMode)}
 							</span>
 							{#if bot.active}
 								<span class="rounded-full bg-blue-100 px-2 py-1 text-xs font-black text-blue-700 uppercase">
@@ -106,44 +89,11 @@
 					</div>
 				</div>
 
-				<div class="rounded-lg bg-slate-50 p-3 text-xs font-bold text-slate-600">
-					<p>Provider: OpenClaw</p>
-					<p>Connector: {bot.connectorName ?? '미연결'}</p>
+				<div class="rounded-lg bg-slate-50 p-3 text-xs font-bold text-slate-600 space-y-1">
+					{#if bot.clientMode === 'follow-owner' && bot.followUserId}
+						<p>팔로우 대상: <span class="font-mono text-slate-800">{bot.followUserId}</span></p>
+					{/if}
 					<p>Last seen: {bot.lastSeenAt ?? '기록 없음'}</p>
-					{#if bot.deviceId}
-						<p>Device: {bot.deviceId}</p>
-					{/if}
-				</div>
-
-				{#if pairingCodes[bot.id]}
-					<div class="mt-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 p-3">
-						<p class="text-[11px] font-black tracking-wider text-slate-500 uppercase">pairing code</p>
-						<p class="mt-1 font-mono text-lg font-black text-primary">
-							{pairingCodes[bot.id]?.code}
-						</p>
-						<p class="mt-1 text-xs font-bold text-slate-500">
-							만료: {pairingCodes[bot.id]?.expiresAt}
-						</p>
-					</div>
-				{/if}
-
-				<div class="mt-3 flex flex-wrap gap-2">
-					<button
-						type="button"
-						class="comic-button rounded-xl border-2 border-slate-900 bg-primary px-3 py-2 text-[11px] font-black text-white uppercase"
-						onclick={() => onpairstart?.(bot.id)}
-					>
-						{bot.pairingStatus === 'paired' ? '재페어링 코드 발급' : '페어링 시작'}
-					</button>
-					{#if bot.pairingStatus === 'pairing'}
-						<button
-							type="button"
-							class="comic-button rounded-xl border-2 border-slate-900 bg-white px-3 py-2 text-[11px] font-black text-slate-700 uppercase"
-							onclick={() => onpaircancel?.(bot.id)}
-						>
-							페어링 취소
-						</button>
-					{/if}
 				</div>
 
 				<div class="mt-3 border-t border-slate-200 pt-2 text-xs text-slate-500">

@@ -3,7 +3,6 @@ import { cors } from "@elysiajs/cors";
 import { auth } from "./lib/auth";
 import { roomWsPlugin } from "./ws/roomWs";
 import { gameWsPlugin } from "./ws/gameWs";
-import { botConnectorWsPlugin } from "./ws/botConnectorWs";
 import { roomRoutes } from "./routes/rooms";
 import { gameRoutes } from "./routes/games";
 import { botRoutes } from "./routes/bots";
@@ -11,6 +10,7 @@ import { adminRoutes } from "./routes/admin";
 import { configRoutes } from "./routes/config";
 import { meRoutes } from "./routes/me";
 import { replayRoutes } from "./routes/replays";
+import { botClientRoutes } from "./routes/botClient";
 
 const FRONTEND_URL = process.env.FRONTEND_URL ?? "http://localhost:5173";
 const PORT = Number(process.env.PORT ?? 3001);
@@ -27,8 +27,11 @@ const app = new Elysia({ serve: { maxRequestBodySize: 20 * 1024 * 1024 } })
   }))
 
   // ── Origin validation (CSRF protection) ──────────────────────────────────
+  // Bot-client routes use Authorization header auth, not cookies — exempt from origin check
   .onBeforeHandle(({ request, set }) => {
     if (!IS_DEV && request.method !== "GET" && request.method !== "OPTIONS") {
+      const url = new URL(request.url);
+      if (url.pathname.startsWith("/api/bot-client/")) return;
       const origin = request.headers.get("origin");
       if (origin && origin !== FRONTEND_URL) {
         set.status = 403;
@@ -46,9 +49,9 @@ const app = new Elysia({ serve: { maxRequestBodySize: 20 * 1024 * 1024 } })
   .use(configRoutes)
   .use(meRoutes)
   .use(replayRoutes)
+  .use(botClientRoutes)
   .use(roomWsPlugin)
   .use(gameWsPlugin)
-  .use(botConnectorWsPlugin)
   .listen(PORT);
 
 console.log(`Backend running at http://localhost:${PORT}`);

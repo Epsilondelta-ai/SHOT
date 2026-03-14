@@ -7,8 +7,7 @@ import {
   type GameAction,
   type GameSnapshot,
 } from "./gameState";
-import type { BotTurnRequestPayload } from "./botProtocol";
-import { requestBotAction } from "./botPresence";
+import { requestBotActionPolling } from "./botPresence";
 import { maybeRunLlmTurn } from "./llmPlayer";
 
 const BOT_ACTION_TIMEOUT_MS = 15_000;
@@ -75,7 +74,7 @@ function buildBotTurnPayload(options: {
   playerId: string;
   userId: string;
   language: string | null;
-}): BotTurnRequestPayload {
+}) {
   const snapshot = createSnapshot(options.roomId, options.userId);
   return {
     botId: options.botId,
@@ -112,10 +111,7 @@ export async function maybeRunBotTurn(roomId: string): Promise<void> {
       language: info.language,
     });
 
-    const action = await requestBotAction({
-      botId: info.botId,
-      payload,
-    });
+    const action = await requestBotActionPolling({ botId: info.botId, payload });
 
     if (!action) {
       applyBotFallback(roomId, info.userId);
