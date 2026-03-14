@@ -1,0 +1,9 @@
+{
+  "name": "shot-bot-connector",
+  "version": "1.0.0",
+  "description": "SHOT! bot connector — autonomous or follow-owner mode bot client",
+  "type": "module",
+  "scripts": {
+    "start": "bun run shot-bot.ts"
+  }
+}

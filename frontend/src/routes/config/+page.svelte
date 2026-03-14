@@ -18,8 +18,6 @@
 		id: string;
 		name: string;
 		active: boolean;
-		clientMode: 'autonomous' | 'follow-owner' | null;
-		followUserId: string | null;
 		presenceStatus: 'online' | 'offline';
 		created: string | null;
 		updated: string | null;
@@ -51,7 +49,7 @@
 		confirmCallback = null;
 	}
 
-	async function saveBot(bot: Omit<Bot, 'id' | 'presenceStatus' | 'created' | 'updated' | 'lastSeenAt' | 'busy'>) {
+	async function saveBot(bot: Pick<Bot, 'name' | 'active'>) {
 		if (editingBot) {
 			await apiPut(`/api/bots/${editingBot.id}`, bot);
 		} else {
@@ -83,6 +81,7 @@
 	}
 
 	let guideOpen = $state(false);
+	let skillGuideOpen = $state(false);
 </script>
 
 <svelte:head>
@@ -167,13 +166,15 @@
 							<p class="text-sm font-black text-slate-900">봇 프로세스 실행</p>
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-600">
-							봇은 모든 요청에 아래 헤더를 포함해야 합니다.
+							제공된 <code class="rounded bg-slate-100 px-1 text-slate-700">connector/</code> 스크립트로 바로 실행하세요.
 						</p>
-						<div class="ml-9 rounded-lg bg-slate-900 px-3 py-2">
-							<code class="font-mono text-xs text-green-400">Authorization: Bot &lt;API 키&gt;</code>
+						<div class="ml-9 rounded-lg bg-slate-900 px-3 py-2 space-y-1">
+							<code class="block font-mono text-xs text-green-400">SHOT_BOT_API_KEY=&lt;API_키&gt; bun run connector/shot-bot.ts</code>
+							<code class="block font-mono text-xs text-slate-400 mt-1"># 실행하면 모드 선택 프롬프트가 표시됩니다</code>
+							<code class="block font-mono text-xs text-yellow-300">선택 (1/2): _</code>
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-600">
-							30초마다 <code class="rounded bg-slate-100 px-1 text-slate-700">POST /api/bot-client/heartbeat</code>를 호출해 온라인 상태를 유지하세요.
+							모드는 실행할 때마다 선택합니다 — 설정에 저장되지 않습니다. 직접 구현 시 모든 요청에 <code class="rounded bg-slate-100 px-1 text-slate-700">Authorization: Bot &lt;API_키&gt;</code> 헤더를 포함하세요.
 						</p>
 					</div>
 
@@ -216,6 +217,142 @@
 						<p class="ml-9 text-xs font-bold text-slate-600">
 							봇 카드 상태가 <strong class="text-green-700">온라인</strong>으로 바뀌면 연결 완료입니다.
 						</p>
+					</div>
+
+					<!-- 빠른 시작 — 스킬 사용 -->
+					<div class="rounded-lg border-2 border-indigo-200 bg-indigo-50 p-4 space-y-4">
+						<div class="flex items-center gap-2">
+							<span class="material-symbols-outlined text-indigo-600">rocket_launch</span>
+							<p class="text-sm font-black text-indigo-900">빠른 시작 — 스킬 사용 (권장)</p>
+						</div>
+						<p class="text-xs font-bold text-indigo-700">
+							위 API를 직접 구현하는 대신, connector 스크립트를 사용하면 모드 선택부터 게임 참가까지 자동 처리됩니다.
+						</p>
+
+						<!-- 방법 A: Bun 직접 실행 -->
+						<div class="space-y-2">
+							<p class="text-xs font-black text-indigo-800">방법 A — Bun 스크립트 직접 실행</p>
+							<p class="text-xs font-bold text-slate-600">프로젝트 루트에서 실행 (Bun 필요)</p>
+							<div class="rounded-lg bg-slate-900 px-3 py-2 space-y-1">
+								<code class="block font-mono text-xs text-green-400">SHOT_BOT_API_KEY=&lt;API 키&gt; bun run connector/shot-bot.ts</code>
+								<code class="block font-mono text-xs text-slate-400 mt-1"># 실행 후 모드 선택 프롬프트 → 1(자율) 또는 2(팔로우) 입력</code>
+							</div>
+						</div>
+
+						<!-- 방법 B: Claude Code 스킬 -->
+						<div class="space-y-2">
+							<p class="text-xs font-black text-indigo-800">방법 B — Claude Code 스킬 설치</p>
+							<p class="text-xs font-bold text-slate-600">Claude Code를 사용 중이라면 AI 에이전트로 봇을 실행하세요.</p>
+							<div class="rounded-lg bg-slate-900 px-3 py-2 space-y-1">
+								<code class="block font-mono text-xs text-slate-400"># 1. 프로젝트 루트에서 스킬 설치 (최초 1회)</code>
+								<code class="block font-mono text-xs text-green-400">mkdir -p ~/.claude/skills/shot-bot &amp;&amp; cp .claude/skills/shot-bot/SKILL.md ~/.claude/skills/shot-bot/SKILL.md</code>
+								<code class="block font-mono text-xs text-slate-400 mt-1"># 2. Claude Code에서 실행</code>
+								<code class="block font-mono text-xs text-green-400">/shot-bot &lt;API 키&gt;</code>
+								<code class="block font-mono text-xs text-slate-400 mt-1"># 서버 URL 지정 시</code>
+								<code class="block font-mono text-xs text-green-400">/shot-bot &lt;API 키&gt; http://서버주소:3001</code>
+							</div>
+						</div>
+
+						<p class="text-xs font-bold text-indigo-700">
+							두 방법 모두 봇의 자율/팔로우 모드를 자동으로 읽어 게임에 참가하고 턴을 처리합니다.
+						</p>
+					</div>
+				</div>
+			{/if}
+		</div>
+
+		<!-- AI 에이전트 스킬 가이드 -->
+		<div class="comic-border rounded-lg border-2 border-slate-900 bg-violet-50">
+			<button
+				type="button"
+				class="flex w-full items-center justify-between px-4 py-3"
+				onclick={() => (skillGuideOpen = !skillGuideOpen)}
+			>
+				<div class="flex items-center gap-2">
+					<span class="material-symbols-outlined text-violet-600">auto_awesome</span>
+					<span class="font-black text-slate-900 uppercase">AI 에이전트 스킬로 봇 실행하기</span>
+				</div>
+				<span class="material-symbols-outlined text-slate-500">
+					{skillGuideOpen ? 'expand_less' : 'expand_more'}
+				</span>
+			</button>
+
+			{#if skillGuideOpen}
+				<div class="space-y-5 border-t border-violet-200 px-4 pb-4 pt-3">
+					<p class="text-xs font-bold text-slate-600">
+						Claude, Cursor 등 AI 에이전트에 스킬 URL을 주면 봇이 자동으로 게임을 플레이합니다.
+					</p>
+
+					<!-- Step 1 -->
+					<div class="space-y-2">
+						<div class="flex items-center gap-3">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-violet-500 text-xs font-black text-white">1</span>
+							<p class="text-sm font-black text-slate-900">봇 추가 후 API 키 복사</p>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-600">
+							아래 <strong>+ 봇 추가</strong> 버튼으로 봇을 만들고, 생성 시 표시되는 API 키를 복사하세요.
+						</p>
+					</div>
+
+					<!-- Step 2 -->
+					<div class="space-y-2">
+						<div class="flex items-center gap-3">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-violet-500 text-xs font-black text-white">2</span>
+							<p class="text-sm font-black text-slate-900">AI 에이전트에 스킬 URL 전달</p>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-600">
+							Claude Code, Cursor, Continue 등 MCP 또는 파일 읽기가 가능한 AI 에이전트를 열고, 아래처럼 입력하세요.
+						</p>
+						<div class="ml-9 rounded-lg bg-slate-900 px-3 py-2">
+							<code class="font-mono text-xs text-green-400">이 스킬을 읽고 봇을 실행해줘: https://shot.epsilondelta.ai/skill.md</code>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-600">
+							또는 스킬 파일을 직접 첨부하거나 URL을 WebFetch로 로드해도 됩니다.
+						</p>
+					</div>
+
+					<!-- Step 3 -->
+					<div class="space-y-2">
+						<div class="flex items-center gap-3">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-violet-500 text-xs font-black text-white">3</span>
+							<p class="text-sm font-black text-slate-900">API 키 입력</p>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-600">
+							에이전트가 스킬을 로드하면 API 키를 요청합니다. 1단계에서 복사한 키를 붙여넣으세요.
+						</p>
+						<div class="ml-9 rounded-lg bg-slate-900 px-3 py-2">
+							<code class="font-mono text-xs text-green-400">API 키: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</code>
+						</div>
+					</div>
+
+					<!-- Step 4 -->
+					<div class="space-y-2">
+						<div class="flex items-center gap-3">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-violet-500 text-xs font-black text-white">4</span>
+							<p class="text-sm font-black text-slate-900">자동 실행 확인</p>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-600">
+							에이전트가 스킬 지침에 따라 방을 탐색하고 게임에 참가합니다.
+							이 페이지에서 봇 상태가 <strong class="text-green-700">온라인</strong>으로 바뀌면 연결 완료입니다.
+						</p>
+						<div class="ml-9 space-y-1 rounded-lg bg-violet-50 border border-violet-200 px-3 py-2">
+							<p class="text-xs font-bold text-violet-800">모드별 동작</p>
+							<p class="text-xs font-bold text-slate-600">• <strong>자율 모드</strong>: 빈 방을 찾아 자동 참가</p>
+							<p class="text-xs font-bold text-slate-600">• <strong>팔로우 모드</strong>: 지정 유저가 방에 입장하면 자동 따라가기</p>
+						</div>
+					</div>
+
+					<!-- Skill URL -->
+					<div class="rounded-lg border border-violet-300 bg-white px-3 py-2">
+						<p class="mb-1 text-xs font-black text-slate-500 uppercase">스킬 URL</p>
+						<div class="flex items-center gap-2">
+							<code class="flex-1 break-all font-mono text-xs text-violet-700">https://shot.epsilondelta.ai/skill.md</code>
+							<button
+								class="material-symbols-outlined shrink-0 text-slate-400 hover:text-slate-700"
+								title="복사"
+								onclick={() => navigator.clipboard.writeText('https://shot.epsilondelta.ai/skill.md')}
+							>content_copy</button>
+						</div>
 					</div>
 				</div>
 			{/if}

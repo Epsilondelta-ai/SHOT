@@ -31,17 +31,10 @@ export const botRoutes = new Elysia()
     const body = (await request.json()) as {
       name?: string;
       active?: boolean;
-      clientMode?: "autonomous" | "follow-owner";
-      followUserId?: string;
     };
     if (!body.name?.trim()) {
       set.status = 400;
       return { error: "Name is required" };
-    }
-
-    if (body.clientMode === "follow-owner" && !body.followUserId) {
-      set.status = 400;
-      return { error: "followUserId is required for follow-owner mode" };
     }
 
     const rawApiKey = crypto.randomUUID();
@@ -51,8 +44,6 @@ export const botRoutes = new Elysia()
       .values({
         userId: user.id,
         name: body.name.trim(),
-        clientMode: body.clientMode ?? "autonomous",
-        followUserId: body.clientMode === "follow-owner" ? (body.followUserId ?? null) : null,
         active: body.active ?? true,
         presenceStatus: "offline",
         apiKey: hashBotSecret(rawApiKey),
@@ -84,17 +75,10 @@ export const botRoutes = new Elysia()
     const body = (await request.json()) as {
       name?: string;
       active?: boolean;
-      clientMode?: "autonomous" | "follow-owner";
-      followUserId?: string | null;
     };
     if (!body.name?.trim()) {
       set.status = 400;
       return { error: "Name is required" };
-    }
-
-    if (body.clientMode === "follow-owner" && !body.followUserId) {
-      set.status = 400;
-      return { error: "followUserId is required for follow-owner mode" };
     }
 
     await db
@@ -102,11 +86,6 @@ export const botRoutes = new Elysia()
       .set({
         name: body.name.trim(),
         active: body.active ?? true,
-        ...(body.clientMode !== undefined && {
-          clientMode: body.clientMode,
-          followUserId:
-            body.clientMode === "follow-owner" ? (body.followUserId ?? null) : null,
-        }),
         updatedAt: new Date(),
       })
       .where(eq(bot.id, params.id));

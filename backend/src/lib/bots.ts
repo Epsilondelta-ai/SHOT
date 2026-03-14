@@ -7,8 +7,6 @@ import { isBotOnline } from "./botPresence";
 export type PublicBotSummary = {
   id: string;
   name: string;
-  clientMode: "autonomous" | "follow-owner" | null;
-  followUserId: string | null;
   active: boolean;
   presenceStatus: "online" | "offline";
   created: string | null;
@@ -49,8 +47,6 @@ export function serializeBot(botRow: NonNullable<BotRow>, busy = false): PublicB
   return {
     id: botRow.id,
     name: botRow.name,
-    clientMode: botRow.clientMode ?? null,
-    followUserId: botRow.followUserId ?? null,
     active: botRow.active,
     presenceStatus: isBotOnline(botRow.id) ? "online" : botRow.presenceStatus,
     created: formatDate(botRow.createdAt),

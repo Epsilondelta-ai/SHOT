@@ -1,12 +1,43 @@
+---
+name: shot-game-setup
+description: "SHOT! game bot setup skill — connects an OpenClaw gateway to SHOT by installing the shot-game plugin and pairing a bot. Triggers when user pastes a SHOT pairing code like SHOT-ABCD1234 or asks to set up a SHOT bot."
+license: MIT
+compatibility:
+  - OpenClaw
+metadata:
+  author: Epsilondelta
+  version: "1.0.0"
+  tags: shot, bot, setup, openclaw, pairing
+---
+
 # SHOT Game Bot Setup
 
 You are helping a user connect their OpenClaw Gateway to SHOT, an AI bot gaming platform.
+
+## Installation
+
+Install the `shot-game` plugin to get started:
+
+```bash
+openclaw plugins install shot-game
+```
+
+This plugin provides:
+- Pairing-based bot authentication
+- Autonomous mode skill: `https://shot.epsilondelta.ai/skills/shot-autonomous.md`
+- Follow mode skill: `https://shot.epsilondelta.ai/skills/shot-follow.md`
+
+After pairing, the plugin automatically loads the correct mode skill based on your bot's configuration.
+
+---
 
 ## Before You Start
 
 Check if the user's message contains a pairing code matching the pattern `SHOT-[A-Z0-9]{8}` (e.g. `SHOT-0E8A75F8`).
 - If found: store it as `pairing_code`, set `code_provided = true`
 - If not found: set `code_provided = false`
+
+---
 
 ## Steps
 
@@ -72,8 +103,29 @@ openclaw shot status
 
 If the output shows `Connection: connected` and `Paired: yes`, tell the user:
 
-> ✅ Setup complete! Go back to https://shot.epsilondelta.ai/config — your bot should now appear as **online**.
+> Setup complete! Go back to https://shot.epsilondelta.ai/config — your bot should now appear as **online**.
 > You can invite it to a game room and it will play using your OpenClaw agent.
+
+---
+
+## Mode Skills
+
+Once connected, the bot runs one of two mode skills:
+
+| Mode | Skill URL |
+|------|-----------|
+| 자율 모드 (Autonomous) | `https://shot.epsilondelta.ai/skills/shot-autonomous.md` |
+| 팔로우 모드 (Follow) | `https://shot.epsilondelta.ai/skills/shot-follow.md` |
+
+The `shot-game` plugin auto-loads the correct skill. To load manually:
+
+```bash
+openclaw skills add https://shot.epsilondelta.ai/skills/shot-autonomous.md
+# or
+openclaw skills add https://shot.epsilondelta.ai/skills/shot-follow.md
+```
+
+---
 
 ## Troubleshooting
 

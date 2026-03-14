@@ -23,6 +23,7 @@ export const load: PageLoad = async ({ fetch }) => {
 
 	return {
 		bots,
+		userId: session.user.id as string,
 		username: meData.name ?? '',
 		avatarSrc: meData.image ?? '',
 		isAdmin: meData.role === 'admin'

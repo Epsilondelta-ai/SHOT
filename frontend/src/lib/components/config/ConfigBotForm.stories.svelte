@@ -32,23 +32,7 @@
 		editingBot: {
 			id: 'b1',
 			name: 'Alpha Bot',
-			active: true,
-			clientMode: 'autonomous',
-			followUserId: null
-		}
-	}}
-/>
-
-<Story
-	name="Edit Follow-Owner Bot"
-	args={{
-		isOpen: true,
-		editingBot: {
-			id: 'b2',
-			name: 'Follow Bot',
-			active: true,
-			clientMode: 'follow-owner',
-			followUserId: 'user_abc123'
+			active: true
 		}
 	}}
 />

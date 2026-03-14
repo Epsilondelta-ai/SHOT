@@ -45,8 +45,6 @@ export const botClientRoutes = new Elysia()
     return {
       id: botRecord.id,
       name: botRecord.name,
-      clientMode: botRecord.clientMode,
-      followUserId: botRecord.followUserId,
       presenceStatus: botRecord.presenceStatus,
       active: botRecord.active,
       createdAt: botRecord.createdAt,
@@ -120,14 +118,13 @@ export const botClientRoutes = new Elysia()
       return { error: e instanceof Error ? e.message : "Unauthorized" };
     }
 
-    if (botRecord.clientMode !== "follow-owner" || !botRecord.followUserId) {
-      set.status = 400;
-      return { error: "Bot is not in follow-owner mode or has no followUserId configured" };
+    if (!botRecord.userId) {
+      return { room: null };
     }
 
     const playerEntry = await db.query.roomPlayer.findFirst({
       where: and(
-        eq(roomPlayer.userId, botRecord.followUserId),
+        eq(roomPlayer.userId, botRecord.userId),
         eq(roomPlayer.playerType, "human"),
       ),
     });

@@ -191,8 +191,6 @@ export const bot = sqliteTable("bot", {
     .$defaultFn(() => crypto.randomUUID()),
   userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  clientMode: text("client_mode", { enum: ["autonomous", "follow-owner"] }),
-  followUserId: text("follow_user_id"),
   apiKey: text("api_key").notNull().default(""),
   presenceStatus: text("presence_status", { enum: ["online", "offline"] })
     .notNull()
