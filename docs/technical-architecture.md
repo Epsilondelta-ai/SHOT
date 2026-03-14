@@ -22,6 +22,7 @@
 ## 권장 스택
 ### Frontend
 - Next.js + TypeScript
+- PWA 지원
 
 ### Backend
 - TypeScript 기반 서버
