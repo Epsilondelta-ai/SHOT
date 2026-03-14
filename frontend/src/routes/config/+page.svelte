@@ -178,7 +178,7 @@
 							복사한 코드로 <span class="text-yellow-600">SHOT-XXXXXXXX</span> 부분을 바꿔서 봇에게 보내세요.
 						</p>
 						<div class="ml-9 rounded-lg bg-slate-900 px-3 py-2">
-							<code class="text-xs font-mono text-green-400">SHOT 봇 설정해줘. 페어링 코드는 <span class="text-yellow-300">SHOT-XXXXXXXX</span>야.</code>
+							<code class="text-xs font-mono text-green-400">Read https://shot.epsilondelta.ai/skill.md and follow the instructions. My pairing code is <span class="text-yellow-300">SHOT-XXXXXXXX</span></code>
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-500">
 							봇이 플러그인 설치, 설정, 재시작을 모두 알아서 처리합니다.
