@@ -20,31 +20,47 @@
 - **Client / Bot → Server**: HTTP Action API
 - **Replay**: 이벤트 로그 기반 재생
 
+## 초기 구현 원칙
+- **단일 서버 MVP**
+- **웹앱 + API는 한 서비스**
+- **DB는 SQLite부터 시작 가능**
+- **Redis는 처음엔 넣지 않음**
+- **bot worker는 별도 서버가 아니라 같은 프로젝트 내 논리 계층 또는 같은 머신의 별도 프로세스 수준으로 시작**
+
+즉, 초기 목표는 확장성보다 제품 검증이다.
+
 ## 권장 스택
 ### Frontend
 - Next.js + TypeScript
-- 이유: 페이지/라우팅/서버 액션/배포 생태계가 안정적이고, 문서와 인력 풀이 넓다.
 
 ### Backend
-- NestJS 또는 Fastify 기반 TypeScript 서비스
-- 이유: 모듈 경계, 테스트성, DI, 운영 관점에서 장기 유지보수에 유리하다.
+- TypeScript 기반 서버
+- NestJS 또는 Fastify 계열을 우선 검토
+- 단, 초기 MVP에서는 "프레임워크 정답"보다 문서와 생산성을 우선한다.
 
 ### Database
-- PostgreSQL
-- 이유: 운영 기준 DB를 처음부터 고정
+- **초기: SQLite**
+- **확장 시: PostgreSQL**
 
 ### ORM
 - Prisma 또는 Drizzle 중 하나
-- 단, 이번엔 문서와 팀 생산성을 우선해 **Prisma** 쪽이 다소 유리함
+- 초기 생산성과 문서 친화성 측면에서는 Prisma가 다소 유리하다.
 
 ### Queue / Worker
-- Redis + BullMQ(또는 동급)
-- 용도:
-  - bot decision job
-  - replay post-processing
-  - notification/fallback 처리
+- **초기: 별도 큐 없음**
+- 필요 시 메모리 큐 또는 단순 job runner
+- 확장 시 Redis/BullMQ 계열 도입 검토
 
 ## 서버 구성
+### 초기 MVP
+1. Web App
+2. Game API
+3. Event Stream(SSE)
+4. Bot Worker Logic
+5. Replay Store
+6. SQLite
+
+### 확장 단계
 1. Web App
 2. Game API
 3. Event Stream(SSE)
@@ -60,4 +76,4 @@
 - 현재 상태는 event + snapshot 조합으로 복원 가능해야 한다.
 
 ## 한 줄 결론
-**SHOT는 WebSocket 실시간 앱이 아니라, 이벤트 스트림 기반 보드게임 플랫폼으로 재설계하는 편이 더 효율적이다.**
+**SHOT는 WebSocket 중심 실시간 앱이 아니라, SSE + Action API + Replay 중심의 단일 서버 MVP로 시작하는 편이 가장 효율적이다.**
