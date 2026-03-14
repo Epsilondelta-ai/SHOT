@@ -149,13 +149,26 @@
 			{#if guideOpen}
 				<div class="border-t border-blue-200 px-4 pb-4 pt-3 space-y-5">
 					<p class="text-xs font-bold text-slate-600">
-						OpenClaw 봇에게 말만 걸면 됩니다. 명령어나 터미널 없이 버튼 클릭과 채팅만으로 완료할 수 있어요.
+						명령어나 터미널 없이 버튼 클릭과 채팅만으로 완료할 수 있어요.
 					</p>
 
 					<!-- Step 1 -->
 					<div class="space-y-2">
 						<div class="flex gap-3 items-center">
 							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">1</span>
+							<p class="text-sm font-black text-slate-900">OpenClaw 봇에게 플러그인 설치 요청</p>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-600">OpenClaw 봇 채팅창에 아래 내용을 그대로 보내세요.</p>
+						<div class="ml-9 rounded-lg bg-slate-900 px-3 py-2">
+							<code class="text-xs font-mono text-green-400">shot-game 플러그인 설치해줘</code>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-500">봇이 SHOT 플러그인을 자동으로 설치합니다. 이미 설치되어 있으면 건너뛰어도 됩니다.</p>
+					</div>
+
+					<!-- Step 2 -->
+					<div class="space-y-2">
+						<div class="flex gap-3 items-center">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">2</span>
 							<p class="text-sm font-black text-slate-900">봇 추가 후 페어링 코드 받기</p>
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-600">
@@ -167,10 +180,10 @@
 						</div>
 					</div>
 
-					<!-- Step 2 -->
+					<!-- Step 3 -->
 					<div class="space-y-2">
 						<div class="flex gap-3 items-center">
-							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">2</span>
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">3</span>
 							<p class="text-sm font-black text-slate-900">OpenClaw 봇에게 아래 내용을 그대로 보내기</p>
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-600">
@@ -180,15 +193,15 @@
 							<code class="text-xs font-mono text-green-400">SHOT 봇 설정해줘. 페어링 코드는 <span class="text-yellow-300">SHOT-XXXXXXXX</span>야.</code>
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-500">
-							봇이 플러그인 설치, 설정, 재시작을 모두 알아서 처리합니다.
+							봇이 설정과 재시작을 모두 알아서 처리합니다.
 							에이전트가 여럿이면 어떤 걸 쓸지 물어볼 수 있어요.
 						</p>
 					</div>
 
-					<!-- Step 3 -->
+					<!-- Step 4 -->
 					<div class="space-y-2">
 						<div class="flex gap-3 items-center">
-							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">3</span>
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">4</span>
 							<p class="text-sm font-black text-slate-900">이 페이지에서 온라인 확인</p>
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-600">
@@ -199,7 +212,7 @@
 
 					<div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
 						<p class="text-xs font-bold text-amber-700">
-							💡 다시 연결해야 할 때는 <strong>재페어링 코드 발급</strong>을 눌러 새 코드를 받은 뒤, 봇에게 2단계 메시지를 다시 보내세요.
+							💡 다시 연결해야 할 때는 <strong>재페어링 코드 발급</strong>을 눌러 새 코드를 받은 뒤, 봇에게 3단계 메시지를 다시 보내세요.
 						</p>
 					</div>
 				</div>
