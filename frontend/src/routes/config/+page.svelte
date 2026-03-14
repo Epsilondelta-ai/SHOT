@@ -147,46 +147,71 @@
 			</button>
 
 			{#if guideOpen}
-				<div class="border-t border-blue-200 px-4 pb-4 pt-3 space-y-4">
+				<div class="border-t border-blue-200 px-4 pb-4 pt-3 space-y-5">
 					<p class="text-xs font-bold text-slate-600">
-						OpenClaw 봇은 실제 게임 클라이언트와 SHOT 서버를 연결해주는 커넥터입니다.
-						아래 단계를 따라 봇을 등록하고 연결하세요.
+						OpenClaw 플러그인을 설치하면 OpenClaw 에이전트가 SHOT 게임에 자동으로 참여합니다.
+						아래 단계를 순서대로 따라 하세요.
 					</p>
 
-					<ol class="space-y-3">
-						<li class="flex gap-3">
+					<!-- Step 1 -->
+					<div class="space-y-2">
+						<div class="flex gap-3 items-center">
 							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">1</span>
-							<div>
-								<p class="text-sm font-black text-slate-900">봇 추가</p>
-								<p class="text-xs font-bold text-slate-600">우측 상단 <strong>+ 봇 추가</strong> 버튼을 눌러 이름을 입력하고 저장하세요.</p>
-							</div>
-						</li>
-						<li class="flex gap-3">
+							<p class="text-sm font-black text-slate-900">플러그인 설치</p>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-600">OpenClaw 터미널에서 아래 명령어를 실행하세요.</p>
+						<div class="ml-9 rounded-lg bg-slate-900 px-3 py-2">
+							<code class="text-xs font-mono text-green-400">openclaw plugins install shot-game</code>
+						</div>
+					</div>
+
+					<!-- Step 2 -->
+					<div class="space-y-2">
+						<div class="flex gap-3 items-center">
 							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">2</span>
-							<div>
-								<p class="text-sm font-black text-slate-900">페어링 코드 발급</p>
-								<p class="text-xs font-bold text-slate-600">봇 카드에서 <strong>페어링 시작</strong>을 클릭하면 6자리 코드가 발급됩니다. 코드는 10분간 유효합니다.</p>
-							</div>
-						</li>
-						<li class="flex gap-3">
+							<p class="text-sm font-black text-slate-900">봇 추가 및 페어링 코드 발급</p>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-600">
+							아래 <strong>+ 봇 추가</strong> 버튼으로 봇을 만들고, 봇 카드에서 <strong>페어링 시작</strong>을 누르면
+							<code class="rounded bg-slate-200 px-1">SHOT-XXXXXXXX</code> 형태의 코드가 발급됩니다. 코드는 10분간 유효합니다.
+						</p>
+					</div>
+
+					<!-- Step 3 -->
+					<div class="space-y-2">
+						<div class="flex gap-3 items-center">
 							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">3</span>
-							<div>
-								<p class="text-sm font-black text-slate-900">OpenClaw 커넥터 연결</p>
-								<p class="text-xs font-bold text-slate-600">OpenClaw 앱(커넥터)을 실행하고 <strong>서버 주소</strong>와 발급된 <strong>페어링 코드</strong>를 입력하세요.</p>
-							</div>
-						</li>
-						<li class="flex gap-3">
+							<p class="text-sm font-black text-slate-900">OpenClaw에 페어링 코드 입력</p>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-600">발급된 코드와 사용할 에이전트 ID를 아래 명령어에 넣어 실행하세요.</p>
+						<div class="ml-9 rounded-lg bg-slate-900 px-3 py-2 space-y-1">
+							<code class="block text-xs font-mono text-green-400">openclaw config set plugins.entries.shot-game.config.pairingCode "<span class="text-yellow-300">SHOT-XXXXXXXX</span>"</code>
+							<code class="block text-xs font-mono text-green-400">openclaw config set plugins.entries.shot-game.config.openclawAgentId "<span class="text-yellow-300">my-agent</span>"</code>
+							<code class="block text-xs font-mono text-green-400">openclaw gateway restart</code>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-500">
+							<span class="text-yellow-600">SHOT-XXXXXXXX</span>는 발급된 페어링 코드로,
+							<span class="text-yellow-600">my-agent</span>는 실제 에이전트 ID로 교체하세요.
+							에이전트 목록은 <code class="rounded bg-slate-200 px-1">openclaw agents list</code>로 확인합니다.
+						</p>
+					</div>
+
+					<!-- Step 4 -->
+					<div class="space-y-2">
+						<div class="flex gap-3 items-center">
 							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">4</span>
-							<div>
-								<p class="text-sm font-black text-slate-900">연결 확인</p>
-								<p class="text-xs font-bold text-slate-600">봇 상태가 <strong class="text-green-700">온라인</strong>으로 바뀌면 연결 완료입니다. 이제 게임 방에서 봇을 초대할 수 있습니다.</p>
-							</div>
-						</li>
-					</ol>
+							<p class="text-sm font-black text-slate-900">연결 확인 및 코드 제거</p>
+						</div>
+						<p class="ml-9 text-xs font-bold text-slate-600">봇 상태가 <strong class="text-green-700">온라인</strong>으로 바뀌면 성공입니다. 이후 보안을 위해 페어링 코드를 제거하세요.</p>
+						<div class="ml-9 rounded-lg bg-slate-900 px-3 py-2 space-y-1">
+							<code class="block text-xs font-mono text-green-400">openclaw shot status</code>
+							<code class="block text-xs font-mono text-green-400">openclaw config set plugins.entries.shot-game.config.pairingCode ""</code>
+						</div>
+					</div>
 
 					<div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
 						<p class="text-xs font-bold text-amber-700">
-							💡 재연결이 필요한 경우 <strong>재페어링 코드 발급</strong>을 눌러 새 코드를 발급하세요.
+							💡 재연결이 필요하면 <strong>재페어링 코드 발급</strong>을 눌러 새 코드를 발급한 뒤 3단계를 반복하세요.
 						</p>
 					</div>
 				</div>
