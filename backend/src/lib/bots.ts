@@ -2,22 +2,18 @@ import { and, eq, type InferInsertModel } from "drizzle-orm";
 import { db } from "../db";
 import { bot, room, roomPlayer } from "../db/schema";
 import { formatDate, formatIso } from "./botAuth";
-import { getBotConnectionMeta, isBotOnline } from "./botPresence";
+import { isBotOnline } from "./botPresence";
 
 export type PublicBotSummary = {
   id: string;
   name: string;
-  provider: "openclaw";
+  clientMode: "autonomous" | "follow-owner" | null;
+  followUserId: string | null;
   active: boolean;
-  pairingStatus: "unpaired" | "pairing" | "paired" | "error";
   presenceStatus: "online" | "offline";
   created: string | null;
   updated: string | null;
   lastSeenAt: string | null;
-  pairingCodeExpiresAt: string | null;
-  connectorName: string | null;
-  connectorVersion: string | null;
-  deviceId: string | null;
   busy: boolean;
 };
 
@@ -50,30 +46,22 @@ export async function isBotBusy(botId: string, excludeRoomId?: string): Promise<
 }
 
 export function serializeBot(botRow: NonNullable<BotRow>, busy = false): PublicBotSummary {
-  const liveMeta = getBotConnectionMeta(botRow.id);
-  const lastSeenAt = liveMeta?.lastSeenAt ?? botRow.lastSeenAt;
-
   return {
     id: botRow.id,
     name: botRow.name,
-    provider: "openclaw",
+    clientMode: botRow.clientMode ?? null,
+    followUserId: botRow.followUserId ?? null,
     active: botRow.active,
-    pairingStatus: botRow.pairingStatus,
     presenceStatus: isBotOnline(botRow.id) ? "online" : botRow.presenceStatus,
     created: formatDate(botRow.createdAt),
     updated: formatDate(botRow.updatedAt),
-    lastSeenAt: formatIso(lastSeenAt),
-    pairingCodeExpiresAt: formatIso(botRow.pairingCodeExpiresAt),
-    connectorName: liveMeta?.connectorName ?? botRow.connectorName ?? null,
-    connectorVersion: liveMeta?.connectorVersion ?? botRow.connectorVersion ?? null,
-    deviceId: liveMeta?.deviceId ?? botRow.deviceId ?? null,
+    lastSeenAt: formatIso(botRow.lastSeenAt),
     busy,
   };
 }
 
 export async function listBotsForUser(userId: string): Promise<PublicBotSummary[]> {
   const rows = await getOwnedBots(userId);
-
   return Promise.all(rows.map(async (entry) => serializeBot(entry, await isBotBusy(entry.id))));
 }
 

@@ -634,28 +634,6 @@ export const roomRoutes = new Elysia()
       return { error: "Unauthorized" };
     }
 
-    if (u.role !== "admin") {
-      set.status = 403;
-      return { error: "Only admins can add bots" };
-    }
-
-    const { roomData, member, isHost } = await getRoomManagementContext(
-      params.id,
-      u.id,
-    );
-    if (!roomData) {
-      set.status = 404;
-      return { error: "Room not found" };
-    }
-    if (!member && !isHost) {
-      set.status = 403;
-      return { error: "You must join the room first" };
-    }
-    if ((await getRoomPlayerCount(params.id)) >= roomData.maxPlayers) {
-      set.status = 403;
-      return { error: "Room is full" };
-    }
-
     const body = (await request.json()) as { botId?: string };
     if (!body.botId) {
       set.status = 400;
@@ -667,18 +645,22 @@ export const roomRoutes = new Elysia()
       set.status = 404;
       return { error: "Bot not found" };
     }
+
+    const roomData = await getRoomById(params.id);
+    if (!roomData) {
+      set.status = 404;
+      return { error: "Room not found" };
+    }
+    if ((await getRoomPlayerCount(params.id)) >= roomData.maxPlayers) {
+      set.status = 403;
+      return { error: "Room is full" };
+    }
+
     if (!selectedBot.active) {
       set.status = 400;
       return { error: "Bot is inactive" };
     }
-    if (selectedBot.pairingStatus !== "paired") {
-      set.status = 400;
-      return { error: "Bot is not paired yet" };
-    }
-    if (selectedBot.presenceStatus !== "online") {
-      set.status = 400;
-      return { error: "Bot is offline" };
-    }
+
     if (await isBotBusy(selectedBot.id, params.id)) {
       set.status = 400;
       return { error: "Bot is already busy in another room" };
@@ -693,15 +675,15 @@ export const roomRoutes = new Elysia()
       return { error: "Bot is already in this room" };
     }
 
-    const displayName = `${selectedBot.name} (OpenClaw)`;
     const [newPlayer] = await db
       .insert(roomPlayer)
       .values({
         roomId: params.id,
         userId: `bot:${crypto.randomUUID()}`,
         playerType: "bot",
-        displayName,
+        displayName: selectedBot.name,
         botId: selectedBot.id,
+        ready: true,
       })
       .returning();
 
@@ -712,7 +694,7 @@ export const roomRoutes = new Elysia()
       player: {
         id: newPlayer.id,
         userId: newPlayer.userId,
-        name: displayName,
+        name: selectedBot.name,
         avatarSrc: null,
         type: "bot" as const,
         canManageBots: false,
@@ -723,7 +705,7 @@ export const roomRoutes = new Elysia()
         language: null,
         botId: selectedBot.id,
         presenceStatus: selectedBot.presenceStatus,
-        ready: true,
+        ready: newPlayer.ready,
       },
     };
   });
