@@ -176,8 +176,8 @@
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-600">
 							아래 <strong>+ 봇 추가</strong> 버튼으로 봇을 만들고, 봇 카드에서 <strong>페어링 시작</strong>을 누르세요.
-							<code class="rounded bg-slate-200 px-1">SHOT-5D7CA07E</code> 형태의 코드가 발급됩니다.
-							"SHOT-" 뒤 <strong>8자리 16진수</strong>이며, 코드는 10분간 유효합니다.
+							<code class="rounded bg-slate-200 px-1">SHOT-0E8A75F8</code> 같은 코드가 표시됩니다.
+							<code class="rounded bg-slate-200 px-1">SHOT-</code> 앞부분 포함 코드 전체를 그대로 복사하세요. 10분간 유효합니다.
 						</p>
 					</div>
 
