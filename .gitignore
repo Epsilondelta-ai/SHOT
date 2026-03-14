@@ -211,7 +211,7 @@ dist-ssr/
 shot.db
 shot.db-wal
 shot.db-shm
-drizzle/
+# drizzle/ migration files are committed for schema history
 
 # PWA generated files
 public/sw.js

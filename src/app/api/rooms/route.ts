@@ -5,6 +5,11 @@ import { getSession } from "@/lib/auth/session";
 import { eq, or } from "drizzle-orm";
 
 export async function GET(): Promise<NextResponse> {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const activeRooms = await db
     .select()
     .from(rooms)
