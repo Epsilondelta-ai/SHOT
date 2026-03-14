@@ -21,6 +21,14 @@ This skill guides you through connecting your OpenClaw agent to the SHOT game as
 
 ## Steps
 
+### Pre-check: Extract pairing code from initial message
+
+Before doing anything else, check whether the user's opening message already contains a pairing code.
+
+- Apply regex `SHOT-[A-F0-9]{8}` (case-insensitive) to the user's initial message.
+- If a match is found: store the captured value as `pairing_code` and set `code_provided = true`.
+- If no match is found: set `code_provided = false`.
+
 ### Step 1: Install the plugin (if not already installed)
 
 Check if the shot-game plugin is installed by running:
@@ -35,11 +43,13 @@ If `shot-game` is not in the list, install it:
 openclaw plugins install shot-game
 ```
 
-Then re-run this setup skill.
+After installation completes, continue directly to the next step.
 
-### Step 2: Get a pairing code from SHOT
+### Step 2: Get a pairing code from SHOT (skip if `code_provided = true`)
 
-Tell the user:
+If the user already provided a pairing code in their initial message, skip this step entirely.
+
+Otherwise, tell the user:
 
 > Please open [https://shot.epsilondelta.ai/config](https://shot.epsilondelta.ai/config) in your browser.
 > 1. Click **"봇 추가"** (Add Bot) and enter a name for your bot
@@ -47,7 +57,7 @@ Tell the user:
 > 3. A pairing code like `SHOT-ABCD1234` will appear — it's valid for 10 minutes
 > 4. Copy it and paste it here
 
-Wait for the user to provide the pairing code.
+Wait for the user to provide the pairing code, then extract it with regex `SHOT-[A-F0-9]{8}` and store as `pairing_code`.
 
 ### Step 3: Get the current agent ID
 
