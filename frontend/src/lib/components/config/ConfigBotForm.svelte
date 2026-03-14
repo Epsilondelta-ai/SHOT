@@ -1,10 +1,13 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { m } from '$lib/paraglide/messages';
 
 	type Bot = {
 		id: string;
 		name: string;
 		active: boolean;
+		clientMode: 'autonomous' | 'follow-owner' | null;
+		followUserId: string | null;
 	};
 
 	let {
@@ -19,32 +22,29 @@
 		oncancel?: () => void;
 	} = $props();
 
-	let name = $state('');
-	let active = $state(true);
-
-	$effect(() => {
-		if (editingBot) {
-			name = editingBot.name;
-			active = editingBot.active;
-			return;
-		}
-
-		name = '';
-		active = true;
-	});
+	let name = $state(untrack(() => editingBot?.name ?? ''));
+	let active = $state(untrack(() => editingBot?.active ?? true));
+	let clientMode = $state<'autonomous' | 'follow-owner'>(untrack(() => editingBot?.clientMode ?? 'autonomous'));
+	let followUserId = $state(untrack(() => editingBot?.followUserId ?? ''));
 
 	function handleSave() {
 		if (!name.trim()) return;
-		onsave?.({ name: name.trim(), active });
-		name = '';
-		active = true;
+		if (clientMode === 'follow-owner' && !followUserId.trim()) return;
+		onsave?.({
+			name: name.trim(),
+			active,
+			clientMode,
+			followUserId: clientMode === 'follow-owner' ? followUserId.trim() : null
+		});
 	}
 
 	function handleCancel() {
-		name = '';
-		active = true;
 		oncancel?.();
 	}
+
+	const canSave = $derived(
+		name.trim().length > 0 && (clientMode !== 'follow-owner' || followUserId.trim().length > 0)
+	);
 </script>
 
 {#if isOpen}
@@ -62,16 +62,40 @@
 					<input
 						id="bot-name"
 						class="comic-border-sm w-full rounded-lg bg-white px-3 py-2 text-sm font-bold placeholder:text-slate-400"
-						placeholder="My OpenClaw Bot"
+						placeholder="My Bot"
 						type="text"
 						bind:value={name}
 					/>
 				</div>
 
-				<div class="rounded-lg bg-slate-50 px-3 py-3 text-xs font-bold text-slate-500">
-					페어링 코드는 생성 후 10분 동안 유효합니다. 저장 후 목록에서 “페어링 시작”을 눌러
-					커넥터에 연결하세요.
+				<div>
+					<label class="mb-1 text-xs font-black text-slate-500 uppercase" for="client-mode">
+						모드
+					</label>
+					<select
+						id="client-mode"
+						class="comic-border-sm w-full rounded-lg bg-white px-3 py-2 text-sm font-bold"
+						bind:value={clientMode}
+					>
+						<option value="autonomous">자율 모드 — 스스로 방 탐색</option>
+						<option value="follow-owner">팔로우 모드 — 특정 유저 따라가기</option>
+					</select>
 				</div>
+
+				{#if clientMode === 'follow-owner'}
+					<div>
+						<label class="mb-1 text-xs font-black text-slate-500 uppercase" for="follow-user-id">
+							팔로우할 유저 ID
+						</label>
+						<input
+							id="follow-user-id"
+							class="comic-border-sm w-full rounded-lg bg-white px-3 py-2 text-sm font-bold placeholder:text-slate-400"
+							placeholder="user_xxxxxxxxxxxxxxxx"
+							type="text"
+							bind:value={followUserId}
+						/>
+					</div>
+				{/if}
 
 				<div class="flex items-center gap-2">
 					<input class="size-4 accent-primary" id="active" type="checkbox" bind:checked={active} />
@@ -90,7 +114,7 @@
 				</button>
 				<button
 					class="comic-button flex-1 rounded-lg border-2 border-slate-900 bg-primary px-4 py-3 font-black text-white uppercase"
-					disabled={!name.trim()}
+					disabled={!canSave}
 					onclick={handleSave}
 				>
 					{m.admin_save()}

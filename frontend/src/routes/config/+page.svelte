@@ -6,7 +6,6 @@
 	import BottomNav from '$lib/components/lobby/BottomNav.svelte';
 	import LobbyHeader from '$lib/components/lobby/LobbyHeader.svelte';
 	import { invalidateAll } from '$app/navigation';
-	import { onDestroy } from 'svelte';
 	import AddButton from '$lib/components/common/AddButton.svelte';
 	import ConfirmModal from '$lib/components/common/ConfirmModal.svelte';
 	import { apiPost, apiPut, apiDelete } from '$lib/api';
@@ -19,24 +18,22 @@
 		id: string;
 		name: string;
 		active: boolean;
-		pairingStatus: 'unpaired' | 'pairing' | 'paired' | 'error';
+		clientMode: 'autonomous' | 'follow-owner' | null;
+		followUserId: string | null;
 		presenceStatus: 'online' | 'offline';
 		created: string | null;
 		updated: string | null;
 		lastSeenAt: string | null;
-		pairingCodeExpiresAt: string | null;
-		connectorName: string | null;
-		connectorVersion?: string | null;
-		deviceId?: string | null;
 		busy?: boolean;
 	};
 
 	let activeTab: Tab = $state('bot');
 	let showBotForm = $state(false);
 	let editingBot: Bot | null = $state(null);
-	let pairingCodes = $state<Record<string, { code: string; expiresAt: string } | undefined>>({});
 	let showConfirmModal = $state(false);
 	let confirmCallback = $state<(() => void) | null>(null);
+	let newApiKey = $state<string | null>(null);
+	let newBotName = $state<string | null>(null);
 
 	function openConfirm(callback: () => void) {
 		confirmCallback = callback;
@@ -54,11 +51,13 @@
 		confirmCallback = null;
 	}
 
-	async function saveBot(bot: { name: string; active: boolean }) {
+	async function saveBot(bot: Omit<Bot, 'id' | 'presenceStatus' | 'created' | 'updated' | 'lastSeenAt' | 'busy'>) {
 		if (editingBot) {
 			await apiPut(`/api/bots/${editingBot.id}`, bot);
 		} else {
-			await apiPost('/api/bots', bot);
+			const result = await apiPost<{ bot: Bot; apiKey: string }>('/api/bots', bot);
+			newApiKey = result.apiKey;
+			newBotName = result.bot.name;
 		}
 
 		await invalidateAll();
@@ -78,47 +77,12 @@
 		});
 	}
 
-	async function startPairing(botId: string) {
-		const result = await apiPost<{ pairingCode: string; expiresAt: string }>(
-			`/api/bots/${botId}/pair/start`
-		);
-		pairingCodes = {
-			...pairingCodes,
-			[botId]: { code: result.pairingCode, expiresAt: result.expiresAt }
-		};
-		await invalidateAll();
-	}
-
-	async function cancelPairing(botId: string) {
-		await apiPost(`/api/bots/${botId}/pair/cancel`);
-		pairingCodes = {
-			...pairingCodes,
-			[botId]: undefined
-		};
-		await invalidateAll();
-	}
-
 	function closeBotForm() {
 		showBotForm = false;
 		editingBot = null;
 	}
 
 	let guideOpen = $state(false);
-	let pollTimer: ReturnType<typeof setInterval> | null = null;
-
-	$effect(() => {
-		const hasPairing = data.bots.some((b: Bot) => b.pairingStatus === 'pairing');
-		if (hasPairing && !pollTimer) {
-			pollTimer = setInterval(() => invalidateAll(), 3000);
-		} else if (!hasPairing && pollTimer) {
-			clearInterval(pollTimer);
-			pollTimer = null;
-		}
-	});
-
-	onDestroy(() => {
-		if (pollTimer) clearInterval(pollTimer);
-	});
 </script>
 
 <svelte:head>
@@ -130,7 +94,35 @@
 	<ConfigHeader {activeTab} onchange={(tab) => (activeTab = tab)} />
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-24">
-		<!-- OpenClaw 가이드 -->
+
+		<!-- API Key 발급 알림 -->
+		{#if newApiKey}
+			<div class="comic-border rounded-lg border-2 border-green-700 bg-green-50 p-4">
+				<div class="mb-2 flex items-center justify-between">
+					<p class="font-black text-green-800">봇 "{newBotName}" 생성 완료!</p>
+					<button
+						class="material-symbols-outlined text-green-700 hover:text-green-900"
+						onclick={() => { newApiKey = null; newBotName = null; }}
+					>close</button>
+				</div>
+				<p class="mb-2 text-xs font-bold text-green-700">
+					API 키는 지금만 표시됩니다. 반드시 복사해두세요.
+				</p>
+				<div class="flex items-center gap-2 rounded-lg bg-slate-900 px-3 py-2">
+					<code class="flex-1 break-all font-mono text-xs text-green-400">{newApiKey}</code>
+					<button
+						class="material-symbols-outlined shrink-0 text-slate-400 hover:text-white"
+						title="복사"
+						onclick={() => navigator.clipboard.writeText(newApiKey!)}
+					>content_copy</button>
+				</div>
+				<p class="mt-2 text-xs font-bold text-green-700">
+					봇 프로세스에서 <code class="rounded bg-green-100 px-1">Authorization: Bot &lt;API 키&gt;</code> 헤더로 인증하세요.
+				</p>
+			</div>
+		{/if}
+
+		<!-- 봇 클라이언트 가이드 -->
 		<div class="comic-border rounded-lg border-2 border-slate-900 bg-blue-50">
 			<button
 				type="button"
@@ -139,7 +131,7 @@
 			>
 				<div class="flex items-center gap-2">
 					<span class="material-symbols-outlined text-blue-600">help_outline</span>
-					<span class="font-black text-slate-900 uppercase">OpenClaw 봇 설정 가이드</span>
+					<span class="font-black text-slate-900 uppercase">봇 클라이언트 설정 가이드</span>
 				</div>
 				<span class="material-symbols-outlined text-slate-500">
 					{guideOpen ? 'expand_less' : 'expand_more'}
@@ -147,60 +139,82 @@
 			</button>
 
 			{#if guideOpen}
-				<div class="border-t border-blue-200 px-4 pb-4 pt-3 space-y-5">
+				<div class="space-y-5 border-t border-blue-200 px-4 pb-4 pt-3">
 					<p class="text-xs font-bold text-slate-600">
-						명령어나 터미널 없이 버튼 클릭과 채팅만으로 완료할 수 있어요.
+						봇 계정을 만들고 API 키로 인증하면 봇이 자동으로 게임에 참가합니다.
 					</p>
 
 					<!-- Step 1 -->
 					<div class="space-y-2">
-						<div class="flex gap-3 items-center">
+						<div class="flex items-center gap-3">
 							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">1</span>
-							<p class="text-sm font-black text-slate-900">봇 추가 후 페어링 코드 받기</p>
+							<p class="text-sm font-black text-slate-900">봇 추가 후 API 키 복사</p>
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-600">
-							아래 <strong>+ 봇 추가</strong> 버튼으로 봇을 만들고, 봇 카드에서 <strong>페어링 시작</strong>을 누르세요.
+							아래 <strong>+ 봇 추가</strong> 버튼으로 봇을 만드세요. 생성 직후 API 키가 표시됩니다.
 						</p>
-						<p class="ml-9 text-xs font-bold text-amber-700">OpenClaw Gateway가 실행 중이어야 합니다.</p>
-						<div class="ml-9 rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600">
-							<code class="rounded bg-primary/10 px-1 text-primary">SHOT-0E8A75F8</code> 같은 코드가 나타납니다.
-							이 코드 전체를 복사해 두세요. <span class="text-red-600">10분 안에 사용해야 합니다.</span>
+						<div class="ml-9 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+							<p class="text-xs font-bold text-amber-700">
+								API 키는 생성 시 한 번만 표시됩니다. 반드시 복사해두세요.
+							</p>
 						</div>
 					</div>
 
 					<!-- Step 2 -->
 					<div class="space-y-2">
-						<div class="flex gap-3 items-center">
+						<div class="flex items-center gap-3">
 							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">2</span>
-							<p class="text-sm font-black text-slate-900">OpenClaw 봇에게 아래 내용을 그대로 보내기</p>
+							<p class="text-sm font-black text-slate-900">봇 프로세스 실행</p>
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-600">
-							복사한 코드로 <span class="text-yellow-600">SHOT-XXXXXXXX</span> 부분을 바꿔서 봇에게 보내세요.
+							봇은 모든 요청에 아래 헤더를 포함해야 합니다.
 						</p>
 						<div class="ml-9 rounded-lg bg-slate-900 px-3 py-2">
-							<code class="text-xs font-mono text-green-400">Read https://shot.epsilondelta.ai/skill.md and follow the instructions. My pairing code is <span class="text-yellow-300">SHOT-XXXXXXXX</span></code>
+							<code class="font-mono text-xs text-green-400">Authorization: Bot &lt;API 키&gt;</code>
 						</div>
-						<p class="ml-9 text-xs font-bold text-slate-500">
-							봇이 플러그인 설치, 설정, 재시작을 모두 알아서 처리합니다.
-							에이전트가 여럿이면 어떤 걸 쓸지 물어볼 수 있어요.
+						<p class="ml-9 text-xs font-bold text-slate-600">
+							30초마다 <code class="rounded bg-slate-100 px-1 text-slate-700">POST /api/bot-client/heartbeat</code>를 호출해 온라인 상태를 유지하세요.
 						</p>
 					</div>
 
 					<!-- Step 3 -->
 					<div class="space-y-2">
-						<div class="flex gap-3 items-center">
+						<div class="flex items-center gap-3">
 							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">3</span>
+							<p class="text-sm font-black text-slate-900">모드별 방 참가</p>
+						</div>
+						<div class="ml-9 space-y-2">
+							<div class="rounded-lg bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">
+								<p class="mb-1 text-slate-800">자율 모드</p>
+								<code class="text-slate-500">GET /api/bot-client/rooms</code> → <code class="text-slate-500">POST /api/bot-client/rooms/:id/join</code>
+							</div>
+							<div class="rounded-lg bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600">
+								<p class="mb-1 text-slate-800">팔로우 모드</p>
+								<code class="text-slate-500">GET /api/bot-client/rooms/follow</code> → <code class="text-slate-500">POST /api/bot-client/rooms/:id/join</code>
+							</div>
+						</div>
+					</div>
+
+					<!-- Step 4 -->
+					<div class="space-y-2">
+						<div class="flex items-center gap-3">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">4</span>
+							<p class="text-sm font-black text-slate-900">턴 폴링 및 액션 제출</p>
+						</div>
+						<div class="ml-9 rounded-lg bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600 space-y-1">
+							<p><code class="text-slate-500">GET /api/bot-client/games/:id/turn</code> — 내 턴 대기 (롱폴링)</p>
+							<p><code class="text-slate-500">POST /api/bot-client/games/:id/actions</code> — 액션 제출</p>
+						</div>
+					</div>
+
+					<!-- Step 5 -->
+					<div class="space-y-2">
+						<div class="flex items-center gap-3">
+							<span class="flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-slate-900 bg-primary text-xs font-black text-white">5</span>
 							<p class="text-sm font-black text-slate-900">이 페이지에서 온라인 확인</p>
 						</div>
 						<p class="ml-9 text-xs font-bold text-slate-600">
 							봇 카드 상태가 <strong class="text-green-700">온라인</strong>으로 바뀌면 연결 완료입니다.
-							이제 게임 방에서 이 봇을 초대할 수 있어요.
-						</p>
-					</div>
-
-					<div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-						<p class="text-xs font-bold text-amber-700">
-							💡 다시 연결해야 할 때는 <strong>재페어링 코드 발급</strong>을 눌러 새 코드를 받은 뒤, 봇에게 2단계 메시지를 다시 보내세요.
 						</p>
 					</div>
 				</div>
@@ -216,14 +230,13 @@
 				}}
 			/>
 		</div>
+
 		<ConfigBotList
 			bots={data.bots}
-			{pairingCodes}
 			onedit={editBot}
 			ondelete={deleteBot}
-			onpairstart={startPairing}
-			onpaircancel={cancelPairing}
 		/>
+
 		{#if showBotForm}
 			<ConfigBotForm isOpen={showBotForm} {editingBot} onsave={saveBot} oncancel={closeBotForm} />
 		{/if}
