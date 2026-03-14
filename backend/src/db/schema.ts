@@ -191,27 +191,12 @@ export const bot = sqliteTable("bot", {
     .$defaultFn(() => crypto.randomUUID()),
   userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  provider: text("provider", { enum: ["openclaw"] })
-    .notNull()
-    .default("openclaw"),
+  clientMode: text("client_mode", { enum: ["autonomous", "follow-owner"] }),
+  followUserId: text("follow_user_id"),
   apiKey: text("api_key").notNull().default(""),
-  pairingStatus: text("pairing_status", {
-    enum: ["unpaired", "pairing", "paired", "error"],
-  })
-    .notNull()
-    .default("unpaired"),
   presenceStatus: text("presence_status", { enum: ["online", "offline"] })
     .notNull()
     .default("offline"),
-  pairingCode: text("pairing_code"),
-  pairingCodeExpiresAt: integer("pairing_code_expires_at", {
-    mode: "timestamp_ms",
-  }),
-  connectorTokenHash: text("connector_token_hash"),
-  connectorName: text("connector_name"),
-  connectorVersion: text("connector_version"),
-  connectorId: text("connector_id"),
-  deviceId: text("device_id"),
   lastSeenAt: integer("last_seen_at", { mode: "timestamp_ms" }),
   lastError: text("last_error"),
   active: integer("active", { mode: "boolean" }).notNull().default(true),

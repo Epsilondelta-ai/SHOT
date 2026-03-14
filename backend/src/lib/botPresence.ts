@@ -1,26 +1,22 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { bot } from "../db/schema";
-import type { GameAction } from "./gameState";
-import type { BotTurnRequestPayload } from "./botProtocol";
+import type { GameAction, GameSnapshot } from "./gameState";
 
-type WsLike = {
-  send: (payload: string) => void;
-  close?: () => void;
-};
-
-type BotConnection = {
+export type BotTurnRequestPayload = {
   botId: string;
-  ws: WsLike;
-  connectorId: string | null;
-  connectorName: string | null;
-  connectorVersion: string | null;
-  deviceId: string | null;
-  lastSeenAt: number;
+  roomId: string;
+  playerId: string;
+  userId: string;
+  language: string | null;
+  snapshot: GameSnapshot;
+  validActions: GameAction[];
+  timeoutMs: number;
 };
 
 type PendingBotTurn = {
   botId: string;
+  payload: BotTurnRequestPayload;
   resolve: (action: GameAction | null) => void;
   timer: ReturnType<typeof setTimeout>;
 };
@@ -28,8 +24,9 @@ type PendingBotTurn = {
 const OFFLINE_GRACE_MS = 30_000;
 const EXPIRY_SWEEP_MS = 5_000;
 
-const botConnections = new Map<string, BotConnection>();
 const pendingTurns = new Map<string, PendingBotTurn>();
+const botPendingTurnIndex = new Map<string, string>(); // botId → requestId
+const botLastSeenAt = new Map<string, number>();       // botId → timestamp
 const presenceListeners = new Set<(botId: string) => void | Promise<void>>();
 
 async function persistBotStatus(
@@ -37,19 +34,12 @@ async function persistBotStatus(
   fields: Partial<{
     presenceStatus: "online" | "offline";
     lastSeenAt: Date;
-    connectorId: string | null;
-    connectorName: string | null;
-    connectorVersion: string | null;
-    deviceId: string | null;
     lastError: string | null;
   }>,
 ) {
   await db
     .update(bot)
-    .set({
-      ...fields,
-      updatedAt: new Date(),
-    })
+    .set({ ...fields, updatedAt: new Date() })
     .where(eq(bot.id, botId));
 }
 
@@ -66,14 +56,17 @@ function clearPendingTurns(botId: string) {
     pending.resolve(null);
     pendingTurns.delete(requestId);
   }
+  botPendingTurnIndex.delete(botId);
 }
 
 const expirySweep = setInterval(() => {
   const now = Date.now();
-  for (const [botId, connection] of botConnections.entries()) {
-    if (now - connection.lastSeenAt < OFFLINE_GRACE_MS) continue;
-    void unregisterBotConnection(botId, "Connector heartbeat expired");
-    connection.ws.close?.();
+  for (const [botId, lastSeen] of botLastSeenAt.entries()) {
+    if (now - lastSeen < OFFLINE_GRACE_MS) continue;
+    botLastSeenAt.delete(botId);
+    clearPendingTurns(botId);
+    void persistBotStatus(botId, { presenceStatus: "offline", lastError: "Heartbeat expired" });
+    void notifyBotPresenceChanged(botId);
   }
 }, EXPIRY_SWEEP_MS);
 
@@ -84,125 +77,67 @@ export function onBotPresenceChanged(listener: (botId: string) => void | Promise
   return () => presenceListeners.delete(listener);
 }
 
-export async function registerBotConnection(connection: Omit<BotConnection, "lastSeenAt">) {
-  const existing = botConnections.get(connection.botId);
-  if (existing && existing.ws !== connection.ws) {
-    existing.ws.close?.();
-  }
-
-  botConnections.set(connection.botId, {
-    ...connection,
-    lastSeenAt: Date.now(),
-  });
-
-  await persistBotStatus(connection.botId, {
-    presenceStatus: "online",
-    lastSeenAt: new Date(),
-    connectorId: connection.connectorId,
-    connectorName: connection.connectorName,
-    connectorVersion: connection.connectorVersion,
-    deviceId: connection.deviceId,
-    lastError: null,
-  });
-  await notifyBotPresenceChanged(connection.botId);
-}
-
-export async function refreshBotConnection(botId: string) {
-  const connection = botConnections.get(botId);
-  if (!connection) return;
-  connection.lastSeenAt = Date.now();
-
-  await persistBotStatus(botId, {
-    presenceStatus: "online",
-    lastSeenAt: new Date(connection.lastSeenAt),
-    lastError: null,
-  });
-}
-
-export async function unregisterBotConnection(botId: string, lastError: string | null = null) {
-  if (!botConnections.has(botId)) return;
-  botConnections.delete(botId);
-  clearPendingTurns(botId);
-
-  await persistBotStatus(botId, {
-    presenceStatus: "offline",
-    lastSeenAt: new Date(),
-    lastError,
-  });
-  await notifyBotPresenceChanged(botId);
-}
-
-export function getBotConnection(botId: string): BotConnection | null {
-  return botConnections.get(botId) ?? null;
-}
-
 export function isBotOnline(botId: string): boolean {
-  const connection = botConnections.get(botId);
-  if (!connection) return false;
-  return Date.now() - connection.lastSeenAt < OFFLINE_GRACE_MS;
+  const lastSeen = botLastSeenAt.get(botId);
+  if (!lastSeen) return false;
+  return Date.now() - lastSeen < OFFLINE_GRACE_MS;
 }
 
-export function getBotLastSeenAt(botId: string): Date | null {
-  const connection = botConnections.get(botId);
-  return connection ? new Date(connection.lastSeenAt) : null;
+export async function registerBotClientHeartbeat(botId: string): Promise<void> {
+  botLastSeenAt.set(botId, Date.now());
+  await persistBotStatus(botId, {
+    presenceStatus: "online",
+    lastSeenAt: new Date(),
+    lastError: null,
+  });
 }
 
-export function getBotConnectionMeta(botId: string) {
-  const connection = botConnections.get(botId);
-  if (!connection) return null;
-
-  return {
-    connectorId: connection.connectorId,
-    connectorName: connection.connectorName,
-    connectorVersion: connection.connectorVersion,
-    deviceId: connection.deviceId,
-    lastSeenAt: new Date(connection.lastSeenAt),
-  };
-}
-
-export async function requestBotAction(options: {
+export async function requestBotActionPolling(options: {
   botId: string;
   payload: BotTurnRequestPayload;
 }): Promise<GameAction | null> {
-  const connection = botConnections.get(options.botId);
-  if (!connection) return null;
-
   const requestId = crypto.randomUUID();
   const timeoutMs = options.payload.timeoutMs;
 
   return new Promise((resolve) => {
     const timer = setTimeout(() => {
       pendingTurns.delete(requestId);
+      botPendingTurnIndex.delete(options.botId);
       resolve(null);
     }, timeoutMs);
 
     pendingTurns.set(requestId, {
       botId: options.botId,
+      payload: options.payload,
       resolve,
       timer,
     });
-
-    try {
-      connection.ws.send(
-        JSON.stringify({
-          type: "turn_request",
-          requestId,
-          payload: options.payload,
-        }),
-      );
-    } catch {
-      clearTimeout(timer);
-      pendingTurns.delete(requestId);
-      resolve(null);
-    }
+    botPendingTurnIndex.set(options.botId, requestId);
   });
 }
 
-export function resolveBotAction(requestId: string, action: GameAction | null) {
+export function getPollingTurnForBot(botId: string): {
+  requestId: string;
+  payload: BotTurnRequestPayload;
+} | null {
+  const requestId = botPendingTurnIndex.get(botId);
+  if (!requestId) return null;
+  const pending = pendingTurns.get(requestId);
+  if (!pending) return null;
+  return { requestId, payload: pending.payload };
+}
+
+export function resolveBotAction(
+  requestId: string,
+  action: GameAction | null,
+  callingBotId?: string,
+): boolean {
   const pending = pendingTurns.get(requestId);
   if (!pending) return false;
+  if (callingBotId !== undefined && pending.botId !== callingBotId) return false;
   clearTimeout(pending.timer);
   pendingTurns.delete(requestId);
+  botPendingTurnIndex.delete(pending.botId);
   pending.resolve(action);
   return true;
 }

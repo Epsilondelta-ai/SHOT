@@ -3,6 +3,7 @@ import { db } from '../db';
 import { eq } from 'drizzle-orm';
 import { assistant, bot } from '../db/schema';
 import { listBotsForUser, serializeBot, getOwnedBot } from '../lib/bots';
+import { hashBotSecret } from '../lib/botAuth';
 import { requireUser } from '../lib/getUser';
 
 export const configRoutes = new Elysia()
@@ -115,19 +116,18 @@ export const configRoutes = new Elysia()
 			return { error: 'Name is required' };
 		}
 
+		const rawApiKey = crypto.randomUUID();
 		const [createdBot] = await db
 			.insert(bot)
 			.values({
 				userId: u.id,
 				name: body.name.trim(),
-				provider: 'openclaw',
 				active: body.active ?? true,
-				pairingStatus: 'unpaired',
 				presenceStatus: 'offline',
-				apiKey: ''
+				apiKey: hashBotSecret(rawApiKey),
 			})
 			.returning();
-		return { success: true, bot: serializeBot(createdBot) };
+		return { success: true, bot: serializeBot(createdBot), apiKey: rawApiKey };
 	})
 
 	.put('/api/config/bots/:id', async ({ params, request, set }) => {
