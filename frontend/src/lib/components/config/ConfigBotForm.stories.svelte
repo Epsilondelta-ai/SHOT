@@ -31,12 +31,24 @@
 		isOpen: true,
 		editingBot: {
 			id: 'b1',
-			name: 'Discord Bot',
-			apiKey: 'MTk4NjIyNDgzNDU5Mjk1MDcy...',
-			webhookUrl: 'https://discord.com/api/webhooks/123456/abcdef',
+			name: 'Alpha Bot',
 			active: true,
-			created: '2025-02-15',
-			updated: '2025-03-08'
+			clientMode: 'autonomous',
+			followUserId: null
+		}
+	}}
+/>
+
+<Story
+	name="Edit Follow-Owner Bot"
+	args={{
+		isOpen: true,
+		editingBot: {
+			id: 'b2',
+			name: 'Follow Bot',
+			active: true,
+			clientMode: 'follow-owner',
+			followUserId: 'user_abc123'
 		}
 	}}
 />

@@ -33,15 +33,15 @@ flowchart TD
     R --> S["Assistant deleted"]
 
     F --> T[/"Create Bot"/]
-    T --> U{{"name + apiKey present?"}}
+    T --> U{{"name present?"}}
     U -->|No| I
-    U -->|Yes| V[("INSERT INTO bot")]
-    V --> W["Bot created"]
+    U -->|Yes| V[("INSERT INTO bot SET name, clientMode, followUserId, apiKey=hash(uuid)")]
+    V --> W["Bot created + apiKey returned once"]
 
     F --> X[/"Update Bot"/]
-    X --> Y{{"id + name + apiKey present?"}}
+    X --> Y{{"id + name present?"}}
     Y -->|No| I
-    Y -->|Yes| Z[("UPDATE bot SET name, apiKey, active, updatedAt")]
+    Y -->|Yes| Z[("UPDATE bot SET name, active, updatedAt")]
     Z --> AA["Bot updated"]
 
     F --> AB[/"Delete Bot"/]
