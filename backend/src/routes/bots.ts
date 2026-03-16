@@ -1,8 +1,9 @@
 import Elysia from 'elysia';
 import { db } from '../db';
-import { eq, and } from 'drizzle-orm';
-import { bot } from '../db/schema';
+import { eq, and, count } from 'drizzle-orm';
+import { bot, botInvitation, room, roomPlayer } from '../db/schema';
 import { requireUser } from '../lib/getUser';
+import { requireBot } from '../lib/botAuth';
 
 function generateApiKey(): string {
 	return 'mr_' + crypto.randomUUID().replace(/-/g, '');
@@ -167,4 +168,215 @@ export const botRoutes = new Elysia()
 			.where(and(eq(bot.id, params.id), eq(bot.userId, u.id)));
 
 		return { apiKey: newApiKey };
+	})
+
+	// ── User-facing invite routes ─────────────────────────────────────────────
+
+	.post('/api/rooms/:roomId/invite-bot/:botId', async ({ params, request, set }) => {
+		let u;
+		try {
+			u = await requireUser(request);
+		} catch {
+			set.status = 401;
+			return { error: 'Unauthorized' };
+		}
+
+		const botRecord = await db.query.bot.findFirst({ where: eq(bot.id, params.botId) });
+		if (!botRecord) {
+			set.status = 404;
+			return { error: 'Bot not found' };
+		}
+		if (botRecord.userId !== u.id) {
+			set.status = 403;
+			return { error: 'Forbidden' };
+		}
+
+		const [roomRecord] = await db.select().from(room).where(eq(room.id, params.roomId));
+		if (!roomRecord) {
+			set.status = 400;
+			return { error: 'Room not found' };
+		}
+		if (roomRecord.status !== 'waiting') {
+			set.status = 400;
+			return { error: 'Room is not in waiting status' };
+		}
+
+		const existingInvitation = await db.query.botInvitation.findFirst({
+			where: and(
+				eq(botInvitation.botId, params.botId),
+				eq(botInvitation.roomId, params.roomId),
+				eq(botInvitation.status, 'pending')
+			)
+		});
+		if (existingInvitation) {
+			set.status = 400;
+			return { error: 'Bot already invited' };
+		}
+
+		const existingPlayer = await db.query.roomPlayer.findFirst({
+			where: and(eq(roomPlayer.roomId, params.roomId), eq(roomPlayer.botId, params.botId))
+		});
+		if (existingPlayer) {
+			set.status = 400;
+			return { error: 'Bot is already in the room' };
+		}
+
+		const [invitation] = await db
+			.insert(botInvitation)
+			.values({ botId: params.botId, roomId: params.roomId, status: 'pending' })
+			.returning();
+
+		return { invitationId: invitation.id };
+	})
+
+	.delete('/api/rooms/:roomId/invite-bot/:botId', async ({ params, request, set }) => {
+		let u;
+		try {
+			u = await requireUser(request);
+		} catch {
+			set.status = 401;
+			return { error: 'Unauthorized' };
+		}
+
+		const botRecord = await db.query.bot.findFirst({ where: eq(bot.id, params.botId) });
+		if (!botRecord) {
+			set.status = 404;
+			return { error: 'Bot not found' };
+		}
+		if (botRecord.userId !== u.id) {
+			set.status = 403;
+			return { error: 'Forbidden' };
+		}
+
+		const pendingInvitation = await db.query.botInvitation.findFirst({
+			where: and(
+				eq(botInvitation.botId, params.botId),
+				eq(botInvitation.roomId, params.roomId),
+				eq(botInvitation.status, 'pending')
+			)
+		});
+
+		if (pendingInvitation) {
+			await db
+				.update(botInvitation)
+				.set({ status: 'cancelled' })
+				.where(eq(botInvitation.id, pendingInvitation.id));
+		}
+
+		await db
+			.delete(roomPlayer)
+			.where(and(eq(roomPlayer.roomId, params.roomId), eq(roomPlayer.botId, params.botId)));
+
+		return { success: true };
+	})
+
+	// ── Bot-facing routes ─────────────────────────────────────────────────────
+
+	.get('/api/bot/invitations', async ({ request, set }) => {
+		let b;
+		try {
+			b = await requireBot(request);
+		} catch {
+			set.status = 401;
+			return { error: 'Unauthorized' };
+		}
+
+		const invitations = await db
+			.select({
+				invitationId: botInvitation.id,
+				roomId: botInvitation.roomId,
+				roomName: room.name,
+				createdAt: botInvitation.createdAt
+			})
+			.from(botInvitation)
+			.innerJoin(room, eq(botInvitation.roomId, room.id))
+			.where(and(eq(botInvitation.botId, b.id), eq(botInvitation.status, 'pending')));
+
+		return invitations;
+	})
+
+	.post('/api/bot/rooms/:roomId/join', async ({ params, request, set }) => {
+		let b;
+		try {
+			b = await requireBot(request);
+		} catch {
+			set.status = 401;
+			return { error: 'Unauthorized' };
+		}
+
+		const pendingInvitation = await db.query.botInvitation.findFirst({
+			where: and(
+				eq(botInvitation.botId, b.id),
+				eq(botInvitation.roomId, params.roomId),
+				eq(botInvitation.status, 'pending')
+			)
+		});
+		if (!pendingInvitation) {
+			set.status = 400;
+			return { error: 'No pending invitation' };
+		}
+
+		const [roomRecord] = await db.select().from(room).where(eq(room.id, params.roomId));
+		if (!roomRecord) {
+			set.status = 400;
+			return { error: 'Room not found' };
+		}
+		if (roomRecord.status !== 'waiting') {
+			set.status = 400;
+			return { error: 'Room is not in waiting status' };
+		}
+
+		const [{ playerCount }] = await db
+			.select({ playerCount: count(roomPlayer.id) })
+			.from(roomPlayer)
+			.where(eq(roomPlayer.roomId, params.roomId));
+
+		if (playerCount >= roomRecord.maxPlayers) {
+			set.status = 400;
+			return { error: 'Room is full' };
+		}
+
+		const [newPlayer] = await db
+			.insert(roomPlayer)
+			.values({
+				roomId: params.roomId,
+				userId: 'bot:' + b.id,
+				playerType: 'external',
+				botId: b.id,
+				displayName: b.name,
+				ready: false
+			})
+			.returning();
+
+		await db
+			.update(botInvitation)
+			.set({ status: 'accepted' })
+			.where(eq(botInvitation.id, pendingInvitation.id));
+
+		return { playerId: newPlayer.id };
+	})
+
+	.post('/api/bot/rooms/:roomId/ready', async ({ params, request, set }) => {
+		let b;
+		try {
+			b = await requireBot(request);
+		} catch {
+			set.status = 401;
+			return { error: 'Unauthorized' };
+		}
+
+		const player = await db.query.roomPlayer.findFirst({
+			where: and(eq(roomPlayer.botId, b.id), eq(roomPlayer.roomId, params.roomId))
+		});
+		if (!player) {
+			set.status = 404;
+			return { error: 'Player not found in room' };
+		}
+
+		await db
+			.update(roomPlayer)
+			.set({ ready: true })
+			.where(eq(roomPlayer.id, player.id));
+
+		return { ready: true };
 	});
