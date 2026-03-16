@@ -5,13 +5,11 @@ type Player = {
 	userId: string;
 	name: string;
 	avatarSrc: string | null;
-	type: 'human' | 'llm' | 'bot';
-	canManageBots: boolean;
+	type: 'human' | 'llm';
 	assistantId: string | null;
 	assistantName: string | null;
 	llmModelId: string | null;
 	modelName: string | null;
-	botId: string | null;
 	ready: boolean;
 };
 

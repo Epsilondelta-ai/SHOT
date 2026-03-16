@@ -33,12 +33,10 @@ export const roomPlayer = sqliteTable('room_player', {
 		.notNull()
 		.references(() => room.id, { onDelete: 'cascade' }),
 	userId: text('user_id').notNull(),
-	playerType: text('player_type', { enum: ['human', 'llm', 'bot'] }).notNull().default('human'),
+	playerType: text('player_type', { enum: ['human', 'llm'] }).notNull().default('human'),
 	displayName: text('display_name'),
-	canManageBots: integer('can_manage_bots', { mode: 'boolean' }).notNull().default(false),
 	assistantId: text('assistant_id').references(() => assistant.id, { onDelete: 'set null' }),
-	llmModelId: text('llm_model_id').references(() => llmModel.id, { onDelete: 'set null' }),
-	botId: text('bot_id').references(() => bot.id, { onDelete: 'set null' })
+	llmModelId: text('llm_model_id').references(() => llmModel.id, { onDelete: 'set null' })
 });
 
 export const roomRelations = relations(room, ({ many }) => ({
@@ -56,21 +54,6 @@ export const assistant = sqliteTable('assistant', {
 	userId: text('user_id'),
 	name: text('name').notNull(),
 	prompt: text('prompt').notNull(),
-	active: integer('active', { mode: 'boolean' }).notNull().default(true),
-	createdAt: integer('created_at', { mode: 'timestamp_ms' })
-		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-		.notNull(),
-	updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
-		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-		.notNull()
-});
-
-export const bot = sqliteTable('bot', {
-	id: text('id')
-		.primaryKey()
-		.$defaultFn(() => crypto.randomUUID()),
-	name: text('name').notNull(),
-	apiKey: text('api_key').notNull(),
 	active: integer('active', { mode: 'boolean' }).notNull().default(true),
 	createdAt: integer('created_at', { mode: 'timestamp_ms' })
 		.default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)

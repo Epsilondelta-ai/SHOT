@@ -14,7 +14,7 @@ import { getSerializedRoomPlayers } from "../lib/roomPlayers";
 import { broadcastPlayers } from "../ws/roomWs";
 import { broadcastGameState } from "../ws/gameWs";
 import { clearConversationHistory } from "../lib/llmPlayer";
-import { maybeRunAutomatedTurn } from "../lib/botPlayer";
+import { maybeRunLlmTurn } from "../lib/llmPlayer";
 import { recordGameStart } from "../lib/replayStore";
 
 function isSpectatorRequest(request: Request) {
@@ -86,7 +86,7 @@ export const gameRoutes = new Elysia()
       .where(eq(room.id, params.id));
     await broadcastPlayers(params.id);
     await broadcastGameState(params.id);
-    void maybeRunAutomatedTurn(params.id);
+    void maybeRunLlmTurn(params.id);
 
     return { success: true, roomId: params.id };
   })
@@ -112,7 +112,7 @@ export const gameRoutes = new Elysia()
     try {
       applyGameAction(params.id, user.id, body);
       await broadcastGameState(params.id);
-      void maybeRunAutomatedTurn(params.id);
+      void maybeRunLlmTurn(params.id);
       return createSnapshot(params.id, user.id);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Invalid action";

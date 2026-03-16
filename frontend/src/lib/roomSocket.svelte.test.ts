@@ -75,13 +75,11 @@ describe('createRoomSocket', () => {
 						name: 'Alice',
 						avatarSrc: null,
 						type: 'human',
-						canManageBots: true,
-						assistantId: null,
+								assistantId: null,
 						assistantName: null,
 						llmModelId: null,
 						modelName: null,
-						botId: null,
-						ready: false
+								ready: false
 					}
 				]
 			})
@@ -95,13 +93,11 @@ describe('createRoomSocket', () => {
 					name: 'Alice',
 					avatarSrc: null,
 					type: 'human',
-					canManageBots: true,
-					assistantId: null,
+						assistantId: null,
 					assistantName: null,
 					llmModelId: null,
 					modelName: null,
-					botId: null,
-					ready: false
+						ready: false
 				}
 			],
 			{ hostUserId: 'u1', maxPlayers: 5, status: 'in_progress' },

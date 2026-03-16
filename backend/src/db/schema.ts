@@ -151,14 +151,11 @@ export const roomPlayer = sqliteTable("room_player", {
     .notNull()
     .references(() => room.id, { onDelete: "cascade" }),
   userId: text("user_id").notNull(),
-  playerType: text("player_type", { enum: ["human", "llm", "bot"] })
+  playerType: text("player_type", { enum: ["human", "llm"] })
     .notNull()
     .default("human"),
   displayName: text("display_name"),
   ready: integer("ready", { mode: "boolean" }).notNull().default(false),
-  canManageBots: integer("can_manage_bots", { mode: "boolean" })
-    .notNull()
-    .default(false),
   assistantId: text("assistant_id").references(() => assistant.id, {
     onDelete: "set null",
   }),
@@ -166,7 +163,6 @@ export const roomPlayer = sqliteTable("room_player", {
     onDelete: "set null",
   }),
   language: text("language"),
-  botId: text("bot_id").references(() => bot.id, { onDelete: "set null" }),
 });
 
 export const assistant = sqliteTable("assistant", {
@@ -182,45 +178,6 @@ export const assistant = sqliteTable("assistant", {
     .notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
-});
-
-export const bot = sqliteTable("bot", {
-  id: text("id")
-    .primaryKey()
-    .$defaultFn(() => crypto.randomUUID()),
-  userId: text("user_id").references(() => user.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  provider: text("provider", { enum: ["openclaw"] })
-    .notNull()
-    .default("openclaw"),
-  apiKey: text("api_key").notNull().default(""),
-  pairingStatus: text("pairing_status", {
-    enum: ["unpaired", "pairing", "paired", "error"],
-  })
-    .notNull()
-    .default("unpaired"),
-  presenceStatus: text("presence_status", { enum: ["online", "offline"] })
-    .notNull()
-    .default("offline"),
-  pairingCode: text("pairing_code"),
-  pairingCodeExpiresAt: integer("pairing_code_expires_at", {
-    mode: "timestamp_ms",
-  }),
-  connectorTokenHash: text("connector_token_hash"),
-  connectorName: text("connector_name"),
-  connectorVersion: text("connector_version"),
-  connectorId: text("connector_id"),
-  deviceId: text("device_id"),
-  lastSeenAt: integer("last_seen_at", { mode: "timestamp_ms" }),
-  lastError: text("last_error"),
-  active: integer("active", { mode: "boolean" }).notNull().default(true),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .$onUpdate(() => new Date())
     .notNull(),
 });
 

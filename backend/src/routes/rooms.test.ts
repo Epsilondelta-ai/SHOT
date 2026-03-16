@@ -399,7 +399,7 @@ describe('GET /api/rooms/:id', () => {
 	it('returns room data for existing member', async () => {
 		const roomData = { id: 'r1abcd', name: 'Room 1', maxPlayers: 5, hostUserId: 'u1' };
 		mockGetRoomById.mockResolvedValueOnce(roomData);
-		mockGetHumanRoomPlayer.mockResolvedValueOnce({ id: 'p1', userId: 'u1', playerType: 'human', canManageBots: true });
+		mockGetHumanRoomPlayer.mockResolvedValueOnce({ id: 'p1', userId: 'u1', playerType: 'human' });
 		mockGetSerializedRoomPlayers.mockResolvedValueOnce([
 			{ id: 'p1', userId: 'u1', name: 'Alice', avatarSrc: null, type: 'human', assistantId: null, assistantName: null, llmModelId: null, modelName: null, ready: false }
 		]);
@@ -485,12 +485,10 @@ describe('GET /api/rooms/:id', () => {
 				name: 'Host',
 				avatarSrc: null,
 				type: 'human',
-				canManageBots: true,
 				assistantId: null,
 				assistantName: null,
 				llmModelId: null,
 				modelName: null,
-				botId: null,
 				ready: true
 			}
 		]);
@@ -656,68 +654,6 @@ describe('POST /api/rooms/:id/host', () => {
 	});
 });
 
-describe('POST /api/rooms/:id/bot-permissions', () => {
-	it('returns 401 when not authenticated', async () => {
-		mockGetUser.mockResolvedValueOnce(null);
-		const app = makeApp();
-		const res = await app.handle(
-			new Request('http://localhost/api/rooms/r1/bot-permissions', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ userId: 'u2', canManageBots: true })
-			})
-		);
-		expect(res.status).toBe(401);
-	});
-
-	it('returns 403 when not host', async () => {
-		mockGetRoomById.mockResolvedValueOnce({ id: 'r1', hostUserId: 'u2' });
-		const app = makeApp();
-		const res = await app.handle(
-			new Request('http://localhost/api/rooms/r1/bot-permissions', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ userId: 'u3', canManageBots: true })
-			})
-		);
-		expect(res.status).toBe(403);
-		const body = await res.json();
-		expect(body.error).toBe('Only the host can grant bot permissions');
-	});
-
-	it('returns 400 when targeting host user', async () => {
-		mockGetRoomById.mockResolvedValueOnce({ id: 'r1', hostUserId: 'u1' });
-		const app = makeApp();
-		const res = await app.handle(
-			new Request('http://localhost/api/rooms/r1/bot-permissions', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ userId: 'u1', canManageBots: false })
-			})
-		);
-		expect(res.status).toBe(400);
-		const body = await res.json();
-		expect(body.error).toBe('The host already has bot management permission');
-	});
-
-	it('grants bot permission successfully', async () => {
-		mockGetRoomById.mockResolvedValueOnce({ id: 'r1', hostUserId: 'u1' });
-		mockGetHumanRoomPlayer.mockResolvedValueOnce({ id: 'p2', userId: 'u2', playerType: 'human' });
-		const app = makeApp();
-		const res = await app.handle(
-			new Request('http://localhost/api/rooms/r1/bot-permissions', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ userId: 'u2', canManageBots: true })
-			})
-		);
-		expect(res.status).toBe(200);
-		const body = await res.json();
-		expect(body.success).toBe(true);
-		expect(body.userId).toBe('u2');
-		expect(body.canManageBots).toBe(true);
-	});
-});
 
 describe('POST /api/rooms/:id/llm-players', () => {
 	it('returns 401 when not authenticated', async () => {
@@ -785,7 +721,7 @@ describe('POST /api/rooms/:id/llm-players', () => {
 	it('returns 400 when assistantId or llmModelId missing', async () => {
 		mockGetUser.mockResolvedValueOnce({ ...mockUser, role: 'admin' });
 		mockGetRoomById.mockResolvedValueOnce({ id: 'r1', hostUserId: 'u1', maxPlayers: 5 });
-		mockGetHumanRoomPlayer.mockResolvedValueOnce({ id: 'p1', userId: 'u1', canManageBots: true });
+		mockGetHumanRoomPlayer.mockResolvedValueOnce({ id: 'p1', userId: 'u1' });
 		// getRoomPlayerCount
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({
@@ -806,70 +742,3 @@ describe('POST /api/rooms/:id/llm-players', () => {
 	});
 });
 
-describe('POST /api/rooms/:id/bot-players', () => {
-	it('returns 401 when not authenticated', async () => {
-		mockGetUser.mockResolvedValueOnce(null);
-		const app = makeApp();
-		const res = await app.handle(
-			new Request('http://localhost/api/rooms/r1/bot-players', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ botId: 'b1' })
-			})
-		);
-		expect(res.status).toBe(401);
-	});
-
-	it('returns 403 when not admin', async () => {
-		const app = makeApp();
-		const res = await app.handle(
-			new Request('http://localhost/api/rooms/r1/bot-players', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ botId: 'b1' })
-			})
-		);
-		expect(res.status).toBe(403);
-		const body = await res.json();
-		expect(body.error).toBe('Only admins can add bots');
-	});
-
-	it('returns 404 when room not found', async () => {
-		mockGetUser.mockResolvedValueOnce({ ...mockUser, role: 'admin' });
-		mockGetRoomById.mockResolvedValueOnce(null);
-		const app = makeApp();
-		const res = await app.handle(
-			new Request('http://localhost/api/rooms/r1/bot-players', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ botId: 'b1' })
-			})
-		);
-		expect(res.status).toBe(404);
-		const body = await res.json();
-		expect(body.error).toBe('Room not found');
-	});
-
-	it('returns 400 when botId missing', async () => {
-		mockGetUser.mockResolvedValueOnce({ ...mockUser, role: 'admin' });
-		mockGetRoomById.mockResolvedValueOnce({ id: 'r1', hostUserId: 'u1', maxPlayers: 5 });
-		mockGetHumanRoomPlayer.mockResolvedValueOnce({ id: 'p1', userId: 'u1', canManageBots: true });
-		// getRoomPlayerCount
-		mockSelect.mockImplementationOnce(() => ({
-			from: () => ({
-				where: () => Promise.resolve([{ playerCount: 2 }])
-			})
-		}));
-		const app = makeApp();
-		const res = await app.handle(
-			new Request('http://localhost/api/rooms/r1/bot-players', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({})
-			})
-		);
-		expect(res.status).toBe(400);
-		const body = await res.json();
-		expect(body.error).toBe('Bot is required');
-	});
-});

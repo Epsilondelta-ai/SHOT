@@ -9,7 +9,7 @@ import {
   getGame,
   type GameAction,
 } from "../lib/gameState";
-import { maybeRunAutomatedTurn } from "../lib/botPlayer";
+import { maybeRunLlmTurn } from "../lib/llmPlayer";
 import { recordFrame, recordGameEnd, recordSpectator } from "../lib/replayStore";
 
 
@@ -182,7 +182,7 @@ export const gameWsPlugin = new Elysia().ws("/ws/game/:roomId", {
     try {
       applyGameAction(roomId, userId, action);
       await broadcastGameState(roomId);
-      void maybeRunAutomatedTurn(roomId);
+      void maybeRunLlmTurn(roomId);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Invalid action";

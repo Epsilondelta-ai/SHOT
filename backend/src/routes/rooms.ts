@@ -15,7 +15,6 @@ import {
   parseRoomCapacity,
   syncRoomAfterHumanDeparture,
 } from "../lib/roomState";
-import { getOwnedBot, isBotBusy, listRoomBotsForUser } from "../lib/bots";
 import { getSerializedRoomPlayers } from "../lib/roomPlayers";
 import { broadcastPlayers } from "../ws/roomWs";
 
@@ -54,7 +53,7 @@ async function getRoomOptions(userId: string, roomId?: string) {
 
   const providerKeys = activeProviders.map((provider) => provider.provider);
 
-  const [assistants, models, bots] = await Promise.all([
+  const [assistants, models] = await Promise.all([
     db
       .select({
         id: assistant.id,
@@ -87,7 +86,6 @@ async function getRoomOptions(userId: string, roomId?: string) {
             ),
           )
           .orderBy(llmModel.createdAt),
-    listRoomBotsForUser(userId, roomId),
   ]);
 
   return {
@@ -98,7 +96,6 @@ async function getRoomOptions(userId: string, roomId?: string) {
       scope: entry.userId === userId ? "personal" : "global",
     })),
     llmModels: models,
-    bots,
   };
 }
 
@@ -109,7 +106,6 @@ async function getRoomManagementContext(roomId: string, userId: string) {
       roomData: null,
       member: null,
       isHost: false,
-      canManageBots: false,
     };
   }
 
@@ -120,7 +116,6 @@ async function getRoomManagementContext(roomId: string, userId: string) {
     roomData,
     member,
     isHost,
-    canManageBots: isHost || member?.canManageBots === true,
   };
 }
 
@@ -190,7 +185,6 @@ export const roomRoutes = new Elysia()
       roomId: newRoom.id,
       userId: u.id,
       playerType: "human",
-      canManageBots: true,
     });
 
     return newRoom;
@@ -228,7 +222,6 @@ export const roomRoutes = new Elysia()
         roomId: params.id,
         userId: u.id,
         playerType: "human",
-        canManageBots: false,
       });
       await broadcastPlayers(params.id);
     }
@@ -310,9 +303,6 @@ export const roomRoutes = new Elysia()
       if (remaining.length > 0) {
         const nextHost = remaining[0];
         await db.update(room).set({ hostUserId: nextHost.userId }).where(eq(room.id, params.id));
-        await db.update(roomPlayer).set({ canManageBots: true }).where(
-          and(eq(roomPlayer.roomId, params.id), eq(roomPlayer.userId, nextHost.userId)),
-        );
       }
     }
 
@@ -349,7 +339,6 @@ export const roomRoutes = new Elysia()
         roomId: params.id,
         userId: u.id,
         playerType: "human",
-        canManageBots: false,
       });
       await broadcastPlayers(params.id);
     }
@@ -429,85 +418,10 @@ export const roomRoutes = new Elysia()
         .update(room)
         .set({ hostUserId: body.userId })
         .where(eq(room.id, params.id));
-      await db
-        .update(roomPlayer)
-        .set({ canManageBots: false })
-        .where(
-          and(
-            eq(roomPlayer.roomId, params.id),
-            eq(roomPlayer.userId, roomData.hostUserId),
-            eq(roomPlayer.playerType, "human"),
-          ),
-        );
-      await db
-        .update(roomPlayer)
-        .set({ canManageBots: true })
-        .where(
-          and(
-            eq(roomPlayer.roomId, params.id),
-            eq(roomPlayer.userId, body.userId),
-            eq(roomPlayer.playerType, "human"),
-          ),
-        );
       await broadcastPlayers(params.id);
     }
 
     return { success: true, hostUserId: body.userId };
-  })
-
-  .post("/api/rooms/:id/bot-permissions", async ({ params, request, set }) => {
-    const u = await getUser(request);
-    if (!u) {
-      set.status = 401;
-      return { error: "Unauthorized" };
-    }
-
-    const roomData = await getRoomById(params.id);
-    if (!roomData) {
-      set.status = 404;
-      return { error: "Room not found" };
-    }
-    if (roomData.hostUserId !== u.id) {
-      set.status = 403;
-      return { error: "Only the host can grant bot permissions" };
-    }
-
-    const body = (await request.json()) as {
-      userId?: string;
-      canManageBots?: boolean;
-    };
-    if (!body.userId || typeof body.canManageBots !== "boolean") {
-      set.status = 400;
-      return { error: "Target user and permission flag are required" };
-    }
-    if (body.userId === roomData.hostUserId) {
-      set.status = 400;
-      return { error: "The host already has bot management permission" };
-    }
-
-    const targetMember = await getHumanRoomPlayer(params.id, body.userId);
-    if (!targetMember) {
-      set.status = 404;
-      return { error: "Target player not found in room" };
-    }
-
-    await db
-      .update(roomPlayer)
-      .set({ canManageBots: body.canManageBots })
-      .where(
-        and(
-          eq(roomPlayer.roomId, params.id),
-          eq(roomPlayer.userId, body.userId),
-          eq(roomPlayer.playerType, "human"),
-        ),
-      );
-    await broadcastPlayers(params.id);
-
-    return {
-      success: true,
-      userId: body.userId,
-      canManageBots: body.canManageBots,
-    };
   })
 
   .post("/api/rooms/:id/llm-players", async ({ params, request, set }) => {
@@ -615,114 +529,11 @@ export const roomRoutes = new Elysia()
         name: displayName,
         avatarSrc: null,
         type: "llm" as const,
-        canManageBots: false,
         assistantId: selectedAssistant?.id ?? null,
         assistantName: selectedAssistant?.name ?? null,
         llmModelId: selectedModel.id,
         modelName: selectedModel.displayName,
         language: body.language ?? null,
-        botId: null,
-        ready: true,
-      },
-    };
-  })
-
-  .post("/api/rooms/:id/bot-players", async ({ params, request, set }) => {
-    const u = await getUser(request);
-    if (!u) {
-      set.status = 401;
-      return { error: "Unauthorized" };
-    }
-
-    if (u.role !== "admin") {
-      set.status = 403;
-      return { error: "Only admins can add bots" };
-    }
-
-    const { roomData, member, isHost } = await getRoomManagementContext(
-      params.id,
-      u.id,
-    );
-    if (!roomData) {
-      set.status = 404;
-      return { error: "Room not found" };
-    }
-    if (!member && !isHost) {
-      set.status = 403;
-      return { error: "You must join the room first" };
-    }
-    if ((await getRoomPlayerCount(params.id)) >= roomData.maxPlayers) {
-      set.status = 403;
-      return { error: "Room is full" };
-    }
-
-    const body = (await request.json()) as { botId?: string };
-    if (!body.botId) {
-      set.status = 400;
-      return { error: "Bot is required" };
-    }
-
-    const selectedBot = await getOwnedBot(body.botId, u.id);
-    if (!selectedBot) {
-      set.status = 404;
-      return { error: "Bot not found" };
-    }
-    if (!selectedBot.active) {
-      set.status = 400;
-      return { error: "Bot is inactive" };
-    }
-    if (selectedBot.pairingStatus !== "paired") {
-      set.status = 400;
-      return { error: "Bot is not paired yet" };
-    }
-    if (selectedBot.presenceStatus !== "online") {
-      set.status = 400;
-      return { error: "Bot is offline" };
-    }
-    if (await isBotBusy(selectedBot.id, params.id)) {
-      set.status = 400;
-      return { error: "Bot is already busy in another room" };
-    }
-
-    const existingBotPlayer = await db.query.roomPlayer.findFirst({
-      where: and(eq(roomPlayer.roomId, params.id), eq(roomPlayer.botId, selectedBot.id)),
-      columns: { id: true },
-    });
-    if (existingBotPlayer) {
-      set.status = 400;
-      return { error: "Bot is already in this room" };
-    }
-
-    const displayName = `${selectedBot.name} (OpenClaw)`;
-    const [newPlayer] = await db
-      .insert(roomPlayer)
-      .values({
-        roomId: params.id,
-        userId: `bot:${crypto.randomUUID()}`,
-        playerType: "bot",
-        displayName,
-        botId: selectedBot.id,
-      })
-      .returning();
-
-    await broadcastPlayers(params.id);
-
-    return {
-      success: true,
-      player: {
-        id: newPlayer.id,
-        userId: newPlayer.userId,
-        name: displayName,
-        avatarSrc: null,
-        type: "bot" as const,
-        canManageBots: false,
-        assistantId: null,
-        assistantName: null,
-        llmModelId: null,
-        modelName: null,
-        language: null,
-        botId: selectedBot.id,
-        presenceStatus: selectedBot.presenceStatus,
         ready: true,
       },
     };

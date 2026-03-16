@@ -1,22 +1,18 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { roomPlayer } from "../db/schema";
-import { isBotOnline } from "./botPresence";
 
 export type SerializedRoomPlayer = {
   id: string;
   userId: string;
   name: string;
   avatarSrc: string | null;
-  type: "human" | "llm" | "bot";
-  canManageBots: boolean;
+  type: "human" | "llm";
   assistantId: string | null;
   assistantName: string | null;
   llmModelId: string | null;
   modelName: string | null;
   language: string | null;
-  botId: string | null;
-  presenceStatus?: "online" | "offline" | null;
   ready: boolean;
 };
 
@@ -40,11 +36,8 @@ export async function getSerializedRoomPlayers(
   const llmModelIds = players
     .map((player) => player.llmModelId)
     .filter((llmModelId): llmModelId is string => !!llmModelId);
-  const botIds = players
-    .map((player) => player.botId)
-    .filter((botId): botId is string => !!botId);
 
-  const [users, assistants, models, bots] = await Promise.all([
+  const [users, assistants, models] = await Promise.all([
     humanIds.length === 0
       ? Promise.resolve([])
       : db.query.user.findMany({
@@ -63,22 +56,11 @@ export async function getSerializedRoomPlayers(
           where: (table, { inArray }) => inArray(table.id, llmModelIds),
           columns: { id: true, displayName: true },
         }),
-    botIds.length === 0
-      ? Promise.resolve([])
-      : db.query.bot.findMany({
-          where: (table, { inArray }) => inArray(table.id, botIds),
-          columns: {
-            id: true,
-            name: true,
-            presenceStatus: true,
-          },
-        }),
   ]);
 
   const userMap = new Map(users.map((entry) => [entry.id, entry]));
   const assistantMap = new Map(assistants.map((entry) => [entry.id, entry]));
   const modelMap = new Map(models.map((entry) => [entry.id, entry]));
-  const botMap = new Map(bots.map((entry) => [entry.id, entry]));
 
   return players.map((player) => {
     if (player.playerType === "llm") {
@@ -91,39 +73,11 @@ export async function getSerializedRoomPlayers(
           "LLM Player",
         avatarSrc: null,
         type: "llm",
-        canManageBots: player.canManageBots,
         assistantId: player.assistantId ?? null,
         assistantName: assistantMap.get(player.assistantId ?? "")?.name ?? null,
         llmModelId: player.llmModelId ?? null,
         modelName: modelMap.get(player.llmModelId ?? "")?.displayName ?? null,
         language: player.language ?? null,
-        botId: null,
-        presenceStatus: null,
-        ready: true,
-      };
-    }
-
-    if (player.playerType === "bot") {
-      return {
-        id: player.id,
-        userId: player.userId,
-        name:
-          player.displayName ??
-          botMap.get(player.botId ?? "")?.name ??
-          "OpenClaw Bot",
-        avatarSrc: null,
-        type: "bot",
-        canManageBots: player.canManageBots,
-        assistantId: null,
-        assistantName: null,
-        llmModelId: null,
-        modelName: null,
-        language: null,
-        botId: player.botId ?? null,
-        presenceStatus:
-          player.botId && isBotOnline(player.botId)
-            ? "online"
-            : (botMap.get(player.botId ?? "")?.presenceStatus ?? "offline"),
         ready: true,
       };
     }
@@ -135,14 +89,11 @@ export async function getSerializedRoomPlayers(
       name: roomUser?.name ?? player.displayName ?? "Unknown",
       avatarSrc: roomUser?.image ?? null,
       type: "human",
-      canManageBots: player.canManageBots,
       assistantId: null,
       assistantName: null,
       llmModelId: null,
       modelName: null,
       language: null,
-      botId: null,
-      presenceStatus: null,
       ready: player.ready,
     };
   });

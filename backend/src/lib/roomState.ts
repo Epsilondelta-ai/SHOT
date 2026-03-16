@@ -53,17 +53,6 @@ export async function syncRoomAfterHumanDeparture(roomId: string) {
 	if (!remainingHumans.some((player) => player.userId === roomData.hostUserId)) {
 		const nextHost = remainingHumans[0];
 		await db.update(room).set({ hostUserId: nextHost.userId }).where(eq(room.id, roomId));
-		await db
-			.update(roomPlayer)
-			.set({ canManageBots: true })
-			.where(
-				and(
-					eq(roomPlayer.roomId, roomId),
-					eq(roomPlayer.userId, nextHost.userId),
-					eq(roomPlayer.playerType, 'human')
-				)
-			);
-
 		return { deleted: false, hostUserId: nextHost.userId };
 	}
 

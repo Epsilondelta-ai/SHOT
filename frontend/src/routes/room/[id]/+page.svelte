@@ -4,7 +4,6 @@
 	import { createRoomSocket } from '$lib/roomSocket.svelte';
 	import { m } from '$lib/paraglide/messages';
 
-	import RoomBotPlayerPanel from '$lib/components/room/RoomBotPlayerPanel.svelte';
 	import RoomChat from '$lib/components/room/RoomChat.svelte';
 	import RoomHeader from '$lib/components/room/RoomHeader.svelte';
 	import RoomLlmPlayerPanel from '$lib/components/room/RoomLlmPlayerPanel.svelte';
@@ -16,14 +15,11 @@
 		name: string;
 		avatarSrc?: string | null;
 		ready: boolean;
-		type: 'human' | 'llm' | 'bot';
-		canManageBots: boolean;
+		type: 'human' | 'llm';
 		assistantId: string | null;
 		assistantName: string | null;
 		llmModelId: string | null;
 		modelName: string | null;
-		botId: string | null;
-		presenceStatus?: 'online' | 'offline' | null;
 	};
 
 	type ChatMessage = {
@@ -45,15 +41,6 @@
 		provider: 'anthropic' | 'openai' | 'google' | 'xai';
 		apiModelName: string;
 		displayName: string;
-	};
-
-	type BotOption = {
-		id: string;
-		name: string;
-		pairingStatus: 'unpaired' | 'pairing' | 'paired' | 'error';
-		presenceStatus: 'online' | 'offline';
-		active: boolean;
-		busy: boolean;
 	};
 
 	let { data } = $props();
@@ -129,7 +116,6 @@
 	);
 	const isHost = $derived(data.myId === hostUserId);
 	const isAdmin = $derived(data.isAdmin === true);
-	const canManageBots = $derived(isAdmin);
 	const amReady = $derived(myPlayer?.ready ?? false);
 	const readyCount = $derived(
 		players.filter((player) => player.id === hostId || player.ready).length
@@ -197,20 +183,9 @@
 		await apiPost(`/api/rooms/${data.roomId}/llm-players`, payload);
 	}
 
-	async function addBotPlayer(payload: { botId: string }) {
-		await apiPost(`/api/rooms/${data.roomId}/bot-players`, payload);
-	}
-
 	async function transferHost(userId: string) {
 		await apiPost(`/api/rooms/${data.roomId}/host`, { userId });
 		hostUserId = userId;
-	}
-
-	async function setBotPermission(userId: string, canManageBots: boolean) {
-		await apiPost(`/api/rooms/${data.roomId}/bot-permissions`, { userId, canManageBots });
-		players = players.map((player) =>
-			player.userId === userId ? { ...player, canManageBots } : player
-		);
 	}
 
 	async function updateCapacity() {
@@ -347,7 +322,7 @@
 					<div>
 						<h2 class="text-sm font-black tracking-wider text-slate-900 uppercase">Room Control</h2>
 						<p class="text-xs font-bold text-slate-400">
-							방장 변경, 정원 변경, bot 권한 부여를 관리합니다.
+							방장 변경, 정원 변경을 관리합니다.
 						</p>
 					</div>
 				</div>
@@ -397,20 +372,8 @@
 							>
 								<div>
 									<p class="text-sm font-black text-slate-900">{player.name}</p>
-									<p class="text-[11px] font-bold text-slate-500">
-										{player.canManageBots ? 'bot/LLM 추가 권한 있음' : 'bot/LLM 추가 권한 없음'}
-									</p>
 								</div>
 								<div class="flex gap-2">
-									<button
-										type="button"
-										class="comic-button rounded-xl border-2 border-slate-900 px-3 py-2 text-[11px] font-black uppercase {player.canManageBots
-											? 'bg-white text-slate-700'
-											: 'bg-blue-600 text-white'}"
-										onclick={() => setBotPermission(player.userId, !player.canManageBots)}
-									>
-										{player.canManageBots ? '권한 회수' : 'bot 권한 부여'}
-									</button>
 									<button
 										type="button"
 										class="comic-button rounded-xl border-2 border-slate-900 bg-yellow-400 px-3 py-2 text-[11px] font-black text-slate-900 uppercase"
@@ -426,26 +389,14 @@
 			</section>
 		{/if}
 
-		{#if canManageBots}
-			<section class="grid gap-4 lg:grid-cols-2">
+		{#if isHost}
+			<section>
 				<RoomLlmPlayerPanel
 					assistants={data.assistants as AssistantOption[]}
 					llmModels={data.llmModels as ModelOption[]}
 					disabled={isRoomFull}
 					onadd={addLlmPlayer}
 				/>
-				<RoomBotPlayerPanel
-					bots={data.bots as BotOption[]}
-					disabled={isRoomFull}
-					onadd={addBotPlayer}
-				/>
-			</section>
-		{:else}
-			<section class="comic-border rounded-xl bg-white p-4">
-				<p class="text-sm font-bold text-slate-600">
-					LLM/OpenClaw 봇 추가 권한은 기본적으로 방장만 가지며, 다른 참가자는 방장이 따로 권한을
-					부여해야 합니다.
-				</p>
 			</section>
 		{/if}
 

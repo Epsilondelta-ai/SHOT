@@ -8,12 +8,8 @@ export const load: PageLoad = async ({ fetch }) => {
 	const session = await sessionRes.json();
 	if (!session?.user) redirect(303, '/login');
 
-	const [botsRes, meRes] = await Promise.all([
-		fetch(`${BACKEND_URL}/api/bots`, { credentials: 'include' }),
-		fetch(`${BACKEND_URL}/api/me`, { credentials: 'include' })
-	]);
+	const meRes = await fetch(`${BACKEND_URL}/api/me`, { credentials: 'include' });
 
-	const bots = botsRes.ok ? await botsRes.json() : [];
 	let meData;
 	try {
 		meData = await meRes.json();
@@ -22,7 +18,6 @@ export const load: PageLoad = async ({ fetch }) => {
 	}
 
 	return {
-		bots,
 		username: meData.name ?? '',
 		avatarSrc: meData.image ?? '',
 		isAdmin: meData.role === 'admin'

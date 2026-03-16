@@ -2,7 +2,7 @@ import type { SerializedRoomPlayer } from "./roomPlayers";
 
 export type ActionCard = "attack" | "heal" | "jail" | "verify";
 type HiddenRole = "leader" | "agent" | "spy";
-type Controller = "human" | "llm" | "bot";
+type Controller = "human" | "llm";
 type WinnerTeam = "agents" | "spies" | "draw";
 
 type InternalPlayer = {
@@ -10,7 +10,6 @@ type InternalPlayer = {
   userId: string;
   name: string;
   controller: Controller;
-  botId: string | null;
   assistantId: string | null;
   llmModelId: string | null;
   language: string | null;
@@ -483,7 +482,6 @@ export function initializeGame(
       userId: player.userId,
       name: player.name,
       controller: player.type,
-      botId: player.botId ?? null,
       assistantId: player.assistantId ?? null,
       llmModelId: player.llmModelId ?? null,
       language: player.language ?? null,
@@ -528,11 +526,10 @@ export function initializeGame(
 }
 
 export function getCurrentTurnController(roomId: string): {
-  controller: "human" | "llm" | "bot";
+  controller: "human" | "llm";
   playerId: string;
   userId: string;
   name: string;
-  botId: string | null;
   assistantId: string | null;
   llmModelId: string | null;
   language: string | null;
@@ -548,7 +545,6 @@ export function getCurrentTurnController(roomId: string): {
     playerId: player.id,
     userId: player.userId,
     name: player.name,
-    botId: player.botId,
     assistantId: player.assistantId,
     llmModelId: player.llmModelId,
     language: player.language,

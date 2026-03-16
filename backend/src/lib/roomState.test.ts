@@ -95,7 +95,7 @@ async function localGetRoomById(roomId: string) {
 	return roomData ?? null;
 }
 
-async function localGetHumanRoomPlayer(roomId: string, _userId: string) {
+async function localGetHumanRoomPlayer(_roomId: string, _userId: string) {
 	const [member] = await db.select().from('roomPlayer').where('eq:roomPlayer');
 	return member ?? null;
 }
@@ -224,10 +224,8 @@ describe('getHumanRoomPlayer', () => {
 			roomId: 'r1',
 			playerType: 'human' as const,
 			displayName: null,
-			canManageBots: false,
 			assistantId: null,
 			llmModelId: null,
-			botId: null,
 			ready: false
 		};
 		mockSelect.mockImplementationOnce(() => ({

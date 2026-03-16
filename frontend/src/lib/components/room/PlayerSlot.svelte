@@ -12,11 +12,9 @@
 				name: string;
 				avatarSrc?: string | null;
 				ready: boolean;
-				type?: 'human' | 'llm' | 'bot';
-				canManageBots?: boolean;
+				type?: 'human' | 'llm';
 				modelName?: string | null;
 				assistantName?: string | null;
-				presenceStatus?: 'online' | 'offline' | null;
 			};
 		isHost?: boolean;
 		isMe?: boolean;
@@ -53,11 +51,7 @@
 			{:else}
 				<div class="flex h-full w-full items-center justify-center">
 					<span class="material-symbols-outlined text-3xl text-slate-600">
-						{player.type === 'llm'
-							? 'smart_toy'
-							: player.type === 'bot'
-								? 'precision_manufacturing'
-								: 'person'}
+						{player.type === 'llm' ? 'smart_toy' : 'person'}
 					</span>
 				</div>
 			{/if}
@@ -67,7 +61,7 @@
 			{player.name}
 		</span>
 
-		{#if player.type === 'llm' || player.type === 'bot'}
+		{#if player.type === 'llm'}
 			<div class="text-center">
 				{#if player.modelName}
 					<p class="text-[10px] font-black text-slate-500 uppercase">{player.modelName}</p>
@@ -75,25 +69,7 @@
 				{#if player.assistantName}
 					<p class="text-[10px] font-bold text-slate-400">{player.assistantName}</p>
 				{/if}
-					{#if player.type === 'bot'}
-						<p class="text-[10px] font-black text-slate-500 uppercase">OPENCLAW</p>
-						<p
-							class:text-green-600={player.presenceStatus === 'online'}
-							class:text-red-500={player.presenceStatus === 'offline'}
-							class="text-[10px] font-black uppercase"
-						>
-							{player.presenceStatus === 'offline' ? 'offline' : 'online'}
-						</p>
-					{/if}
-				</div>
-			{/if}
-
-		{#if player.type === 'human' && player.canManageBots && !isHost}
-			<span
-				class="rounded-full bg-blue-100 px-3 py-1 text-[10px] font-black text-blue-700 uppercase"
-			>
-				BOT MANAGER
-			</span>
+			</div>
 		{/if}
 
 		{#if player.ready}

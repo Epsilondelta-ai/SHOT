@@ -10,12 +10,10 @@
 			avatarSrc: null,
 			ready: true,
 			type: 'human',
-			canManageBots: true,
 			assistantId: null,
 			assistantName: null,
 			llmModelId: null,
 			modelName: null,
-			botId: null
 		},
 		{
 			id: 'rp2',
@@ -24,12 +22,10 @@
 			avatarSrc: null,
 			ready: false,
 			type: 'human',
-			canManageBots: false,
 			assistantId: null,
 			assistantName: null,
 			llmModelId: null,
 			modelName: null,
-			botId: null
 		},
 		{
 			id: 'rp3',
@@ -38,12 +34,10 @@
 			avatarSrc: null,
 			ready: true,
 			type: 'human',
-			canManageBots: false,
 			assistantId: null,
 			assistantName: null,
 			llmModelId: null,
 			modelName: null,
-			botId: null
 		}
 	];
 
@@ -71,8 +65,6 @@
 		{ id: '3', sender: '', text: 'Outlaw_Jane 님이 입장했습니다.', isSystem: true },
 		{ id: '4', sender: 'Doc_Holiday', text: ' 준비됐어요!' }
 	];
-
-	const mockBots = [{ id: 'bot-1', name: 'BanditBot' }];
 
 	const { Story } = defineMeta({
 		title: 'Pages/Room',
@@ -102,7 +94,6 @@
 			chatMessages: mockChatMessages,
 			assistants: mockAssistants,
 			llmModels: mockModels,
-			bots: mockBots
 		}}
 	/>
 </Story>
@@ -126,7 +117,6 @@
 			chatMessages: mockChatMessages,
 			assistants: mockAssistants,
 			llmModels: mockModels,
-			bots: mockBots
 		}}
 	/>
 </Story>
@@ -154,12 +144,10 @@
 					avatarSrc: null,
 					ready: true,
 					type: 'human',
-					canManageBots: true,
-					assistantId: null,
+							assistantId: null,
 					assistantName: null,
 					llmModelId: null,
 					modelName: null,
-					botId: null
 				},
 				{
 					id: 'rp2',
@@ -168,18 +156,15 @@
 					avatarSrc: null,
 					ready: true,
 					type: 'human',
-					canManageBots: false,
-					assistantId: null,
+							assistantId: null,
 					assistantName: null,
 					llmModelId: null,
 					modelName: null,
-					botId: null
 				}
 			],
 			chatMessages: [],
 			assistants: mockAssistants,
 			llmModels: mockModels,
-			bots: mockBots
 		}}
 	/>
 </Story>
