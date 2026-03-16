@@ -6,6 +6,7 @@ import {
   applyGameAction,
   createSnapshot,
   getGame,
+  getCurrentTurnController,
   initializeGame,
 } from "../lib/gameState";
 import { getUser } from "../lib/getUser";
@@ -16,6 +17,7 @@ import { broadcastGameState } from "../ws/gameWs";
 import { clearConversationHistory } from "../lib/llmPlayer";
 import { maybeRunLlmTurn } from "../lib/llmPlayer";
 import { recordGameStart } from "../lib/replayStore";
+import { startExternalBotTurn } from "../lib/externalBotTurn";
 
 function isSpectatorRequest(request: Request) {
   return new URL(request.url).searchParams.get("spectator") === "1";
@@ -86,7 +88,12 @@ export const gameRoutes = new Elysia()
       .where(eq(room.id, params.id));
     await broadcastPlayers(params.id);
     await broadcastGameState(params.id);
-    void maybeRunLlmTurn(params.id);
+    const startController = getCurrentTurnController(params.id);
+    if (startController?.controller === "llm") {
+      void maybeRunLlmTurn(params.id);
+    } else if (startController?.controller === "external") {
+      startExternalBotTurn(params.id, startController.userId);
+    }
 
     return { success: true, roomId: params.id };
   })
@@ -112,7 +119,12 @@ export const gameRoutes = new Elysia()
     try {
       applyGameAction(params.id, user.id, body);
       await broadcastGameState(params.id);
-      void maybeRunLlmTurn(params.id);
+      const actionController = getCurrentTurnController(params.id);
+      if (actionController?.controller === "llm") {
+        void maybeRunLlmTurn(params.id);
+      } else if (actionController?.controller === "external") {
+        startExternalBotTurn(params.id, actionController.userId);
+      }
       return createSnapshot(params.id, user.id);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Invalid action";

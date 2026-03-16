@@ -4,6 +4,9 @@ import { eq, and, count } from 'drizzle-orm';
 import { bot, botInvitation, room, roomPlayer } from '../db/schema';
 import { requireUser } from '../lib/getUser';
 import { requireBot } from '../lib/botAuth';
+import { createSnapshot, getValidActionsForUser, applyGameAction } from '../lib/gameState';
+import { resolveExternalBotTurn } from '../lib/externalBotTurn';
+import { broadcastGameState } from '../ws/gameWs';
 
 function generateApiKey(): string {
 	return 'mr_' + crypto.randomUUID().replace(/-/g, '');
@@ -379,4 +382,72 @@ export const botRoutes = new Elysia()
 			.where(eq(roomPlayer.id, player.id));
 
 		return { ready: true };
+	})
+
+	// ── Bot game state polling ────────────────────────────────────────────────
+
+	.get('/api/bot/games/:roomId/state', async ({ params, request, set }) => {
+		let b;
+		try {
+			b = await requireBot(request);
+		} catch {
+			set.status = 401;
+			return { error: 'Unauthorized' };
+		}
+
+		const botPlayer = await db.query.roomPlayer.findFirst({
+			where: and(eq(roomPlayer.roomId, params.roomId), eq(roomPlayer.botId, b.id))
+		});
+		if (!botPlayer) {
+			set.status = 404;
+			return { error: 'Player not found in room' };
+		}
+
+		try {
+			const snapshot = createSnapshot(params.roomId, botPlayer.userId, { allowSpectator: false });
+			const availableActions = getValidActionsForUser(params.roomId, botPlayer.userId);
+			return { ...snapshot, availableActions };
+		} catch (error) {
+			set.status = 404;
+			return { error: error instanceof Error ? error.message : 'Game not found' };
+		}
+	})
+
+	// ── Bot action submission ─────────────────────────────────────────────────
+
+	.post('/api/bot/games/:roomId/action', async ({ params, request, set }) => {
+		let b;
+		try {
+			b = await requireBot(request);
+		} catch {
+			set.status = 401;
+			return { error: 'Unauthorized' };
+		}
+
+		const botPlayer = await db.query.roomPlayer.findFirst({
+			where: and(eq(roomPlayer.roomId, params.roomId), eq(roomPlayer.botId, b.id))
+		});
+		if (!botPlayer) {
+			set.status = 404;
+			return { error: 'Player not found in room' };
+		}
+
+		const body = (await request.json()) as {
+			type: string;
+			text?: string;
+			card?: string;
+			targetId?: string;
+		};
+
+		try {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			applyGameAction(params.roomId, botPlayer.userId, body as any);
+			resolveExternalBotTurn(params.roomId);
+			await broadcastGameState(params.roomId);
+			return { accepted: true };
+		} catch (error) {
+			const message = error instanceof Error ? error.message : 'Invalid action';
+			set.status = message === 'Game not found.' ? 404 : 400;
+			return { error: message };
+		}
 	});
