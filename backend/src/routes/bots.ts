@@ -330,6 +330,14 @@ export const botRoutes = new Elysia()
 			return { error: 'No pending invitation' };
 		}
 
+		const existingPlayer = await db.query.roomPlayer.findFirst({
+			where: and(eq(roomPlayer.roomId, params.roomId), eq(roomPlayer.botId, b.id))
+		});
+		if (existingPlayer) {
+			set.status = 400;
+			return { error: 'Bot is already in the room' };
+		}
+
 		const [roomRecord] = await db.select().from(room).where(eq(room.id, params.roomId));
 		if (!roomRecord) {
 			set.status = 400;
@@ -367,6 +375,8 @@ export const botRoutes = new Elysia()
 			.set({ status: 'accepted' })
 			.where(eq(botInvitation.id, pendingInvitation.id));
 
+		await broadcastPlayers(params.roomId);
+
 		return { playerId: newPlayer.id };
 	})
 
@@ -392,7 +402,38 @@ export const botRoutes = new Elysia()
 			.set({ ready: true })
 			.where(eq(roomPlayer.id, player.id));
 
+		await broadcastPlayers(params.roomId);
+
 		return { ready: true };
+	})
+
+	.post('/api/bot/rooms/:roomId/leave', async ({ params, request, set }) => {
+		let b;
+		try {
+			b = await requireBot(request);
+		} catch {
+			set.status = 401;
+			return { error: 'Unauthorized' };
+		}
+
+		await db
+			.delete(roomPlayer)
+			.where(and(eq(roomPlayer.roomId, params.roomId), eq(roomPlayer.botId, b.id)));
+
+		await db
+			.update(botInvitation)
+			.set({ status: 'cancelled' })
+			.where(
+				and(
+					eq(botInvitation.botId, b.id),
+					eq(botInvitation.roomId, params.roomId),
+					eq(botInvitation.status, 'accepted')
+				)
+			);
+
+		await broadcastPlayers(params.roomId);
+
+		return { success: true };
 	})
 
 	// ── Bot game state polling ────────────────────────────────────────────────
