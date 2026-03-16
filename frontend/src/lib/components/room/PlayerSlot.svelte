@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
+	import { getProviderAvatar } from '$lib/utils/providerAvatar';
 
 	let {
 		player,
@@ -16,6 +17,7 @@
 				modelName?: string | null;
 				assistantName?: string | null;
 				ownerName?: string | null;
+				provider?: string | null;
 			};
 		isHost?: boolean;
 		isMe?: boolean;
@@ -49,6 +51,8 @@
 		>
 			{#if player.avatarSrc}
 				<img alt={player.name} class="h-full w-full object-cover" src={player.avatarSrc} />
+			{:else if player.type === 'llm' && getProviderAvatar(player.provider)}
+				<img alt={player.provider ?? 'llm'} class="h-full w-full object-contain p-2" src={getProviderAvatar(player.provider)!} />
 			{:else}
 				<div class="flex h-full w-full items-center justify-center">
 					<span class="material-symbols-outlined text-3xl text-slate-600">

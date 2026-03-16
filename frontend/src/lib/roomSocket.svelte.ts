@@ -13,6 +13,8 @@ type Player = {
 	language?: string | null;
 	ready: boolean;
 	ownerName?: string | null;
+	provider?: string | null;
+	isOperator: boolean;
 };
 
 type ChatMessage = {

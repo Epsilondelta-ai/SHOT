@@ -21,6 +21,7 @@
 		assistantName: string | null;
 		llmModelId: string | null;
 		modelName: string | null;
+		provider?: string | null;
 		isOperator: boolean;
 	};
 
