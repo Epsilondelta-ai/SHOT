@@ -46,6 +46,9 @@ storybook-static
 # E2E
 e2e/screenshots
 
+# Local test scripts
+bot-join.js
+
 # OMC / Tools
 .omc
 .omx
