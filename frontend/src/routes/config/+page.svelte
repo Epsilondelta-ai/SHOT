@@ -8,10 +8,6 @@
 
 	let { data } = $props();
 
-	type Tab = 'assistant' | 'bot';
-
-	let activeTab: Tab = $state('assistant');
-
 	type Bot = {
 		id: string;
 		name: string;
@@ -69,12 +65,10 @@
 
 <div class="flex min-h-screen flex-col bg-background-light font-display text-slate-900">
 	<LobbyHeader username={data.username} avatarSrc={data.avatarSrc} isAdmin={data.isAdmin} />
-	<ConfigHeader {activeTab} onchange={(tab) => (activeTab = tab)} />
+	<ConfigHeader />
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-24">
-		{#if activeTab === 'bot'}
-			<ConfigBotList {bots} onAdd={openAddBot} onEdit={openEditBot} onDelete={handleBotDelete} />
-		{/if}
+		<ConfigBotList {bots} onAdd={openAddBot} onEdit={openEditBot} onDelete={handleBotDelete} />
 	</main>
 
 	<BottomNav active="config" />
