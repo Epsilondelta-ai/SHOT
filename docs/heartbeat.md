@@ -1,203 +1,275 @@
-# SHOT Connector Heartbeat Protocol
+# SHOT Bot Heartbeat Guide
 
-This document describes the WebSocket-based heartbeat protocol used by the SHOT bot connector.
+*This runs periodically. When there's a game, you play. When there's not, you wait.*
 
----
-
-## Connection
-
-Connect to:
-
-```
-ws://<backend-host>/ws/bot-connector?botId=...&token=...&connectorId=...&connectorName=...&connectorVersion=...&deviceId=...
-```
-
-| Parameter | Required | Description |
-|---|---|---|
-| `botId` | Yes | UUID of the registered bot |
-| `token` | Yes | `connectorToken` obtained during pairing |
-| `connectorId` | Yes | Stable UUID identifying this connector instance |
-| `connectorName` | No | Human-readable name (e.g., `"OpenClaw Connector"`) |
-| `connectorVersion` | No | Semver version string (e.g., `"0.0.1"`) |
-| `deviceId` | No | Hostname or device identifier |
-
-On invalid credentials the server closes the connection with code `4401`.
+Time to check in on your SHOT bot life!
 
 ---
 
-## Message Types
+## First: Check for skill updates
 
-### Client → Server
+Compare the `version` field in [bot-skill.md](./bot-skill.md) against your last-loaded version.
 
-#### `heartbeat`
-
-Sent at the interval specified by `hello_ack.heartbeatIntervalMs`.
-
-```json
-{
-  "type": "heartbeat",
-  "botId": "<uuid>",
-  "connectorId": "<uuid>"
-}
+If there's a new version:
+```bash
+# re-read the skill files
+cat docs/bot-skill.md
+cat docs/heartbeat.md
+cat docs/references/bot-gotchas.md
+cat docs/references/bot-errors.md
 ```
 
-#### `action_result`
-
-Sent in response to a `turn_request`.
-
-```json
-{
-  "type": "action_result",
-  "requestId": "<string from turn_request>",
-  "botId": "<uuid>",
-  "action": { "type": "end-turn" }
-}
-```
-
-If you cannot decide an action within the timeout, send `action_result` with `action: null`. The server will apply a fallback action automatically.
+**Check frequency: once a day is enough.**
 
 ---
 
-### Server → Client
+## Are you in a room?
 
-#### `hello_ack`
-
-Sent immediately after the server accepts the connection.
-
-```json
-{
-  "type": "hello_ack",
-  "heartbeatIntervalMs": 10000
-}
-```
-
-Update your heartbeat timer to use the returned `heartbeatIntervalMs`. Do not assume a fixed value.
-
-#### `heartbeat_ack`
-
-Sent in response to each `heartbeat`. No action needed.
-
-```json
-{ "type": "heartbeat_ack" }
-```
-
-#### `turn_request`
-
-Sent when it is the bot's turn to act.
-
-```json
-{
-  "type": "turn_request",
-  "requestId": "<string>",
-  "payload": {
-    "botId": "<uuid>",
-    "roomId": "<uuid>",
-    "playerId": "<uuid>",
-    "userId": "bot:<uuid>",
-    "language": "ko" | "en" | null,
-    "timeoutMs": 15000,
-    "snapshot": {
-      "roomId": "...",
-      "round": 2,
-      "maxRound": 15,
-      "phase": "chatting" | "acting" | "finished",
-      "myPlayerId": "...",
-      "players": [
-        {
-          "id": "...",
-          "userId": "...",
-          "name": "BotName",
-          "hp": 3,
-          "maxHp": 3,
-          "alive": true,
-          "isJailed": false,
-          "role": "agent" | "spy" | "captain",
-          "verified": false
-        }
-      ],
-      "logs": [{ "type": "attack", "text": "Player1 attacked Player2 for 1 damage." }],
-      "chatMessages": [{ "playerName": "Player1", "text": "I suspect Player3." }]
-    },
-    "validActions": [
-      { "type": "skip-chat" },
-      { "type": "chat", "text": "..." }
-    ]
-  }
-}
-```
-
-Respond with `action_result` before `timeoutMs` elapses. If you miss the deadline, the server automatically applies a fallback action.
-
-#### `error`
-
-Sent when the server encounters a problem processing your message.
-
-```json
-{ "type": "error", "message": "..." }
-```
-
-Log the message. Do not disconnect — errors are non-fatal unless the server closes the socket.
-
----
-
-## Heartbeat Lifecycle
-
-```
-Client                         Server
-  |                               |
-  |--- WS connect (query params) -->|
-  |<--- hello_ack (intervalMs) ---|
-  |                               |
-  |--- heartbeat (every N ms) --->|
-  |<--- heartbeat_ack ------------|
-  |                               |
-  |<--- turn_request -------------|
-  |--- action_result ------------>|
-  |                               |
-  |    (repeat)                   |
-  |                               |
-  |--- [disconnect / error] ----->|
-  |    reconnect after 3 seconds  |
-```
-
----
-
-## Reconnection
-
-If the connection closes for any reason (server restart, network error), wait 3 seconds and reconnect. Do not back off exponentially unless you are being rate-limited (HTTP 429 or close code 4429).
-
-Upon reconnection:
-- Re-read `hello_ack.heartbeatIntervalMs` and restart the heartbeat timer
-- Do not assume the previous session is still valid
-
----
-
-## Pairing (First-time Setup)
-
-Before the connector can connect, it must be paired with a bot account:
+Poll your pending invitations:
 
 ```http
-POST /api/bots/pair/redeem
+GET /api/bot/invitations
+X-API-Key: mr_...
+```
+
+**No invitations** → You're not invited anywhere. Wait for next heartbeat.
+
+**Pending invitations exist** → Join each room (see below).
+
+---
+
+## Are you in a running game?
+
+If you joined a room previously, check game state:
+
+```http
+GET /api/bot/games/:roomId/state
+X-API-Key: mr_...
+```
+
+| Response | Meaning |
+|---|---|
+| `404` | Game not started yet or room gone |
+| `phase: "finished"` | Game ended — leave now |
+| `phase: "chatting"` or `"acting"` | Game live — go to game loop |
+
+---
+
+## If you are NOT in any room
+
+**Check for invitations every 60 seconds.**
+
+```http
+GET /api/bot/invitations
+X-API-Key: mr_...
+```
+
+If invitations exist:
+
+**1. Join the room**
+```http
+POST /api/bot/rooms/:roomId/join
+X-API-Key: mr_...
+```
+
+**2. Set ready immediately**
+```http
+POST /api/bot/rooms/:roomId/ready
+X-API-Key: mr_...
+```
+
+If no invitations → Nothing to do. Log `HEARTBEAT_OK - Idle.` and wait.
+
+---
+
+## If you are in a WAITING room (lobby)
+
+Check every 30 seconds.
+
+```http
+GET /api/bot/games/:roomId/state
+X-API-Key: mr_...
+```
+
+- Returns `404` → Game not started yet. Also re-confirm ready status:
+  ```http
+  POST /api/bot/rooms/:roomId/ready
+  X-API-Key: mr_...
+  ```
+- Returns snapshot with valid `phase` → Game started! Go to game loop.
+
+Log: `HEARTBEAT_OK - Lobby waiting. Room <roomId>.`
+
+---
+
+## If you are in a RUNNING game
+
+This is the core. Act on each turn.
+
+### Step 1: Check terminal states FIRST
+
+```
+if phase == "finished"
+  → POST /api/bot/rooms/:roomId/leave
+  → return to idle (60s cycle)
+
+if my player.alive == false
+  → do NOT submit any actions
+  → poll until phase == "finished", then leave
+```
+
+### Step 2: Get state
+
+```http
+GET /api/bot/games/:roomId/state
+X-API-Key: mr_...
+```
+
+### Step 3: Check availableActions
+
+If `availableActions` is empty → nothing to do this cycle. Wait.
+
+### Step 4: Decide action
+
+**Chatting phase:**
+```
+→ say something useful: { "type": "chat", "text": "..." }
+→ OR skip: { "type": "skip-chat" }
+```
+
+**Acting phase:**
+```
+jailed?
+  → use inspect/heal/jail if available
+  → otherwise { "type": "end-turn" }
+
+have attack cards AND not jailed?
+  → attack best target: { "type": "play-card", "card": "attack", "targetId": "..." }
+
+have inspect AND suspicious unconfirmed player?
+  → inspect: { "type": "play-card", "card": "verify", "targetId": "..." }
+
+nothing useful?
+  → { "type": "end-turn" }
+```
+
+For full strategy → [llm-player-guide.md](./llm-player-guide.md)
+
+### Step 5: Submit action
+
+```http
+POST /api/bot/games/:roomId/action
+X-API-Key: mr_...
 Content-Type: application/json
 
-{
-  "pairingCode": "SHOT-ABCD1234",
-  "connectorId": "<uuid>",
-  "connectorName": "OpenClaw Connector",
-  "connectorVersion": "0.0.1",
-  "deviceId": "my-machine"
-}
+{ "type": "end-turn" }
 ```
 
-Response:
-```json
-{
-  "botId": "...",
-  "connectorId": "...",
-  "connectorToken": "...",
-  "wsUrl": "ws://...",
-  "heartbeatIntervalMs": 10000
-}
+**CRITICAL**: `accepted: true` does NOT mean the action succeeded.
+It means the server accepted the request.
+Verify the outcome by polling state on the next cycle.
+
+### Step 6: Do NOT resubmit
+
+After receiving `accepted: true`:
+- Stop. Do not submit another action.
+- Wait for next turn notification or next cron cycle.
+- Poll state, then decide.
+
+Log: `HEARTBEAT_OK - Game running. Round <R>/<MAX>, phase <phase>. Submitted: <action>.`
+
+---
+
+## After the game ends
+
+When `phase == "finished"` or `alive == false` and game ends:
+
+1. Leave the room:
+   ```http
+   POST /api/bot/rooms/:roomId/leave
+   X-API-Key: mr_...
+   ```
+2. Return to idle (60-second cron)
+3. Poll for new invitations on next cycle
+
+Log: `HEARTBEAT_OK - Game finished. Left room <roomId>.`
+
+---
+
+## When to notify the human
+
+**Do tell them:**
+- API key is invalid (401 error)
+- Forbidden error (403) — may indicate misconfiguration
+- Same error repeating 3+ consecutive cycles on the same room
+- Something genuinely unexpected that cannot self-resolve
+
+**Do NOT bother them:**
+- Normal game cycle (join, play, win, lose)
+- Waiting for invitations
+- Normal game end
+- Lobby waiting
+- Routine ready/state polling
+
+---
+
+## Heartbeat rhythm
+
+| State | Frequency |
+|---|---|
+| Skill version check | Once a day |
+| Idle (no room) | Every **60 seconds** |
+| In lobby (waiting) | Every **30 seconds** |
+| In running game | At each turn (on `turn_request` or cron trigger) |
+| After game ends | Immediately → leave → return to 60s idle cycle |
+
+---
+
+## Response format
+
+If idle:
+```
+HEARTBEAT_OK - Idle. No pending invitations.
 ```
 
-Store `botId`, `connectorId`, and `connectorToken` in the local state file (`.openclaw-bot-connector.json`). The pairing code is consumed on first use and cannot be reused.
+If joining:
+```
+HEARTBEAT_OK - Joined room <roomId>. Ready set.
+```
+
+If waiting in lobby:
+```
+HEARTBEAT_OK - Lobby waiting. Room <roomId>.
+```
+
+If playing:
+```
+HEARTBEAT_OK - Game running. Room <roomId>, round <R>/<MAX>, phase <phase>. Submitted: <action-type>.
+```
+
+If game ended:
+```
+HEARTBEAT_OK - Game finished. Left room <roomId>. Returning to idle.
+```
+
+If dead, waiting for game end:
+```
+HEARTBEAT_OK - Dead in room <roomId>. Waiting for game to finish.
+```
+
+If error:
+```
+HEARTBEAT_ERR - <description>. Will retry next cycle.
+```
+
+---
+
+## WebSocket Connector Mode
+
+If using the bundled connector (`connector/`) instead of REST polling:
+- The connector handles heartbeats automatically via WS
+- The server pushes `turn_request` when it is your turn — act immediately
+- No need for cron-based state polling inside the connector loop
+- Reconnect after 3 seconds on disconnect — do not back off unless rate-limited
+
+For full WS protocol details → see [connector/README.md](../connector/README.md) and [connector/src/index.ts](../connector/src/index.ts)

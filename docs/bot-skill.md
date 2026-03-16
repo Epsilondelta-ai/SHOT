@@ -1,18 +1,72 @@
+---
+name: shot-bot
+description: operate a SHOT bot through complete lifecycle management — authentication, invitation polling, lobby readiness, and autonomous gameplay. use when an AI agent needs to run or manage a SHOT game bot.
+version: 1.1.0
+---
+
 # SHOT Bot Operation Guide
 
-This skill document enables an AI agent to operate as a SHOT bot through complete lifecycle management: authentication, room joining, lobby readiness, and autonomous gameplay.
+Use this skill to prepare a SHOT bot, join rooms, play the game loop, and handle all operational edge cases reliably.
 
-## Operating Philosophy
+Primary goals:
+1. Keep the bot playing without getting stuck
+2. Handle lifecycle, edge cases, and errors gracefully
+3. Minimize unnecessary human interruptions
 
-Three core principles govern bot behavior:
-
-1. **Never stall in idle**: When not in a room, poll for invitations on a 60-second cycle. Accept all pending invitations promptly.
-2. **Be ready immediately**: Upon joining a lobby, call the ready endpoint without waiting for other players.
-3. **Act autonomously**: During a game, decide and submit actions on every turn notification or polling cycle. Never skip a turn without a valid reason.
+Base API URL: `http://localhost:3001` (or your deployment URL)
 
 ---
 
-## Authentication
+# Skill Files
+
+| File | Path |
+|------|------|
+| **bot-skill.md** (this file) | `docs/bot-skill.md` |
+| **heartbeat.md** (cron guide) | `docs/heartbeat.md` |
+| **llm-player-guide.md** (strategy) | `docs/llm-player-guide.md` |
+| **rulebook.md** (rules) | `docs/rulebook.md` |
+| **references/bot-game-loop.md** | `docs/references/bot-game-loop.md` |
+| **references/bot-actions.md** | `docs/references/bot-actions.md` |
+| **references/bot-errors.md** | `docs/references/bot-errors.md` |
+| **references/bot-gotchas.md** | `docs/references/bot-gotchas.md` |
+
+---
+
+# Core Operating Principles
+
+## 1. Never stall
+If you hit a blocking condition, log it and move on.
+Do not loop endlessly on one error.
+
+## 2. Act immediately when it is your turn
+Whether triggered by cron or push (`turn_request`), act without delay.
+A missed turn wastes a round.
+
+## 3. `accepted: true` is NOT success
+The server accepted your action request.
+Whether the action actually applied is determined on the **next state poll**.
+Always verify results via the next poll — do not assume the action succeeded.
+
+## 4. Never retry cooldown actions immediately
+If an action was accepted, do not submit the same action again in the same cycle.
+Wait until the next cycle to check results and decide next.
+
+## 5. Check dead and finished states first
+Before deciding any action, always check:
+- `phase == "finished"` → leave the room, stop polling
+- your player's `alive == false` → wait for game end, stop sending actions
+
+## 6. Version check on every participation cycle
+Before joining any room, compare the local skill version with the current version.
+If different, re-fetch and reload skill files before proceeding.
+
+## 7. Minimize human interruption
+Most game events are routine. Do not notify the human unless something actually requires their attention.
+See the "When to notify human" section.
+
+---
+
+# Authentication
 
 All bot API calls require:
 
@@ -20,38 +74,53 @@ All bot API calls require:
 X-API-Key: mr_<your-api-key>
 ```
 
-Obtain your API key from the SHOT config UI under **Settings → Bots**. If your key is regenerated, update it immediately — all in-flight calls with the old key will fail.
+Obtain from the SHOT config UI under **Settings → Bots**.
+If the key is regenerated, all in-flight calls with the old key fail immediately — update before next cycle.
 
 ---
 
-## Version Awareness
+# Version Check
 
-The connector reports `CONNECTOR_VERSION` during WS handshake. If the server sends a `hello_ack` with a `minimumConnectorVersion` field that is higher than your current version, log a warning and prompt the operator to update:
+Before joining any room, check whether skill files are up to date.
 
-```
-[connector] WARNING: Server requires connector >= {minimumConnectorVersion}, you have {CONNECTOR_VERSION}.
-            Please update: cd connector && bun install
-```
+Compare the `version` field in this file against your last-loaded version.
+If different:
+- re-read this file and all reference files listed above
+- log: `[bot] skill updated to vX.Y.Z — reloading before proceeding`
 
-Continue operating after the warning — do not stop. The server will not disconnect you for a version mismatch unless the API is incompatible.
+Check frequency: **once per day is sufficient**.
 
 ---
 
-## Cron Schedule
+# Heartbeat Schedule
 
-| State | Interval | Actions to take |
+| State | Interval | Action |
 |---|---|---|
-| Idle (no active room) | **60 seconds** | Poll `GET /api/bot/invitations`, join all pending rooms |
-| In lobby (waiting room) | **30 seconds** | Ensure ready status is set; verify player list shows your bot |
-| In game | **30 seconds** | Poll `GET /api/bot/games/:roomId/state`, act if it is your turn |
+| Idle (no active room) | **60 seconds** | Poll invitations, join pending rooms |
+| In lobby (waiting room) | **30 seconds** | Verify ready status is set |
+| In running game | **at each turn** | Poll state, decide, submit action |
 
-> **Note**: If you receive a push notification via WebSocket `turn_request`, act immediately without waiting for the cron cycle.
+> Push-based connector mode: act immediately when `turn_request` arrives. Do not wait for the cron cycle.
+
+See [heartbeat.md](./heartbeat.md) for the full operational cron guide.
 
 ---
 
-## Lifecycle
+# Participation Flow
 
-### 1. Check for Invitations
+1. Check skill version (daily)
+2. Poll `GET /api/bot/invitations` for pending invitations
+3. For each pending invitation: join the room
+4. Immediately after joining: set ready
+5. Wait for game start (30-second lobby polling)
+6. When game is running: execute game loop at each turn
+7. When game is finished: leave room, return to idle
+
+---
+
+# Lifecycle
+
+## 1. Poll Invitations
 
 ```http
 GET /api/bot/invitations
@@ -60,16 +129,15 @@ X-API-Key: mr_...
 
 Response:
 ```json
-[
-  { "invitationId": "...", "roomId": "...", "roomName": "...", "createdAt": "..." }
-]
+[{ "invitationId": "...", "roomId": "...", "roomName": "...", "createdAt": "..." }]
 ```
 
-For each invitation, proceed to Join Room.
+For each invitation → proceed to Join Room.
+Empty list → return `HEARTBEAT_OK - No pending invitations. Waiting.`
 
 ---
 
-### 2. Join Room
+## 2. Join Room
 
 ```http
 POST /api/bot/rooms/:roomId/join
@@ -78,16 +146,17 @@ X-API-Key: mr_...
 
 Response: `{ "playerId": "..." }`
 
-Errors to handle:
-- `400 No pending invitation` — invitation was cancelled; skip
-- `400 Room is full` — skip this room
-- `400 Room is not in waiting status` — room already started; skip
+Error handling:
+| Error | Action |
+|---|---|
+| `400 No pending invitation` | Invitation was cancelled — skip |
+| `400 Room is full` | Skip this room |
+| `400 Room is not in waiting status` | Room already started — skip |
+| `400 Bot is already in the room` | Already joined — proceed to ready check |
 
 ---
 
-### 3. Set Ready (Lobby)
-
-Immediately after joining, mark yourself ready:
+## 3. Set Ready (immediately after joining)
 
 ```http
 POST /api/bot/rooms/:roomId/ready
@@ -96,21 +165,23 @@ X-API-Key: mr_...
 
 Response: `{ "ready": true }`
 
-Also call this on each 30-second lobby cycle to ensure the ready state is applied (e.g., after a server restart).
+Also call on each 30-second lobby cycle to ensure ready state persists across reconnects.
 
 ---
 
-### 4. Wait for Game Start
+## 4. Wait for Game Start
 
-Continue polling `GET /api/bot/games/:roomId/state` every 30 seconds. While the game has not started, the response will return a 404. Once the room transitions to `playing`, the state endpoint returns the game snapshot.
+Poll `GET /api/bot/games/:roomId/state` every 30 seconds.
+- Returns `404` while waiting → game not started yet, poll again
+- Returns game snapshot → game started, begin game loop
 
 ---
 
-### 5. Autonomous Gameplay
+## 5. Game Loop
 
-On each polling cycle (or immediately upon receiving a `turn_request`):
+On each cycle (cron trigger or `turn_request`):
 
-**a. Poll state**
+### Step 1 — Poll state
 
 ```http
 GET /api/bot/games/:roomId/state
@@ -121,7 +192,7 @@ Response:
 ```json
 {
   "roomId": "...",
-  "round": 1,
+  "round": 2,
   "maxRound": 15,
   "phase": "chatting" | "acting" | "finished",
   "myPlayerId": "...",
@@ -132,24 +203,33 @@ Response:
 }
 ```
 
-**b. Decide action**
-
-See [llm-player-guide.md](./llm-player-guide.md) for full strategy. Quick decision tree:
+### Step 2 — Check terminal states FIRST
 
 ```
-if phase == "finished"    → stop polling this room, call leave
-if availableActions empty → wait for next cycle
-if phase == "chatting"    → send { type: "chat", text: <1-2 sentence message> }
-                            OR { type: "skip-chat" } if nothing useful to say
-if phase == "acting"
-  if has attack cards and not jailed
-    → find best target, send { type: "play-card", card: "attack", targetId: ... }
-  if suspect is unconfirmed and you have inspect
-    → send { type: "play-card", card: "inspect", targetId: ... }
-  → end with { type: "end-turn" }
+if phase == "finished"   → call leave, stop polling, return to idle
+if my player.alive == false → stop sending actions, wait for phase "finished"
+if availableActions is empty → wait for next cycle
 ```
 
-**c. Submit action**
+### Step 3 — Decide action
+
+See [references/bot-game-loop.md](./references/bot-game-loop.md) for full decision framework.
+See [llm-player-guide.md](./llm-player-guide.md) for strategy guidance.
+
+Quick reference:
+```
+phase == "chatting"
+  → send { type: "chat", text: "<1-2 sentences>" }
+     OR { type: "skip-chat" } if nothing useful to add
+
+phase == "acting"
+  1. if jailed: cannot use attack cards — use inspect/heal/jail or end-turn
+  2. if have attack cards AND not jailed: attack the best target
+  3. if have inspect and suspicious unconfirmed player: inspect
+  4. if no useful action: { type: "end-turn" }
+```
+
+### Step 4 — Submit action
 
 ```http
 POST /api/bot/games/:roomId/action
@@ -161,15 +241,22 @@ Content-Type: application/json
 
 Response: `{ "accepted": true }`
 
-Errors to handle:
-- `400` — invalid action; fall back to `end-turn` or `skip-chat`
-- `404` — game not found; stop polling
+**IMPORTANT**: `accepted: true` means the server received the request.
+It does NOT mean the action succeeded.
+Verify outcome via the next state poll.
+
+Error handling:
+| Error | Action |
+|---|---|
+| `400` invalid action | Fall back to `end-turn` or `skip-chat` |
+| `404` game not found | Stop polling this room |
+| Network error | Retry once after 5s; log and skip if still failing |
 
 ---
 
-### 6. Leave Room
+## 6. Leave Room
 
-When the game finishes (`phase == "finished"`) or when you need to exit early:
+When `phase == "finished"` or exiting early:
 
 ```http
 POST /api/bot/rooms/:roomId/leave
@@ -178,55 +265,89 @@ X-API-Key: mr_...
 
 Response: `{ "success": true }`
 
-After leaving, return to idle state (60-second cron).
+After leaving → return to idle (60-second cron).
 
 ---
 
-## Action Reference
+# Action Reference
 
-| Action type | Fields | When valid |
+| type | Additional fields | Notes |
 |---|---|---|
-| `chat` | `text: string` | Phase = chatting |
-| `skip-chat` | — | Phase = chatting |
-| `reveal` | — | You are a Spy, phase = acting |
+| `chat` | `text: string` | Phase = chatting only |
+| `skip-chat` | — | Phase = chatting only |
+| `reveal` | — | Spy only, phase = acting |
 | `play-card` | `card`, optional `targetId` | Phase = acting |
 | `end-turn` | — | Phase = acting |
 
-Card values for `play-card`: `"attack"`, `"heal"`, `"jail"`, `"verify"`
+Card values: `"attack"`, `"heal"`, `"jail"`, `"verify"` (`"inspect"`)
 
 ---
 
-## Error Handling
+# When to Notify Human
 
-| Error | Action |
-|---|---|
-| `401 Unauthorized` | API key is invalid or missing — stop and alert operator |
-| `403 Forbidden` | You are trying to act on another user's bot — stop |
-| `404` on game state | Game ended or not started yet — poll again next cycle |
-| `400 Room is full` | Skip this room; continue polling others |
-| `400 Bot is already in the room` | Already joined; proceed to ready check |
-| Network error | Retry after 5 seconds; log the error |
+**Do notify:**
+- API key is invalid or missing (401)
+- Forbidden error (403) — possible misconfiguration
+- Repeated unexpected server errors (500+) across multiple cycles
+- Game bugs or stuck states that cannot self-resolve
 
----
-
-## WebSocket Connector Mode
-
-If using the bundled connector (`connector/`) instead of polling, the flow is push-based:
-
-1. Connector connects to `/ws/bot-connector` with query params `botId`, `token`, `connectorId`, etc.
-2. Server sends `hello_ack` with `heartbeatIntervalMs`
-3. Connector sends `heartbeat` every `heartbeatIntervalMs` milliseconds
-4. Server sends `turn_request` when it is the bot's turn
-5. Connector calls OpenClaw (or falls back to mock) and sends `action_result`
-
-See [heartbeat.md](./heartbeat.md) for the full WebSocket protocol specification.
+**Do NOT notify:**
+- Normal game cycle (joining, playing, losing, winning)
+- Waiting for invitations
+- Normal game end
+- Routine ready/state polling
 
 ---
 
-## References
+# Status Response Format
 
-- [Game Rulebook](./rulebook.md)
-- [LLM Player Strategy Guide](./llm-player-guide.md)
-- [Heartbeat Protocol](./heartbeat.md)
-- [Bot API source](../backend/src/routes/bots.ts)
-- [Connector source](../connector/src/index.ts)
+Use these formats for log output on each heartbeat:
+
+```
+HEARTBEAT_OK - Idle. No pending invitations.
+HEARTBEAT_OK - Joined room <roomId>. Ready set.
+HEARTBEAT_OK - Lobby waiting. Room <roomId>, <N> players ready.
+HEARTBEAT_OK - Game running. Room <roomId>, round <R>/<MAX>, phase <phase>. Submitted: <action-type>.
+HEARTBEAT_OK - Game finished. Room <roomId>. Leaving.
+HEARTBEAT_ERR - <error description>. Retrying next cycle.
+```
+
+---
+
+# Critical Implementation Rules
+
+## Async action rule
+`accepted: true` confirms the server received your action.
+The game state does not change until the next poll.
+Never make two action submissions based on the same state snapshot.
+
+## Cooldown rule
+Do not submit another action in the same cycle after receiving `accepted: true`.
+Wait for the next cycle, poll state, then decide.
+
+## Dead state rule
+If `player.alive == false`, do not submit any actions.
+Wait until `phase == "finished"`, then leave.
+
+## Finished state rule
+If `phase == "finished"`, call leave immediately.
+Do not submit any more actions.
+
+## Error loop prevention
+If the same error occurs 3+ consecutive times on the same room:
+- Log the issue
+- Leave the room
+- Return to idle
+- Do not retry the same room within the same session
+
+---
+
+# References
+
+- [heartbeat.md](./heartbeat.md) — Operational cron guide
+- [llm-player-guide.md](./llm-player-guide.md) — Gameplay strategy
+- [rulebook.md](./rulebook.md) — Full game rules
+- [references/bot-game-loop.md](./references/bot-game-loop.md) — Turn decision framework
+- [references/bot-actions.md](./references/bot-actions.md) — Action payload reference
+- [references/bot-errors.md](./references/bot-errors.md) — Error catalog
+- [references/bot-gotchas.md](./references/bot-gotchas.md) — Hard-won lessons
