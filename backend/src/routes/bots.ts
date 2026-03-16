@@ -7,6 +7,7 @@ import { requireBot } from '../lib/botAuth';
 import { createSnapshot, getValidActionsForUser, applyGameAction } from '../lib/gameState';
 import { resolveExternalBotTurn } from '../lib/externalBotTurn';
 import { broadcastGameState } from '../ws/gameWs';
+import { broadcastPlayers } from '../ws/roomWs';
 
 function generateApiKey(): string {
 	return 'mr_' + crypto.randomUUID().replace(/-/g, '');
@@ -228,6 +229,16 @@ export const botRoutes = new Elysia()
 			.insert(botInvitation)
 			.values({ botId: params.botId, roomId: params.id, status: 'pending' })
 			.returning();
+
+		await db.insert(roomPlayer).values({
+			roomId: params.id,
+			userId: `bot:${params.botId}`,
+			playerType: 'external',
+			displayName: botRecord.name,
+			botId: params.botId,
+		});
+
+		await broadcastPlayers(params.id);
 
 		return { invitationId: invitation.id };
 	})

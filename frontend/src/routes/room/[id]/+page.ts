@@ -15,8 +15,13 @@ export const load: PageLoad = async ({ params, fetch, url }) => {
 	if (!roomRes.ok) redirect(303, '/lobby');
 
 	const roomData = await roomRes.json();
+
+	const botsRes = await fetch(`${BACKEND_URL}/api/config/bots`, { credentials: 'include' });
+	const bots = botsRes.ok ? await botsRes.json() : [];
+
 	return {
 		...roomData,
+		bots: bots as { id: string; name: string; image: string | null; active: boolean }[],
 		chatMessages: [] as { id: string; sender: string; text: string; isSystem?: boolean }[]
 	};
 };

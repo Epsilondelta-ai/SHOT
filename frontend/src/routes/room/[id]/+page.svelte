@@ -7,6 +7,7 @@
 	import RoomChat from '$lib/components/room/RoomChat.svelte';
 	import RoomHeader from '$lib/components/room/RoomHeader.svelte';
 	import RoomLlmPlayerPanel from '$lib/components/room/RoomLlmPlayerPanel.svelte';
+	import RoomBotPanel from '$lib/components/room/RoomBotPanel.svelte';
 	import PlayerSlot from '$lib/components/room/PlayerSlot.svelte';
 
 	type Player = {
@@ -181,6 +182,10 @@
 
 	async function addLlmPlayer(payload: { assistantId?: string; name?: string; llmModelId: string; language: string }) {
 		await apiPost(`/api/rooms/${data.roomId}/llm-players`, payload);
+	}
+
+	async function inviteBot(botId: string) {
+		await apiPost(`/api/rooms/${data.roomId}/invite-bot/${botId}`, {});
 	}
 
 	async function transferHost(userId: string) {
@@ -396,6 +401,13 @@
 					llmModels={data.llmModels as ModelOption[]}
 					disabled={isRoomFull}
 					onadd={addLlmPlayer}
+				/>
+			</section>
+			<section>
+				<RoomBotPanel
+					bots={data.bots}
+					disabled={isRoomFull}
+					oninvite={inviteBot}
 				/>
 			</section>
 		{/if}
