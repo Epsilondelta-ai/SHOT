@@ -287,7 +287,7 @@ async function callLlmApi(
     },
     body: JSON.stringify({
       model,
-      max_tokens: 256,
+      max_completion_tokens: 2048,
       messages: [
         { role: "system", content: systemPrompt },
         ...messages.map((m) => ({ role: m.role, content: m.content })),
