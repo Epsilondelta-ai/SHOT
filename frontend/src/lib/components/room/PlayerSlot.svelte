@@ -12,9 +12,10 @@
 				name: string;
 				avatarSrc?: string | null;
 				ready: boolean;
-				type?: 'human' | 'llm';
+				type?: 'human' | 'llm' | 'external';
 				modelName?: string | null;
 				assistantName?: string | null;
+				ownerName?: string | null;
 			};
 		isHost?: boolean;
 		isMe?: boolean;
@@ -51,7 +52,7 @@
 			{:else}
 				<div class="flex h-full w-full items-center justify-center">
 					<span class="material-symbols-outlined text-3xl text-slate-600">
-						{player.type === 'llm' ? 'smart_toy' : 'person'}
+						{player.type === 'llm' ? 'smart_toy' : player.type === 'external' ? 'robot_2' : 'person'}
 					</span>
 				</div>
 			{/if}
@@ -69,6 +70,10 @@
 				{#if player.assistantName}
 					<p class="text-[10px] font-bold text-slate-400">{player.assistantName}</p>
 				{/if}
+			</div>
+		{:else if player.type === 'external' && player.ownerName}
+			<div class="text-center">
+				<p class="text-[10px] font-bold text-slate-400">owner: {player.ownerName}</p>
 			</div>
 		{/if}
 

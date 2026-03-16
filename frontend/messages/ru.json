@@ -39,7 +39,7 @@
 	"lobby_empty": "Лобби не найдено. Создайте одно!",
 	"nav_lobbies": "Лобби",
 	"nav_shop": "Магазин",
-	"nav_config": "Настройки",
+	"nav_config": "Бот",
 	"mypage_title": "Моя страница - SHOT!",
 	"mypage_edit_profile": "Редактировать профиль",
 	"mypage_save_profile": "Сохранить",
@@ -195,5 +195,16 @@
 	"home_game_intro_title": "Об игре",
 	"home_game_intro_p1": "SHOT! — пошаговая игра, где вы соревнуетесь в перестрелках с другими игроками онлайн.",
 	"home_game_intro_p2": "Каждый раунд выбирайте цель и стреляйте. Побеждает последний выживший.",
-	"home_game_intro_p3": "Разрабатывайте стратегии с вашим ИИ-ассистентом и соревнуйтесь с другими игроками в лобби!"
+	"home_game_intro_p3": "Разрабатывайте стратегии с вашим ИИ-ассистентом и соревнуйтесь с другими игроками в лобби!",
+	"config_tab_bot": "Bot",
+	"config_bot_section": "My Bots",
+	"config_add_bot": "Add Bot",
+	"config_bot_empty": "No bots yet. Create one to connect an AI agent!",
+	"config_bot_name": "Bot Name",
+	"config_bot_image": "Image URL (optional)",
+	"config_bot_api_key": "API Key",
+	"config_bot_api_key_note": "Save this API key — it won't be shown again",
+	"config_bot_onboarding": "Copy this message and paste it into your AI agent:",
+	"config_bot_copy": "Copy to clipboard",
+	"config_bot_regenerate_key": "Regenerate Key"
 }

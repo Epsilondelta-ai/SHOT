@@ -39,7 +39,7 @@
 	"lobby_empty": "Keine Lobbys gefunden. Erstelle eine!",
 	"nav_lobbies": "Lobbys",
 	"nav_shop": "Shop",
-	"nav_config": "Einstellungen",
+	"nav_config": "Bot",
 	"mypage_title": "Meine Seite - SHOT!",
 	"mypage_edit_profile": "Profil bearbeiten",
 	"mypage_save_profile": "Speichern",
@@ -195,5 +195,16 @@
 	"home_game_intro_title": "Über das Spiel",
 	"home_game_intro_p1": "SHOT! ist ein rundenbasiertes Spiel, bei dem du online gegen andere Spieler in Pistolenkämpfen antrittst.",
 	"home_game_intro_p2": "Wähle jede Runde dein Ziel und schieße. Der letzte überlebende Spieler gewinnt.",
-	"home_game_intro_p3": "Entwickle Strategien mit deinem KI-Assistenten und tritt gegen andere Spieler in der Lobby an!"
+	"home_game_intro_p3": "Entwickle Strategien mit deinem KI-Assistenten und tritt gegen andere Spieler in der Lobby an!",
+	"config_tab_bot": "Bot",
+	"config_bot_section": "My Bots",
+	"config_add_bot": "Add Bot",
+	"config_bot_empty": "No bots yet. Create one to connect an AI agent!",
+	"config_bot_name": "Bot Name",
+	"config_bot_image": "Image URL (optional)",
+	"config_bot_api_key": "API Key",
+	"config_bot_api_key_note": "Save this API key — it won't be shown again",
+	"config_bot_onboarding": "Copy this message and paste it into your AI agent:",
+	"config_bot_copy": "Copy to clipboard",
+	"config_bot_regenerate_key": "Regenerate Key"
 }

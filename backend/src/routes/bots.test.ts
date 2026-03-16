@@ -6,10 +6,30 @@ import Elysia from 'elysia';
 const mockUser = { id: 'u1', name: 'Alice', email: 'alice@test.com', role: 'user', image: null };
 const mockRequireUser = mock(async (): Promise<typeof mockUser> => mockUser);
 
+const now = new Date();
+const mockBotRow = {
+	id: 'b1',
+	userId: 'u1',
+	name: 'TestBot',
+	image: null,
+	apiKey: 'mr_abc123',
+	active: true,
+	createdAt: now
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockSelect = mock((..._args: any[]): any => ({
 	from: (..._: unknown[]) => ({
-		where: (...__: unknown[]) => Promise.resolve([])
+		where: (...__: unknown[]) => ({
+			orderBy: (...___: unknown[]) => Promise.resolve([])
+		}),
+		orderBy: (...__: unknown[]) => Promise.resolve([])
+	})
+}));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockInsert = mock((..._args: any[]): any => ({
+	values: (..._: unknown[]) => ({
+		returning: () => Promise.resolve([mockBotRow])
 	})
 }));
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,12 +38,21 @@ const mockUpdate = mock((..._args: any[]): any => ({
 		where: (...__: unknown[]) => Promise.resolve()
 	})
 }));
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockDelete = mock((..._args: any[]): any => ({
+	where: (..._: unknown[]) => Promise.resolve()
+}));
+
+const mockFindFirst = mock(async () => mockBotRow);
 
 mock.module('../db', () => ({
 	db: {
 		select: mockSelect,
+		insert: mockInsert,
 		update: mockUpdate,
+		delete: mockDelete,
 		query: {
+			bot: { findFirst: mockFindFirst },
 			session: { findFirst: mock(async () => null) }
 		}
 	}
@@ -44,7 +73,7 @@ mock.module('../db/schema', () => ({
 	gameRulebook: { id: 'gameRulebook.id', name: 'gameRulebook.name', content: 'gameRulebook.content', active: 'gameRulebook.active', createdAt: 'gameRulebook.createdAt', updatedAt: 'gameRulebook.updatedAt' },
 	gameRecord: { roomId: 'gameRecord.roomId', playerCount: 'gameRecord.playerCount', playerNames: 'gameRecord.playerNames', winnerTeam: 'gameRecord.winnerTeam', startedAt: 'gameRecord.startedAt', finishedAt: 'gameRecord.finishedAt', replayData: 'gameRecord.replayData' },
 	gameReplayFrame: { id: 'gameReplayFrame.id', roomId: 'gameReplayFrame.roomId', seq: 'gameReplayFrame.seq', snapshot: 'gameReplayFrame.snapshot', actionSummary: 'gameReplayFrame.actionSummary', createdAt: 'gameReplayFrame.createdAt' },
-	gameParticipant: { id: 'gameParticipant.id', roomId: 'gameParticipant.roomId', userId: 'gameParticipant.userId', participationType: 'gameParticipant.participationType', createdAt: 'gameParticipant.createdAt' },
+	gameParticipant: { roomId: 'gameParticipant.roomId', userId: 'gameParticipant.userId', playerName: 'gameParticipant.playerName', participationType: 'gameParticipant.participationType' },
 	bot: { id: 'bot.id', userId: 'bot.userId', name: 'bot.name', image: 'bot.image', apiKey: 'bot.apiKey', active: 'bot.active', createdAt: 'bot.createdAt' },
 	botInvitation: { id: 'botInvitation.id', botId: 'botInvitation.botId', roomId: 'botInvitation.roomId', status: 'botInvitation.status', createdAt: 'botInvitation.createdAt' },
 	userRelations: {}, banHistoryRelations: {}, sessionRelations: {}, accountRelations: {}, roomRelations: {}, roomPlayerRelations: {}, botRelations: {}, botInvitationRelations: {}
@@ -66,184 +95,216 @@ mock.module('../lib/getUser', () => ({
 	requireUser: mockRequireUser
 }));
 
-const { meRoutes } = await import('./me');
+const { botRoutes } = await import('./bots');
 
 function makeApp() {
-	return new Elysia().use(meRoutes);
+	return new Elysia().use(botRoutes);
 }
 
 beforeEach(() => {
 	mockRequireUser.mockReset();
 	mockRequireUser.mockResolvedValue(mockUser);
 	mockSelect.mockClear();
+	mockInsert.mockClear();
 	mockUpdate.mockClear();
+	mockDelete.mockClear();
+	mockFindFirst.mockReset();
+	mockFindFirst.mockResolvedValue(mockBotRow);
 });
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
-describe('GET /api/me', () => {
+describe('GET /api/config/bots', () => {
 	it('returns 401 when not authenticated', async () => {
 		mockRequireUser.mockRejectedValueOnce(new Error('Unauthorized'));
 		const app = makeApp();
-		const res = await app.handle(new Request('http://localhost/api/me'));
+		const res = await app.handle(new Request('http://localhost/api/config/bots'));
 		expect(res.status).toBe(401);
 		const body = await res.json();
 		expect(body.error).toBe('Unauthorized');
 	});
 
-	it('returns 404 when user not found in DB', async () => {
+	it('returns bots for authenticated user without apiKey', async () => {
 		mockSelect.mockImplementationOnce(() => ({
 			from: () => ({
-				where: () => Promise.resolve([])
-			})
-		}));
-		const app = makeApp();
-		const res = await app.handle(new Request('http://localhost/api/me'));
-		expect(res.status).toBe(404);
-		const body = await res.json();
-		expect(body.error).toBe('User not found');
-	});
-
-	it('returns user profile with stats', async () => {
-		const dbUser = {
-			id: 'u1', name: 'Alice', email: 'alice@test.com', image: 'photo.jpg', role: 'user',
-			banStart: null, banEnd: null, banReason: null
-		};
-		mockSelect.mockImplementationOnce(() => ({
-			from: () => ({
-				where: () => Promise.resolve([dbUser])
+				where: () => ({
+					orderBy: () =>
+						Promise.resolve([
+							{ id: 'b1', name: 'TestBot', image: null, active: true, createdAt: now }
+						])
+				})
 			})
 		}));
 
 		const app = makeApp();
-		const res = await app.handle(new Request('http://localhost/api/me'));
+		const res = await app.handle(new Request('http://localhost/api/config/bots'));
 		expect(res.status).toBe(200);
 		const body = await res.json();
-		expect(body.id).toBe('u1');
-		expect(body.name).toBe('Alice');
-		expect(body.email).toBe('alice@test.com');
-		expect(body.image).toBe('photo.jpg');
-		expect(body.banned).toBe(false);
-		expect(body.stats).toEqual({ games: 0, wins: 0, streak: 0 });
-		expect(body.recentMatches).toEqual([]);
-	});
-
-	it('marks user as banned when banEnd is in the future', async () => {
-		const futureDate = new Date(Date.now() + 86400000);
-		const dbUser = {
-			id: 'u1', name: 'Banned', email: 'ban@test.com', image: null, role: 'user',
-			banStart: new Date(), banEnd: futureDate, banReason: 'Bad behavior'
-		};
-		mockSelect.mockImplementationOnce(() => ({
-			from: () => ({
-				where: () => Promise.resolve([dbUser])
-			})
-		}));
-
-		const app = makeApp();
-		const res = await app.handle(new Request('http://localhost/api/me'));
-		expect(res.status).toBe(200);
-		const body = await res.json();
-		expect(body.banned).toBe(true);
-		expect(body.banReason).toBe('Bad behavior');
+		expect(body[0].id).toBe('b1');
+		expect(body[0].name).toBe('TestBot');
+		expect(body[0].apiKey).toBeUndefined();
 	});
 });
 
-describe('PUT /api/me', () => {
+describe('POST /api/config/bots', () => {
 	it('returns 401 when not authenticated', async () => {
 		mockRequireUser.mockRejectedValueOnce(new Error('Unauthorized'));
 		const app = makeApp();
 		const res = await app.handle(
-			new Request('http://localhost/api/me', {
-				method: 'PUT',
+			new Request('http://localhost/api/config/bots', {
+				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: 'Test' })
+				body: JSON.stringify({ name: 'MyBot' })
 			})
 		);
 		expect(res.status).toBe(401);
 	});
 
-	it('returns 400 when name is empty', async () => {
+	it('returns 400 when name is missing', async () => {
 		const app = makeApp();
 		const res = await app.handle(
-			new Request('http://localhost/api/me', {
-				method: 'PUT',
+			new Request('http://localhost/api/config/bots', {
+				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: '  ' })
+				body: JSON.stringify({})
 			})
 		);
 		expect(res.status).toBe(400);
+		const body = await res.json();
+		expect(body.error).toBe('Name is required');
 	});
 
-	it('updates name successfully via JSON', async () => {
+	it('creates bot and returns apiKey', async () => {
 		const app = makeApp();
 		const res = await app.handle(
-			new Request('http://localhost/api/me', {
+			new Request('http://localhost/api/config/bots', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name: 'NewBot' })
+			})
+		);
+		expect(res.status).toBe(200);
+		const body = await res.json();
+		expect(body.id).toBe('b1');
+		expect(body.name).toBe('TestBot');
+		expect(body.apiKey).toBe('mr_abc123');
+	});
+});
+
+describe('PUT /api/config/bots/:id', () => {
+	it('returns 401 when not authenticated', async () => {
+		mockRequireUser.mockRejectedValueOnce(new Error('Unauthorized'));
+		const app = makeApp();
+		const res = await app.handle(
+			new Request('http://localhost/api/config/bots/b1', {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: 'New Name' })
+				body: JSON.stringify({ name: 'Updated' })
 			})
 		);
-		expect(res.status).toBe(200);
-		const body = await res.json();
-		expect(body.success).toBe(true);
+		expect(res.status).toBe(401);
 	});
 
-	it('updates name and image via JSON', async () => {
+	it('returns 403 when trying to update another user\'s bot', async () => {
+		mockFindFirst.mockResolvedValueOnce({ ...mockBotRow, userId: 'other-user' });
 		const app = makeApp();
 		const res = await app.handle(
-			new Request('http://localhost/api/me', {
+			new Request('http://localhost/api/config/bots/b1', {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name: 'New Name', image: 'data:image/png;base64,abc' })
+				body: JSON.stringify({ name: 'Hacked' })
 			})
+		);
+		expect(res.status).toBe(403);
+		const body = await res.json();
+		expect(body.error).toBe('Forbidden');
+	});
+
+	it('updates bot successfully and does not return apiKey', async () => {
+		mockSelect.mockImplementationOnce(() => ({
+			from: () => ({
+				where: () =>
+					Promise.resolve([{ id: 'b1', name: 'Updated', image: null, active: true, createdAt: now }])
+			})
+		}));
+
+		const app = makeApp();
+		const res = await app.handle(
+			new Request('http://localhost/api/config/bots/b1', {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name: 'Updated' })
+			})
+		);
+		expect(res.status).toBe(200);
+		const body = await res.json();
+		expect(body.name).toBe('Updated');
+		expect(body.apiKey).toBeUndefined();
+	});
+});
+
+describe('DELETE /api/config/bots/:id', () => {
+	it('returns 401 when not authenticated', async () => {
+		mockRequireUser.mockRejectedValueOnce(new Error('Unauthorized'));
+		const app = makeApp();
+		const res = await app.handle(
+			new Request('http://localhost/api/config/bots/b1', { method: 'DELETE' })
+		);
+		expect(res.status).toBe(401);
+	});
+
+	it('returns 403 when trying to delete another user\'s bot', async () => {
+		mockFindFirst.mockResolvedValueOnce({ ...mockBotRow, userId: 'other-user' });
+		const app = makeApp();
+		const res = await app.handle(
+			new Request('http://localhost/api/config/bots/b1', { method: 'DELETE' })
+		);
+		expect(res.status).toBe(403);
+		const body = await res.json();
+		expect(body.error).toBe('Forbidden');
+	});
+
+	it('deletes bot successfully', async () => {
+		const app = makeApp();
+		const res = await app.handle(
+			new Request('http://localhost/api/config/bots/b1', { method: 'DELETE' })
 		);
 		expect(res.status).toBe(200);
 		const body = await res.json();
 		expect(body.success).toBe(true);
 	});
+});
 
-	it('updates name via multipart form data', async () => {
-		const formData = new FormData();
-		formData.append('name', 'FormName');
+describe('POST /api/config/bots/:id/regenerate-key', () => {
+	it('returns 401 when not authenticated', async () => {
+		mockRequireUser.mockRejectedValueOnce(new Error('Unauthorized'));
 		const app = makeApp();
 		const res = await app.handle(
-			new Request('http://localhost/api/me', {
-				method: 'PUT',
-				body: formData
-			})
+			new Request('http://localhost/api/config/bots/b1/regenerate-key', { method: 'POST' })
+		);
+		expect(res.status).toBe(401);
+	});
+
+	it('returns 403 when trying to regenerate key for another user\'s bot', async () => {
+		mockFindFirst.mockResolvedValueOnce({ ...mockBotRow, userId: 'other-user' });
+		const app = makeApp();
+		const res = await app.handle(
+			new Request('http://localhost/api/config/bots/b1/regenerate-key', { method: 'POST' })
+		);
+		expect(res.status).toBe(403);
+		const body = await res.json();
+		expect(body.error).toBe('Forbidden');
+	});
+
+	it('regenerates api key and returns new apiKey', async () => {
+		const app = makeApp();
+		const res = await app.handle(
+			new Request('http://localhost/api/config/bots/b1/regenerate-key', { method: 'POST' })
 		);
 		expect(res.status).toBe(200);
 		const body = await res.json();
-		expect(body.success).toBe(true);
-	});
-
-	it('updates name and image via multipart form data', async () => {
-		const formData = new FormData();
-		formData.append('name', 'FormName');
-		formData.append('image', new File(['fake-image-data'], 'avatar.png', { type: 'image/png' }));
-		const app = makeApp();
-		const res = await app.handle(
-			new Request('http://localhost/api/me', {
-				method: 'PUT',
-				body: formData
-			})
-		);
-		expect(res.status).toBe(200);
-		const body = await res.json();
-		expect(body.success).toBe(true);
-	});
-
-	it('returns 400 when multipart name is empty', async () => {
-		const formData = new FormData();
-		formData.append('name', '   ');
-		const app = makeApp();
-		const res = await app.handle(
-			new Request('http://localhost/api/me', {
-				method: 'PUT',
-				body: formData
-			})
-		);
-		expect(res.status).toBe(400);
+		expect(body.apiKey).toBeDefined();
+		expect(typeof body.apiKey).toBe('string');
+		expect(body.apiKey.startsWith('mr_')).toBe(true);
 	});
 });

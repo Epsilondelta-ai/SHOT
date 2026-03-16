@@ -15,7 +15,7 @@
 		name: string;
 		avatarSrc?: string | null;
 		ready: boolean;
-		type: 'human' | 'llm';
+		type: 'human' | 'llm' | 'external';
 		assistantId: string | null;
 		assistantName: string | null;
 		llmModelId: string | null;

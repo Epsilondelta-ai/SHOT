@@ -143,6 +143,28 @@ export const room = sqliteTable("room", {
     .notNull(),
 });
 
+export const bot = sqliteTable('bot', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  image: text('image'),
+  apiKey: text('api_key').notNull().unique(),
+  active: integer('active', { mode: 'boolean' }).notNull().default(true),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+});
+
+export const botInvitation = sqliteTable('bot_invitation', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  botId: text('bot_id').notNull().references(() => bot.id, { onDelete: 'cascade' }),
+  roomId: text('room_id').notNull().references(() => room.id, { onDelete: 'cascade' }),
+  status: text('status', { enum: ['pending', 'accepted', 'cancelled'] }).notNull().default('pending'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+    .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    .notNull(),
+});
+
 export const roomPlayer = sqliteTable("room_player", {
   id: text("id")
     .primaryKey()
@@ -151,7 +173,7 @@ export const roomPlayer = sqliteTable("room_player", {
     .notNull()
     .references(() => room.id, { onDelete: "cascade" }),
   userId: text("user_id").notNull(),
-  playerType: text("player_type", { enum: ["human", "llm"] })
+  playerType: text("player_type", { enum: ["human", "llm", "external"] })
     .notNull()
     .default("human"),
   displayName: text("display_name"),
@@ -162,6 +184,7 @@ export const roomPlayer = sqliteTable("room_player", {
   llmModelId: text("llm_model_id").references(() => llmModel.id, {
     onDelete: "set null",
   }),
+  botId: text("bot_id").references(() => bot.id, { onDelete: "set null" }),
   language: text("language"),
 });
 
@@ -290,4 +313,14 @@ export const roomRelations = relations(room, ({ many }) => ({
 
 export const roomPlayerRelations = relations(roomPlayer, ({ one }) => ({
   room: one(room, { fields: [roomPlayer.roomId], references: [room.id] }),
+}));
+
+export const botRelations = relations(bot, ({ one, many }) => ({
+  user: one(user, { fields: [bot.userId], references: [user.id] }),
+  invitations: many(botInvitation),
+}));
+
+export const botInvitationRelations = relations(botInvitation, ({ one }) => ({
+  bot: one(bot, { fields: [botInvitation.botId], references: [bot.id] }),
+  room: one(room, { fields: [botInvitation.roomId], references: [room.id] }),
 }));

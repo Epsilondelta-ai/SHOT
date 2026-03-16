@@ -7,9 +7,11 @@ import {
   createSnapshot,
   deleteGame,
   getGame,
+  getCurrentTurnController,
   type GameAction,
 } from "../lib/gameState";
 import { maybeRunLlmTurn } from "../lib/llmPlayer";
+import { startExternalBotTurn, cleanupExternalBotsAfterGame } from "../lib/externalBotTurn";
 import { recordFrame, recordGameEnd, recordSpectator } from "../lib/replayStore";
 
 
@@ -87,6 +89,7 @@ export async function broadcastGameState(roomId: string): Promise<void> {
 
   if (state?.winnerTeam) {
     recordGameEnd(roomId, state.winnerTeam);
+    void cleanupExternalBotsAfterGame(roomId);
     scheduleGameEnd(roomId);
   }
 }
@@ -182,7 +185,12 @@ export const gameWsPlugin = new Elysia().ws("/ws/game/:roomId", {
     try {
       applyGameAction(roomId, userId, action);
       await broadcastGameState(roomId);
-      void maybeRunLlmTurn(roomId);
+      const wsController = getCurrentTurnController(roomId);
+      if (wsController?.controller === "llm") {
+        void maybeRunLlmTurn(roomId);
+      } else if (wsController?.controller === "external") {
+        startExternalBotTurn(roomId, wsController.userId);
+      }
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Invalid action";

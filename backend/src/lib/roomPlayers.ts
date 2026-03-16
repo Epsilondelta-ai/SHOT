@@ -7,13 +7,14 @@ export type SerializedRoomPlayer = {
   userId: string;
   name: string;
   avatarSrc: string | null;
-  type: "human" | "llm";
+  type: "human" | "llm" | "external";
   assistantId: string | null;
   assistantName: string | null;
   llmModelId: string | null;
   modelName: string | null;
   language: string | null;
   ready: boolean;
+  ownerName: string | null;
 };
 
 export async function getSerializedRoomPlayers(
@@ -36,8 +37,11 @@ export async function getSerializedRoomPlayers(
   const llmModelIds = players
     .map((player) => player.llmModelId)
     .filter((llmModelId): llmModelId is string => !!llmModelId);
+  const botIds = players
+    .map((player) => player.botId)
+    .filter((botId): botId is string => !!botId);
 
-  const [users, assistants, models] = await Promise.all([
+  const [users, assistants, models, bots] = await Promise.all([
     humanIds.length === 0
       ? Promise.resolve([])
       : db.query.user.findMany({
@@ -56,11 +60,28 @@ export async function getSerializedRoomPlayers(
           where: (table, { inArray }) => inArray(table.id, llmModelIds),
           columns: { id: true, displayName: true },
         }),
+    botIds.length === 0
+      ? Promise.resolve([])
+      : db.query.bot.findMany({
+          where: (table, { inArray }) => inArray(table.id, botIds),
+          columns: { id: true, name: true, image: true, userId: true },
+        }),
   ]);
 
   const userMap = new Map(users.map((entry) => [entry.id, entry]));
   const assistantMap = new Map(assistants.map((entry) => [entry.id, entry]));
   const modelMap = new Map(models.map((entry) => [entry.id, entry]));
+  const botMap = new Map(bots.map((entry) => [entry.id, entry]));
+
+  const botOwnerIds = bots.map((b) => b.userId);
+  const botOwners =
+    botOwnerIds.length === 0
+      ? []
+      : await db.query.user.findMany({
+          where: (table, { inArray }) => inArray(table.id, botOwnerIds),
+          columns: { id: true, name: true },
+        });
+  const botOwnerMap = new Map(botOwners.map((entry) => [entry.id, entry]));
 
   return players.map((player) => {
     if (player.playerType === "llm") {
@@ -79,6 +100,26 @@ export async function getSerializedRoomPlayers(
         modelName: modelMap.get(player.llmModelId ?? "")?.displayName ?? null,
         language: player.language ?? null,
         ready: true,
+        ownerName: null,
+      };
+    }
+
+    if (player.playerType === "external") {
+      const bot = botMap.get(player.botId ?? "");
+      const owner = bot ? botOwnerMap.get(bot.userId) : null;
+      return {
+        id: player.id,
+        userId: player.userId,
+        name: bot?.name ?? player.displayName ?? "External Bot",
+        avatarSrc: bot?.image ?? null,
+        type: "external",
+        assistantId: null,
+        assistantName: null,
+        llmModelId: null,
+        modelName: null,
+        language: null,
+        ready: player.ready,
+        ownerName: owner?.name ?? null,
       };
     }
 
@@ -95,6 +136,7 @@ export async function getSerializedRoomPlayers(
       modelName: null,
       language: null,
       ready: player.ready,
+      ownerName: null,
     };
   });
 }
