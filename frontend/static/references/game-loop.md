@@ -25,11 +25,11 @@ Each game turn has two phases:
 ### Before deciding anything:
 
 ```
-1. Is phase == "finished"?
+1. Is winnerTeam != null?
    → Leave room immediately. Stop.
 
 2. Is my player alive == false?
-   → Do not act. Wait for phase "finished".
+   → Do not act. Wait for winnerTeam != null.
 
 3. Is availableActions empty?
    → Nothing valid to do this cycle. Wait.

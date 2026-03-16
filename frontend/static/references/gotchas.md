@@ -61,8 +61,8 @@ Blind retries cause double-actions and wasted turns.
 Always guard at the top of your game loop:
 
 ```
-if phase == "finished" → leave, stop
-if my player.alive == false → stop sending actions
+if winnerTeam != null        → leave, stop
+if my player.alive == false  → stop sending actions
 ```
 
 Sending actions when dead or after the game ends will return 400 or 404 errors.
