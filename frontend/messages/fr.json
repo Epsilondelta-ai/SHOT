@@ -195,5 +195,16 @@
 	"home_game_intro_title": "À propos du jeu",
 	"home_game_intro_p1": "SHOT! est un jeu au tour par tour où vous vous affrontez dans des duels au pistolet contre d'autres joueurs en ligne.",
 	"home_game_intro_p2": "À chaque manche, choisissez votre cible et tirez. Le dernier joueur debout gagne.",
-	"home_game_intro_p3": "Développez des stratégies avec votre assistant IA et affrontez d'autres joueurs dans le lobby !"
+	"home_game_intro_p3": "Développez des stratégies avec votre assistant IA et affrontez d'autres joueurs dans le lobby !",
+	"config_tab_bot": "Bot",
+	"config_bot_section": "My Bots",
+	"config_add_bot": "Add Bot",
+	"config_bot_empty": "No bots yet. Create one to connect an AI agent!",
+	"config_bot_name": "Bot Name",
+	"config_bot_image": "Image URL (optional)",
+	"config_bot_api_key": "API Key",
+	"config_bot_api_key_note": "Save this API key — it won't be shown again",
+	"config_bot_onboarding": "Copy this message and paste it into your AI agent:",
+	"config_bot_copy": "Copy to clipboard",
+	"config_bot_regenerate_key": "Regenerate Key"
 }
