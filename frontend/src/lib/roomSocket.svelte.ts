@@ -5,12 +5,14 @@ type Player = {
 	userId: string;
 	name: string;
 	avatarSrc: string | null;
-	type: 'human' | 'llm';
+	type: 'human' | 'llm' | 'external';
 	assistantId: string | null;
 	assistantName: string | null;
 	llmModelId: string | null;
 	modelName: string | null;
+	language?: string | null;
 	ready: boolean;
+	ownerName?: string | null;
 };
 
 type ChatMessage = {

@@ -7,6 +7,8 @@ const mockUserFindMany = mock(async (_filter?: unknown): Promise<unknown[]> => [
 const mockAssistantFindMany = mock(async (_filter?: unknown): Promise<unknown[]> => []);
 const mockLlmModelFindMany = mock(async (_filter?: unknown): Promise<unknown[]> => []);
 
+const mockBotFindMany = mock(async (_filter?: unknown): Promise<unknown[]> => []);
+
 mock.module('../db', () => ({
 	db: {
 		query: {
@@ -14,6 +16,7 @@ mock.module('../db', () => ({
 			user: { findMany: mockUserFindMany },
 			assistant: { findMany: mockAssistantFindMany },
 			llmModel: { findMany: mockLlmModelFindMany },
+			bot: { findMany: mockBotFindMany },
 			session: { findFirst: mock(async () => null) }
 		}
 	}
@@ -59,6 +62,8 @@ beforeEach(() => {
 	mockAssistantFindMany.mockResolvedValue([]);
 	mockLlmModelFindMany.mockReset();
 	mockLlmModelFindMany.mockResolvedValue([]);
+	mockBotFindMany.mockReset();
+	mockBotFindMany.mockResolvedValue([]);
 });
 
 // ── Tests ────────────────────────────────────────────────────────────────────
@@ -93,6 +98,7 @@ describe('getSerializedRoomPlayers', () => {
 			modelName: null,
 			language: null,
 			ready: true,
+			ownerName: null,
 		}]);
 	});
 
@@ -131,6 +137,7 @@ describe('getSerializedRoomPlayers', () => {
 			modelName: 'GPT-4o',
 			language: null,
 			ready: true,
+			ownerName: null,
 		});
 	});
 
@@ -158,5 +165,46 @@ describe('getSerializedRoomPlayers', () => {
 		const result = await getSerializedRoomPlayers('room-1');
 		expect(result[0].name).toBe('LLM Player');
 		expect(result[0].assistantName).toBeNull();
+	});
+
+	it('serializes external bot players with bot and owner data', async () => {
+		mockRoomPlayerFindMany.mockResolvedValueOnce([
+			{ id: 'p1', userId: 'bot:b1', playerType: 'external', displayName: null, assistantId: null, llmModelId: null, botId: 'b1', ready: false }
+		]);
+		mockBotFindMany.mockResolvedValueOnce([
+			{ id: 'b1', name: 'MyBot', image: 'bot-avatar.png', userId: 'u1' }
+		]);
+		// second user findMany call for bot owners
+		mockUserFindMany.mockResolvedValueOnce([
+			{ id: 'u1', name: 'BotOwner' }
+		]);
+
+		const result = await getSerializedRoomPlayers('room-1');
+		expect(result[0]).toEqual({
+			id: 'p1',
+			userId: 'bot:b1',
+			name: 'MyBot',
+			avatarSrc: 'bot-avatar.png',
+			type: 'external',
+			assistantId: null,
+			assistantName: null,
+			llmModelId: null,
+			modelName: null,
+			language: null,
+			ready: false,
+			ownerName: 'BotOwner',
+		});
+	});
+
+	it('external bot falls back to displayName when bot not found', async () => {
+		mockRoomPlayerFindMany.mockResolvedValueOnce([
+			{ id: 'p1', userId: 'bot:missing', playerType: 'external', displayName: 'FallbackBot', assistantId: null, llmModelId: null, botId: 'missing', ready: true }
+		]);
+
+		const result = await getSerializedRoomPlayers('room-1');
+		expect(result[0].name).toBe('FallbackBot');
+		expect(result[0].avatarSrc).toBeNull();
+		expect(result[0].ownerName).toBeNull();
+		expect(result[0].type).toBe('external');
 	});
 });

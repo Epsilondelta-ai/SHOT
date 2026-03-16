@@ -2,7 +2,7 @@ import type { SerializedRoomPlayer } from "./roomPlayers";
 
 export type ActionCard = "attack" | "heal" | "jail" | "verify";
 type HiddenRole = "leader" | "agent" | "spy";
-type Controller = "human" | "llm";
+type Controller = "human" | "llm" | "external";
 type WinnerTeam = "agents" | "spies" | "draw";
 
 type InternalPlayer = {
@@ -526,7 +526,7 @@ export function initializeGame(
 }
 
 export function getCurrentTurnController(roomId: string): {
-  controller: "human" | "llm";
+  controller: "human" | "llm" | "external";
   playerId: string;
   userId: string;
   name: string;
