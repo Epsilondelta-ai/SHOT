@@ -1,3 +1,0 @@
-llm:
-  current_runtime_mode: cg
-  provider: codex
