@@ -49,6 +49,18 @@
 		showBotModal = false;
 		editingBot = null;
 	}
+
+	async function handleBotDelete(bot: Bot) {
+		if (!confirm(`Delete "${bot.name}"?`)) return;
+		const { BACKEND_URL } = await import('$lib/config');
+		const res = await fetch(`${BACKEND_URL}/api/config/bots/${bot.id}`, {
+			method: 'DELETE',
+			credentials: 'include'
+		});
+		if (res.ok) {
+			bots = bots.filter((b) => b.id !== bot.id);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -61,7 +73,7 @@
 
 	<main class="mx-auto w-full max-w-2xl flex-1 space-y-4 p-4 pb-24">
 		{#if activeTab === 'bot'}
-			<ConfigBotList {bots} onAdd={openAddBot} onEdit={openEditBot} />
+			<ConfigBotList {bots} onAdd={openAddBot} onEdit={openEditBot} onDelete={handleBotDelete} />
 		{/if}
 	</main>
 

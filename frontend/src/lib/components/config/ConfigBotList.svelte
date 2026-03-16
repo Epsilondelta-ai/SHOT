@@ -12,11 +12,13 @@
 	let {
 		bots,
 		onAdd,
-		onEdit
+		onEdit,
+		onDelete
 	}: {
 		bots: Bot[];
 		onAdd: () => void;
 		onEdit: (bot: Bot) => void;
+		onDelete: (bot: Bot) => void;
 	} = $props();
 </script>
 
@@ -62,6 +64,12 @@
 						onclick={() => onEdit(bot)}
 					>
 						Edit
+					</button>
+					<button
+						class="shrink-0 rounded-lg border border-red-200 px-3 py-1.5 text-sm font-black uppercase text-red-600 transition-colors hover:bg-red-50"
+						onclick={() => onDelete(bot)}
+					>
+						{m.admin_delete()}
 					</button>
 				</li>
 			{/each}
