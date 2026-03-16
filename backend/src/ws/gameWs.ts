@@ -11,7 +11,7 @@ import {
   type GameAction,
 } from "../lib/gameState";
 import { maybeRunLlmTurn } from "../lib/llmPlayer";
-import { startExternalBotTurn } from "../lib/externalBotTurn";
+import { startExternalBotTurn, cleanupExternalBotsAfterGame } from "../lib/externalBotTurn";
 import { recordFrame, recordGameEnd, recordSpectator } from "../lib/replayStore";
 
 
@@ -89,6 +89,7 @@ export async function broadcastGameState(roomId: string): Promise<void> {
 
   if (state?.winnerTeam) {
     recordGameEnd(roomId, state.winnerTeam);
+    void cleanupExternalBotsAfterGame(roomId);
     scheduleGameEnd(roomId);
   }
 }

@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 
-	type Tab = 'assistant';
+	type Tab = 'assistant' | 'bot';
 
 	let { activeTab, onchange }: { activeTab: Tab; onchange: (tab: Tab) => void } = $props();
 
 	const tabs: { key: Tab; label: () => string; icon: string }[] = [
-		{ key: 'assistant', label: () => m.config_tab_assistant(), icon: 'smart_toy' }
+		{ key: 'assistant', label: () => m.config_tab_assistant(), icon: 'smart_toy' },
+		{ key: 'bot', label: () => m.config_tab_bot(), icon: 'adb' }
 	];
 </script>
 

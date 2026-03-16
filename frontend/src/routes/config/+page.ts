@@ -17,9 +17,13 @@ export const load: PageLoad = async ({ fetch }) => {
 		meData = { name: session.user.name, image: '', role: 'user' };
 	}
 
+	const botsRes = await fetch(`${BACKEND_URL}/api/config/bots`, { credentials: 'include' });
+	const bots = botsRes.ok ? await botsRes.json() : [];
+
 	return {
 		username: meData.name ?? '',
 		avatarSrc: meData.image ?? '',
-		isAdmin: meData.role === 'admin'
+		isAdmin: meData.role === 'admin',
+		bots
 	};
 };

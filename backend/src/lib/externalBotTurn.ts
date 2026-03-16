@@ -1,5 +1,8 @@
 import { runFallbackTurn } from './fallbackBot';
 import { broadcastGameState } from '../ws/gameWs';
+import { db } from '../db';
+import { botInvitation, roomPlayer } from '../db/schema';
+import { and, eq } from 'drizzle-orm';
 
 // @MX:ANCHOR: pendingTurns tracks active external bot turn timers per room
 // @MX:REASON: [AUTO] Central state for timeout management — cancelExternalBotTurn + startExternalBotTurn + resolveExternalBotTurn all mutate this map
@@ -33,4 +36,15 @@ export function resolveExternalBotTurn(roomId: string): void {
 
 export function cancelExternalBotTurn(roomId: string): void {
   resolveExternalBotTurn(roomId);
+}
+
+export async function cleanupExternalBotsAfterGame(roomId: string): Promise<void> {
+  cancelExternalBotTurn(roomId);
+  await db.delete(roomPlayer).where(
+    and(eq(roomPlayer.roomId, roomId), eq(roomPlayer.playerType, 'external'))
+  );
+  await db
+    .update(botInvitation)
+    .set({ status: 'cancelled' })
+    .where(and(eq(botInvitation.roomId, roomId), eq(botInvitation.status, 'accepted')));
 }
