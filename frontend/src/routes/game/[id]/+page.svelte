@@ -8,6 +8,7 @@
 	import { createGameSocket } from '$lib/gameSocket.svelte';
 	import { m } from '$lib/paraglide/messages';
 	import type { ActionCard, GameAction, GameSnapshot } from '$lib/types/game';
+	import { getProviderAvatar } from '$lib/utils/providerAvatar';
 
 	const emptyGame: GameSnapshot = {
 		roomId: 'story-room',
@@ -356,6 +357,7 @@
 								isTurn={player.id === game.currentTurnPlayerId && !isFinished}
 							chatBubble={chatBubbles[player.id] ?? null}
 							animation={animationStates[player.id] ?? null}
+							avatarSrc={getProviderAvatar(player.provider ?? null)}
 							/>
 						{/each}
 					</div>

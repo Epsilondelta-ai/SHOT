@@ -182,6 +182,7 @@ function makePlayer(overrides: Partial<GameSnapshot['players'][0]> = {}): GameSn
 		attacks: 2,
 		cards: [],
 		verified: false,
+		provider: null,
 		...overrides,
 	};
 }

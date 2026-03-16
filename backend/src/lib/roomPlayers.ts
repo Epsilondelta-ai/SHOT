@@ -15,6 +15,7 @@ export type SerializedRoomPlayer = {
   language: string | null;
   ready: boolean;
   ownerName: string | null;
+  provider: string | null;
   isOperator: boolean;
 };
 
@@ -59,7 +60,7 @@ export async function getSerializedRoomPlayers(
       ? Promise.resolve([])
       : db.query.llmModel.findMany({
           where: (table, { inArray }) => inArray(table.id, llmModelIds),
-          columns: { id: true, displayName: true },
+          columns: { id: true, displayName: true, provider: true },
         }),
     botIds.length === 0
       ? Promise.resolve([])
@@ -102,6 +103,7 @@ export async function getSerializedRoomPlayers(
         language: player.language ?? null,
         ready: true,
         ownerName: null,
+        provider: modelMap.get(player.llmModelId ?? "")?.provider ?? null,
         isOperator: player.isOperator,
       };
     }
@@ -122,6 +124,7 @@ export async function getSerializedRoomPlayers(
         language: null,
         ready: player.ready,
         ownerName: owner?.name ?? null,
+        provider: null,
         isOperator: player.isOperator,
       };
     }
@@ -140,6 +143,7 @@ export async function getSerializedRoomPlayers(
       language: null,
       ready: player.ready,
       ownerName: null,
+      provider: null,
       isOperator: player.isOperator,
     };
   });

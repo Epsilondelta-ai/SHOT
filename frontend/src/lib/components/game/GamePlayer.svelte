@@ -34,7 +34,8 @@
 		cards = [],
 		role = 'normal',
 		verified = false,
-		animation = null
+		animation = null,
+		avatarSrc = null
 	}: {
 		name: string;
 		hp: number;
@@ -52,6 +53,7 @@
 		role?: Role;
 		verified?: boolean;
 		animation?: AnimationState | null;
+		avatarSrc?: string | null;
 	} = $props();
 
 	const actorCardImages: Record<ActionCard, { src: string; alt: string }> = {
@@ -186,11 +188,15 @@
 		class="relative size-14 overflow-hidden rounded-full border-3 border-slate-900
 			{alive ? 'bg-accent-beige' : 'bg-slate-300'}"
 	>
-		<div class="flex h-full w-full items-center justify-center">
-			<span class="material-symbols-outlined text-2xl {alive ? 'text-slate-600' : 'text-slate-400'}"
-				>{alive ? 'person' : 'skull'}</span
-			>
-		</div>
+		{#if avatarSrc && alive}
+			<img alt={name} class="h-full w-full object-contain p-1.5" src={avatarSrc} />
+		{:else}
+			<div class="flex h-full w-full items-center justify-center">
+				<span class="material-symbols-outlined text-2xl {alive ? 'text-slate-600' : 'text-slate-400'}"
+					>{alive ? 'person' : 'skull'}</span
+				>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Name -->

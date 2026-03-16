@@ -81,7 +81,7 @@ describe('getSerializedRoomPlayers', () => {
 
 	it('serializes human players with user data', async () => {
 		mockRoomPlayerFindMany.mockResolvedValueOnce([
-			{ id: 'p1', userId: 'u1', playerType: 'human', displayName: null, assistantId: null, llmModelId: null, ready: true }
+			{ id: 'p1', userId: 'u1', playerType: 'human', displayName: null, assistantId: null, llmModelId: null, ready: true, isOperator: false }
 		]);
 		mockUserFindMany.mockResolvedValueOnce([
 			{ id: 'u1', name: 'Alice', image: 'avatar.png' }
@@ -101,12 +101,14 @@ describe('getSerializedRoomPlayers', () => {
 			language: null,
 			ready: true,
 			ownerName: null,
+			provider: null,
+			isOperator: false,
 		}]);
 	});
 
 	it('falls back to displayName when user not found', async () => {
 		mockRoomPlayerFindMany.mockResolvedValueOnce([
-			{ id: 'p1', userId: 'u1', playerType: 'human', displayName: 'Guest', assistantId: null, llmModelId: null, ready: false }
+			{ id: 'p1', userId: 'u1', playerType: 'human', displayName: 'Guest', assistantId: null, llmModelId: null, ready: false, isOperator: false }
 		]);
 		mockUserFindMany.mockResolvedValueOnce([]);
 
@@ -117,13 +119,13 @@ describe('getSerializedRoomPlayers', () => {
 
 	it('serializes LLM players with assistant and model data', async () => {
 		mockRoomPlayerFindMany.mockResolvedValueOnce([
-			{ id: 'p1', userId: 'llm:a1', playerType: 'llm', displayName: null, assistantId: 'a1', llmModelId: 'm1', ready: true }
+			{ id: 'p1', userId: 'llm:a1', playerType: 'llm', displayName: null, assistantId: 'a1', llmModelId: 'm1', ready: true, isOperator: false }
 		]);
 		mockAssistantFindMany.mockResolvedValueOnce([
 			{ id: 'a1', name: 'SmartBot' }
 		]);
 		mockLlmModelFindMany.mockResolvedValueOnce([
-			{ id: 'm1', displayName: 'GPT-4o' }
+			{ id: 'm1', displayName: 'GPT-4o', provider: 'openai' }
 		]);
 
 		const result = await getSerializedRoomPlayers('room-1');
@@ -140,13 +142,15 @@ describe('getSerializedRoomPlayers', () => {
 			language: null,
 			ready: true,
 			ownerName: null,
+			provider: 'openai',
+			isOperator: false,
 		});
 	});
 
 	it('handles mixed player types (human + LLM)', async () => {
 		mockRoomPlayerFindMany.mockResolvedValueOnce([
-			{ id: 'p1', userId: 'u1', playerType: 'human', displayName: null, assistantId: null, llmModelId: null, ready: true },
-			{ id: 'p2', userId: 'llm:a1', playerType: 'llm', displayName: 'CustomName', assistantId: 'a1', llmModelId: 'm1', ready: true },
+			{ id: 'p1', userId: 'u1', playerType: 'human', displayName: null, assistantId: null, llmModelId: null, ready: true, isOperator: false },
+			{ id: 'p2', userId: 'llm:a1', playerType: 'llm', displayName: 'CustomName', assistantId: 'a1', llmModelId: 'm1', ready: true, isOperator: false },
 		]);
 		mockUserFindMany.mockResolvedValueOnce([{ id: 'u1', name: 'Alice', image: null }]);
 		mockAssistantFindMany.mockResolvedValueOnce([{ id: 'a1', name: 'SmartBot' }]);
@@ -161,7 +165,7 @@ describe('getSerializedRoomPlayers', () => {
 
 	it('LLM player falls back to "LLM Player" when no assistant found', async () => {
 		mockRoomPlayerFindMany.mockResolvedValueOnce([
-			{ id: 'p1', userId: 'llm:a1', playerType: 'llm', displayName: null, assistantId: 'missing', llmModelId: null, ready: true }
+			{ id: 'p1', userId: 'llm:a1', playerType: 'llm', displayName: null, assistantId: 'missing', llmModelId: null, ready: true, isOperator: false }
 		]);
 
 		const result = await getSerializedRoomPlayers('room-1');
@@ -171,7 +175,7 @@ describe('getSerializedRoomPlayers', () => {
 
 	it('serializes external bot players with bot and owner data', async () => {
 		mockRoomPlayerFindMany.mockResolvedValueOnce([
-			{ id: 'p1', userId: 'bot:b1', playerType: 'external', displayName: null, assistantId: null, llmModelId: null, botId: 'b1', ready: false }
+			{ id: 'p1', userId: 'bot:b1', playerType: 'external', displayName: null, assistantId: null, llmModelId: null, botId: 'b1', ready: false, isOperator: false }
 		]);
 		mockBotFindMany.mockResolvedValueOnce([
 			{ id: 'b1', name: 'MyBot', image: 'bot-avatar.png', userId: 'u1' }
@@ -195,12 +199,14 @@ describe('getSerializedRoomPlayers', () => {
 			language: null,
 			ready: false,
 			ownerName: 'BotOwner',
+			provider: null,
+			isOperator: false,
 		});
 	});
 
 	it('external bot falls back to displayName when bot not found', async () => {
 		mockRoomPlayerFindMany.mockResolvedValueOnce([
-			{ id: 'p1', userId: 'bot:missing', playerType: 'external', displayName: 'FallbackBot', assistantId: null, llmModelId: null, botId: 'missing', ready: true }
+			{ id: 'p1', userId: 'bot:missing', playerType: 'external', displayName: 'FallbackBot', assistantId: null, llmModelId: null, botId: 'missing', ready: true, isOperator: false }
 		]);
 
 		const result = await getSerializedRoomPlayers('room-1');

@@ -13,6 +13,7 @@ type InternalPlayer = {
   assistantId: string | null;
   llmModelId: string | null;
   language: string | null;
+  provider: string | null;
   role: HiddenRole;
   revealed: boolean;
   verified: boolean;
@@ -64,6 +65,7 @@ export type GamePlayerView = {
   cards: Exclude<ActionCard, "attack">[];
   role: "normal" | "spy" | "leader" | "revealed";
   verified: boolean;
+  provider?: string | null;
 };
 
 export type GameSnapshot = {
@@ -485,6 +487,7 @@ export function initializeGame(
       assistantId: player.assistantId ?? null,
       llmModelId: player.llmModelId ?? null,
       language: player.language ?? null,
+      provider: player.provider ?? null,
       role,
       revealed: isLeader,
       verified: isLeader,
@@ -695,6 +698,7 @@ export function createSnapshot(
       ),
       role: buildRoleForViewer(player, viewer ?? null, isOmniscient),
       verified: player.verified || (!player.alive && player.role === "agent"),
+      provider: player.provider,
     })),
     logs: [...state.logs],
     chatMessages: [...state.chatMessages],
