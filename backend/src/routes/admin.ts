@@ -306,7 +306,7 @@ export const adminRoutes = new Elysia()
 
 		const llmProviderRows = await db.select().from(llmProvider);
 		const llmModelRows = await db.select().from(llmModel).orderBy(llmModel.createdAt);
-		const PROVIDERS = ['anthropic', 'openai', 'google', 'xai'] as const;
+		const PROVIDERS = ['anthropic', 'openai', 'google', 'xai', 'deepseek'] as const;
 		const llmProviderMap = Object.fromEntries(llmProviderRows.map((p) => [p.provider, p]));
 
 		return {
@@ -335,7 +335,7 @@ export const adminRoutes = new Elysia()
 		}
 
 		const body = (await request.json()) as { provider: string; apiKey: string };
-		if (!['anthropic', 'openai', 'google', 'xai'].includes(body.provider)) {
+		if (!['anthropic', 'openai', 'google', 'xai', 'deepseek'].includes(body.provider)) {
 			set.status = 400;
 			return { error: 'Invalid provider' };
 		}
@@ -346,7 +346,7 @@ export const adminRoutes = new Elysia()
 
 		await db
 			.insert(llmProvider)
-			.values({ provider: body.provider as 'anthropic' | 'openai' | 'google' | 'xai', apiKey: body.apiKey })
+			.values({ provider: body.provider as 'anthropic' | 'openai' | 'google' | 'xai' | 'deepseek', apiKey: body.apiKey })
 			.onConflictDoUpdate({ target: llmProvider.provider, set: { apiKey: body.apiKey, updatedAt: new Date() } });
 		return { success: true };
 	})
@@ -360,7 +360,7 @@ export const adminRoutes = new Elysia()
 		}
 
 		const body = (await request.json()) as { provider: string; active: boolean };
-		if (!['anthropic', 'openai', 'google', 'xai'].includes(body.provider)) {
+		if (!['anthropic', 'openai', 'google', 'xai', 'deepseek'].includes(body.provider)) {
 			set.status = 400;
 			return { error: 'Invalid provider' };
 		}
@@ -368,7 +368,7 @@ export const adminRoutes = new Elysia()
 		await db
 			.insert(llmProvider)
 			.values({
-				provider: body.provider as 'anthropic' | 'openai' | 'google' | 'xai',
+				provider: body.provider as 'anthropic' | 'openai' | 'google' | 'xai' | 'deepseek',
 				apiKey: '',
 				active: body.active
 			})
@@ -393,13 +393,13 @@ export const adminRoutes = new Elysia()
 			set.status = 400;
 			return { error: 'Missing fields' };
 		}
-		if (!['anthropic', 'openai', 'google', 'xai'].includes(body.provider)) {
+		if (!['anthropic', 'openai', 'google', 'xai', 'deepseek'].includes(body.provider)) {
 			set.status = 400;
 			return { error: 'Invalid provider' };
 		}
 
 		await db.insert(llmModel).values({
-			provider: body.provider as 'anthropic' | 'openai' | 'google' | 'xai',
+			provider: body.provider as 'anthropic' | 'openai' | 'google' | 'xai' | 'deepseek',
 			apiModelName: body.apiModelName,
 			displayName: body.displayName
 		});
