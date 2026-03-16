@@ -1,4 +1,10 @@
 <script lang="ts">
+	import claudeImg from '$lib/assets/claude.svg';
+	import deepseekImg from '$lib/assets/deepseek.png';
+	import geminiImg from '$lib/assets/gemini.webp';
+	import openaiImg from '$lib/assets/openai.svg';
+	import xaiImg from '$lib/assets/xai.svg';
+
 	type ProviderKey = 'anthropic' | 'openai' | 'google' | 'xai' | 'deepseek';
 
 	type LLMProvider = {
@@ -35,31 +41,31 @@
 		ontogglemodel?: (id: string, active: boolean) => void;
 	} = $props();
 
-	const PROVIDER_INFO: Record<ProviderKey, { name: string; color: string; icon: string }> = {
+	const PROVIDER_INFO: Record<ProviderKey, { name: string; color: string; img: string }> = {
 		anthropic: {
 			name: 'Anthropic',
-			color: 'bg-orange-100 text-orange-700 border-orange-300',
-			icon: 'psychology'
+			color: 'bg-orange-100 border-orange-300',
+			img: claudeImg
 		},
 		openai: {
 			name: 'OpenAI',
-			color: 'bg-emerald-100 text-emerald-700 border-emerald-300',
-			icon: 'smart_toy'
+			color: 'bg-emerald-100 border-emerald-300',
+			img: openaiImg
 		},
 		google: {
 			name: 'Google Gemini',
-			color: 'bg-blue-100 text-blue-700 border-blue-300',
-			icon: 'blur_on'
+			color: 'bg-blue-100 border-blue-300',
+			img: geminiImg
 		},
 		xai: {
 			name: 'xAI (Grok)',
-			color: 'bg-slate-100 text-slate-700 border-slate-300',
-			icon: 'auto_awesome'
+			color: 'bg-slate-100 border-slate-300',
+			img: xaiImg
 		},
 		deepseek: {
 			name: 'DeepSeek',
-			color: 'bg-indigo-100 text-indigo-700 border-indigo-300',
-			icon: 'water'
+			color: 'bg-indigo-100 border-indigo-300',
+			img: deepseekImg
 		}
 	};
 
@@ -108,7 +114,7 @@
 					<div
 						class="flex size-10 shrink-0 items-center justify-center rounded-full border-2 {info.color}"
 					>
-						<span class="material-symbols-outlined text-lg">{info.icon}</span>
+						<img src={info.img} alt={info.name} class="size-6 object-contain" />
 					</div>
 					<div>
 						<div class="flex items-center gap-2">
