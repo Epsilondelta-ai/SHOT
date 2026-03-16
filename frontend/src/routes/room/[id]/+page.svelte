@@ -397,7 +397,7 @@
 										class="comic-button rounded-xl border-2 border-slate-900 px-3 py-2 text-[11px] font-black uppercase {player.isOperator ? 'bg-red-400 text-white' : 'bg-blue-400 text-slate-900'}"
 										onclick={() => toggleOperator(player.userId, !player.isOperator)}
 									>
-										{player.isOperator ? '권한 취소' : '권한 부여'}
+										{player.isOperator ? '봇 초대 권한 취소' : '봇 초대 권한 부여'}
 									</button>
 								</div>
 							</div>
