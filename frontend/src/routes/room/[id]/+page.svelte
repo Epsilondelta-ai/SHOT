@@ -394,7 +394,7 @@
 			</section>
 		{/if}
 
-		{#if isHost}
+		{#if isAdmin}
 			<section>
 				<RoomLlmPlayerPanel
 					assistants={data.assistants as AssistantOption[]}
@@ -403,6 +403,9 @@
 					onadd={addLlmPlayer}
 				/>
 			</section>
+		{/if}
+
+		{#if isHost}
 			<section>
 				<RoomBotPanel
 					bots={data.bots}
