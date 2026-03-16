@@ -64,7 +64,7 @@ export function clearConversationHistory(roomId: string): void {
 
 type LlmContext = {
   systemPrompt: string;
-  provider: "anthropic" | "openai" | "google" | "xai";
+  provider: "anthropic" | "openai" | "google" | "xai" | "deepseek";
   apiModelName: string;
   apiKey: string;
   assistantName: string;
@@ -222,7 +222,7 @@ ${snapshot.phase === "chatting" ? 'If you choose {"type":"chat"}, replace the "t
 }
 
 async function callLlmApi(
-  provider: "anthropic" | "openai" | "google" | "xai",
+  provider: "anthropic" | "openai" | "google" | "xai" | "deepseek",
   apiKey: string,
   model: string,
   systemPrompt: string,
@@ -271,11 +271,13 @@ async function callLlmApi(
     return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
   }
 
-  // openai + xai (OpenAI-compatible)
+  // openai + xai + deepseek (OpenAI-compatible)
   const baseUrl =
     provider === "xai"
       ? "https://api.x.ai/v1/chat/completions"
-      : "https://api.openai.com/v1/chat/completions";
+      : provider === "deepseek"
+        ? "https://api.deepseek.com/v1/chat/completions"
+        : "https://api.openai.com/v1/chat/completions";
 
   const res = await fetch(baseUrl, {
     method: "POST",

@@ -40,7 +40,7 @@
 
 	type ModelOption = {
 		id: string;
-		provider: 'anthropic' | 'openai' | 'google' | 'xai';
+		provider: 'anthropic' | 'openai' | 'google' | 'xai' | 'deepseek';
 		apiModelName: string;
 		displayName: string;
 	};

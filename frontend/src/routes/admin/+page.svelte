@@ -74,7 +74,7 @@
 	const llmModels = $derived(data.llmModels);
 
 	async function saveLlmApiKey(
-		provider: 'anthropic' | 'openai' | 'google' | 'xai',
+		provider: 'anthropic' | 'openai' | 'google' | 'xai' | 'deepseek',
 		apiKey: string
 	) {
 		await apiPost('/api/admin/llm-providers/save-key', { provider, apiKey });
@@ -82,7 +82,7 @@
 	}
 
 	async function toggleLlmProvider(
-		provider: 'anthropic' | 'openai' | 'google' | 'xai',
+		provider: 'anthropic' | 'openai' | 'google' | 'xai' | 'deepseek',
 		active: boolean
 	) {
 		await apiPost('/api/admin/llm-providers/toggle', { provider, active });
@@ -90,7 +90,7 @@
 	}
 
 	async function addLlmModel(
-		provider: 'anthropic' | 'openai' | 'google' | 'xai',
+		provider: 'anthropic' | 'openai' | 'google' | 'xai' | 'deepseek',
 		apiModelName: string,
 		displayName: string
 	) {
