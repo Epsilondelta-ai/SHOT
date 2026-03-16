@@ -13,7 +13,7 @@ export const load: PageLoad = async ({ fetch }) => {
 		fetch(`${BACKEND_URL}/api/me`, { credentials: 'include' })
 	]);
 
-	const bots = await botsRes.json();
+	const bots = botsRes.ok ? await botsRes.json() : [];
 	let meData;
 	try {
 		meData = await meRes.json();

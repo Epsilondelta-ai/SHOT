@@ -28,10 +28,11 @@ export function isPairingCodeValid(bot: {
 }
 
 export function formatDate(value: Date | null | undefined): string | null {
-  if (!value) return null;
+  if (!value || isNaN(value.getTime())) return null;
   return value.toISOString().split('T')[0] ?? null;
 }
 
 export function formatIso(value: Date | null | undefined): string | null {
-  return value ? value.toISOString() : null;
+  if (!value || isNaN(value.getTime())) return null;
+  return value.toISOString();
 }
