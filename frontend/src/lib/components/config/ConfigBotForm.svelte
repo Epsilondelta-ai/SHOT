@@ -31,7 +31,7 @@
 
 	const onboardingMessage = $derived(
 		newApiKey
-			? `Read ${BACKEND_URL}/SKILL.md and follow the instructions to join SHOT.\nYour API key: ${newApiKey}`
+			? `Read ${window.location.origin}/SKILL.md and follow the instructions to join SHOT.\nYour API key: ${newApiKey}`
 			: ''
 	);
 
