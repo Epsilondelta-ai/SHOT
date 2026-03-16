@@ -21,6 +21,7 @@
 		assistantName: string | null;
 		llmModelId: string | null;
 		modelName: string | null;
+		isOperator: boolean;
 	};
 
 	type ChatMessage = {
@@ -117,6 +118,7 @@
 	);
 	const isHost = $derived(data.myId === hostUserId);
 	const isAdmin = $derived(data.isAdmin === true);
+	const isOperator = $derived(myPlayer?.isOperator === true);
 	const amReady = $derived(myPlayer?.ready ?? false);
 	const readyCount = $derived(
 		players.filter((player) => player.id === hostId || player.ready).length
@@ -191,6 +193,10 @@
 	async function transferHost(userId: string) {
 		await apiPost(`/api/rooms/${data.roomId}/host`, { userId });
 		hostUserId = userId;
+	}
+
+	async function toggleOperator(userId: string, grant: boolean) {
+		await apiPost(`/api/rooms/${data.roomId}/operator`, { userId, grant });
 	}
 
 	async function updateCapacity() {
@@ -386,6 +392,13 @@
 									>
 										방장 위임
 									</button>
+									<button
+										type="button"
+										class="comic-button rounded-xl border-2 border-slate-900 px-3 py-2 text-[11px] font-black uppercase {player.isOperator ? 'bg-red-400 text-white' : 'bg-blue-400 text-slate-900'}"
+										onclick={() => toggleOperator(player.userId, !player.isOperator)}
+									>
+										{player.isOperator ? '권한 취소' : '권한 부여'}
+									</button>
 								</div>
 							</div>
 						{/each}
@@ -405,7 +418,7 @@
 			</section>
 		{/if}
 
-		{#if isHost}
+		{#if isHost || isOperator}
 			<section>
 				<RoomBotPanel
 					bots={data.bots}

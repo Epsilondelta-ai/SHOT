@@ -186,6 +186,7 @@ export const roomPlayer = sqliteTable("room_player", {
   }),
   botId: text("bot_id").references(() => bot.id, { onDelete: "set null" }),
   language: text("language"),
+  isOperator: integer("is_operator", { mode: "boolean" }).notNull().default(false),
 });
 
 export const assistant = sqliteTable("assistant", {

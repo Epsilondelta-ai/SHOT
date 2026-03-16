@@ -15,6 +15,7 @@ export type SerializedRoomPlayer = {
   language: string | null;
   ready: boolean;
   ownerName: string | null;
+  isOperator: boolean;
 };
 
 export async function getSerializedRoomPlayers(
@@ -101,6 +102,7 @@ export async function getSerializedRoomPlayers(
         language: player.language ?? null,
         ready: true,
         ownerName: null,
+        isOperator: player.isOperator,
       };
     }
 
@@ -120,6 +122,7 @@ export async function getSerializedRoomPlayers(
         language: null,
         ready: player.ready,
         ownerName: owner?.name ?? null,
+        isOperator: player.isOperator,
       };
     }
 
@@ -137,6 +140,7 @@ export async function getSerializedRoomPlayers(
       language: null,
       ready: player.ready,
       ownerName: null,
+      isOperator: player.isOperator,
     };
   });
 }

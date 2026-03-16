@@ -424,6 +424,45 @@ export const roomRoutes = new Elysia()
     return { success: true, hostUserId: body.userId };
   })
 
+  .post("/api/rooms/:id/operator", async ({ params, request, set }) => {
+    const u = await getUser(request);
+    if (!u) {
+      set.status = 401;
+      return { error: "Unauthorized" };
+    }
+
+    const roomData = await getRoomById(params.id);
+    if (!roomData) {
+      set.status = 404;
+      return { error: "Room not found" };
+    }
+    if (roomData.hostUserId !== u.id) {
+      set.status = 403;
+      return { error: "Only the host can grant operator permission" };
+    }
+
+    const body = (await request.json()) as { userId?: string; grant?: boolean };
+    if (!body.userId) {
+      set.status = 400;
+      return { error: "Target user is required" };
+    }
+
+    const targetMember = await getHumanRoomPlayer(params.id, body.userId);
+    if (!targetMember) {
+      set.status = 404;
+      return { error: "Target player not found in room" };
+    }
+
+    const grant = body.grant !== false;
+    await db
+      .update(roomPlayer)
+      .set({ isOperator: grant })
+      .where(eq(roomPlayer.id, targetMember.id));
+    await broadcastPlayers(params.id);
+
+    return { success: true, userId: body.userId, isOperator: grant };
+  })
+
   .post("/api/rooms/:id/llm-players", async ({ params, request, set }) => {
     const u = await getUser(request);
     if (!u) {
