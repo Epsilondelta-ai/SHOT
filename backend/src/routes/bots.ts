@@ -175,7 +175,7 @@ export const botRoutes = new Elysia()
 
 	// ── User-facing invite routes ─────────────────────────────────────────────
 
-	.post('/api/rooms/:roomId/invite-bot/:botId', async ({ params, request, set }) => {
+	.post('/api/rooms/:id/invite-bot/:botId', async ({ params, request, set }) => {
 		let u;
 		try {
 			u = await requireUser(request);
@@ -194,7 +194,7 @@ export const botRoutes = new Elysia()
 			return { error: 'Forbidden' };
 		}
 
-		const [roomRecord] = await db.select().from(room).where(eq(room.id, params.roomId));
+		const [roomRecord] = await db.select().from(room).where(eq(room.id, params.id));
 		if (!roomRecord) {
 			set.status = 400;
 			return { error: 'Room not found' };
@@ -207,7 +207,7 @@ export const botRoutes = new Elysia()
 		const existingInvitation = await db.query.botInvitation.findFirst({
 			where: and(
 				eq(botInvitation.botId, params.botId),
-				eq(botInvitation.roomId, params.roomId),
+				eq(botInvitation.roomId, params.id),
 				eq(botInvitation.status, 'pending')
 			)
 		});
@@ -217,7 +217,7 @@ export const botRoutes = new Elysia()
 		}
 
 		const existingPlayer = await db.query.roomPlayer.findFirst({
-			where: and(eq(roomPlayer.roomId, params.roomId), eq(roomPlayer.botId, params.botId))
+			where: and(eq(roomPlayer.roomId, params.id), eq(roomPlayer.botId, params.botId))
 		});
 		if (existingPlayer) {
 			set.status = 400;
@@ -226,13 +226,13 @@ export const botRoutes = new Elysia()
 
 		const [invitation] = await db
 			.insert(botInvitation)
-			.values({ botId: params.botId, roomId: params.roomId, status: 'pending' })
+			.values({ botId: params.botId, roomId: params.id, status: 'pending' })
 			.returning();
 
 		return { invitationId: invitation.id };
 	})
 
-	.delete('/api/rooms/:roomId/invite-bot/:botId', async ({ params, request, set }) => {
+	.delete('/api/rooms/:id/invite-bot/:botId', async ({ params, request, set }) => {
 		let u;
 		try {
 			u = await requireUser(request);
@@ -254,7 +254,7 @@ export const botRoutes = new Elysia()
 		const pendingInvitation = await db.query.botInvitation.findFirst({
 			where: and(
 				eq(botInvitation.botId, params.botId),
-				eq(botInvitation.roomId, params.roomId),
+				eq(botInvitation.roomId, params.id),
 				eq(botInvitation.status, 'pending')
 			)
 		});
@@ -268,7 +268,7 @@ export const botRoutes = new Elysia()
 
 		await db
 			.delete(roomPlayer)
-			.where(and(eq(roomPlayer.roomId, params.roomId), eq(roomPlayer.botId, params.botId)));
+			.where(and(eq(roomPlayer.roomId, params.id), eq(roomPlayer.botId, params.botId)));
 
 		return { success: true };
 	})

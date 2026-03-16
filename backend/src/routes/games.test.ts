@@ -40,7 +40,6 @@ mock.module("../db/schema", () => ({
   banHistory: { id: "banHistory.id", userId: "banHistory.userId", createdAt: "banHistory.createdAt" },
   task: { id: "task.id" },
   assistant: { id: "assistant.id", userId: "assistant.userId", name: "assistant.name", prompt: "assistant.prompt", active: "assistant.active" },
-  bot: { id: "bot.id", name: "bot.name", apiKey: "bot.apiKey", active: "bot.active" },
   llmProvider: { provider: "llmProvider.provider", apiKey: "llmProvider.apiKey", active: "llmProvider.active" },
   llmModel: { id: "llmModel.id", provider: "llmModel.provider", apiModelName: "llmModel.apiModelName", displayName: "llmModel.displayName", active: "llmModel.active" },
   gameRulebook: { id: "gameRulebook.id", name: "gameRulebook.name", content: "gameRulebook.content", active: "gameRulebook.active" },
