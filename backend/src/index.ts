@@ -7,6 +7,7 @@ import { roomRoutes } from "./routes/rooms";
 import { gameRoutes } from "./routes/games";
 import { adminRoutes } from "./routes/admin";
 import { configRoutes } from "./routes/config";
+import { botRoutes } from "./routes/bots";
 import { meRoutes } from "./routes/me";
 import { replayRoutes } from "./routes/replays";
 
@@ -41,6 +42,7 @@ const app = new Elysia({ serve: { maxRequestBodySize: 20 * 1024 * 1024 } })
   .use(gameRoutes)
   .use(adminRoutes)
   .use(configRoutes)
+  .use(botRoutes)
   .use(meRoutes)
   .use(replayRoutes)
   .use(roomWsPlugin)
