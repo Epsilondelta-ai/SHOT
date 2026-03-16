@@ -1,5 +1,5 @@
 <script lang="ts">
-	type ProviderKey = 'anthropic' | 'openai' | 'google' | 'xai';
+	type ProviderKey = 'anthropic' | 'openai' | 'google' | 'xai' | 'deepseek';
 
 	type LLMProvider = {
 		provider: ProviderKey;
@@ -55,6 +55,11 @@
 			name: 'xAI (Grok)',
 			color: 'bg-slate-100 text-slate-700 border-slate-300',
 			icon: 'auto_awesome'
+		},
+		deepseek: {
+			name: 'DeepSeek',
+			color: 'bg-indigo-100 text-indigo-700 border-indigo-300',
+			icon: 'water'
 		}
 	};
 
@@ -64,7 +69,8 @@
 		anthropic: '',
 		openai: '',
 		google: '',
-		xai: ''
+		xai: '',
+		deepseek: ''
 	});
 
 	// Model add/edit state per provider
@@ -73,13 +79,15 @@
 		anthropic: { apiModelName: '', displayName: '' },
 		openai: { apiModelName: '', displayName: '' },
 		google: { apiModelName: '', displayName: '' },
-		xai: { apiModelName: '', displayName: '' }
+		xai: { apiModelName: '', displayName: '' },
+		deepseek: { apiModelName: '', displayName: '' }
 	});
 	let showAddForm = $state<Record<ProviderKey, boolean>>({
 		anthropic: false,
 		openai: false,
 		google: false,
-		xai: false
+		xai: false,
+		deepseek: false
 	});
 	let editingModelId = $state<string | null>(null);
 	let editForm = $state<ModelForm>({ apiModelName: '', displayName: '' });

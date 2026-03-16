@@ -207,7 +207,7 @@ export const assistant = sqliteTable("assistant", {
 
 export const llmProvider = sqliteTable("llm_provider", {
   provider: text("provider", {
-    enum: ["anthropic", "openai", "google", "xai"],
+    enum: ["anthropic", "openai", "google", "xai", "deepseek"],
   }).primaryKey(),
   apiKey: text("api_key").notNull().default(""),
   active: integer("active", { mode: "boolean" }).notNull().default(false),
@@ -220,7 +220,7 @@ export const llmModel = sqliteTable("llm_model", {
   id: text("id")
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
-  provider: text("provider", { enum: ["anthropic", "openai", "google", "xai"] })
+  provider: text("provider", { enum: ["anthropic", "openai", "google", "xai", "deepseek"] })
     .notNull()
     .references(() => llmProvider.provider, { onDelete: "cascade" }),
   apiModelName: text("api_model_name").notNull(),
