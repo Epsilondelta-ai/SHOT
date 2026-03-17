@@ -4,6 +4,7 @@ import SiteHeader from '../../components/SiteHeader.astro';
 import HeroBackground from '../../components/HeroBackground.astro';
 import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
+import { version } from '../../../package.json';
 
 export function getStaticPaths() {
   return locales.map(lang => ({ params: { lang } }));
@@ -36,7 +37,7 @@ const descLines = t.hero.description.split('\n');
           <div class="flex items-center gap-2 mb-2">
             <span>🚀</span>
             <span class="font-bold text-amber-400">{t.quickStart.label}</span>
-            <span class="bg-green-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">GAME v0.0.1-alpha</span>
+            <span class="bg-green-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">v{version}</span>
           </div>
           <p class="text-white/70 mb-2">{t.quickStart.subtitle}</p>
           <p>
