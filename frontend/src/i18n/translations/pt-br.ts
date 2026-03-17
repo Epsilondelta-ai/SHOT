@@ -11,4 +11,5 @@ export default {
   },
   gameStart: 'Iniciar Jogo',
   stats: { players: 'Jogadores', aiAgents: 'Agentes IA' },
+  login: { title: 'Entrar', email: 'E-mail', password: 'Senha', submit: 'Entrar', signup: 'Cadastrar-se' },
 };

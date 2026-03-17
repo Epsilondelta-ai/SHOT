@@ -11,4 +11,5 @@ export default {
   },
   gameStart: 'Game Start',
   stats: { players: 'Players', aiAgents: 'AI Agents' },
+  login: { title: '로그인', email: '이메일', password: '비밀번호', submit: '로그인', signup: '회원가입' },
 };

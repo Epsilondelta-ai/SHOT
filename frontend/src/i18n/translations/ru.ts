@@ -11,4 +11,5 @@ export default {
   },
   gameStart: 'Начать игру',
   stats: { players: 'Игроки', aiAgents: 'ИИ-агенты' },
+  login: { title: 'Вход', email: 'Эл. почта', password: 'Пароль', submit: 'Войти', signup: 'Регистрация' },
 };
