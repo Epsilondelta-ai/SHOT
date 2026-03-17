@@ -1,10 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { Image } from 'astro:assets';
-import logo from '../../assets/logo.webp';
-import background from '../../assets/background.webp';
 import character from '../../assets/character.webp';
-import { locales, localeLabels, type Locale } from '../../i18n/locales';
+import SiteHeader from '../../components/SiteHeader.astro';
+import HeroBackground from '../../components/HeroBackground.astro';
+import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
 
 export function getStaticPaths() {
@@ -16,54 +16,10 @@ const t = useTranslations(lang);
 ---
 
 <BaseLayout title={`SHOT! - ${t.login.title}`} bodyClass="min-h-screen flex flex-col">
-  <!-- Header -->
-  <header class="bg-amber-500">
-    <div class="max-w-3xl mx-auto px-5 py-3 flex items-center gap-4">
-      <a href={`/${lang}/`}>
-        <Image src={logo} alt="SHOT!" height={52} class="object-contain" />
-      </a>
-      <nav class="flex gap-5 text-amber-900 font-semibold text-sm">
-        <a href={`/${lang}/docs`} class="hover:text-white transition">{t.nav.docs}</a>
-        <a href={`/${lang}/news`} class="hover:text-white transition">{t.nav.news}</a>
-      </nav>
-      <div class="ml-auto relative" id="lang-menu-wrapper">
-        <button
-          id="lang-menu-btn"
-          class="flex items-center gap-1 text-amber-900 hover:text-white transition font-semibold text-md px-2 py-2 rounded-lg hover:bg-amber-600"
-          aria-label="Select language"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0 1 12 16.5a17.92 17.92 0 0 1-8.716-2.247m0 0A9.015 9.015 0 0 1 3 12c0-1.605.42-3.113 1.157-4.418" />
-          </svg>
-          <span class="hidden sm:inline text-sm font-semibold">{localeLabels[lang]}</span>
-        </button>
-        <ul
-          id="lang-menu"
-          class="hidden absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-1 z-50 min-w-max"
-        >
-          {locales.map(l => (
-            <li>
-              <a
-                href={`/${l}/login`}
-                class={`block px-4 py-2 text-sm hover:bg-amber-50 transition ${l === lang ? 'text-amber-600 font-bold' : 'text-gray-700'}`}
-              >
-                {localeLabels[l]}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
-  </header>
+  <SiteHeader lang={lang} path="/login" />
 
   <!-- Background -->
-  <div class="relative flex-1 flex items-center justify-center bg-amber-400">
-    <div
-      class="absolute inset-0 opacity-80"
-      style={`background-image: url(${background.src}); background-size: cover; background-position: center;`}
-    ></div>
-    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
-
+  <HeroBackground class="items-center justify-center" gradient="from-black/60 via-black/10 to-transparent">
     <!-- Login Card + Character -->
     <div class="relative z-10 w-full max-w-3xl mx-auto px-5 flex items-end justify-center gap-4">
     <!-- Character (desktop only) -->
@@ -134,9 +90,9 @@ const t = useTranslations(lang);
         </div>
       </div>
     </div>
-  </div>
+  </HeroBackground>
 
-  <script define:vars={{ lang }}>
+  <script define:vars={{ lang }} is:inline>
     document.getElementById('login-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
@@ -148,15 +104,6 @@ const t = useTranslations(lang);
       });
       if (res.ok) {
         window.location.href = '/' + lang + '/game';
-      }
-    });
-
-    const btn = document.getElementById('lang-menu-btn');
-    const menu = document.getElementById('lang-menu');
-    btn?.addEventListener('click', () => menu?.classList.toggle('hidden'));
-    document.addEventListener('click', (e) => {
-      if (!document.getElementById('lang-menu-wrapper')?.contains(e.target)) {
-        menu?.classList.add('hidden');
       }
     });
   </script>
