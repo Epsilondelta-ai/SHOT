@@ -1,38 +1,30 @@
 ---
-import '../styles/global.css';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
-<!doctype html>
-<html lang="ko">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SHOT! - Login</title>
-  </head>
-  <body class="bg-gray-900 text-white min-h-screen flex items-center justify-center">
-    <div class="w-full max-w-md p-8 bg-gray-800 rounded-xl">
-      <h2 class="text-3xl font-bold mb-6 text-center">SHOT!</h2>
-      <form id="login-form" class="flex flex-col gap-4">
-        <input type="email" name="email" placeholder="Email" class="px-4 py-3 bg-gray-700 rounded-lg outline-none" required />
-        <input type="password" name="password" placeholder="Password" class="px-4 py-3 bg-gray-700 rounded-lg outline-none" required />
-        <button type="submit" class="px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition">
-          Login
-        </button>
-      </form>
-    </div>
-    <script>
-      document.getElementById('login-form')?.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target as HTMLFormElement;
-        const data = Object.fromEntries(new FormData(form));
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-        if (res.ok) {
-          window.location.href = '/game';
-        }
+<BaseLayout title="SHOT! - Login" bodyClass="bg-gray-900 text-white min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-md p-8 bg-gray-800 rounded-xl">
+    <h2 class="text-3xl font-bold mb-6 text-center">SHOT!</h2>
+    <form id="login-form" class="flex flex-col gap-4">
+      <input type="email" name="email" placeholder="Email" class="px-4 py-3 bg-gray-700 rounded-lg outline-none" required />
+      <input type="password" name="password" placeholder="Password" class="px-4 py-3 bg-gray-700 rounded-lg outline-none" required />
+      <button type="submit" class="px-4 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition">
+        Login
+      </button>
+    </form>
+  </div>
+  <script>
+    document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target as HTMLFormElement;
+      const data = Object.fromEntries(new FormData(form));
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
-    </script>
-  </body>
-</html>
+      if (res.ok) {
+        window.location.href = '/game';
+      }
+    });
+  </script>
+</BaseLayout>
