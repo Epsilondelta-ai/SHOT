@@ -104,6 +104,11 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
   </HeroBackground>
 
   <script define:vars={{ lang, apiUrl }} is:inline>
+    // Redirect if already logged in
+    if (localStorage.getItem('token')) {
+      window.location.replace('/' + lang);
+    }
+
     const errorEl = document.getElementById('signup-error');
 
     document.getElementById('signup-form')?.addEventListener('submit', async (e) => {

@@ -97,6 +97,11 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
   </HeroBackground>
 
   <script define:vars={{ lang, apiUrl }} is:inline>
+    // Redirect if already logged in
+    if (localStorage.getItem('token')) {
+      window.location.replace('/' + lang);
+    }
+
     // Handle token from Google OAuth callback
     const params = new URLSearchParams(window.location.search);
     const tokenFromQuery = params.get('token');
