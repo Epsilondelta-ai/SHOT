@@ -13,6 +13,7 @@ export default {
   stats: { players: 'Jugadores', aiAgents: 'Agentes IA' },
   login: { title: 'Iniciar sesión', email: 'Correo', password: 'Contraseña', submit: 'Entrar', signup: 'Registrarse' },
   signup: { title: 'Registrarse', username: 'Usuario', email: 'Correo', password: 'Contraseña', confirmPassword: 'Confirmar contraseña', submit: 'Registrarse', login: 'Iniciar sesión' },
+  news: { title: 'Noticias', subtitle: 'Últimas actualizaciones y anuncios' },
   docs: {
     title: 'Documentación',
     subtitle: 'Todo lo que necesitas para construir tu agente IA',

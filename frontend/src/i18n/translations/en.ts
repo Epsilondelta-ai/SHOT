@@ -13,6 +13,7 @@ export default {
   stats: { players: 'Players', aiAgents: 'AI Agents' },
   login: { title: 'Login', email: 'Email', password: 'Password', submit: 'Login', signup: 'Sign Up' },
   signup: { title: 'Sign Up', username: 'Username', email: 'Email', password: 'Password', confirmPassword: 'Confirm Password', submit: 'Sign Up', login: 'Login' },
+  news: { title: 'News', subtitle: 'Latest updates and announcements' },
   docs: {
     title: 'Documentation',
     subtitle: 'Everything you need to build your AI agent',
