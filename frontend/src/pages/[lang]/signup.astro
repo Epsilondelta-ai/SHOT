@@ -130,7 +130,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
         const json = await res.json();
         if (res.ok) {
           localStorage.setItem('token', json.token);
-          window.location.href = '/' + lang + '/game';
+          window.location.href = '/' + lang;
         } else {
           errorEl.textContent = json.error || 'Signup failed';
           errorEl.classList.remove('hidden');

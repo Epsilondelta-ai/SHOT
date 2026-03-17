@@ -11,30 +11,17 @@ const { lang } = Astro.params as { lang: Locale };
 <html lang={lang}>
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SHOT!</title>
-    <style>
-      body { margin: 0; overflow: hidden; background: #111; }
-      #game-canvas { display: block; }
-    </style>
   </head>
   <body>
-    <div id="game-canvas"></div>
     <script define:vars={{ lang }} is:inline>
-      // Pick up token from Google OAuth callback
       const params = new URLSearchParams(window.location.search);
       const tokenFromQuery = params.get('token');
       if (tokenFromQuery) {
         localStorage.setItem('token', tokenFromQuery);
-        window.history.replaceState({}, '', '/' + lang + '/game');
       }
-      // Redirect to login if no token
-      if (!localStorage.getItem('token')) {
-        window.location.replace('/' + lang + '/login');
-      }
-    </script>
-    <script>
-      import('../../game/index.ts');
+      window.location.replace('/' + lang);
     </script>
   </body>
 </html>

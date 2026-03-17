@@ -56,13 +56,12 @@ const descLines = t.hero.description.split('\n');
         </div>
 
         <!-- Game Start Button -->
-        <a
+        <button
           id="game-start-btn"
-          href={`/${lang}/login`}
-          class="block w-full max-w-md text-center bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-3 rounded-full text-xl mb-5 transition"
+          class="block w-full max-w-md text-center bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-3 rounded-full text-xl mb-5 transition cursor-pointer"
         >
           {t.gameStart}
-        </a>
+        </button>
 
         <!-- Stats -->
         <div class="flex gap-6">
@@ -79,7 +78,12 @@ const descLines = t.hero.description.split('\n');
     </div>
   </HeroBackground>
 
-<script define:vars={{ apiUrl, lang }}>
+  <!-- Game Overlay -->
+  <div id="game-overlay" style="display:none; position:fixed; inset:0; z-index:9999; background:#111111; overflow:hidden;">
+    <div id="game-canvas"></div>
+  </div>
+
+<script define:vars={{ apiUrl, lang }} is:inline>
   const token = localStorage.getItem('token');
   if (token) {
     fetch(`${apiUrl}/api/me`, {
@@ -91,7 +95,6 @@ const descLines = t.hero.description.split('\n');
         const profile = document.getElementById('user-profile');
         const avatar = document.getElementById('user-avatar');
         const name = document.getElementById('user-name');
-        const btn = document.getElementById('game-start-btn');
         if (user.avatarUrl) {
           avatar.src = user.avatarUrl;
           avatar.alt = user.username;
@@ -101,10 +104,29 @@ const descLines = t.hero.description.split('\n');
         name.textContent = user.username;
         profile.classList.remove('hidden');
         profile.classList.add('flex');
-        if (btn) btn.href = `/${lang}/game`;
       })
       .catch(() => {});
   }
+
+  document.getElementById('game-start-btn').addEventListener('click', async function () {
+    if (!localStorage.getItem('token')) {
+      window.location.href = '/' + lang + '/login';
+      return;
+    }
+    const overlay = document.getElementById('game-overlay');
+    overlay.style.display = 'block';
+    const isMobileDevice = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
+    if (isMobileDevice && overlay.requestFullscreen) {
+      try { await overlay.requestFullscreen(); } catch (_) {}
+    }
+    document.dispatchEvent(new CustomEvent('game:start'));
+  });
+</script>
+
+<script>
+  document.addEventListener('game:start', () => {
+    import('../../game/index.ts');
+  }, { once: true });
 </script>
 
 </BaseLayout>

@@ -107,7 +107,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     const tokenFromQuery = params.get('token');
     if (tokenFromQuery) {
       localStorage.setItem('token', tokenFromQuery);
-      window.location.replace('/' + lang + '/game');
+      window.location.replace('/' + lang);
     }
 
     const errorEl = document.getElementById('login-error');
@@ -126,7 +126,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
         const json = await res.json();
         if (res.ok) {
           localStorage.setItem('token', json.token);
-          window.location.href = '/' + lang + '/game';
+          window.location.href = '/' + lang;
         } else {
           errorEl.textContent = json.error || 'Login failed';
           errorEl.classList.remove('hidden');
