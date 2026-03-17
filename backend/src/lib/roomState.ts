@@ -45,12 +45,12 @@ export async function syncRoomAfterHumanDeparture(roomId: string) {
 	});
 	const remainingHumans = remainingPlayers.filter((player) => player.playerType === 'human');
 
-	if (remainingHumans.length === 0) {
+	if (remainingHumans.length === 0 && roomData.status !== 'in_progress') {
 		await db.delete(room).where(eq(room.id, roomId));
 		return { deleted: true, hostUserId: null as string | null };
 	}
 
-	if (!remainingHumans.some((player) => player.userId === roomData.hostUserId)) {
+	if (remainingHumans.length > 0 && !remainingHumans.some((player) => player.userId === roomData.hostUserId)) {
 		const nextHost = remainingHumans[0];
 		await db.update(room).set({ hostUserId: nextHost.userId }).where(eq(room.id, roomId));
 		return { deleted: false, hostUserId: nextHost.userId };
