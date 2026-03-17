@@ -13,6 +13,7 @@ export function getStaticPaths() {
 
 const { lang } = Astro.params as { lang: Locale };
 const t = useTranslations(lang);
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 ---
 
 <BaseLayout title={`SHOT! - ${t.login.title}`} bodyClass="min-h-screen flex flex-col">
@@ -60,13 +61,16 @@ const t = useTranslations(lang);
             >
               {t.login.submit}
             </button>
+
+            <!-- Error -->
+            <p id="login-error" class="hidden text-red-400 text-sm text-center"></p>
           </form>
 
           <!-- Divider with Google -->
           <div class="flex items-center gap-3 my-4">
             <div class="flex-1 h-px bg-amber-700/50"></div>
             <a
-              href="/api/auth/google"
+              href={`${apiUrl}/api/auth/google`}
               class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow hover:shadow-md transition"
               aria-label="Google Login"
             >
@@ -92,18 +96,39 @@ const t = useTranslations(lang);
     </div>
   </HeroBackground>
 
-  <script define:vars={{ lang }} is:inline>
+  <script define:vars={{ lang, apiUrl }} is:inline>
+    // Handle token from Google OAuth callback
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromQuery = params.get('token');
+    if (tokenFromQuery) {
+      localStorage.setItem('token', tokenFromQuery);
+      window.location.replace('/' + lang + '/game');
+    }
+
+    const errorEl = document.getElementById('login-error');
+
     document.getElementById('login-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
+      errorEl.classList.add('hidden');
       const form = e.target;
       const data = Object.fromEntries(new FormData(form));
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) {
-        window.location.href = '/' + lang + '/game';
+      try {
+        const res = await fetch(apiUrl + '/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          localStorage.setItem('token', json.token);
+          window.location.href = '/' + lang + '/game';
+        } else {
+          errorEl.textContent = json.error || 'Login failed';
+          errorEl.classList.remove('hidden');
+        }
+      } catch {
+        errorEl.textContent = 'Network error';
+        errorEl.classList.remove('hidden');
       }
     });
   </script>

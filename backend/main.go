@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/epsilondelta/shot/db"
+	"github.com/epsilondelta/shot/handlers"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -15,16 +17,28 @@ func main() {
 		log.Println("No .env file found")
 	}
 
+	if err := db.Connect(); err != nil {
+		log.Fatal("Failed to connect to database:", err)
+	}
+
 	app := fiber.New()
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: os.Getenv("FRONTEND_URL"),
-		AllowHeaders: "Origin, Content-Type, Authorization",
+		AllowOrigins:     os.Getenv("FRONTEND_URL"),
+		AllowHeaders:     "Origin, Content-Type, Authorization",
+		AllowCredentials: true,
 	}))
 
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
+
+	api := app.Group("/api")
+	auth := api.Group("/auth")
+	auth.Post("/signup", handlers.Signup)
+	auth.Post("/login", handlers.Login)
+	auth.Get("/google", handlers.GoogleRedirect)
+	auth.Get("/google/callback", handlers.GoogleCallback)
 
 	port := os.Getenv("PORT")
 	if port == "" {

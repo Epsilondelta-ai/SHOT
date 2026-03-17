@@ -13,6 +13,7 @@ export function getStaticPaths() {
 
 const { lang } = Astro.params as { lang: Locale };
 const t = useTranslations(lang);
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 ---
 
 <BaseLayout title={`SHOT! - ${t.signup.title}`} bodyClass="min-h-screen flex flex-col">
@@ -80,6 +81,9 @@ const t = useTranslations(lang);
             >
               {t.signup.submit}
             </button>
+
+            <!-- Error -->
+            <p id="signup-error" class="hidden text-red-400 text-sm text-center"></p>
           </form>
 
           <!-- Divider -->
@@ -99,19 +103,36 @@ const t = useTranslations(lang);
     </div>
   </HeroBackground>
 
-  <script define:vars={{ lang }} is:inline>
+  <script define:vars={{ lang, apiUrl }} is:inline>
+    const errorEl = document.getElementById('signup-error');
+
     document.getElementById('signup-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
+      errorEl.classList.add('hidden');
       const form = e.target;
       const data = Object.fromEntries(new FormData(form));
-      if (data.password !== data.confirmPassword) return;
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: data.username, email: data.email, password: data.password }),
-      });
-      if (res.ok) {
-        window.location.href = '/' + lang + '/login';
+      if (data.password !== data.confirmPassword) {
+        errorEl.textContent = 'Passwords do not match';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      try {
+        const res = await fetch(apiUrl + '/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: data.username, email: data.email, password: data.password }),
+        });
+        const json = await res.json();
+        if (res.ok) {
+          localStorage.setItem('token', json.token);
+          window.location.href = '/' + lang + '/game';
+        } else {
+          errorEl.textContent = json.error || 'Signup failed';
+          errorEl.classList.remove('hidden');
+        }
+      } catch {
+        errorEl.textContent = 'Network error';
+        errorEl.classList.remove('hidden');
       }
     });
   </script>
