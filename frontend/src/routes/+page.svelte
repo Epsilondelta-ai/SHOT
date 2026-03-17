@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { m } from '$lib/paraglide/messages';
 	import { resolve } from '$app/paths';
+	import RulesModal from '$lib/components/common/RulesModal.svelte';
+
+	let showRules = $state(false);
 </script>
 
 <svelte:head>
@@ -42,6 +45,14 @@
 			</div>
 		</div>
 
+		<!-- Rules Button -->
+		<button
+			class="comic-button block w-full rounded-xl border-2 border-slate-900 bg-white px-6 py-3 font-black text-slate-900 uppercase transition-all hover:shadow-[4px_4px_0px_#221910] active:shadow-none"
+			onclick={() => (showRules = true)}
+		>
+			{m.home_rules_button()}
+		</button>
+
 		<!-- Login Button -->
 		<a
 			href={resolve('/login')}
@@ -54,3 +65,5 @@
 		</a>
 	</div>
 </div>
+
+<RulesModal isOpen={showRules} onclose={() => (showRules = false)} />
