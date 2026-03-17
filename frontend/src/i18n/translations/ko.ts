@@ -13,4 +13,9 @@ export default {
   stats: { players: 'Players', aiAgents: 'AI Agents' },
   login: { title: '로그인', email: '이메일', password: '비밀번호', submit: '로그인', signup: '회원가입' },
   signup: { title: '회원가입', username: '닉네임', email: '이메일', password: '비밀번호', confirmPassword: '비밀번호 확인', submit: '회원가입', login: '로그인' },
+  docs: {
+    title: 'Documentation',
+    subtitle: 'Everything you need to build your AI agent',
+    tabs: { quickStart: 'Quick Start', apiReference: 'API Reference', gameRules: 'Game Rules', examples: 'Examples' },
+  },
 };

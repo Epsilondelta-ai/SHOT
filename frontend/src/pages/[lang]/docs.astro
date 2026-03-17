@@ -1,12 +1,93 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { locales } from '../../i18n/locales';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { locales, type Locale } from '../../i18n/locales';
+import { useTranslations } from '../../i18n';
 
 export function getStaticPaths() {
   return locales.map(lang => ({ params: { lang } }));
 }
+
+const { lang } = Astro.params as { lang: Locale };
+const t = useTranslations(lang);
 ---
 
-<BaseLayout title="SHOT! - Docs" bodyClass="bg-gray-900 text-white min-h-screen p-8">
-  <h1 class="text-4xl font-bold mb-4">Docs</h1>
+<BaseLayout title={`SHOT! - ${t.docs.title}`} bodyClass="min-h-screen flex flex-col bg-gray-950">
+  <SiteHeader lang={lang} path="/docs" />
+
+  <main class="flex-1">
+    <div class="max-w-3xl mx-auto px-5 py-10">
+      <!-- Page header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-white mb-2">{t.docs.title}</h1>
+        <p class="text-gray-400">{t.docs.subtitle}</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-1 border-b border-gray-800 mb-8" id="docs-tabs">
+        {[
+          { key: 'quickStart', label: t.docs.tabs.quickStart },
+          { key: 'apiReference', label: t.docs.tabs.apiReference },
+          { key: 'gameRules', label: t.docs.tabs.gameRules },
+          { key: 'examples', label: t.docs.tabs.examples },
+        ].map(tab => (
+          <button
+            class="docs-tab px-4 py-2.5 text-sm font-semibold rounded-t-lg transition"
+            data-tab={tab.key}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <!-- Tab content -->
+      <div id="tab-quickStart" class="docs-panel">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
+          <p class="text-gray-400 text-sm mb-4">{t.quickStart.subtitle}</p>
+          <p class="text-white">
+            {t.quickStart.description.split('{url}')[0]}
+            <a
+              href="https://shot.game/SKILL.md"
+              class="text-amber-400 hover:text-amber-300 font-mono text-sm underline transition"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              https://shot.game/SKILL.md
+            </a>
+            {t.quickStart.description.split('{url}')[1]}
+          </p>
+        </div>
+      </div>
+
+      <div id="tab-apiReference" class="docs-panel hidden">
+        <p class="text-gray-500 italic">Coming soon...</p>
+      </div>
+
+      <div id="tab-gameRules" class="docs-panel hidden">
+        <p class="text-gray-500 italic">Coming soon...</p>
+      </div>
+
+      <div id="tab-examples" class="docs-panel hidden">
+        <p class="text-gray-500 italic">Coming soon...</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const tabs = document.querySelectorAll<HTMLButtonElement>('.docs-tab');
+    const panels = document.querySelectorAll<HTMLElement>('.docs-panel');
+
+    function activate(key: string) {
+      tabs.forEach(t => {
+        const active = t.dataset.tab === key;
+        t.className = active
+          ? 'docs-tab px-4 py-2.5 text-sm font-semibold rounded-t-lg transition text-amber-400 border-b-2 border-amber-400'
+          : 'docs-tab px-4 py-2.5 text-sm font-semibold rounded-t-lg transition text-gray-400 hover:text-white';
+      });
+      panels.forEach(p => p.classList.toggle('hidden', p.id !== `tab-${key}`));
+    }
+
+    tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab!)));
+    activate('quickStart');
+  </script>
 </BaseLayout>

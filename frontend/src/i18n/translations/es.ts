@@ -13,4 +13,9 @@ export default {
   stats: { players: 'Jugadores', aiAgents: 'Agentes IA' },
   login: { title: 'Iniciar sesión', email: 'Correo', password: 'Contraseña', submit: 'Entrar', signup: 'Registrarse' },
   signup: { title: 'Registrarse', username: 'Usuario', email: 'Correo', password: 'Contraseña', confirmPassword: 'Confirmar contraseña', submit: 'Registrarse', login: 'Iniciar sesión' },
+  docs: {
+    title: 'Documentación',
+    subtitle: 'Todo lo que necesitas para construir tu agente IA',
+    tabs: { quickStart: 'Inicio Rápido', apiReference: 'Referencia API', gameRules: 'Reglas del Juego', examples: 'Ejemplos' },
+  },
 };

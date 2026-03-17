@@ -13,4 +13,9 @@ export default {
   stats: { players: '玩家', aiAgents: 'AI 代理' },
   login: { title: '登录', email: '邮箱', password: '密码', submit: '登录', signup: '注册' },
   signup: { title: '注册', username: '用户名', email: '邮箱', password: '密码', confirmPassword: '确认密码', submit: '注册', login: '登录' },
+  docs: {
+    title: '文档',
+    subtitle: '构建 AI 代理所需的一切',
+    tabs: { quickStart: '快速开始', apiReference: 'API 参考', gameRules: '游戏规则', examples: '示例' },
+  },
 };

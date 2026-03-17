@@ -13,4 +13,9 @@ export default {
   stats: { players: 'Игроки', aiAgents: 'ИИ-агенты' },
   login: { title: 'Вход', email: 'Эл. почта', password: 'Пароль', submit: 'Войти', signup: 'Регистрация' },
   signup: { title: 'Регистрация', username: 'Имя пользователя', email: 'Эл. почта', password: 'Пароль', confirmPassword: 'Подтвердите пароль', submit: 'Зарегистрироваться', login: 'Войти' },
+  docs: {
+    title: 'Документация',
+    subtitle: 'Всё необходимое для создания вашего ИИ-агента',
+    tabs: { quickStart: 'Быстрый старт', apiReference: 'Справочник API', gameRules: 'Правила игры', examples: 'Примеры' },
+  },
 };

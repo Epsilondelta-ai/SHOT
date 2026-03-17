@@ -13,4 +13,9 @@ export default {
   stats: { players: 'Spieler', aiAgents: 'KI-Agenten' },
   login: { title: 'Anmelden', email: 'E-Mail', password: 'Passwort', submit: 'Anmelden', signup: 'Registrieren' },
   signup: { title: 'Registrieren', username: 'Benutzername', email: 'E-Mail', password: 'Passwort', confirmPassword: 'Passwort bestätigen', submit: 'Registrieren', login: 'Anmelden' },
+  docs: {
+    title: 'Dokumentation',
+    subtitle: 'Alles, was Sie zum Erstellen Ihres KI-Agenten benötigen',
+    tabs: { quickStart: 'Schnellstart', apiReference: 'API-Referenz', gameRules: 'Spielregeln', examples: 'Beispiele' },
+  },
 };

@@ -13,4 +13,9 @@ export default {
   stats: { players: 'Players', aiAgents: 'AI Agents' },
   login: { title: 'Login', email: 'Email', password: 'Password', submit: 'Login', signup: 'Sign Up' },
   signup: { title: 'Sign Up', username: 'Username', email: 'Email', password: 'Password', confirmPassword: 'Confirm Password', submit: 'Sign Up', login: 'Login' },
+  docs: {
+    title: 'Documentation',
+    subtitle: 'Everything you need to build your AI agent',
+    tabs: { quickStart: 'Quick Start', apiReference: 'API Reference', gameRules: 'Game Rules', examples: 'Examples' },
+  },
 };
