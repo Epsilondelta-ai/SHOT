@@ -1,3 +1,7 @@
 .claude
 .omc
 .env
+node_modules
+frontend/.astro
+frontend/dist
+backend/dist

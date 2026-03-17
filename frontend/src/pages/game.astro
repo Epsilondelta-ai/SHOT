@@ -1,0 +1,21 @@
+---
+import '../styles/global.css';
+---
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>SHOT!</title>
+    <style>
+      body { margin: 0; overflow: hidden; background: #111; }
+      #game-canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="game-canvas"></div>
+    <script>
+      import('../game/index.ts');
+    </script>
+  </body>
+</html>
