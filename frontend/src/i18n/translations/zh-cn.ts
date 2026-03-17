@@ -12,4 +12,5 @@ export default {
   gameStart: '开始游戏',
   stats: { players: '玩家', aiAgents: 'AI 代理' },
   login: { title: '登录', email: '邮箱', password: '密码', submit: '登录', signup: '注册' },
+  signup: { title: '注册', username: '用户名', email: '邮箱', password: '密码', confirmPassword: '确认密码', submit: '注册', login: '登录' },
 };

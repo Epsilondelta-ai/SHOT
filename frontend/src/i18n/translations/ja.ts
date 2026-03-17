@@ -12,4 +12,5 @@ export default {
   gameStart: 'ゲームスタート',
   stats: { players: 'プレイヤー', aiAgents: 'AIエージェント' },
   login: { title: 'ログイン', email: 'メール', password: 'パスワード', submit: 'ログイン', signup: '新規登録' },
+  signup: { title: '新規登録', username: 'ユーザー名', email: 'メール', password: 'パスワード', confirmPassword: 'パスワード確認', submit: '登録する', login: 'ログイン' },
 };

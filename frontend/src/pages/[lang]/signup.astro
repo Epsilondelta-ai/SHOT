@@ -1,0 +1,118 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { Image } from 'astro:assets';
+import character from '../../assets/character.webp';
+import SiteHeader from '../../components/SiteHeader.astro';
+import HeroBackground from '../../components/HeroBackground.astro';
+import { locales, type Locale } from '../../i18n/locales';
+import { useTranslations } from '../../i18n';
+
+export function getStaticPaths() {
+  return locales.map(lang => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params as { lang: Locale };
+const t = useTranslations(lang);
+---
+
+<BaseLayout title={`SHOT! - ${t.signup.title}`} bodyClass="min-h-screen flex flex-col">
+  <SiteHeader lang={lang} path="/signup" />
+
+  <HeroBackground class="items-center justify-center" gradient="from-black/60 via-black/10 to-transparent">
+    <div class="relative z-10 w-full max-w-3xl mx-auto px-5 flex items-end justify-center gap-4">
+      <!-- Character (desktop only) -->
+      <div class="hidden sm:block w-56 flex-shrink-0 self-end pointer-events-none select-none order-2">
+        <Image src={character} alt="character" class="w-full drop-shadow-2xl" />
+      </div>
+      <div class="w-full max-w-md order-1">
+        <div class="bg-black/55 backdrop-blur rounded-2xl p-8 shadow-2xl border border-amber-700/30">
+          <h2 class="text-2xl font-bold text-center text-amber-300 mb-6">{t.signup.title}</h2>
+
+          <form id="signup-form" class="flex flex-col gap-4">
+            <!-- Username -->
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold text-amber-200">{t.signup.username}</label>
+              <input
+                type="text"
+                name="username"
+                class="px-4 py-2.5 bg-black/40 border border-amber-700/50 rounded-lg outline-none focus:border-amber-400 transition text-white placeholder-amber-700"
+                required
+              />
+            </div>
+
+            <!-- Email -->
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold text-amber-200">{t.signup.email}</label>
+              <input
+                type="email"
+                name="email"
+                class="px-4 py-2.5 bg-black/40 border border-amber-700/50 rounded-lg outline-none focus:border-amber-400 transition text-white placeholder-amber-700"
+                required
+              />
+            </div>
+
+            <!-- Password -->
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold text-amber-200">{t.signup.password}</label>
+              <input
+                type="password"
+                name="password"
+                class="px-4 py-2.5 bg-black/40 border border-amber-700/50 rounded-lg outline-none focus:border-amber-400 transition text-white placeholder-amber-700"
+                required
+              />
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="flex flex-col gap-1">
+              <label class="text-sm font-semibold text-amber-200">{t.signup.confirmPassword}</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                class="px-4 py-2.5 bg-black/40 border border-amber-700/50 rounded-lg outline-none focus:border-amber-400 transition text-white placeholder-amber-700"
+                required
+              />
+            </div>
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              class="mt-1 w-full py-3 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold rounded-lg transition text-base"
+            >
+              {t.signup.submit}
+            </button>
+          </form>
+
+          <!-- Divider -->
+          <div class="flex items-center gap-3 my-4">
+            <div class="flex-1 h-px bg-amber-700/50"></div>
+          </div>
+
+          <!-- Login -->
+          <a
+            href={`/${lang}/login`}
+            class="block w-full py-3 bg-amber-900/50 hover:bg-amber-800/60 text-amber-200 font-bold rounded-lg transition text-base text-center border border-amber-700/40"
+          >
+            {t.signup.login}
+          </a>
+        </div>
+      </div>
+    </div>
+  </HeroBackground>
+
+  <script define:vars={{ lang }} is:inline>
+    document.getElementById('signup-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const data = Object.fromEntries(new FormData(form));
+      if (data.password !== data.confirmPassword) return;
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: data.username, email: data.email, password: data.password }),
+      });
+      if (res.ok) {
+        window.location.href = '/' + lang + '/login';
+      }
+    });
+  </script>
+</BaseLayout>
