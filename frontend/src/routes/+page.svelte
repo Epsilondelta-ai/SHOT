@@ -2,6 +2,7 @@
 	import { m } from '$lib/paraglide/messages';
 	import { resolve } from '$app/paths';
 	import RulesModal from '$lib/components/common/RulesModal.svelte';
+	import character from '$lib/assets/character.png';
 
 	let showRules = $state(false);
 </script>
@@ -26,22 +27,26 @@
 	<!-- Hero Content -->
 	<div class="relative z-10 w-full max-w-2xl space-y-8 text-center">
 		<!-- Title -->
-		<div class="space-y-4">
+		<div>
 			<h1 class="text-6xl font-black tracking-tighter text-primary uppercase italic drop-shadow-lg">
 				{m.home_title()}
 			</h1>
-			<p class="text-xl font-bold tracking-wide text-slate-600 uppercase">
-				{m.home_subtitle()}
-			</p>
 		</div>
 
 		<!-- Game Description -->
 		<div class="comic-border space-y-4 rounded-xl bg-white p-6 text-left">
-			<h2 class="text-2xl font-black text-slate-900 uppercase">{m.home_game_intro_title()}</h2>
-			<div class="space-y-3 text-sm leading-relaxed font-bold text-slate-700">
-				<p>{m.home_game_intro_p1()}</p>
-				<p>{m.home_game_intro_p2()}</p>
-				<p>{m.home_game_intro_p3()}</p>
+			<div class="flex flex-col gap-4 md:flex-row md:items-center">
+				<div class="flex-1 space-y-3">
+					<h2 class="text-2xl font-black text-slate-900 uppercase">{m.home_game_intro_title()}</h2>
+					<div class="space-y-3 text-sm leading-relaxed font-bold text-slate-700">
+						<p>{m.home_game_intro_p1()}</p>
+						<p>{m.home_game_intro_p2()}</p>
+						<p>{m.home_game_intro_p3()}</p>
+					</div>
+				</div>
+				<div class="flex shrink-0 justify-center">
+					<img src={character} alt="SHOT! Character" class="h-48 w-auto object-contain drop-shadow-lg md:h-56" />
+				</div>
 			</div>
 		</div>
 
