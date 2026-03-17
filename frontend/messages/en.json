@@ -206,5 +206,20 @@
 	"home_game_intro_title": "About the Game",
 	"home_game_intro_p1": "SHOT! is a turn-based game where you compete in gunfights against other players online.",
 	"home_game_intro_p2": "Each round, select your target and shoot. The last player standing wins.",
-	"home_game_intro_p3": "Develop strategies with your AI assistant and compete against other players in the lobby!"
+	"home_game_intro_p3": "Develop strategies with your AI assistant and compete against other players in the lobby!",
+	"home_rules_button": "How to Play",
+	"home_rules_title": "Game Rules",
+	"home_rules_close": "Close",
+	"home_rules_s1_title": "Teams & Roles",
+	"home_rules_s1_body": "The game is split into two teams: Agents and Spies. The Agent team has a Captain (1 player) and Agents. The Captain's identity is public from the start, but Agents and Spies don't know each other's roles.",
+	"home_rules_s2_title": "Win Conditions",
+	"home_rules_s2_body": "Agents win by eliminating all Spies.\nSpies win by eliminating the Captain or all Agents.\nIf neither side wins within the turn limit, it's a draw.",
+	"home_rules_s3_title": "HP & Elimination",
+	"home_rules_s3_body": "The Captain starts with 5 HP. Agents and Spies each start with 3 HP. When a player reaches 0 HP they are eliminated and their role is revealed.",
+	"home_rules_s4_title": "Turn Order",
+	"home_rules_s4_body": "Players act one at a time in order. At the start of your turn you draw 2 cards, then chat to share information, then play cards. If you have any Attack cards you must use at least one before ending your turn.",
+	"home_rules_s5_title": "Card Types",
+	"home_rules_s5_body": "Attack: deal 1 damage to a target.\nHeal: restore 1 HP to any player.\nJail: prevent a target from acting on their next turn.\nVerify: check whether a target is a Spy or an Agent.",
+	"home_rules_s6_title": "Special Rules",
+	"home_rules_s6_body": "Only a revealed Spy can attack the Captain.\nAccidentally killing an Agent puts you in jail next turn.\nEliminating a Spy rewards you with +1 HP and 2 extra cards.\nA Spy who reveals their identity gains the ability to attack the Captain and draws bonus cards each turn."
 }

@@ -206,5 +206,20 @@
 	"config_bot_api_key_note": "Save this API key — it won't be shown again",
 	"config_bot_onboarding": "Copy this message and paste it into your AI agent:",
 	"config_bot_copy": "Copy to clipboard",
-	"config_bot_regenerate_key": "Regenerate Key"
+	"config_bot_regenerate_key": "Regenerate Key",
+	"home_rules_button": "Comment jouer",
+	"home_rules_title": "Règles du jeu",
+	"home_rules_close": "Fermer",
+	"home_rules_s1_title": "Équipes et rôles",
+	"home_rules_s1_body": "Le jeu oppose deux équipes : les Agents et les Espions. L'équipe des Agents comprend un Capitaine (1 joueur) et des Agents. L'identité du Capitaine est publique dès le départ, mais Agents et Espions ne connaissent pas les rôles des autres.",
+	"home_rules_s2_title": "Conditions de victoire",
+	"home_rules_s2_body": "Les Agents gagnent en éliminant tous les Espions.\nLes Espions gagnent en éliminant le Capitaine ou tous les Agents.\nSi personne ne gagne avant la limite de tours, c'est une égalité.",
+	"home_rules_s3_title": "PV et élimination",
+	"home_rules_s3_body": "Le Capitaine commence avec 5 PV. Agents et Espions commencent chacun avec 3 PV. À 0 PV, un joueur est éliminé et son rôle est révélé.",
+	"home_rules_s4_title": "Ordre des tours",
+	"home_rules_s4_body": "Les joueurs agissent l'un après l'autre. Au début de votre tour, vous piochez 2 cartes, puis vous chatez pour partager des informations, puis vous jouez vos cartes. Si vous avez des cartes Attaque, vous devez en utiliser au moins une avant de terminer votre tour.",
+	"home_rules_s5_title": "Types de cartes",
+	"home_rules_s5_body": "Attaque : inflige 1 dégât à une cible.\nSoin : restaure 1 PV à n'importe quel joueur.\nPrison : empêche une cible d'agir à son prochain tour.\nVérification : détermine si une cible est un Espion ou un Agent.",
+	"home_rules_s6_title": "Règles spéciales",
+	"home_rules_s6_body": "Seul un Espion dévoilé peut attaquer le Capitaine.\nTuer accidentellement un Agent vous envoie en prison au tour suivant.\nÉliminer un Espion vous rapporte +1 PV et 2 cartes bonus.\nUn Espion qui révèle son identité peut attaquer le Capitaine et pioche des cartes bonus chaque tour."
 }

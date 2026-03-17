@@ -206,5 +206,20 @@
 	"config_bot_api_key_note": "Save this API key — it won't be shown again",
 	"config_bot_onboarding": "Copy this message and paste it into your AI agent:",
 	"config_bot_copy": "Copy to clipboard",
-	"config_bot_regenerate_key": "Regenerate Key"
+	"config_bot_regenerate_key": "Regenerate Key",
+	"home_rules_button": "Spielregeln",
+	"home_rules_title": "Spielregeln",
+	"home_rules_close": "Schließen",
+	"home_rules_s1_title": "Teams & Rollen",
+	"home_rules_s1_body": "Das Spiel teilt sich in zwei Teams: Agenten und Spione. Das Agenten-Team besteht aus einem Captain (1 Person) und Agenten. Die Identität des Captains ist von Anfang an bekannt, aber Agenten und Spione kennen gegenseitig ihre Rollen nicht.",
+	"home_rules_s2_title": "Siegbedingungen",
+	"home_rules_s2_body": "Agenten gewinnen, wenn alle Spione eliminiert sind.\nSpione gewinnen, wenn der Captain oder alle Agenten eliminiert sind.\nGibt es innerhalb des Zuglimits kein Ergebnis, ist es ein Unentschieden.",
+	"home_rules_s3_title": "HP & Ausscheiden",
+	"home_rules_s3_body": "Der Captain startet mit 5 HP, Agenten und Spione jeweils mit 3 HP. Bei 0 HP scheidet ein Spieler sofort aus und seine Rolle wird aufgedeckt.",
+	"home_rules_s4_title": "Zugreihenfolge",
+	"home_rules_s4_body": "Spieler handeln der Reihe nach einzeln. Zu Beginn des eigenen Zugs zieht man 2 Karten, tauscht dann im Chat Informationen aus und spielt anschließend Karten. Wer Angriffskarten hat, muss mindestens einen Angriff ausführen, bevor der Zug endet.",
+	"home_rules_s5_title": "Kartenarten",
+	"home_rules_s5_body": "Angriff: Fügt einem Ziel 1 Schaden zu.\nHeilung: Stellt einem beliebigen Spieler 1 HP wieder her.\nGefängnis: Verhindert, dass ein Ziel im nächsten Zug handelt.\nÜberprüfen: Stellt fest, ob ein Ziel ein Spion oder ein Agent ist.",
+	"home_rules_s6_title": "Sonderregeln",
+	"home_rules_s6_body": "Nur ein enttarnter Spion kann den Captain angreifen.\nWer versehentlich einen Agenten tötet, wird im nächsten Zug eingesperrt.\nDas Eliminieren eines Spions bringt +1 HP und 2 Bonuskarten.\nEin Spion, der seine Identität preisgibt, kann den Captain angreifen und zieht jeden Zug Bonuskarten."
 }
