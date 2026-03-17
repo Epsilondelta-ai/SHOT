@@ -1,4 +1,10 @@
-.PHONY: dev dev-frontend dev-backend build build-frontend build-backend
+.PHONY: dev dev-frontend dev-backend build build-frontend build-backend infra infra-down
+
+infra:
+	docker compose up -d
+
+infra-down:
+	docker compose down
 
 dev:
 	make -j2 dev-frontend dev-backend
