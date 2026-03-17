@@ -6,6 +6,8 @@ import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
 import { version } from '../../../package.json';
 
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+
 export function getStaticPaths() {
   return locales.map(lang => ({ params: { lang } }));
 }
@@ -47,8 +49,15 @@ const descLines = t.hero.description.split('\n');
           </p>
         </div>
 
+        <!-- User Profile (shown when logged in) -->
+        <div id="user-profile" class="hidden items-center gap-3 mb-3 max-w-md bg-black/40 rounded-xl px-4 py-2">
+          <img id="user-avatar" src="" alt="" class="w-10 h-10 rounded-full object-cover bg-gray-700" />
+          <span id="user-name" class="text-white font-semibold text-sm"></span>
+        </div>
+
         <!-- Game Start Button -->
         <a
+          id="game-start-btn"
           href={`/${lang}/login`}
           class="block w-full max-w-md text-center bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-3 rounded-full text-xl mb-5 transition"
         >
@@ -69,5 +78,33 @@ const descLines = t.hero.description.split('\n');
       </div>
     </div>
   </HeroBackground>
+
+<script define:vars={{ apiUrl, lang }}>
+  const token = localStorage.getItem('token');
+  if (token) {
+    fetch(`${apiUrl}/api/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(res => res.ok ? res.json() : null)
+      .then(user => {
+        if (!user) return;
+        const profile = document.getElementById('user-profile');
+        const avatar = document.getElementById('user-avatar');
+        const name = document.getElementById('user-name');
+        const btn = document.getElementById('game-start-btn');
+        if (user.avatarUrl) {
+          avatar.src = user.avatarUrl;
+          avatar.alt = user.username;
+        } else {
+          avatar.remove();
+        }
+        name.textContent = user.username;
+        profile.classList.remove('hidden');
+        profile.classList.add('flex');
+        if (btn) btn.href = `/${lang}/game`;
+      })
+      .catch(() => {});
+  }
+</script>
 
 </BaseLayout>

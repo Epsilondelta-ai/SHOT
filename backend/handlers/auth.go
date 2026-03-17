@@ -111,6 +111,40 @@ func Login(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"token": token})
 }
 
+// Me GET /api/me
+func Me(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+	if len(authHeader) < 8 || authHeader[:7] != "Bearer " {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "missing token"})
+	}
+	tokenStr := authHeader[7:]
+
+	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+		return getJWTSecret(), nil
+	})
+	if err != nil || !token.Valid {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid token"})
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid claims"})
+	}
+
+	userID, _ := claims["sub"].(string)
+	var user models.User
+	if result := db.DB.First(&user, "id = ?", userID); result.Error != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "user not found"})
+	}
+
+	return c.JSON(fiber.Map{
+		"id":        user.ID,
+		"username":  user.Username,
+		"email":     user.Email,
+		"avatarUrl": user.AvatarURL,
+	})
+}
+
 // GoogleRedirect GET /api/auth/google
 func GoogleRedirect(c *fiber.Ctx) error {
 	if os.Getenv("GOOGLE_CLIENT_ID") == "" {
@@ -151,9 +185,10 @@ func GoogleCallback(c *fiber.Ctx) error {
 	}
 
 	var googleUser struct {
-		ID    string `json:"id"`
-		Email string `json:"email"`
-		Name  string `json:"name"`
+		ID      string `json:"id"`
+		Email   string `json:"email"`
+		Name    string `json:"name"`
+		Picture string `json:"picture"`
 	}
 	if err := json.Unmarshal(data, &googleUser); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to parse user info"})
@@ -167,9 +202,10 @@ func GoogleCallback(c *fiber.Ctx) error {
 		if result.Error != nil {
 			// Create new user
 			user = models.User{
-				Email:    googleUser.Email,
-				Username: googleUser.Name,
-				GoogleID: googleUser.ID,
+				Email:     googleUser.Email,
+				Username:  googleUser.Name,
+				GoogleID:  googleUser.ID,
+				AvatarURL: googleUser.Picture,
 			}
 			if err := db.DB.Create(&user).Error; err != nil {
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create user"})

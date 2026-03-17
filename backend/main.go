@@ -34,6 +34,7 @@ func main() {
 	})
 
 	api := app.Group("/api")
+	api.Get("/me", handlers.Me)
 	auth := api.Group("/auth")
 	auth.Post("/signup", handlers.Signup)
 	auth.Post("/login", handlers.Login)
