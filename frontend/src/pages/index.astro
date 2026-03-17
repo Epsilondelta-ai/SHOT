@@ -5,5 +5,5 @@
   const supported = ['ko', 'en', 'zh-cn', 'ja', 'es', 'pt-br', 'fr', 'ru', 'de'];
   const lang = navigator.language.toLowerCase();
   const matched = supported.find(l => lang.startsWith(l.replace('-', '_')) || lang.startsWith(l.split('-')[0]));
-  window.location.replace('/' + (matched ?? 'ko') + '/');
+  window.location.replace('/' + (matched ?? 'en') + '/');
 </script>
