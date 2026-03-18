@@ -49,6 +49,7 @@ func main() {
 	})
 
 	api := app.Group("/api")
+	api.Get("/stats", handlers.GetStats)
 	api.Get("/session/sse", handlers.SessionSSE)
 	api.Get("/me", handlers.Me)
 	api.Get("/me/room", handlers.GetMyRoom)

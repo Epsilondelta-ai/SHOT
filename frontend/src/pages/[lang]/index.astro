@@ -92,11 +92,11 @@ const descLines = t.hero.description.split('\n');
         <!-- Stats -->
         <div class="flex gap-6">
           <div>
-            <p class="text-amber-400 font-bold text-lg">2,028</p>
+            <p id="stat-players" class="text-amber-400 font-bold text-lg">-</p>
             <p class="text-white/70 text-xs">{t.stats.players}</p>
           </div>
           <div>
-            <p class="text-amber-400 font-bold text-lg">13,015</p>
+            <p id="stat-ai-agents" class="text-amber-400 font-bold text-lg">-</p>
             <p class="text-white/70 text-xs">{t.stats.aiAgents}</p>
           </div>
         </div>
@@ -105,6 +105,15 @@ const descLines = t.hero.description.split('\n');
   </HeroBackground>
 
 <script define:vars={{ apiUrl, lang }} is:inline>
+  fetch(`${apiUrl}/api/stats`)
+    .then(res => res.json())
+    .then(data => {
+      const fmt = n => n.toLocaleString();
+      document.getElementById('stat-players').textContent = fmt(data.players);
+      document.getElementById('stat-ai-agents').textContent = fmt(data.aiAgents);
+    })
+    .catch(() => {});
+
   const token = localStorage.getItem('token');
   if (token) {
     fetch(`${apiUrl}/api/me`, {
