@@ -204,7 +204,7 @@ func GoogleCallback(c *fiber.Ctx) error {
 			user = models.User{
 				Email:     googleUser.Email,
 				Username:  googleUser.Name,
-				GoogleID:  googleUser.ID,
+				GoogleID:  &googleUser.ID,
 				AvatarURL: googleUser.Picture,
 			}
 			if err := db.DB.Create(&user).Error; err != nil {
