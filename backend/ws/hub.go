@@ -1,9 +1,14 @@
 package ws
 
 import (
+	"context"
 	"encoding/json"
 	"sync"
+
+	"github.com/redis/go-redis/v9"
 )
+
+var ctx = context.Background()
 
 type Client struct {
 	Ch        chan []byte
@@ -11,7 +16,7 @@ type Client struct {
 	Username  string
 	AvatarURL string
 	RoomID    string
-	Replaced  bool // true when superseded by a newer connection; skip DB cleanup
+	Replaced  bool
 }
 
 type Message struct {
@@ -22,12 +27,94 @@ type Message struct {
 	Message   string `json:"message,omitempty"`
 }
 
+type ctrlMsg struct {
+	UserID    string `json:"userId"`
+	EventType string `json:"eventType"` // "kicked" | "duplicate" | "close"
+}
+
 type Hub struct {
 	mu    sync.RWMutex
 	rooms map[string]map[*Client]bool
+	rdb   *redis.Client
 }
 
-var H = &Hub{rooms: make(map[string]map[*Client]bool)}
+var H *Hub
+
+func NewHub(rdb *redis.Client) *Hub {
+	return &Hub{
+		rooms: make(map[string]map[*Client]bool),
+		rdb:   rdb,
+	}
+}
+
+func (h *Hub) Start() {
+	pubsub := h.rdb.PSubscribe(ctx, "room:msg:*", "room:ctrl:*")
+	go func() {
+		for msg := range pubsub.Channel() {
+			h.routeRedisMessage(msg)
+		}
+	}()
+}
+
+func (h *Hub) routeRedisMessage(msg *redis.Message) {
+	switch {
+	case len(msg.Channel) > 9 && msg.Channel[:9] == "room:msg:":
+		roomID := msg.Channel[9:]
+		h.sendToLocalClients(roomID, []byte(msg.Payload))
+	case len(msg.Channel) > 10 && msg.Channel[:10] == "room:ctrl:":
+		roomID := msg.Channel[10:]
+		var ctrl ctrlMsg
+		if err := json.Unmarshal([]byte(msg.Payload), &ctrl); err != nil {
+			return
+		}
+		h.controlLocalClient(roomID, ctrl)
+	}
+}
+
+func (h *Hub) sendToLocalClients(roomID string, data []byte) {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	for c := range h.rooms[roomID] {
+		select {
+		case c.Ch <- data:
+		default:
+		}
+	}
+}
+
+func (h *Hub) controlLocalClient(roomID string, ctrl ctrlMsg) {
+	h.mu.RLock()
+	var target *Client
+	for c := range h.rooms[roomID] {
+		if c.UserID == ctrl.UserID {
+			target = c
+			break
+		}
+	}
+	h.mu.RUnlock()
+	if target == nil {
+		return
+	}
+	switch ctrl.EventType {
+	case "kicked":
+		data, _ := json.Marshal(Message{Type: "kicked"})
+		select {
+		case target.Ch <- data:
+		default:
+		}
+		close(target.Ch)
+	case "duplicate":
+		target.Replaced = true
+		data, _ := json.Marshal(Message{Type: "duplicate"})
+		select {
+		case target.Ch <- data:
+		default:
+		}
+		close(target.Ch)
+	case "close":
+		close(target.Ch)
+	}
+}
 
 func (h *Hub) Register(c *Client) {
 	h.mu.Lock()
@@ -38,15 +125,13 @@ func (h *Hub) Register(c *Client) {
 	h.mu.Unlock()
 }
 
-func (h *Hub) Unregister(c *Client) bool {
+func (h *Hub) Unregister(c *Client) {
 	h.mu.Lock()
 	delete(h.rooms[c.RoomID], c)
-	empty := len(h.rooms[c.RoomID]) == 0
-	if empty {
+	if len(h.rooms[c.RoomID]) == 0 {
 		delete(h.rooms, c.RoomID)
 	}
 	h.mu.Unlock()
-	return empty
 }
 
 func (h *Hub) HasClients(roomID string) bool {
@@ -57,83 +142,29 @@ func (h *Hub) HasClients(roomID string) bool {
 
 func (h *Hub) Broadcast(roomID string, msg Message) {
 	data, _ := json.Marshal(msg)
-	h.send(roomID, data)
+	h.rdb.Publish(ctx, "room:msg:"+roomID, data)
 }
 
 func (h *Hub) BroadcastJSON(roomID string, v any) {
 	data, _ := json.Marshal(v)
-	h.send(roomID, data)
-}
-
-func (h *Hub) send(roomID string, data []byte) {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
-	for c := range h.rooms[roomID] {
-		select {
-		case c.Ch <- data:
-		default:
-		}
-	}
-}
-
-// CloseClient closes the SSE channel for a user, triggering their cleanup defer.
-// If replaced is true, the cleanup defer will skip DB operations (duplicate connection case).
-func (h *Hub) CloseClient(roomID, userID string, replaced bool) {
-	h.mu.RLock()
-	var target *Client
-	for c := range h.rooms[roomID] {
-		if c.UserID == userID {
-			target = c
-			break
-		}
-	}
-	h.mu.RUnlock()
-	if target != nil {
-		target.Replaced = replaced
-		if replaced {
-			data, _ := json.Marshal(Message{Type: "duplicate"})
-			select {
-			case target.Ch <- data:
-			default:
-			}
-		}
-		close(target.Ch)
-	}
-}
-
-func (h *Hub) KickClient(roomID, userID string) {
-	data, _ := json.Marshal(Message{Type: "kicked"})
-	h.mu.RLock()
-	var target *Client
-	for c := range h.rooms[roomID] {
-		if c.UserID == userID {
-			target = c
-			break
-		}
-	}
-	h.mu.RUnlock()
-	if target != nil {
-		select {
-		case target.Ch <- data:
-		default:
-		}
-		close(target.Ch)
-	}
+	h.rdb.Publish(ctx, "room:msg:"+roomID, data)
 }
 
 func (h *Hub) BroadcastRoomClosed(roomID string) {
 	data, _ := json.Marshal(Message{Type: "room_closed"})
-	h.mu.RLock()
-	clients := make([]*Client, 0, len(h.rooms[roomID]))
-	for c := range h.rooms[roomID] {
-		clients = append(clients, c)
+	h.rdb.Publish(ctx, "room:msg:"+roomID, data)
+}
+
+func (h *Hub) KickClient(roomID, userID string) {
+	payload, _ := json.Marshal(ctrlMsg{UserID: userID, EventType: "kicked"})
+	h.rdb.Publish(ctx, "room:ctrl:"+roomID, payload)
+}
+
+func (h *Hub) CloseClient(roomID, userID string, replaced bool) {
+	eventType := "close"
+	if replaced {
+		eventType = "duplicate"
 	}
-	h.mu.RUnlock()
-	for _, c := range clients {
-		select {
-		case c.Ch <- data:
-		default:
-		}
-		close(c.Ch)
-	}
+	payload, _ := json.Marshal(ctrlMsg{UserID: userID, EventType: eventType})
+	h.rdb.Publish(ctx, "room:ctrl:"+roomID, payload)
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/handlers"
+	"github.com/epsilondelta/shot/ws"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -20,6 +21,13 @@ func main() {
 	if err := db.Connect(); err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
+	if err := db.ConnectRedis(); err != nil {
+		log.Fatal("Failed to connect to Redis:", err)
+	}
+	ws.H = ws.NewHub(db.RDB)
+	ws.H.Start()
+	ws.SH = ws.NewSessionHub(db.RDB)
+	ws.SH.Start()
 
 	app := fiber.New()
 	app.Use(logger.New())
