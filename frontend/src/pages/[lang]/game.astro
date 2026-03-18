@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import SiteHeader from '../../components/SiteHeader.astro';
+import GameHeader from '../../components/GameHeader.astro';
 import HeroBackground from '../../components/HeroBackground.astro';
 import { locales, type Locale } from '../../i18n/locales';
 
@@ -12,7 +12,7 @@ const { lang } = Astro.params as { lang: Locale };
 ---
 
 <BaseLayout title="SHOT!" bodyClass="bg-gray-950 min-h-screen flex flex-col">
-  <SiteHeader lang={lang} path="/game" />
+  <GameHeader lang={lang} path="/game" />
 
   <HeroBackground class="flex-1 flex-col justify-center">
   </HeroBackground>
