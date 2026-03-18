@@ -36,6 +36,8 @@ func main() {
 	api := app.Group("/api")
 	api.Get("/me", handlers.Me)
 	api.Patch("/me", handlers.UpdateMe)
+	api.Get("/rooms", handlers.ListRooms)
+	api.Post("/rooms", handlers.CreateRoom)
 	api.Get("/bots", handlers.ListBots)
 	api.Post("/bots", handlers.CreateBot)
 	api.Patch("/bots/:id", handlers.UpdateBot)

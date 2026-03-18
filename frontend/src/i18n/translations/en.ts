@@ -48,4 +48,18 @@ export default {
     saveFailed: 'Failed to save.',
   },
   common: { save: 'Save', cancel: 'Cancel', close: 'Close', edit: 'Edit', delete: 'Delete' },
+  rooms: {
+    title: 'Room List',
+    createRoom: '+ Create Room',
+    createRoomTitle: 'Create Room',
+    roomName: 'Room Name',
+    roomNameRequired: 'Please enter a room name.',
+    maxPlayers: 'Max Players',
+    create: 'Create',
+    creating: 'Creating...',
+    empty: 'No rooms available.',
+    refresh: 'Refresh',
+    statusWaiting: 'Waiting',
+    statusPlaying: 'Playing',
+  },
 };

@@ -48,4 +48,18 @@ export default {
     saveFailed: 'Не удалось сохранить.',
   },
   common: { save: 'Сохранить', cancel: 'Отмена', close: 'Закрыть', edit: 'Изменить', delete: 'Удалить' },
+  rooms: {
+    title: 'Список комнат',
+    createRoom: '+ Создать комнату',
+    createRoomTitle: 'Создать комнату',
+    roomName: 'Название комнаты',
+    roomNameRequired: 'Введите название комнаты.',
+    maxPlayers: 'Макс. игроков',
+    create: 'Создать',
+    creating: 'Создание...',
+    empty: 'Нет доступных комнат.',
+    refresh: 'Обновить',
+    statusWaiting: 'Ожидание',
+    statusPlaying: 'Игра',
+  },
 };

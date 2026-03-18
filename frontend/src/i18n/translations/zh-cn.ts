@@ -48,4 +48,18 @@ export default {
     saveFailed: '保存失败。',
   },
   common: { save: '保存', cancel: '取消', close: '关闭', edit: '编辑', delete: '删除' },
+  rooms: {
+    title: '房间列表',
+    createRoom: '+ 创建房间',
+    createRoomTitle: '创建房间',
+    roomName: '房间名称',
+    roomNameRequired: '请输入房间名称。',
+    maxPlayers: '最大人数',
+    create: '创建',
+    creating: '创建中...',
+    empty: '暂无房间。',
+    refresh: '刷新',
+    statusWaiting: '等待中',
+    statusPlaying: '游戏中',
+  },
 };

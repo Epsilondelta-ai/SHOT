@@ -48,4 +48,18 @@ export default {
     saveFailed: "Échec de l'enregistrement.",
   },
   common: { save: 'Enregistrer', cancel: 'Annuler', close: 'Fermer', edit: 'Modifier', delete: 'Supprimer' },
+  rooms: {
+    title: 'Liste des Salles',
+    createRoom: '+ Créer une Salle',
+    createRoomTitle: 'Créer une Salle',
+    roomName: 'Nom de la Salle',
+    roomNameRequired: 'Veuillez entrer un nom pour la salle.',
+    maxPlayers: 'Joueurs max.',
+    create: 'Créer',
+    creating: 'Création...',
+    empty: 'Aucune salle disponible.',
+    refresh: 'Actualiser',
+    statusWaiting: 'En attente',
+    statusPlaying: 'En jeu',
+  },
 };

@@ -48,4 +48,18 @@ export default {
     saveFailed: 'Speichern fehlgeschlagen.',
   },
   common: { save: 'Speichern', cancel: 'Abbrechen', close: 'Schließen', edit: 'Bearbeiten', delete: 'Löschen' },
+  rooms: {
+    title: 'Raumliste',
+    createRoom: '+ Raum erstellen',
+    createRoomTitle: 'Raum erstellen',
+    roomName: 'Raumname',
+    roomNameRequired: 'Bitte gib einen Raumnamen ein.',
+    maxPlayers: 'Max. Spieler',
+    create: 'Erstellen',
+    creating: 'Erstelle...',
+    empty: 'Keine Räume verfügbar.',
+    refresh: 'Aktualisieren',
+    statusWaiting: 'Warten',
+    statusPlaying: 'Spielt',
+  },
 };

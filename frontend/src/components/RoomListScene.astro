@@ -1,0 +1,198 @@
+---
+import { type Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n';
+
+interface Props {
+  apiUrl: string;
+  lang: Locale;
+}
+
+const { apiUrl, lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<div id="scene-rooms" class="relative z-10 w-full flex-1 flex-col items-center overflow-y-auto py-8 px-4">
+  <div class="w-full max-w-lg">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-white font-bold text-lg">{t.rooms.title}</h2>
+      <div class="flex gap-2">
+        <button
+          id="refresh-rooms-btn"
+          class="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-sm transition"
+          title={t.rooms.refresh}
+        >
+          ↻
+        </button>
+        <button
+          id="create-room-btn"
+          class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm transition"
+        >
+          {t.rooms.createRoom}
+        </button>
+      </div>
+    </div>
+    <div id="room-list" class="flex flex-col gap-3">
+      <p id="room-list-empty" class="text-white/40 text-sm text-center py-6">{t.rooms.empty}</p>
+    </div>
+  </div>
+</div>
+
+<!-- Create Room Modal -->
+<div id="create-room-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-6">{t.rooms.createRoomTitle}</h3>
+
+    <div class="mb-5">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.roomName} <span class="text-red-400">*</span></label>
+      <input
+        id="room-name-input"
+        type="text"
+        maxlength="100"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        placeholder={t.rooms.roomName}
+      />
+      <p id="room-name-error" class="text-red-400 text-xs mt-1 hidden">{t.rooms.roomNameRequired}</p>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.maxPlayers}</label>
+      <select
+        id="room-max-players"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+      >
+        {[4, 6, 8, 10, 12, 16].map(n => (
+          <option value={n} selected={n === 8}>{n}</option>
+        ))}
+      </select>
+    </div>
+
+    <div class="flex gap-3">
+      <button id="room-create-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.rooms.create}</button>
+      <button id="room-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{ apiUrl, tRoomsCreating: t.rooms.creating, tRoomsCreate: t.rooms.create, tStatusWaiting: t.rooms.statusWaiting, tStatusPlaying: t.rooms.statusPlaying }} is:inline>
+  const scene = document.getElementById('scene-rooms');
+  const createRoomBtn = document.getElementById('create-room-btn');
+  const createRoomModal = document.getElementById('create-room-modal');
+  const roomNameInput = document.getElementById('room-name-input');
+  const roomNameError = document.getElementById('room-name-error');
+  const roomMaxPlayers = document.getElementById('room-max-players');
+  const roomCreateBtn = document.getElementById('room-create-btn');
+  const roomCancelBtn = document.getElementById('room-cancel-btn');
+  const roomList = document.getElementById('room-list');
+  const roomListEmpty = document.getElementById('room-list-empty');
+  const refreshBtn = document.getElementById('refresh-rooms-btn');
+
+  // Show/hide based on scene events
+  document.addEventListener('game:scene', (e) => {
+    if (!e.detail || e.detail === 'rooms') {
+      scene.classList.remove('hidden');
+      scene.classList.add('flex');
+    } else {
+      scene.classList.add('hidden');
+      scene.classList.remove('flex');
+    }
+  });
+
+  async function loadRooms() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const res = await fetch(`${apiUrl}/api/rooms`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    if (!res?.ok) return;
+    const rooms = await res.json();
+    renderRooms(rooms);
+  }
+
+  function statusLabel(status) {
+    if (status === 'playing') return tStatusPlaying;
+    return tStatusWaiting;
+  }
+
+  function statusColor(status) {
+    if (status === 'playing') return 'text-yellow-400';
+    return 'text-green-400';
+  }
+
+  function renderRooms(rooms) {
+    roomList.querySelectorAll('.room-card').forEach(el => el.remove());
+
+    if (!rooms || rooms.length === 0) {
+      roomListEmpty.classList.remove('hidden');
+      return;
+    }
+    roomListEmpty.classList.add('hidden');
+
+    rooms.forEach(room => {
+      const card = document.createElement('div');
+      card.className = 'room-card flex items-center gap-3 bg-black/40 hover:bg-black/60 rounded-xl px-4 py-3 cursor-pointer transition';
+      card.innerHTML = `
+        <div class="flex-1 min-w-0">
+          <p class="text-white font-semibold truncate">${room.name}</p>
+          <p class="${statusColor(room.status)} text-xs">${statusLabel(room.status)}</p>
+        </div>
+        <div class="text-white/50 text-sm flex-shrink-0">
+          ${room.playerCount} / ${room.maxPlayers}
+        </div>
+      `;
+      card.addEventListener('click', () => {
+        document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+      });
+      roomList.appendChild(card);
+    });
+  }
+
+  refreshBtn.addEventListener('click', loadRooms);
+
+  createRoomBtn.addEventListener('click', () => {
+    roomNameInput.value = '';
+    roomNameError.classList.add('hidden');
+    createRoomModal.classList.remove('hidden');
+    createRoomModal.classList.add('flex');
+  });
+
+  roomCancelBtn.addEventListener('click', () => {
+    createRoomModal.classList.add('hidden');
+    createRoomModal.classList.remove('flex');
+  });
+
+  roomCreateBtn.addEventListener('click', async () => {
+    const name = roomNameInput.value.trim();
+    if (!name) {
+      roomNameError.classList.remove('hidden');
+      return;
+    }
+    roomNameError.classList.add('hidden');
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    roomCreateBtn.disabled = true;
+    roomCreateBtn.textContent = tRoomsCreating;
+
+    const res = await fetch(`${apiUrl}/api/rooms`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ name, maxPlayers: parseInt(roomMaxPlayers.value) }),
+    }).catch(() => null);
+
+    roomCreateBtn.disabled = false;
+    roomCreateBtn.textContent = tRoomsCreate;
+
+    if (res?.ok) {
+      createRoomModal.classList.add('hidden');
+      createRoomModal.classList.remove('flex');
+      loadRooms();
+    }
+  });
+
+  // Initial load
+  loadRooms();
+</script>

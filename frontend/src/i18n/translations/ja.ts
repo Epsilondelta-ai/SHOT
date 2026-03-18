@@ -48,4 +48,18 @@ export default {
     saveFailed: '保存に失敗しました。',
   },
   common: { save: '保存', cancel: 'キャンセル', close: '閉じる', edit: '編集', delete: '削除' },
+  rooms: {
+    title: 'ルーム一覧',
+    createRoom: '+ ルーム作成',
+    createRoomTitle: 'ルーム作成',
+    roomName: 'ルーム名',
+    roomNameRequired: 'ルーム名を入力してください。',
+    maxPlayers: '最大人数',
+    create: '作成',
+    creating: '作成中...',
+    empty: '現在ルームがありません。',
+    refresh: '更新',
+    statusWaiting: '待機中',
+    statusPlaying: 'ゲーム中',
+  },
 };

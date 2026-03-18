@@ -48,4 +48,18 @@ export default {
     saveFailed: 'Error al guardar.',
   },
   common: { save: 'Guardar', cancel: 'Cancelar', close: 'Cerrar', edit: 'Editar', delete: 'Eliminar' },
+  rooms: {
+    title: 'Lista de Salas',
+    createRoom: '+ Crear Sala',
+    createRoomTitle: 'Crear Sala',
+    roomName: 'Nombre de la Sala',
+    roomNameRequired: 'Por favor ingresa un nombre para la sala.',
+    maxPlayers: 'Máx. Jugadores',
+    create: 'Crear',
+    creating: 'Creando...',
+    empty: 'No hay salas disponibles.',
+    refresh: 'Actualizar',
+    statusWaiting: 'Esperando',
+    statusPlaying: 'Jugando',
+  },
 };

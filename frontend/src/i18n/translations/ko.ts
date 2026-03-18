@@ -48,4 +48,18 @@ export default {
     saveFailed: '저장에 실패했습니다.',
   },
   common: { save: '저장', cancel: '취소', close: '닫기', edit: '수정', delete: '삭제' },
+  rooms: {
+    title: '방 목록',
+    createRoom: '+ 방 만들기',
+    createRoomTitle: '방 만들기',
+    roomName: '방 이름',
+    roomNameRequired: '방 이름을 입력해주세요.',
+    maxPlayers: '최대 인원',
+    create: '만들기',
+    creating: '생성 중...',
+    empty: '현재 방이 없습니다.',
+    refresh: '새로고침',
+    statusWaiting: '대기 중',
+    statusPlaying: '게임 중',
+  },
 };
