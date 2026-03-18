@@ -3,12 +3,10 @@ package ws
 import (
 	"encoding/json"
 	"sync"
-
-	fws "github.com/gofiber/contrib/websocket"
 )
 
 type Client struct {
-	Conn      *fws.Conn
+	Ch        chan []byte
 	UserID    string
 	Username  string
 	AvatarURL string
@@ -52,19 +50,38 @@ func (h *Hub) Unregister(c *Client) bool {
 
 func (h *Hub) Broadcast(roomID string, msg Message) {
 	data, _ := json.Marshal(msg)
-	h.mu.RLock()
-	defer h.mu.RUnlock()
-	for c := range h.rooms[roomID] {
-		c.Conn.WriteMessage(1, data)
-	}
+	h.send(roomID, data)
 }
 
 func (h *Hub) BroadcastJSON(roomID string, v any) {
 	data, _ := json.Marshal(v)
+	h.send(roomID, data)
+}
+
+func (h *Hub) send(roomID string, data []byte) {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 	for c := range h.rooms[roomID] {
-		c.Conn.WriteMessage(1, data)
+		select {
+		case c.Ch <- data:
+		default:
+		}
+	}
+}
+
+// CloseClient closes the SSE channel for a user, triggering their cleanup defer.
+func (h *Hub) CloseClient(roomID, userID string) {
+	h.mu.RLock()
+	var target *Client
+	for c := range h.rooms[roomID] {
+		if c.UserID == userID {
+			target = c
+			break
+		}
+	}
+	h.mu.RUnlock()
+	if target != nil {
+		close(target.Ch)
 	}
 }
 
@@ -80,8 +97,11 @@ func (h *Hub) KickClient(roomID, userID string) {
 	}
 	h.mu.RUnlock()
 	if target != nil {
-		target.Conn.WriteMessage(1, data)
-		target.Conn.Close()
+		select {
+		case target.Ch <- data:
+		default:
+		}
+		close(target.Ch)
 	}
 }
 
@@ -94,6 +114,10 @@ func (h *Hub) BroadcastRoomClosed(roomID string) {
 	}
 	h.mu.RUnlock()
 	for _, c := range clients {
-		c.Conn.WriteMessage(1, data)
+		select {
+		case c.Ch <- data:
+		default:
+		}
+		close(c.Ch)
 	}
 }

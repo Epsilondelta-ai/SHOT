@@ -194,7 +194,7 @@ const t = useTranslations(lang);
   let currentRoom = null;
   let currentUserId = null;
   let currentMembers = [];
-  let socket = null;
+  let es = null;
 
   async function getMyId() {
     if (currentUserId) return currentUserId;
@@ -497,13 +497,12 @@ const t = useTranslations(lang);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
-  function connectWS(room) {
+  function connectSSE(room) {
     const token = getToken();
     if (!token) return;
-    const wsBase = apiUrl.replace(/^http/, 'ws');
-    socket = new WebSocket(`${wsBase}/api/rooms/${room.id}/ws?token=${token}`);
+    es = new EventSource(`${apiUrl}/api/rooms/${room.id}/sse?token=${token}`);
 
-    socket.addEventListener('message', (e) => {
+    es.addEventListener('message', (e) => {
       try {
         const msg = JSON.parse(e.data);
         if (msg.type === 'chat') {
@@ -524,18 +523,32 @@ const t = useTranslations(lang);
       } catch {}
     });
 
-    socket.addEventListener('close', () => { socket = null; });
+    es.addEventListener('error', () => {
+      // EventSource auto-reconnects; close only if we intentionally left
+    });
   }
 
-  function sendChat() {
+  async function sendChat() {
     const msg = chatInput.value.trim();
-    if (!msg || !socket || socket.readyState !== WebSocket.OPEN) return;
-    socket.send(JSON.stringify({ type: 'chat', message: msg }));
+    if (!msg) return;
+    const token = getToken();
+    await fetch(`${apiUrl}/api/rooms/${currentRoom.id}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ message: msg }),
+    }).catch(() => null);
     chatInput.value = '';
   }
 
-  function leaveRoom() {
-    if (socket) { socket.close(); socket = null; }
+  async function leaveRoom() {
+    if (currentRoom) {
+      const token = getToken();
+      await fetch(`${apiUrl}/api/rooms/${currentRoom.id}/leave`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => null);
+    }
+    if (es) { es.close(); es = null; }
     currentRoom = null;
     currentMembers = [];
     chatMessages.innerHTML = '';
@@ -550,7 +563,7 @@ const t = useTranslations(lang);
   document.addEventListener('room:join', async (e) => {
     const room = e.detail;
     if (!room) return;
-    if (socket) { socket.close(); socket = null; }
+    if (es) { es.close(); es = null; }
     chatMessages.innerHTML = '';
     currentRoom = room;
     currentMembers = [];
@@ -565,14 +578,21 @@ const t = useTranslations(lang);
 
     await getMyId();
     await joinAndLoad(room);
-    connectWS(room);
+    connectSSE(room);
   });
 
   document.addEventListener('game:scene', (e) => {
     if (e.detail !== 'gameroom') {
-      if (socket) { socket.close(); socket = null; }
+      if (es) { es.close(); es = null; }
       scene.classList.add('hidden');
       scene.classList.remove('flex');
+    }
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if (currentRoom) {
+      const token = getToken();
+      navigator.sendBeacon(`${apiUrl}/api/rooms/${currentRoom.id}/leave?token=${token}`);
     }
   });
 

@@ -384,3 +384,54 @@ func KickFromRoom(c *fiber.Ctx) error {
 	broadcastRoomUpdate(roomID)
 	return c.JSON(fiber.Map{"ok": true})
 }
+
+// LeaveRoom POST /api/rooms/:id/leave
+func LeaveRoom(c *fiber.Ctx) error {
+	// Support both Bearer token (normal leave) and query param token (sendBeacon on unload)
+	var userID string
+	var err error
+	if tokenStr := c.Query("token"); tokenStr != "" {
+		userID, err = parseUserIDFromToken(tokenStr)
+	} else {
+		userID, err = getUserIDFromToken(c)
+	}
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	roomID := c.Params("id")
+	ws.H.CloseClient(roomID, userID)
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// SendChat POST /api/rooms/:id/chat
+func SendChat(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	roomID := c.Params("id")
+
+	var member models.RoomMember
+	if err := db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).First(&member).Error; err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "not in room"})
+	}
+
+	var body struct {
+		Message string `json:"message"`
+	}
+	if err := c.BodyParser(&body); err != nil || body.Message == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid body"})
+	}
+
+	var user models.User
+	db.DB.First(&user, "id = ?", userID)
+
+	ws.H.BroadcastJSON(roomID, map[string]any{
+		"type":      "chat",
+		"userId":    userID,
+		"username":  user.Username,
+		"avatarUrl": user.AvatarURL,
+		"message":   body.Message,
+	})
+	return c.JSON(fiber.Map{"ok": true})
+}

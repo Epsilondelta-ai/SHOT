@@ -1,17 +1,17 @@
 package handlers
 
 import (
-	"encoding/json"
-	"log"
+	"bufio"
+	"fmt"
 	"time"
-
-	fws "github.com/gofiber/contrib/websocket"
-	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/models"
 	"github.com/epsilondelta/shot/ws"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/gofiber/fiber/v2"
 )
+
 
 func parseUserIDFromToken(tokenStr string) (string, error) {
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
@@ -91,101 +91,114 @@ func broadcastRoomUpdate(roomID string) {
 	if err := db.DB.First(&room, "id = ?", roomID).Error; err != nil {
 		return
 	}
-	ws.H.BroadcastJSON(roomID, RoomUpdateMsg{
+	msg := RoomUpdateMsg{
 		Type:       "room_update",
 		HostID:     room.HostID,
 		Name:       room.Name,
 		MaxPlayers: room.MaxPlayers,
 		IsPrivate:  room.IsPrivate,
 		Members:    buildMemberInfoList(roomID),
-	})
+	}
+	ws.H.BroadcastJSON(roomID, msg)
 }
 
 func transferHostToNext(roomID string) {
-	var nextMember models.RoomMember
-	result := db.DB.Where("room_id = ? AND bot_id = '' AND is_spectator = false", roomID).Order("joined_at ASC").First(&nextMember)
-	if result.Error != nil {
+	var candidates []models.RoomMember
+	db.DB.Where("room_id = ? AND bot_id = '' AND is_spectator = false", roomID).
+		Order("joined_at ASC").Limit(1).Find(&candidates)
+	if len(candidates) == 0 {
 		return
 	}
-	db.DB.Model(&models.Room{}).Where("id = ?", roomID).Update("host_id", nextMember.UserID)
+	db.DB.Model(&models.Room{}).Where("id = ?", roomID).Update("host_id", candidates[0].UserID)
 }
 
-// RoomWS GET /api/rooms/:id/ws
-func RoomWS(c *fws.Conn) {
-	roomID := c.Params("id")
+// RoomSSE GET /api/rooms/:id/sse
+func RoomSSE(c *fiber.Ctx) error {
 	tokenStr := c.Query("token")
-
+	if tokenStr == "" {
+		return c.Status(fiber.StatusUnauthorized).SendString("unauthorized")
+	}
 	userID, err := parseUserIDFromToken(tokenStr)
 	if err != nil {
-		c.Close()
-		return
+		return c.Status(fiber.StatusUnauthorized).SendString("unauthorized")
 	}
 
-	var user models.User
-	if result := db.DB.First(&user, "id = ?", userID); result.Error != nil {
-		c.Close()
-		return
-	}
-
+	roomID := c.Params("id")
 	var room models.Room
-	if result := db.DB.First(&room, "id = ?", roomID); result.Error != nil {
-		c.Close()
-		return
+	if err := db.DB.First(&room, "id = ?", roomID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).SendString("room not found")
 	}
+
+	// Resolve username and avatar
+	var user models.User
+	db.DB.First(&user, "id = ?", userID)
 
 	client := &ws.Client{
-		Conn:      c,
+		Ch:        make(chan []byte, 64),
 		UserID:    userID,
 		Username:  user.Username,
 		AvatarURL: user.AvatarURL,
 		RoomID:    roomID,
 	}
-
 	ws.H.Register(client)
-	ws.H.Broadcast(roomID, ws.Message{Type: "join", UserID: userID, Username: user.Username})
+
+	// Broadcast join
+	ws.H.Broadcast(roomID, ws.Message{
+		Type:      "join",
+		UserID:    userID,
+		Username:  user.Username,
+		AvatarURL: user.AvatarURL,
+	})
 	broadcastRoomUpdate(roomID)
 
-	defer func() {
-		empty := ws.H.Unregister(client)
-		if empty {
-			ws.H.BroadcastRoomClosed(roomID)
-			db.DB.Where("room_id = ?", roomID).Delete(&models.RoomMember{})
-			db.DB.Delete(&models.Room{}, "id = ?", roomID)
-		} else {
-			ws.H.Broadcast(roomID, ws.Message{Type: "leave", UserID: userID, Username: user.Username})
-			db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Delete(&models.RoomMember{})
-			// Refresh room to check if this user was host
-			var currentRoom models.Room
-			if err := db.DB.First(&currentRoom, "id = ?", roomID).Error; err == nil && currentRoom.HostID == userID {
-				transferHostToNext(roomID)
-			}
-			broadcastRoomUpdate(roomID)
-		}
-	}()
+	c.Set("Content-Type", "text/event-stream")
+	c.Set("Cache-Control", "no-cache")
+	c.Set("Connection", "keep-alive")
+	c.Set("X-Accel-Buffering", "no")
 
-	type incomingMsg struct {
-		Type    string `json:"type"`
-		Message string `json:"message"`
-	}
-
-	for {
-		_, data, err := c.ReadMessage()
-		if err != nil {
-			break
-		}
-		var msg incomingMsg
-		if err := json.Unmarshal(data, &msg); err != nil {
-			continue
-		}
-		if msg.Type == "chat" && msg.Message != "" {
+	c.Context().SetBodyStreamWriter(func(w *bufio.Writer) {
+		defer func() {
+			empty := ws.H.Unregister(client)
 			ws.H.Broadcast(roomID, ws.Message{
-				Type:      "chat",
-				UserID:    userID,
-				Username:  user.Username,
-				AvatarURL: user.AvatarURL,
-				Message:   msg.Message,
+				Type:     "leave",
+				UserID:   userID,
+				Username: user.Username,
 			})
+			db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Delete(&models.RoomMember{})
+			if empty {
+				ws.H.BroadcastRoomClosed(roomID)
+				db.DB.Where("room_id = ?", roomID).Delete(&models.RoomMember{})
+				db.DB.Delete(&models.Room{}, "id = ?", roomID)
+			} else {
+				var currentRoom models.Room
+				db.DB.First(&currentRoom, "id = ?", roomID)
+				if currentRoom.HostID == userID {
+					transferHostToNext(roomID)
+				}
+				broadcastRoomUpdate(roomID)
+			}
+		}()
+
+		ticker := time.NewTicker(15 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case data, ok := <-client.Ch:
+				if !ok {
+					return
+				}
+				fmt.Fprintf(w, "data: %s\n\n", data)
+				if err := w.Flush(); err != nil {
+					return
+				}
+			case <-ticker.C:
+				fmt.Fprintf(w, ": ping\n\n")
+				if err := w.Flush(); err != nil {
+					return
+				}
+			}
 		}
-	}
-	log.Printf("WS disconnected: user=%s room=%s", userID, roomID)
+	})
+
+	return nil
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/handlers"
-	fws "github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -47,13 +46,9 @@ func main() {
 	api.Post("/rooms/:id/transfer-host", handlers.TransferHost)
 	api.Post("/rooms/:id/kick", handlers.KickFromRoom)
 	api.Patch("/rooms/:id", handlers.UpdateRoom)
-	api.Use("/rooms/:id/ws", func(c *fiber.Ctx) error {
-		if fws.IsWebSocketUpgrade(c) {
-			return c.Next()
-		}
-		return fiber.ErrUpgradeRequired
-	})
-	api.Get("/rooms/:id/ws", fws.New(handlers.RoomWS))
+	api.Get("/rooms/:id/sse", handlers.RoomSSE)
+	api.Post("/rooms/:id/leave", handlers.LeaveRoom)
+	api.Post("/rooms/:id/chat", handlers.SendChat)
 	api.Get("/bots", handlers.ListBots)
 	api.Post("/bots", handlers.CreateBot)
 	api.Patch("/bots/:id", handlers.UpdateBot)
