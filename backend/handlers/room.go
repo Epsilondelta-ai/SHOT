@@ -135,7 +135,8 @@ func JoinRoom(c *fiber.Ctx) error {
 
 	// Check if already a member (e.g. room creator rejoining their own room)
 	var existing models.RoomMember
-	if result := db.DB.First(&existing, "room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID); result.Error == nil {
+	db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Limit(1).Find(&existing)
+	if existing.RoomID != "" {
 		return c.JSON(fiber.Map{"ok": true})
 	}
 
