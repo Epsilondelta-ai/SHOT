@@ -5,6 +5,7 @@ import HeroBackground from '../../components/HeroBackground.astro';
 import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
 import { version } from '../../../package.json';
+import loadingImg from '../../assets/loading.webp';
 
 const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -18,6 +19,31 @@ const descLines = t.hero.description.split('\n');
 ---
 
 <BaseLayout title="SHOT!" bodyClass="bg-gray-950 min-h-screen flex flex-col">
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="fixed inset-0 z-50 hidden flex-col items-center justify-center bg-gray-950/95">
+    <img src={loadingImg.src} alt="Loading" class="loading-float w-64 h-64 object-contain mb-10" />
+    <div class="w-64 h-3 bg-gray-800 rounded-full overflow-hidden">
+      <div id="loading-bar" class="h-full bg-amber-400 rounded-full w-0"></div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    .loading-float {
+      animation: float 2s ease-in-out infinite;
+    }
+    @keyframes progress-fill {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+    .progress-fill {
+      animation: progress-fill 1s ease-in-out forwards;
+    }
+  </style>
+
   <SiteHeader lang={lang} path="/" />
 
   <!-- Hero -->
@@ -108,7 +134,17 @@ const descLines = t.hero.description.split('\n');
       window.location.href = '/' + lang + '/login';
       return;
     }
-    window.location.href = '/' + lang + '/game';
+    const screen = document.getElementById('loading-screen');
+    const bar = document.getElementById('loading-bar');
+    screen.classList.remove('hidden');
+    screen.classList.add('flex');
+    // Trigger progress bar animation
+    requestAnimationFrame(() => {
+      bar.classList.add('progress-fill');
+    });
+    setTimeout(() => {
+      window.location.href = '/' + lang + '/game';
+    }, 1000);
   });
 </script>
 
