@@ -150,7 +150,7 @@ func JoinRoom(c *fiber.Ctx) error {
 
 	member := models.RoomMember{RoomID: roomID, UserID: userID, JoinedAt: time.Now()}
 	db.DB.Create(&member)
-	db.DB.Model(&room).UpdateColumn("player_count", room.PlayerCount+1)
+	syncRoomCounts(roomID)
 
 	return c.JSON(fiber.Map{"ok": true})
 }
@@ -249,11 +249,6 @@ func InviteBot(c *fiber.Ctx) error {
 		JoinedAt: time.Now(),
 	}
 	db.DB.Create(&botMember)
-	db.DB.Model(&models.Room{}).Where("id = ?", roomID).UpdateColumns(map[string]any{
-		"player_count": gorm.Expr("player_count + 1"),
-		"bot_count":    gorm.Expr("bot_count + 1"),
-	})
-
 	broadcastRoomUpdate(roomID)
 	return c.JSON(fiber.Map{"ok": true})
 }

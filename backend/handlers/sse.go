@@ -86,7 +86,20 @@ func buildMemberInfoList(roomID string) []MemberInfo {
 	return result
 }
 
+func syncRoomCounts(roomID string) {
+	var playerCount, spectatorCount, botCount int64
+	db.DB.Model(&models.RoomMember{}).Where("room_id = ? AND bot_id = '' AND is_spectator = false", roomID).Count(&playerCount)
+	db.DB.Model(&models.RoomMember{}).Where("room_id = ? AND bot_id = '' AND is_spectator = true", roomID).Count(&spectatorCount)
+	db.DB.Model(&models.RoomMember{}).Where("room_id = ? AND bot_id != ''", roomID).Count(&botCount)
+	db.DB.Model(&models.Room{}).Where("id = ?", roomID).Updates(map[string]any{
+		"player_count":    playerCount,
+		"spectator_count": spectatorCount,
+		"bot_count":       botCount,
+	})
+}
+
 func broadcastRoomUpdate(roomID string) {
+	syncRoomCounts(roomID)
 	var room models.Room
 	if err := db.DB.First(&room, "id = ?", roomID).Error; err != nil {
 		return
