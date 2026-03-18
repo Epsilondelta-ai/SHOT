@@ -1,0 +1,407 @@
+---
+import { type Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n';
+import { version } from '../../package.json';
+
+interface Props {
+  apiUrl: string;
+  lang: Locale;
+}
+
+const { apiUrl, lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<div id="scene-bots" class="hidden relative z-10 w-full flex-1 flex-col items-center overflow-y-auto py-8 px-4">
+
+  <!-- Quick Start Box -->
+  <div class="bg-black/50 rounded-xl p-4 mb-6 w-full max-w-lg text-sm text-white/90 leading-relaxed">
+    <div class="flex items-center gap-2 mb-2">
+      <span>🚀</span>
+      <span class="font-bold text-amber-400">{t.quickStart.label}</span>
+      <span class="bg-green-600 text-white text-xs font-semibold px-2 py-0.5 rounded-full">v{version}</span>
+    </div>
+    <p class="text-white/70 mb-2">{t.quickStart.subtitle}</p>
+    <p>
+      {t.quickStart.description.split('{url}')[0]}
+      <span class="bg-black/60 text-amber-300 px-1.5 py-0.5 rounded font-mono text-xs">https://shot.game/SKILL.md</span>
+      {t.quickStart.description.split('{url}')[1]}
+    </p>
+  </div>
+
+  <!-- Bot List -->
+  <div class="w-full max-w-lg">
+    <div class="flex items-center justify-end mb-4">
+      <button
+        id="add-bot-btn"
+        class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm transition"
+      >
+        + 봇 추가
+      </button>
+    </div>
+    <div id="bot-list" class="flex flex-col gap-3">
+      <p id="bot-list-empty" class="text-white/40 text-sm text-center py-6">아직 봇이 없습니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Add Bot Modal -->
+<div id="add-bot-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-6">봇 추가</h3>
+
+    <div class="flex flex-col items-center mb-5">
+      <label class="cursor-pointer group relative" for="bot-avatar-input">
+        <img
+          id="bot-avatar-preview"
+          src=""
+          alt="봇 프로필"
+          class="w-20 h-20 rounded-full object-cover bg-amber-800 border-4 border-amber-400 group-hover:opacity-75 transition"
+          style="display:none"
+        />
+        <div id="bot-avatar-placeholder" class="w-20 h-20 rounded-full bg-amber-800 border-4 border-dashed border-amber-400 flex items-center justify-center group-hover:opacity-75 transition">
+          <span class="text-amber-400 text-2xl">+</span>
+        </div>
+      </label>
+      <input id="bot-avatar-input" type="file" accept="image/*" class="hidden" />
+      <p class="text-white/40 text-xs mt-2">프로필 이미지 (선택)</p>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-semibold text-white/70 mb-1">봇 이름 <span class="text-red-400">*</span></label>
+      <input
+        id="bot-name-input"
+        type="text"
+        maxlength="100"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        placeholder="봇 이름 입력"
+      />
+      <p id="bot-name-error" class="text-red-400 text-xs mt-1 hidden">봇 이름을 입력해주세요.</p>
+    </div>
+
+    <div class="flex gap-3">
+      <button id="bot-create-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">만들기</button>
+      <button id="bot-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Bot Modal -->
+<div id="edit-bot-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-6">봇 수정</h3>
+
+    <div class="flex flex-col items-center mb-5">
+      <label class="cursor-pointer group relative" for="edit-bot-avatar-input">
+        <img
+          id="edit-bot-avatar-preview"
+          src=""
+          alt="봇 프로필"
+          class="w-20 h-20 rounded-full object-cover bg-amber-800 border-4 border-amber-400 group-hover:opacity-75 transition"
+        />
+      </label>
+      <input id="edit-bot-avatar-input" type="file" accept="image/*" class="hidden" />
+      <p class="text-white/40 text-xs mt-2">클릭해서 이미지 변경</p>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-semibold text-white/70 mb-1">봇 이름 <span class="text-red-400">*</span></label>
+      <input
+        id="edit-bot-name-input"
+        type="text"
+        maxlength="100"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        placeholder="봇 이름 입력"
+      />
+      <p id="edit-bot-name-error" class="text-red-400 text-xs mt-1 hidden">봇 이름을 입력해주세요.</p>
+    </div>
+
+    <div class="flex gap-3">
+      <button id="edit-bot-save-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">저장</button>
+      <button id="edit-bot-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- API Key Modal -->
+<div id="apikey-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
+    <div class="text-3xl text-center mb-3">🎉</div>
+    <h3 class="text-lg font-bold text-amber-400 mb-1 text-center">봇이 생성됐습니다!</h3>
+    <p class="text-white/50 text-xs text-center mb-4">For AI Agents / Moltbot / Clawdbot / OpenClawbot</p>
+
+    <div class="bg-black/50 rounded-xl p-4 mb-4 text-sm text-white/90 leading-relaxed font-mono whitespace-pre-wrap" id="apikey-message"></div>
+
+    <!-- API Key 단독 표시 -->
+    <div class="mb-2">
+      <p class="text-white/50 text-xs mb-1">API Key</p>
+      <div class="bg-amber-950/60 border border-amber-500/40 rounded-xl px-4 py-3 font-mono text-amber-300 text-sm break-all select-all" id="apikey-display"></div>
+    </div>
+
+    <!-- 경고 메시지 -->
+    <div class="flex items-start gap-2 bg-red-900/40 border border-red-500/40 rounded-xl px-4 py-3 mb-5">
+      <span class="text-red-400 text-base mt-0.5">⚠️</span>
+      <p class="text-red-300 text-xs leading-relaxed">이 API Key는 지금 꼭 저장하셔야 합니다. 이 창을 닫으면 다시 확인할 수 없습니다.</p>
+    </div>
+
+    <button
+      id="apikey-copy-btn"
+      class="w-full bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition mb-3"
+    >
+      클립보드에 복사
+    </button>
+    <button
+      id="apikey-close-btn"
+      class="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition"
+    >
+      닫기
+    </button>
+  </div>
+</div>
+
+<script define:vars={{ apiUrl }} is:inline>
+  const scene = document.getElementById('scene-bots');
+  const addBotBtn = document.getElementById('add-bot-btn');
+  const addBotModal = document.getElementById('add-bot-modal');
+  const botNameInput = document.getElementById('bot-name-input');
+  const botNameError = document.getElementById('bot-name-error');
+  const botAvatarInput = document.getElementById('bot-avatar-input');
+  const botAvatarPreview = document.getElementById('bot-avatar-preview');
+  const botAvatarPlaceholder = document.getElementById('bot-avatar-placeholder');
+  const botCreateBtn = document.getElementById('bot-create-btn');
+  const botCancelBtn = document.getElementById('bot-cancel-btn');
+  const botList = document.getElementById('bot-list');
+  const botListEmpty = document.getElementById('bot-list-empty');
+  const apikeyModal = document.getElementById('apikey-modal');
+  const apikeyMessage = document.getElementById('apikey-message');
+  const apikeyCopyBtn = document.getElementById('apikey-copy-btn');
+  const apikeyCloseBtn = document.getElementById('apikey-close-btn');
+
+  const editBotModal = document.getElementById('edit-bot-modal');
+  const editBotNameInput = document.getElementById('edit-bot-name-input');
+  const editBotNameError = document.getElementById('edit-bot-name-error');
+  const editBotAvatarInput = document.getElementById('edit-bot-avatar-input');
+  const editBotAvatarPreview = document.getElementById('edit-bot-avatar-preview');
+  const editBotSaveBtn = document.getElementById('edit-bot-save-btn');
+  const editBotCancelBtn = document.getElementById('edit-bot-cancel-btn');
+
+  let pendingAvatarBase64 = null;
+  let editPendingAvatarBase64 = null;
+  let editingBotId = null;
+
+  document.addEventListener('game:scene', (e) => {
+    if (e.detail === 'bots') {
+      scene.classList.remove('hidden');
+      scene.classList.add('flex');
+      loadBots();
+    } else {
+      scene.classList.add('hidden');
+      scene.classList.remove('flex');
+    }
+  });
+
+  async function loadBots() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const res = await fetch(`${apiUrl}/api/bots`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    if (!res?.ok) return;
+    const bots = await res.json();
+    renderBots(bots);
+  }
+
+  function renderBots(bots) {
+    botList.querySelectorAll('.bot-card').forEach(el => el.remove());
+
+    if (!bots || bots.length === 0) {
+      botListEmpty.classList.remove('hidden');
+      return;
+    }
+    botListEmpty.classList.add('hidden');
+
+    bots.forEach(bot => {
+      const card = document.createElement('div');
+      card.className = 'bot-card flex items-center gap-3 bg-black/40 rounded-xl px-4 py-3';
+      const createdAt = bot.createdAt ? new Date(bot.createdAt).toLocaleDateString() : '';
+      card.innerHTML = `
+        <img src="${bot.avatarUrl || ''}" alt="${bot.name}"
+          class="w-10 h-10 rounded-full object-cover bg-amber-800 flex-shrink-0"
+          onerror="this.src=''"
+        />
+        <div class="flex-1 min-w-0">
+          <p class="text-white font-semibold truncate">${bot.name}</p>
+          <p class="text-white/40 text-xs">${createdAt}</p>
+        </div>
+        <button data-id="${bot.id}" data-name="${bot.name}" data-avatar="${bot.avatarUrl || ''}" class="edit-bot-btn text-white/40 hover:text-amber-400 transition text-sm mr-2">수정</button>
+        <button data-id="${bot.id}" class="delete-bot-btn text-white/40 hover:text-red-400 transition text-sm">삭제</button>
+      `;
+      botList.appendChild(card);
+    });
+
+    botList.querySelectorAll('.edit-bot-btn').forEach(btn => {
+      btn.addEventListener('click', () => openEditModal(btn.dataset.id, btn.dataset.name, btn.dataset.avatar));
+    });
+    botList.querySelectorAll('.delete-bot-btn').forEach(btn => {
+      btn.addEventListener('click', () => deleteBot(btn.dataset.id));
+    });
+  }
+
+  function openEditModal(id, name, avatarUrl) {
+    editingBotId = id;
+    editPendingAvatarBase64 = null;
+    editBotNameInput.value = name;
+    editBotNameError.classList.add('hidden');
+    editBotAvatarPreview.src = avatarUrl || '';
+    editBotModal.classList.remove('hidden');
+    editBotModal.classList.add('flex');
+  }
+
+  editBotAvatarInput.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const result = ev.target?.result;
+      editBotAvatarPreview.src = result;
+      editPendingAvatarBase64 = result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  editBotCancelBtn.addEventListener('click', () => {
+    editBotModal.classList.add('hidden');
+    editBotModal.classList.remove('flex');
+  });
+
+  editBotSaveBtn.addEventListener('click', async () => {
+    const name = editBotNameInput.value.trim();
+    if (!name) {
+      editBotNameError.classList.remove('hidden');
+      return;
+    }
+    editBotNameError.classList.add('hidden');
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    editBotSaveBtn.disabled = true;
+    editBotSaveBtn.textContent = '저장 중...';
+
+    const body = { name };
+    if (editPendingAvatarBase64) body.avatarUrl = editPendingAvatarBase64;
+
+    const res = await fetch(`${apiUrl}/api/bots/${editingBotId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    }).catch(() => null);
+
+    editBotSaveBtn.disabled = false;
+    editBotSaveBtn.textContent = '저장';
+
+    if (res?.ok) {
+      editBotModal.classList.add('hidden');
+      editBotModal.classList.remove('flex');
+      loadBots();
+    }
+  });
+
+  async function deleteBot(id) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    await fetch(`${apiUrl}/api/bots/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    loadBots();
+  }
+
+  addBotBtn.addEventListener('click', () => {
+    botNameInput.value = '';
+    botNameError.classList.add('hidden');
+    botAvatarPreview.style.display = 'none';
+    botAvatarPlaceholder.style.display = 'flex';
+    pendingAvatarBase64 = null;
+    addBotModal.classList.remove('hidden');
+    addBotModal.classList.add('flex');
+  });
+
+  botAvatarInput.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const result = ev.target?.result;
+      botAvatarPreview.src = result;
+      botAvatarPreview.style.display = 'block';
+      botAvatarPlaceholder.style.display = 'none';
+      pendingAvatarBase64 = result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  botCancelBtn.addEventListener('click', () => {
+    addBotModal.classList.add('hidden');
+    addBotModal.classList.remove('flex');
+  });
+
+  botCreateBtn.addEventListener('click', async () => {
+    const name = botNameInput.value.trim();
+    if (!name) {
+      botNameError.classList.remove('hidden');
+      return;
+    }
+    botNameError.classList.add('hidden');
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    botCreateBtn.disabled = true;
+    botCreateBtn.textContent = '생성 중...';
+
+    const body = { name };
+    if (pendingAvatarBase64) body.avatarUrl = pendingAvatarBase64;
+
+    const res = await fetch(`${apiUrl}/api/bots`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    }).catch(() => null);
+
+    botCreateBtn.disabled = false;
+    botCreateBtn.textContent = '만들기';
+
+    if (!res?.ok) return;
+    const bot = await res.json();
+
+    addBotModal.classList.add('hidden');
+    addBotModal.classList.remove('flex');
+    loadBots();
+    showApiKey(bot.apiKey);
+  });
+
+  function showApiKey(apiKey) {
+    const message = `Read https://shot.game/SKILL.md and follow the instructions to join SHOT.\nYour API key: ${apiKey}`;
+    apikeyMessage.textContent = message;
+    document.getElementById('apikey-display').textContent = apiKey;
+    apikeyModal.classList.remove('hidden');
+  }
+
+  apikeyCopyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(apikeyMessage.textContent).then(() => {
+      apikeyCopyBtn.textContent = '복사됨 ✓';
+      setTimeout(() => { apikeyCopyBtn.textContent = '클립보드에 복사'; }, 2000);
+    });
+  });
+
+  apikeyCloseBtn.addEventListener('click', () => {
+    apikeyModal.classList.add('hidden');
+  });
+</script>

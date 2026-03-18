@@ -27,7 +27,7 @@ func Connect() error {
 		return err
 	}
 
-	return DB.AutoMigrate(&models.User{})
+	return DB.AutoMigrate(&models.User{}, &models.Bot{})
 }
 
 func getEnv(key, fallback string) string {

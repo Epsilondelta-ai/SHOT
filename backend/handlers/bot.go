@@ -1,0 +1,158 @@
+package handlers
+
+import (
+	"crypto/rand"
+	"encoding/hex"
+
+	"github.com/epsilondelta/shot/db"
+	"github.com/epsilondelta/shot/models"
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
+)
+
+func getUserIDFromToken(c *fiber.Ctx) (string, error) {
+	authHeader := c.Get("Authorization")
+	if len(authHeader) < 8 || authHeader[:7] != "Bearer " {
+		return "", fiber.ErrUnauthorized
+	}
+	tokenStr := authHeader[7:]
+	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+		return getJWTSecret(), nil
+	})
+	if err != nil || !token.Valid {
+		return "", fiber.ErrUnauthorized
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return "", fiber.ErrUnauthorized
+	}
+	userID, _ := claims["sub"].(string)
+	return userID, nil
+}
+
+func generateAPIKey() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return "mr_" + hex.EncodeToString(b), nil
+}
+
+// ListBots GET /api/bots
+func ListBots(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	var bots []models.Bot
+	db.DB.Where("user_id = ?", userID).Order("created_at desc").Find(&bots)
+
+	result := make([]fiber.Map, len(bots))
+	for i, bot := range bots {
+		result[i] = fiber.Map{
+			"id":        bot.ID,
+			"name":      bot.Name,
+			"avatarUrl": bot.AvatarURL,
+			"createdAt": bot.CreatedAt,
+		}
+	}
+	return c.JSON(result)
+}
+
+// CreateBot POST /api/bots
+func CreateBot(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	var body struct {
+		Name      string `json:"name"`
+		AvatarURL string `json:"avatarUrl"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+	}
+	if body.Name == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "name is required"})
+	}
+
+	apiKey, err := generateAPIKey()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate api key"})
+	}
+
+	bot := models.Bot{
+		UserID:    userID,
+		Name:      body.Name,
+		AvatarURL: body.AvatarURL,
+		APIKey:    apiKey,
+	}
+	if result := db.DB.Create(&bot); result.Error != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create bot"})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"id":        bot.ID,
+		"name":      bot.Name,
+		"avatarUrl": bot.AvatarURL,
+		"apiKey":    bot.APIKey,
+		"createdAt": bot.CreatedAt,
+	})
+}
+
+// UpdateBot PATCH /api/bots/:id
+func UpdateBot(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	botID := c.Params("id")
+	var bot models.Bot
+	if result := db.DB.Where("id = ? AND user_id = ?", botID, userID).First(&bot); result.Error != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "bot not found"})
+	}
+
+	var body struct {
+		Name      *string `json:"name"`
+		AvatarURL *string `json:"avatarUrl"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+	}
+
+	updates := map[string]any{}
+	if body.Name != nil && *body.Name != "" {
+		updates["name"] = *body.Name
+	}
+	if body.AvatarURL != nil {
+		updates["avatar_url"] = *body.AvatarURL
+	}
+	if len(updates) > 0 {
+		db.DB.Model(&bot).Updates(updates)
+	}
+
+	return c.JSON(fiber.Map{
+		"id":        bot.ID,
+		"name":      bot.Name,
+		"avatarUrl": bot.AvatarURL,
+		"createdAt": bot.CreatedAt,
+	})
+}
+
+// DeleteBot DELETE /api/bots/:id
+func DeleteBot(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	botID := c.Params("id")
+	result := db.DB.Where("id = ? AND user_id = ?", botID, userID).Delete(&models.Bot{})
+	if result.RowsAffected == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "bot not found"})
+	}
+	return c.SendStatus(fiber.StatusNoContent)
+}
