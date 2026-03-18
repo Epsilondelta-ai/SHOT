@@ -20,7 +20,7 @@ const descLines = t.hero.description.split('\n');
 
 <BaseLayout title="SHOT!" bodyClass="bg-gray-950 min-h-screen flex flex-col">
   <!-- Loading Screen -->
-  <div id="loading-screen" class="fixed inset-0 z-50 hidden flex-col items-center justify-center bg-gray-950/95">
+  <div id="loading-screen" class="fixed inset-0 z-50 hidden flex-col items-center justify-center" style="background: radial-gradient(ellipse at center, #532534 0%, #1a0a10 50%, #0a0408 100%)">
     <img src={loadingImg.src} alt="Loading" class="loading-float w-64 h-64 object-contain mb-10" />
     <div class="w-64 h-3 bg-gray-800 rounded-full overflow-hidden">
       <div id="loading-bar" class="h-full bg-amber-400 rounded-full w-0"></div>
