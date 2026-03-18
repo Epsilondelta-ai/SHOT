@@ -18,10 +18,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 const t = useTranslations(lang);
 ---
 
-<BaseLayout title="SHOT!" bodyClass="bg-gray-950 min-h-screen flex flex-col">
+<BaseLayout title="SHOT!" bodyClass="bg-gray-950 h-screen flex flex-col overflow-hidden">
   <GameHeader lang={lang} path="/game" />
 
-  <HeroBackground class="flex-1 flex-col justify-center">
+  <HeroBackground class="flex-1 flex-col justify-center min-h-0">
     <RoomListScene apiUrl={apiUrl} lang={lang} />
     <GameRoomScene apiUrl={apiUrl} lang={lang} />
     <BotsScene apiUrl={apiUrl} lang={lang} />
