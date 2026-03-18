@@ -78,11 +78,6 @@ const descLines = t.hero.description.split('\n');
     </div>
   </HeroBackground>
 
-  <!-- Game Overlay -->
-  <div id="game-overlay" style="display:none; position:fixed; inset:0; z-index:9999; background:#111111; overflow:hidden;">
-    <div id="game-canvas"></div>
-  </div>
-
 <script define:vars={{ apiUrl, lang }} is:inline>
   const token = localStorage.getItem('token');
   if (token) {
@@ -108,25 +103,13 @@ const descLines = t.hero.description.split('\n');
       .catch(() => {});
   }
 
-  document.getElementById('game-start-btn').addEventListener('click', async function () {
+  document.getElementById('game-start-btn').addEventListener('click', function () {
     if (!localStorage.getItem('token')) {
       window.location.href = '/' + lang + '/login';
       return;
     }
-    const overlay = document.getElementById('game-overlay');
-    overlay.style.display = 'block';
-    const isMobileDevice = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
-    if (isMobileDevice && overlay.requestFullscreen) {
-      try { await overlay.requestFullscreen(); } catch (_) {}
-    }
-    document.dispatchEvent(new CustomEvent('game:start'));
+    window.location.href = '/' + lang + '/game';
   });
-</script>
-
-<script>
-  document.addEventListener('game:start', () => {
-    import('../../game/index.ts');
-  }, { once: true });
 </script>
 
 </BaseLayout>

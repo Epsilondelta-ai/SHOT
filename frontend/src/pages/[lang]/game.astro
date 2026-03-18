@@ -6,6 +6,8 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params as { lang: Locale };
+
+const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 ---
 <!doctype html>
 <html lang={lang}>
@@ -13,15 +15,24 @@ const { lang } = Astro.params as { lang: Locale };
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SHOT!</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; background: #111111; overflow: hidden; }
+      #game-canvas { width: 100%; height: 100%; }
+    </style>
   </head>
   <body>
-    <script define:vars={{ lang }} is:inline>
-      const params = new URLSearchParams(window.location.search);
-      const tokenFromQuery = params.get('token');
-      if (tokenFromQuery) {
-        localStorage.setItem('token', tokenFromQuery);
+    <div id="game-canvas"></div>
+
+    <script define:vars={{ apiUrl, lang }} is:inline>
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.replace('/' + lang + '/login');
       }
-      window.location.replace('/' + lang);
+    </script>
+
+    <script>
+      import('../../game/index.ts');
     </script>
   </body>
 </html>
