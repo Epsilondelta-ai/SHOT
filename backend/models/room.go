@@ -13,8 +13,10 @@ type Room struct {
 	HostID      string    `gorm:"type:varchar(36);not null;index"`
 	Status      string    `gorm:"size:20;not null;default:'waiting'"`
 	MaxPlayers  int       `gorm:"not null;default:8"`
-	PlayerCount int       `gorm:"not null;default:1"`
-	IsPrivate   bool      `gorm:"not null;default:false"`
+	PlayerCount    int  `gorm:"not null;default:1"`
+	BotCount       int  `gorm:"not null;default:0"`
+	SpectatorCount int  `gorm:"not null;default:0"`
+	IsPrivate      bool `gorm:"not null;default:false"`
 	Password    string    `gorm:"size:100"`
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
