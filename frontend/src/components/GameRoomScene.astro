@@ -605,6 +605,10 @@ const t = useTranslations(lang);
     }
   });
 
+  document.addEventListener('game:session:replaced', () => {
+    currentRoom = null;
+  });
+
   window.addEventListener('beforeunload', () => {
     if (currentRoom) {
       const token = getToken();

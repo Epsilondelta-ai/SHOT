@@ -39,6 +39,7 @@ const t = useTranslations(lang);
           const msg = JSON.parse(e.data);
           if (msg.type === 'session_replaced') {
             sessionEs.close();
+            document.dispatchEvent(new CustomEvent('game:session:replaced'));
             alert(tSessionReplaced);
             window.location.replace('/' + lang);
           }
