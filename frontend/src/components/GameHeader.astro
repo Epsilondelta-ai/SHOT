@@ -25,9 +25,9 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 
     <!-- Desktop nav -->
     <nav class="hidden sm:flex items-center gap-5 text-amber-100 font-semibold text-sm">
-      <button id="nav-lobby" class="nav-item hover:text-white transition cursor-pointer px-5 py-2 rounded-lg" data-scene="rooms">{t.game.lobby}</button>
-      <button id="nav-bots" class="nav-item hover:text-white transition cursor-pointer px-5 py-2 rounded-lg" data-scene="bots">{t.game.bots}</button>
-      <button id="nav-mypage" class="nav-item flex items-center gap-2 hover:text-white transition cursor-pointer px-5 py-2 rounded-lg" data-scene="mypage">
+      <button id="nav-lobby" class="nav-item hover:text-white transition cursor-pointer px-5 py-2 rounded-lg border border-transparent" data-scene="rooms">{t.game.lobby}</button>
+      <button id="nav-bots" class="nav-item hover:text-white transition cursor-pointer px-5 py-2 rounded-lg border border-transparent" data-scene="bots">{t.game.bots}</button>
+      <button id="nav-mypage" class="nav-item flex items-center gap-2 hover:text-white transition cursor-pointer px-5 py-2 rounded-lg border border-transparent" data-scene="mypage">
         <img
           id="header-avatar"
           src={character.src}
@@ -206,8 +206,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
       el.classList.toggle('text-white', isActive);
       el.classList.toggle('bg-black/30', isActive);
       el.classList.toggle('shadow-inner', isActive);
-      el.classList.toggle('border', isActive);
       el.classList.toggle('border-amber-300/20', isActive);
+      el.classList.toggle('border-transparent', !isActive);
       el.classList.toggle('text-amber-100', !isActive);
     });
     document.querySelectorAll<HTMLElement>('.mobile-nav-item').forEach(el => {
