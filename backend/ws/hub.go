@@ -37,12 +37,6 @@ func (h *Hub) Register(c *Client) {
 	}
 	h.rooms[c.RoomID][c] = true
 	h.mu.Unlock()
-
-	h.Broadcast(c.RoomID, Message{
-		Type:     "join",
-		UserID:   c.UserID,
-		Username: c.Username,
-	})
 }
 
 func (h *Hub) Unregister(c *Client) bool {
@@ -53,19 +47,20 @@ func (h *Hub) Unregister(c *Client) bool {
 		delete(h.rooms, c.RoomID)
 	}
 	h.mu.Unlock()
-
-	if !empty {
-		h.Broadcast(c.RoomID, Message{
-			Type:     "leave",
-			UserID:   c.UserID,
-			Username: c.Username,
-		})
-	}
 	return empty
 }
 
 func (h *Hub) Broadcast(roomID string, msg Message) {
 	data, _ := json.Marshal(msg)
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	for c := range h.rooms[roomID] {
+		c.Conn.WriteMessage(1, data)
+	}
+}
+
+func (h *Hub) BroadcastJSON(roomID string, v any) {
+	data, _ := json.Marshal(v)
 	h.mu.RLock()
 	defer h.mu.RUnlock()
 	for c := range h.rooms[roomID] {

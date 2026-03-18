@@ -13,71 +13,121 @@ const t = useTranslations(lang);
 ---
 
 <div id="scene-gameroom" class="hidden relative z-10 w-full flex-1 flex-col overflow-hidden">
-  <div class="flex flex-col sm:flex-row flex-1 min-h-0 max-w-5xl mx-auto w-full px-4 py-6 gap-4">
+  <div class="flex flex-col sm:flex-row flex-1 min-h-0 max-w-5xl mx-auto w-full px-4 py-4 gap-4">
 
-    <!-- Left: Room info + player slots -->
-    <div class="flex flex-col gap-4 sm:w-72 flex-shrink-0">
+    <!-- Left panel -->
+    <div class="flex flex-col gap-3 sm:w-72 flex-shrink-0">
+
       <!-- Room header -->
       <div class="flex items-center gap-2">
-        <button
-          id="leave-room-btn"
-          class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-sm transition"
-        >
+        <button id="leave-room-btn" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-sm transition">
           ← {t.rooms.leaveRoom}
         </button>
-        <button
-          id="start-game-btn"
-          class="hidden ml-auto bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-4 py-1.5 rounded-xl text-sm transition"
-        >
-          {t.rooms.startGame}
-        </button>
+        <div class="ml-auto flex gap-2">
+          <button id="edit-room-btn" class="hidden bg-white/10 hover:bg-white/20 text-white px-2 py-1.5 rounded-xl text-xs transition" title={t.rooms.editRoom}>✏️</button>
+          <button id="start-game-btn" class="hidden bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-3 py-1.5 rounded-xl text-sm transition">{t.rooms.startGame}</button>
+        </div>
       </div>
 
-      <!-- Room name + badges -->
-      <div class="bg-black/40 rounded-2xl p-4">
-        <h2 id="gameroom-name" class="text-white font-bold text-lg truncate mb-1"></h2>
+      <!-- Room info -->
+      <div class="bg-black/40 rounded-2xl px-4 py-3">
+        <h2 id="gameroom-name" class="text-white font-bold text-base truncate mb-1"></h2>
         <div class="flex items-center gap-2 flex-wrap">
           <span id="gameroom-status-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full"></span>
           <span id="gameroom-private-badge" class="hidden text-xs text-amber-300">🔒 {t.rooms.privateRoom}</span>
         </div>
       </div>
 
-      <!-- Player slots -->
-      <div class="bg-black/40 rounded-2xl p-4">
-        <p class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">
+      <!-- Players -->
+      <div class="bg-black/40 rounded-2xl p-3 flex-1">
+        <p class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">
           {t.rooms.players} <span id="gameroom-player-count" class="text-white/70"></span>
         </p>
-        <div id="gameroom-slots" class="grid grid-cols-3 gap-2"></div>
+        <div id="gameroom-slots" class="grid grid-cols-3 gap-2 mb-3"></div>
+
+        <!-- Spectators -->
+        <div id="gameroom-spectator-section" class="hidden mt-2 pt-2 border-t border-white/10">
+          <p class="text-white/40 text-xs font-semibold uppercase tracking-wider mb-2">👁 {t.rooms.spectators}</p>
+          <div id="gameroom-spectator-slots" class="flex flex-wrap gap-2"></div>
+        </div>
       </div>
 
-      <!-- Spectators -->
-      <div id="gameroom-spectator-row" class="hidden bg-black/20 rounded-xl px-4 py-2">
-        <p class="text-white/40 text-xs">👁 {t.rooms.spectators}: <span id="gameroom-spectator-count" class="text-white/50"></span></p>
+      <!-- Bottom actions -->
+      <div class="flex flex-col gap-2">
+        <button id="spectate-btn" class="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">{t.rooms.spectate}</button>
+        <button id="invite-bot-btn" class="hidden w-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 py-2 rounded-xl text-sm transition">🤖 {t.rooms.inviteBot}</button>
       </div>
     </div>
 
-    <!-- Right: Chat -->
+    <!-- Right panel: Chat -->
     <div class="flex flex-col flex-1 min-h-0 bg-black/40 rounded-2xl overflow-hidden">
       <div class="px-4 py-3 border-b border-white/10">
         <p class="text-white/60 text-sm font-semibold">{t.rooms.chat}</p>
       </div>
       <div id="chat-messages" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2 min-h-0"></div>
       <div class="flex gap-2 p-3 border-t border-white/10">
-        <input
-          id="chat-input"
-          type="text"
-          maxlength="300"
+        <input id="chat-input" type="text" maxlength="300"
           placeholder={t.rooms.chatPlaceholder}
-          class="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
-        />
-        <button
-          id="chat-send-btn"
-          class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm transition"
-        >
-          {t.rooms.chatSend}
-        </button>
+          class="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400" />
+        <button id="chat-send-btn" class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm transition">{t.rooms.chatSend}</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Player action modal -->
+<div id="player-action-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-6 w-full max-w-xs text-white shadow-2xl">
+    <div class="flex items-center gap-3 mb-4">
+      <img id="pa-avatar" src="" alt="" class="w-10 h-10 rounded-full object-cover bg-amber-800" />
+      <p id="pa-username" class="font-bold text-base"></p>
+    </div>
+    <div id="pa-actions" class="flex flex-col gap-2"></div>
+    <button id="pa-close-btn" class="mt-3 w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">{t.common.cancel}</button>
+  </div>
+</div>
+
+<!-- Edit room modal -->
+<div id="edit-room-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-7 w-full max-w-md text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-5">{t.rooms.editRoom}</h3>
+    <div class="mb-4">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.roomName}</label>
+      <input id="edit-room-name" type="text" maxlength="100"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-400" />
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.maxPlayers}</label>
+      <select id="edit-room-max" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-400">
+        {[5,6,7,8,9,10,11,12].map(n => <option value={n}>{n}</option>)}
+      </select>
+    </div>
+    <div class="mb-4">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input id="edit-room-private" type="checkbox" class="w-4 h-4 accent-amber-400" />
+        <span class="text-sm font-semibold text-white/70">🔒 {t.rooms.privateRoom}</span>
+      </label>
+    </div>
+    <div id="edit-room-password-field" class="mb-5 hidden">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.password}</label>
+      <input id="edit-room-password" type="password" maxlength="50"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-400" />
+    </div>
+    <div class="flex gap-3">
+      <button id="edit-room-save-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.common.save}</button>
+      <button id="edit-room-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-xl transition">{t.common.cancel}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invite bot modal -->
+<div id="invite-bot-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-7 w-full max-w-sm text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-4">🤖 {t.rooms.myBots}</h3>
+    <div id="invite-bot-list" class="flex flex-col gap-2 mb-4 max-h-60 overflow-y-auto">
+      <p id="invite-bot-empty" class="text-white/40 text-sm text-center py-4">{t.rooms.noBots}</p>
+    </div>
+    <button id="invite-bot-cancel" class="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">{t.common.cancel}</button>
   </div>
 </div>
 
@@ -91,23 +141,57 @@ const t = useTranslations(lang);
   tSystemJoined: t.rooms.systemJoined,
   tSystemLeft: t.rooms.systemLeft,
   tRoomClosed: t.rooms.roomClosed,
+  tSpectating: t.rooms.spectating,
+  tSpectate: t.rooms.spectate,
+  tUnspectate: t.rooms.unspectate,
+  tTransferHost: t.rooms.transferHost,
+  tGrantBotInvite: t.rooms.grantBotInvite,
+  tRevokeBotInvite: t.rooms.revokeBotInvite,
+  tInvite: t.rooms.invite,
 }} is:inline>
   const scene = document.getElementById('scene-gameroom');
   const leaveBtn = document.getElementById('leave-room-btn');
   const startBtn = document.getElementById('start-game-btn');
+  const editRoomBtn = document.getElementById('edit-room-btn');
+  const spectateBtn = document.getElementById('spectate-btn');
+  const inviteBotBtn = document.getElementById('invite-bot-btn');
   const nameEl = document.getElementById('gameroom-name');
   const statusBadge = document.getElementById('gameroom-status-badge');
   const privateBadge = document.getElementById('gameroom-private-badge');
   const playerCountEl = document.getElementById('gameroom-player-count');
   const slotsEl = document.getElementById('gameroom-slots');
-  const spectatorRow = document.getElementById('gameroom-spectator-row');
-  const spectatorCountEl = document.getElementById('gameroom-spectator-count');
+  const spectatorSection = document.getElementById('gameroom-spectator-section');
+  const spectatorSlotsEl = document.getElementById('gameroom-spectator-slots');
   const chatMessages = document.getElementById('chat-messages');
   const chatInput = document.getElementById('chat-input');
   const chatSendBtn = document.getElementById('chat-send-btn');
 
+  // Player action modal
+  const paModal = document.getElementById('player-action-modal');
+  const paAvatar = document.getElementById('pa-avatar');
+  const paUsername = document.getElementById('pa-username');
+  const paActions = document.getElementById('pa-actions');
+  const paCloseBtn = document.getElementById('pa-close-btn');
+
+  // Edit room modal
+  const editModal = document.getElementById('edit-room-modal');
+  const editName = document.getElementById('edit-room-name');
+  const editMax = document.getElementById('edit-room-max');
+  const editPrivate = document.getElementById('edit-room-private');
+  const editPasswordField = document.getElementById('edit-room-password-field');
+  const editPassword = document.getElementById('edit-room-password');
+  const editSaveBtn = document.getElementById('edit-room-save-btn');
+  const editCancelBtn = document.getElementById('edit-room-cancel-btn');
+
+  // Invite bot modal
+  const inviteBotModal = document.getElementById('invite-bot-modal');
+  const inviteBotList = document.getElementById('invite-bot-list');
+  const inviteBotEmpty = document.getElementById('invite-bot-empty');
+  const inviteBotCancel = document.getElementById('invite-bot-cancel');
+
   let currentRoom = null;
   let currentUserId = null;
+  let currentMembers = [];
   let socket = null;
 
   async function getMyId() {
@@ -121,49 +205,249 @@ const t = useTranslations(lang);
     return currentUserId;
   }
 
+  function getToken() { return localStorage.getItem('token'); }
+
   async function joinAndLoad(room) {
-    const token = localStorage.getItem('token');
+    const token = getToken();
     if (!token) return;
     await fetch(`${apiUrl}/api/rooms/${room.id}/join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ password: room.password || '' }),
     }).catch(() => null);
-    const res = await fetch(`${apiUrl}/api/rooms/${room.id}/members`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).catch(() => null);
-    if (!res?.ok) return;
-    const members = await res.json();
-    renderSlots(room, members);
   }
 
-  function connectWS(room) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const wsBase = apiUrl.replace(/^http/, 'ws');
-    socket = new WebSocket(`${wsBase}/api/rooms/${room.id}/ws?token=${token}`);
+  function myMember() {
+    return currentMembers.find(m => m.userId === currentUserId && !m.botId);
+  }
 
-    socket.addEventListener('message', (e) => {
-      try {
-        const msg = JSON.parse(e.data);
-        if (msg.type === 'chat') {
-          appendChatMessage(msg);
-        } else if (msg.type === 'join') {
-          appendSystemMessage(`${msg.username} ${tSystemJoined}`);
-          joinAndLoad(room);
-        } else if (msg.type === 'leave') {
-          appendSystemMessage(`${msg.username} ${tSystemLeft}`);
-          joinAndLoad(room);
-        } else if (msg.type === 'room_closed') {
-          appendSystemMessage(tRoomClosed);
-          setTimeout(() => leaveRoom(), 1500);
+  function isHost() {
+    return currentRoom && currentRoom.hostId === currentUserId;
+  }
+
+  function canInviteBots() {
+    if (isHost()) return true;
+    const me = myMember();
+    return me?.canInviteBots === true;
+  }
+
+  function updateUI(roomState, members) {
+    currentRoom = { ...currentRoom, ...roomState };
+    currentMembers = members;
+
+    nameEl.textContent = roomState.name;
+    const isPlaying = roomState.status === 'playing';
+    statusBadge.textContent = isPlaying ? tStatusPlaying : tStatusWaiting;
+    statusBadge.className = `text-xs font-semibold px-2 py-0.5 rounded-full ${isPlaying ? 'bg-yellow-500/20 text-yellow-300' : 'bg-green-500/20 text-green-300'}`;
+    privateBadge.classList.toggle('hidden', !roomState.isPrivate);
+
+    const players = members.filter(m => !m.isSpectator);
+    const spectators = members.filter(m => m.isSpectator);
+    playerCountEl.textContent = `${players.length} / ${roomState.maxPlayers}`;
+
+    // Render player slots
+    slotsEl.innerHTML = '';
+    for (let i = 0; i < roomState.maxPlayers; i++) {
+      const member = players[i];
+      const slot = document.createElement('div');
+      slot.className = 'flex flex-col items-center gap-1';
+      if (member) {
+        const isMemberHost = member.userId === roomState.hostId;
+        const isBot = !!member.botId;
+        const isClickable = isHost() && member.userId !== currentUserId;
+        slot.className += isClickable ? ' cursor-pointer hover:opacity-80 transition' : '';
+        slot.innerHTML = `
+          <div class="relative">
+            <img src="${member.avatarUrl || characterSrc}" alt="${member.username}"
+              class="w-10 h-10 rounded-full object-cover bg-amber-800 border-2 ${isMemberHost ? 'border-amber-400' : 'border-white/20'}"
+              onerror="this.src='${characterSrc}'" />
+            ${isBot ? '<span class="absolute -bottom-0.5 -right-0.5 text-xs">🤖</span>' : ''}
+          </div>
+          <p class="text-white/70 text-xs truncate w-full text-center max-w-[64px]">${isMemberHost ? '⭐ ' : ''}${member.username}</p>
+          ${member.canInviteBots && !isBot ? '<p class="text-blue-300 text-xs">🔑</p>' : ''}
+        `;
+        if (isClickable) {
+          slot.addEventListener('click', () => openPlayerAction(member));
         }
-      } catch {}
-    });
+      } else {
+        slot.innerHTML = `
+          <div class="w-10 h-10 rounded-full bg-white/5 border border-dashed border-white/10 flex items-center justify-center">
+            <span class="text-white/20 text-sm">+</span>
+          </div>
+          <p class="text-white/20 text-xs">${tEmptySlot}</p>
+        `;
+      }
+      slotsEl.appendChild(slot);
+    }
 
-    socket.addEventListener('close', () => { socket = null; });
+    // Spectators
+    if (spectators.length > 0) {
+      spectatorSection.classList.remove('hidden');
+      spectatorSlotsEl.innerHTML = '';
+      spectators.forEach(s => {
+        const el = document.createElement('div');
+        el.className = 'flex items-center gap-1.5 bg-white/5 rounded-lg px-2 py-1';
+        el.innerHTML = `
+          <img src="${s.avatarUrl || characterSrc}" alt="${s.username}"
+            class="w-5 h-5 rounded-full object-cover bg-amber-800"
+            onerror="this.src='${characterSrc}'" />
+          <span class="text-white/50 text-xs">${s.username}</span>
+          <span class="text-white/30 text-xs">(${tSpectating})</span>
+        `;
+        spectatorSlotsEl.appendChild(el);
+      });
+    } else {
+      spectatorSection.classList.add('hidden');
+    }
+
+    // My member state
+    const me = myMember();
+    if (me?.isSpectator) {
+      spectateBtn.textContent = tUnspectate;
+    } else {
+      spectateBtn.textContent = tSpectate;
+    }
+
+    // Host-only UI
+    editRoomBtn.classList.toggle('hidden', !isHost());
+    startBtn.classList.toggle('hidden', !isHost());
+    inviteBotBtn.classList.toggle('hidden', !canInviteBots());
   }
 
+  function openPlayerAction(member) {
+    paAvatar.src = member.avatarUrl || characterSrc;
+    paUsername.textContent = member.username;
+    paActions.innerHTML = '';
+
+    if (isHost()) {
+      const addBtn = (label, onClick) => {
+        const btn = document.createElement('button');
+        btn.className = 'w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition text-left px-3';
+        btn.textContent = label;
+        btn.addEventListener('click', () => { closeModal(paModal); onClick(); });
+        paActions.appendChild(btn);
+      };
+
+      if (!member.botId) {
+        addBtn(tTransferHost, () => doTransferHost(member.userId));
+        if (member.canInviteBots) {
+          addBtn(tRevokeBotInvite, () => doSetPermission(member.userId, false));
+        } else {
+          addBtn(tGrantBotInvite, () => doSetPermission(member.userId, true));
+        }
+      }
+    }
+
+    openModal(paModal);
+  }
+
+  async function doTransferHost(targetUserId) {
+    const token = getToken();
+    await fetch(`${apiUrl}/api/rooms/${currentRoom.id}/transfer-host`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ targetUserId }),
+    }).catch(() => null);
+  }
+
+  async function doSetPermission(targetUserId, canInviteBots) {
+    const token = getToken();
+    await fetch(`${apiUrl}/api/rooms/${currentRoom.id}/members/${targetUserId}/permissions`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ canInviteBots }),
+    }).catch(() => null);
+  }
+
+  // Spectate
+  spectateBtn.addEventListener('click', async () => {
+    const me = myMember();
+    const token = getToken();
+    const spectate = me ? !me.isSpectator : false;
+    await fetch(`${apiUrl}/api/rooms/${currentRoom.id}/spectate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ spectate }),
+    }).catch(() => null);
+  });
+
+  // Edit room
+  editRoomBtn.addEventListener('click', () => {
+    editName.value = currentRoom.name || '';
+    editMax.value = String(currentRoom.maxPlayers || 8);
+    editPrivate.checked = !!currentRoom.isPrivate;
+    editPasswordField.classList.toggle('hidden', !currentRoom.isPrivate);
+    editPassword.value = '';
+    openModal(editModal);
+  });
+  editPrivate.addEventListener('change', () => {
+    editPasswordField.classList.toggle('hidden', !editPrivate.checked);
+  });
+  editSaveBtn.addEventListener('click', async () => {
+    const token = getToken();
+    await fetch(`${apiUrl}/api/rooms/${currentRoom.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        name: editName.value.trim() || currentRoom.name,
+        maxPlayers: parseInt(editMax.value),
+        isPrivate: editPrivate.checked,
+        password: editPassword.value,
+      }),
+    }).catch(() => null);
+    closeModal(editModal);
+  });
+  editCancelBtn.addEventListener('click', () => closeModal(editModal));
+
+  // Invite bot
+  inviteBotBtn.addEventListener('click', async () => {
+    inviteBotList.innerHTML = '';
+    inviteBotList.appendChild(inviteBotEmpty);
+    const token = getToken();
+    const res = await fetch(`${apiUrl}/api/bots`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
+    if (res?.ok) {
+      const bots = await res.json();
+      if (bots && bots.length > 0) {
+        inviteBotEmpty.classList.add('hidden');
+        bots.forEach(bot => {
+          const el = document.createElement('div');
+          el.className = 'flex items-center gap-3 bg-white/5 hover:bg-white/10 rounded-xl px-3 py-2 cursor-pointer transition';
+          el.innerHTML = `
+            <img src="${bot.avatarUrl || characterSrc}" alt="${bot.name}"
+              class="w-8 h-8 rounded-full object-cover bg-amber-800"
+              onerror="this.src='${characterSrc}'" />
+            <span class="text-white text-sm font-semibold flex-1">${bot.name}</span>
+            <button class="bg-blue-500 hover:bg-blue-400 text-white text-xs px-3 py-1 rounded-lg">${tInvite}</button>
+          `;
+          el.querySelector('button').addEventListener('click', async () => {
+            const r = await fetch(`${apiUrl}/api/rooms/${currentRoom.id}/invite-bot`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ botId: bot.id }),
+            }).catch(() => null);
+            if (r?.ok) closeModal(inviteBotModal);
+          });
+          inviteBotList.appendChild(el);
+        });
+      } else {
+        inviteBotEmpty.classList.remove('hidden');
+      }
+    }
+    openModal(inviteBotModal);
+  });
+  inviteBotCancel.addEventListener('click', () => closeModal(inviteBotModal));
+  paCloseBtn.addEventListener('click', () => closeModal(paModal));
+
+  function openModal(el) {
+    el.classList.remove('hidden');
+    el.classList.add('flex');
+  }
+  function closeModal(el) {
+    el.classList.add('hidden');
+    el.classList.remove('flex');
+  }
+
+  // Chat
   function appendChatMessage(msg) {
     const isMine = msg.userId === currentUserId;
     const el = document.createElement('div');
@@ -177,6 +461,7 @@ const t = useTranslations(lang);
         <div class="px-3 py-2 rounded-2xl text-sm ${isMine ? 'bg-amber-500 text-gray-900 rounded-br-sm' : 'bg-white/10 text-white rounded-bl-sm'}">
           ${msg.message}
         </div>
+        <p class="text-white/20 text-xs mt-0.5 ${isMine ? 'text-right' : ''} px-1">${msg.username}</p>
       </div>
     `;
     chatMessages.appendChild(el);
@@ -191,47 +476,31 @@ const t = useTranslations(lang);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
-  function renderRoom(room) {
-    currentRoom = room;
-    nameEl.textContent = room.name;
-    const isPlaying = room.status === 'playing';
-    statusBadge.textContent = isPlaying ? tStatusPlaying : tStatusWaiting;
-    statusBadge.className = `text-xs font-semibold px-2 py-0.5 rounded-full ${isPlaying ? 'bg-yellow-500/20 text-yellow-300' : 'bg-green-500/20 text-green-300'}`;
-    privateBadge.classList.toggle('hidden', !room.isPrivate);
-    playerCountEl.textContent = `${room.playerCount} / ${room.maxPlayers}`;
-    if (room.spectatorCount > 0) {
-      spectatorRow.classList.remove('hidden');
-      spectatorCountEl.textContent = room.spectatorCount;
-    } else {
-      spectatorRow.classList.add('hidden');
-    }
-  }
+  function connectWS(room) {
+    const token = getToken();
+    if (!token) return;
+    const wsBase = apiUrl.replace(/^http/, 'ws');
+    socket = new WebSocket(`${wsBase}/api/rooms/${room.id}/ws?token=${token}`);
 
-  function renderSlots(room, members) {
-    slotsEl.innerHTML = '';
-    playerCountEl.textContent = `${members.length} / ${room.maxPlayers}`;
-    for (let i = 0; i < room.maxPlayers; i++) {
-      const member = members[i];
-      const isHost = member && member.userId === room.hostId;
-      const slot = document.createElement('div');
-      slot.className = `flex flex-col items-center gap-1 ${member ? '' : 'opacity-40'}`;
-      if (member) {
-        slot.innerHTML = `
-          <img src="${member.avatarUrl || characterSrc}" alt="${member.username}"
-            class="w-10 h-10 rounded-full object-cover bg-amber-800 border-2 ${isHost ? 'border-amber-400' : 'border-white/20'}"
-            onerror="this.src='${characterSrc}'" />
-          <p class="text-white/70 text-xs truncate w-full text-center">${isHost ? '⭐' : ''} ${member.username}</p>
-        `;
-      } else {
-        slot.innerHTML = `
-          <div class="w-10 h-10 rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center">
-            <span class="text-white/20 text-sm">+</span>
-          </div>
-          <p class="text-white/20 text-xs">${tEmptySlot}</p>
-        `;
-      }
-      slotsEl.appendChild(slot);
-    }
+    socket.addEventListener('message', (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'chat') {
+          appendChatMessage(msg);
+        } else if (msg.type === 'join') {
+          appendSystemMessage(`${msg.username} ${tSystemJoined}`);
+        } else if (msg.type === 'leave') {
+          appendSystemMessage(`${msg.username} ${tSystemLeft}`);
+        } else if (msg.type === 'room_update') {
+          updateUI(msg, msg.members || []);
+        } else if (msg.type === 'room_closed') {
+          appendSystemMessage(tRoomClosed);
+          setTimeout(() => leaveRoom(), 1500);
+        }
+      } catch {}
+    });
+
+    socket.addEventListener('close', () => { socket = null; });
   }
 
   function sendChat() {
@@ -244,10 +513,13 @@ const t = useTranslations(lang);
   function leaveRoom() {
     if (socket) { socket.close(); socket = null; }
     currentRoom = null;
+    currentMembers = [];
     chatMessages.innerHTML = '';
+    closeModal(paModal);
+    closeModal(editModal);
+    closeModal(inviteBotModal);
     scene.classList.add('hidden');
     scene.classList.remove('flex');
-    startBtn.classList.add('hidden');
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
   }
 
@@ -256,16 +528,20 @@ const t = useTranslations(lang);
     if (!room) return;
     if (socket) { socket.close(); socket = null; }
     chatMessages.innerHTML = '';
-    renderRoom(room);
+    currentRoom = room;
+    currentMembers = [];
+
+    // Set initial UI from room data
+    nameEl.textContent = room.name;
+    playerCountEl.textContent = `${room.playerCount} / ${room.maxPlayers}`;
+
     scene.classList.remove('hidden');
     scene.classList.add('flex');
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'gameroom' }));
+
     await getMyId();
     await joinAndLoad(room);
     connectWS(room);
-    if (currentUserId && room.hostId === currentUserId) {
-      startBtn.classList.remove('hidden');
-    }
   });
 
   document.addEventListener('game:scene', (e) => {
@@ -273,13 +549,10 @@ const t = useTranslations(lang);
       if (socket) { socket.close(); socket = null; }
       scene.classList.add('hidden');
       scene.classList.remove('flex');
-      startBtn.classList.add('hidden');
     }
   });
 
   leaveBtn.addEventListener('click', leaveRoom);
   chatSendBtn.addEventListener('click', sendChat);
-  chatInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') sendChat();
-  });
+  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
 </script>

@@ -8,10 +8,13 @@ import (
 )
 
 type RoomMember struct {
-	ID       string    `gorm:"primaryKey;type:varchar(36)"`
-	RoomID   string    `gorm:"type:varchar(36);not null;index"`
-	UserID   string    `gorm:"type:varchar(36);not null"`
-	JoinedAt time.Time
+	ID            string    `gorm:"primaryKey;type:varchar(36)"`
+	RoomID        string    `gorm:"type:varchar(36);not null;index"`
+	UserID        string    `gorm:"type:varchar(36);not null"` // for bots, this is the bot owner's ID
+	BotID         string    `gorm:"type:varchar(36);default:''"`   // non-empty if bot
+	IsSpectator   bool      `gorm:"not null;default:false"`
+	CanInviteBots bool      `gorm:"not null;default:false"`
+	JoinedAt      time.Time
 }
 
 func (m *RoomMember) BeforeCreate(tx *gorm.DB) error {

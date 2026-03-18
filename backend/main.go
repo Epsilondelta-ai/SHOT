@@ -41,6 +41,11 @@ func main() {
 	api.Post("/rooms", handlers.CreateRoom)
 	api.Post("/rooms/:id/join", handlers.JoinRoom)
 	api.Get("/rooms/:id/members", handlers.GetRoomMembers)
+	api.Post("/rooms/:id/spectate", handlers.SpectateRoom)
+	api.Post("/rooms/:id/invite-bot", handlers.InviteBot)
+	api.Patch("/rooms/:id/members/:userId/permissions", handlers.SetMemberPermission)
+	api.Post("/rooms/:id/transfer-host", handlers.TransferHost)
+	api.Patch("/rooms/:id", handlers.UpdateRoom)
 	api.Use("/rooms/:id/ws", func(c *fiber.Ctx) error {
 		if fws.IsWebSocketUpgrade(c) {
 			return c.Next()

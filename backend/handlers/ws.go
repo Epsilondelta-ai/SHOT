@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"log"
+	"time"
 
 	fws "github.com/gofiber/contrib/websocket"
 	"github.com/golang-jwt/jwt/v5"
@@ -30,6 +31,80 @@ func parseUserIDFromToken(tokenStr string) (string, error) {
 	return sub, nil
 }
 
+type MemberInfo struct {
+	UserID        string    `json:"userId"`
+	BotID         string    `json:"botId,omitempty"`
+	Username      string    `json:"username"`
+	AvatarURL     string    `json:"avatarUrl"`
+	IsSpectator   bool      `json:"isSpectator"`
+	CanInviteBots bool      `json:"canInviteBots"`
+	JoinedAt      time.Time `json:"joinedAt"`
+}
+
+type RoomUpdateMsg struct {
+	Type       string       `json:"type"`
+	HostID     string       `json:"hostId"`
+	Name       string       `json:"name"`
+	MaxPlayers int          `json:"maxPlayers"`
+	IsPrivate  bool         `json:"isPrivate"`
+	Members    []MemberInfo `json:"members"`
+}
+
+func buildMemberInfoList(roomID string) []MemberInfo {
+	var members []models.RoomMember
+	db.DB.Where("room_id = ?", roomID).Order("joined_at ASC").Find(&members)
+
+	result := make([]MemberInfo, 0, len(members))
+	for _, m := range members {
+		info := MemberInfo{
+			UserID:        m.UserID,
+			BotID:         m.BotID,
+			IsSpectator:   m.IsSpectator,
+			CanInviteBots: m.CanInviteBots,
+			JoinedAt:      m.JoinedAt,
+		}
+		if m.BotID != "" {
+			var bot models.Bot
+			if err := db.DB.First(&bot, "id = ?", m.BotID).Error; err == nil {
+				info.Username = bot.Name
+				info.AvatarURL = bot.AvatarURL
+			}
+		} else {
+			var user models.User
+			if err := db.DB.First(&user, "id = ?", m.UserID).Error; err == nil {
+				info.Username = user.Username
+				info.AvatarURL = user.AvatarURL
+			}
+		}
+		result = append(result, info)
+	}
+	return result
+}
+
+func broadcastRoomUpdate(roomID string) {
+	var room models.Room
+	if err := db.DB.First(&room, "id = ?", roomID).Error; err != nil {
+		return
+	}
+	ws.H.BroadcastJSON(roomID, RoomUpdateMsg{
+		Type:       "room_update",
+		HostID:     room.HostID,
+		Name:       room.Name,
+		MaxPlayers: room.MaxPlayers,
+		IsPrivate:  room.IsPrivate,
+		Members:    buildMemberInfoList(roomID),
+	})
+}
+
+func transferHostToNext(roomID string) {
+	var nextMember models.RoomMember
+	result := db.DB.Where("room_id = ? AND bot_id = '' AND is_spectator = false", roomID).Order("joined_at ASC").First(&nextMember)
+	if result.Error != nil {
+		return
+	}
+	db.DB.Model(&models.Room{}).Where("id = ?", roomID).Update("host_id", nextMember.UserID)
+}
+
 // RoomWS GET /api/rooms/:id/ws
 func RoomWS(c *fws.Conn) {
 	roomID := c.Params("id")
@@ -41,14 +116,12 @@ func RoomWS(c *fws.Conn) {
 		return
 	}
 
-	// Load user info
 	var user models.User
 	if result := db.DB.First(&user, "id = ?", userID); result.Error != nil {
 		c.Close()
 		return
 	}
 
-	// Verify room exists
 	var room models.Room
 	if result := db.DB.First(&room, "id = ?", roomID); result.Error != nil {
 		c.Close()
@@ -64,18 +137,24 @@ func RoomWS(c *fws.Conn) {
 	}
 
 	ws.H.Register(client)
+	ws.H.Broadcast(roomID, ws.Message{Type: "join", UserID: userID, Username: user.Username})
+	broadcastRoomUpdate(roomID)
+
 	defer func() {
 		empty := ws.H.Unregister(client)
 		if empty {
-			// Broadcast room_closed before deleting
 			ws.H.BroadcastRoomClosed(roomID)
-			// Remove all members and delete the room
 			db.DB.Where("room_id = ?", roomID).Delete(&models.RoomMember{})
 			db.DB.Delete(&models.Room{}, "id = ?", roomID)
 		} else {
-			// Update player count
-			db.DB.Model(&models.Room{}).Where("id = ?", roomID).UpdateColumn("player_count", db.DB.Model(&models.RoomMember{}).Where("room_id = ?", roomID).Select("count(*)"))
-			db.DB.Where("room_id = ? AND user_id = ?", roomID, userID).Delete(&models.RoomMember{})
+			ws.H.Broadcast(roomID, ws.Message{Type: "leave", UserID: userID, Username: user.Username})
+			db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Delete(&models.RoomMember{})
+			// Refresh room to check if this user was host
+			var currentRoom models.Room
+			if err := db.DB.First(&currentRoom, "id = ?", roomID).Error; err == nil && currentRoom.HostID == userID {
+				transferHostToNext(roomID)
+			}
+			broadcastRoomUpdate(roomID)
 		}
 	}()
 

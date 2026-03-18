@@ -6,6 +6,7 @@ import (
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/models"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 // ListRooms GET /api/rooms
@@ -115,7 +116,7 @@ func JoinRoom(c *fiber.Ctx) error {
 
 	// Check if already a member
 	var existing models.RoomMember
-	if result := db.DB.First(&existing, "room_id = ? AND user_id = ?", roomID, userID); result.Error == nil {
+	if result := db.DB.First(&existing, "room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID); result.Error == nil {
 		return c.JSON(fiber.Map{"ok": true})
 	}
 
@@ -132,33 +133,208 @@ func GetRoomMembers(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
 	}
+	roomID := c.Params("id")
+	return c.JSON(buildMemberInfoList(roomID))
+}
 
+// SpectateRoom POST /api/rooms/:id/spectate (body: {"spectate": true/false})
+func SpectateRoom(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	roomID := c.Params("id")
+	var body struct {
+		Spectate bool `json:"spectate"`
+	}
+	c.BodyParser(&body)
+
+	var member models.RoomMember
+	if err := db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).First(&member).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "not a member"})
+	}
+
+	if member.IsSpectator == body.Spectate {
+		return c.JSON(fiber.Map{"ok": true})
+	}
+
+	db.DB.Model(&member).Update("is_spectator", body.Spectate)
+	if body.Spectate {
+		db.DB.Model(&models.Room{}).Where("id = ?", roomID).UpdateColumn("player_count", gorm.Expr("player_count - 1"))
+		db.DB.Model(&models.Room{}).Where("id = ?", roomID).UpdateColumn("spectator_count", gorm.Expr("spectator_count + 1"))
+	} else {
+		db.DB.Model(&models.Room{}).Where("id = ?", roomID).UpdateColumn("player_count", gorm.Expr("player_count + 1"))
+		db.DB.Model(&models.Room{}).Where("id = ?", roomID).UpdateColumn("spectator_count", gorm.Expr("spectator_count - 1"))
+	}
+
+	broadcastRoomUpdate(roomID)
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// InviteBot POST /api/rooms/:id/invite-bot (body: {"botId": "..."})
+func InviteBot(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
 	roomID := c.Params("id")
 
-	type MemberRow struct {
-		UserID    string
-		Username  string
-		AvatarURL string
-		JoinedAt  time.Time
+	// Check if user has permission (host or canInviteBots)
+	var member models.RoomMember
+	if err := db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).First(&member).Error; err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "not a member"})
+	}
+	var room models.Room
+	db.DB.First(&room, "id = ?", roomID)
+	if room.HostID != userID && !member.CanInviteBots {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "no permission"})
 	}
 
-	var rows []MemberRow
-	db.DB.Raw(`
-		SELECT rm.user_id, u.username, u.avatar_url, rm.joined_at
-		FROM room_members rm
-		JOIN users u ON u.id = rm.user_id
-		WHERE rm.room_id = ?
-		ORDER BY rm.joined_at ASC
-	`, roomID).Scan(&rows)
-
-	result := make([]fiber.Map, len(rows))
-	for i, r := range rows {
-		result[i] = fiber.Map{
-			"userId":    r.UserID,
-			"username":  r.Username,
-			"avatarUrl": r.AvatarURL,
-			"joinedAt":  r.JoinedAt,
-		}
+	var body struct {
+		BotID string `json:"botId"`
 	}
-	return c.JSON(result)
+	if err := c.BodyParser(&body); err != nil || body.BotID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "botId required"})
+	}
+
+	// Verify bot belongs to user
+	var bot models.Bot
+	if err := db.DB.Where("id = ? AND user_id = ?", body.BotID, userID).First(&bot).Error; err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "bot not found"})
+	}
+
+	// Check if bot already in room
+	var existing models.RoomMember
+	if db.DB.Where("room_id = ? AND bot_id = ?", roomID, body.BotID).First(&existing).Error == nil {
+		return c.JSON(fiber.Map{"ok": true})
+	}
+
+	// Check room capacity
+	if room.PlayerCount >= room.MaxPlayers {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "room is full"})
+	}
+
+	botMember := models.RoomMember{
+		RoomID:   roomID,
+		UserID:   userID, // owner's ID
+		BotID:    body.BotID,
+		JoinedAt: time.Now(),
+	}
+	db.DB.Create(&botMember)
+	db.DB.Model(&models.Room{}).Where("id = ?", roomID).UpdateColumns(map[string]any{
+		"player_count": gorm.Expr("player_count + 1"),
+		"bot_count":    gorm.Expr("bot_count + 1"),
+	})
+
+	broadcastRoomUpdate(roomID)
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// SetMemberPermission PATCH /api/rooms/:id/members/:userId/permissions (host only)
+func SetMemberPermission(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	roomID := c.Params("id")
+	targetUserID := c.Params("userId")
+
+	var room models.Room
+	if err := db.DB.First(&room, "id = ?", roomID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "room not found"})
+	}
+	if room.HostID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "host only"})
+	}
+
+	var body struct {
+		CanInviteBots bool `json:"canInviteBots"`
+	}
+	c.BodyParser(&body)
+
+	db.DB.Model(&models.RoomMember{}).Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, targetUserID).
+		Update("can_invite_bots", body.CanInviteBots)
+
+	broadcastRoomUpdate(roomID)
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// TransferHost POST /api/rooms/:id/transfer-host (host only)
+func TransferHost(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	roomID := c.Params("id")
+
+	var room models.Room
+	if err := db.DB.First(&room, "id = ?", roomID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "room not found"})
+	}
+	if room.HostID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "host only"})
+	}
+
+	var body struct {
+		TargetUserID string `json:"targetUserId"`
+	}
+	if err := c.BodyParser(&body); err != nil || body.TargetUserID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "targetUserId required"})
+	}
+
+	// Verify target is a non-bot member
+	var targetMember models.RoomMember
+	if err := db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, body.TargetUserID).First(&targetMember).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "target not a member"})
+	}
+
+	db.DB.Model(&models.Room{}).Where("id = ?", roomID).Update("host_id", body.TargetUserID)
+	broadcastRoomUpdate(roomID)
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// UpdateRoom PATCH /api/rooms/:id (host only)
+func UpdateRoom(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	roomID := c.Params("id")
+
+	var room models.Room
+	if err := db.DB.First(&room, "id = ?", roomID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "room not found"})
+	}
+	if room.HostID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "host only"})
+	}
+
+	var body struct {
+		Name       string `json:"name"`
+		MaxPlayers int    `json:"maxPlayers"`
+		IsPrivate  bool   `json:"isPrivate"`
+		Password   string `json:"password"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid body"})
+	}
+	if body.Name == "" {
+		body.Name = room.Name
+	}
+	if body.MaxPlayers < 5 || body.MaxPlayers > 12 {
+		body.MaxPlayers = room.MaxPlayers
+	}
+	if body.IsPrivate && body.Password == "" {
+		body.Password = room.Password // keep existing password if not changed
+	}
+
+	updates := map[string]any{
+		"name":        body.Name,
+		"max_players": body.MaxPlayers,
+		"is_private":  body.IsPrivate,
+		"password":    body.Password,
+	}
+	db.DB.Model(&models.Room{}).Where("id = ?", roomID).Updates(updates)
+	broadcastRoomUpdate(roomID)
+	return c.JSON(fiber.Map{"ok": true})
 }
