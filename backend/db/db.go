@@ -2,11 +2,14 @@ package db
 
 import (
 	"fmt"
+	"log"
 	"os"
+	"time"
 
 	"github.com/epsilondelta/shot/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -22,7 +25,17 @@ func Connect() error {
 	)
 
 	var err error
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.New(
+			log.Default(),
+			logger.Config{
+				SlowThreshold:             200 * time.Millisecond,
+				LogLevel:                  logger.Warn,
+				IgnoreRecordNotFoundError: true,
+				Colorful:                  true,
+			},
+		),
+	})
 	if err != nil {
 		return err
 	}

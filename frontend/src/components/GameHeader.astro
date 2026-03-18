@@ -38,7 +38,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     </nav>
 
     <!-- Desktop language selector -->
-    <div class="hidden sm:block ml-auto relative" id="lang-menu-wrapper">
+    <div class="hidden sm:flex ml-auto items-center gap-2 relative" id="lang-menu-wrapper">
+      <span id="sse-dot-desktop" class="hidden w-2.5 h-2.5 rounded-full"></span>
       <button
         id="lang-menu-btn"
         class="flex items-center gap-1 text-amber-100 hover:text-white transition font-semibold text-md px-2 py-2 rounded-lg hover:bg-black/20"
@@ -67,7 +68,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     </div>
 
     <!-- Mobile hamburger -->
-    <div class="sm:hidden ml-auto relative" id="hamburger-wrapper">
+    <div class="sm:hidden ml-auto flex items-center gap-2 relative" id="hamburger-wrapper">
+      <span id="sse-dot-mobile" class="hidden w-2.5 h-2.5 rounded-full"></span>
       <button
         id="hamburger-btn"
         class="flex flex-col justify-center items-center w-10 h-10 gap-1.5 text-amber-100 hover:text-white rounded-lg hover:bg-black/20 transition"
@@ -157,6 +159,26 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     if (!document.getElementById('hamburger-wrapper')?.contains(target)) {
       hamburgerMenu?.classList.add('hidden');
     }
+  });
+
+  // SSE connection indicator
+  const sseDots = [
+    document.getElementById('sse-dot-desktop'),
+    document.getElementById('sse-dot-mobile'),
+  ];
+
+  document.addEventListener('room:sse', (e: Event) => {
+    const status = (e as CustomEvent).detail as string;
+    sseDots.forEach(dot => {
+      if (!dot) return;
+      if (status === 'connected') {
+        dot.className = 'block w-2.5 h-2.5 rounded-full bg-green-400';
+      } else if (status === 'reconnecting') {
+        dot.className = 'block w-2.5 h-2.5 rounded-full bg-yellow-400 animate-pulse';
+      } else {
+        dot.className = 'hidden w-2.5 h-2.5 rounded-full';
+      }
+    });
   });
 
   // Scene change events

@@ -503,6 +503,10 @@ const t = useTranslations(lang);
     if (!token) return;
     es = new EventSource(`${apiUrl}/api/rooms/${room.id}/sse?token=${token}`);
 
+    es.addEventListener('open', () => {
+      document.dispatchEvent(new CustomEvent('room:sse', { detail: 'connected' }));
+    });
+
     es.addEventListener('message', (e) => {
       try {
         const msg = JSON.parse(e.data);
@@ -531,6 +535,7 @@ const t = useTranslations(lang);
 
     es.addEventListener('error', () => {
       // EventSource auto-reconnects; close only if we intentionally left
+      document.dispatchEvent(new CustomEvent('room:sse', { detail: 'reconnecting' }));
     });
   }
 
@@ -555,6 +560,7 @@ const t = useTranslations(lang);
       }).catch(() => null);
     }
     if (es) { es.close(); es = null; }
+    document.dispatchEvent(new CustomEvent('room:sse', { detail: 'disconnected' }));
     currentRoom = null;
     currentMembers = [];
     chatMessages.innerHTML = '';
