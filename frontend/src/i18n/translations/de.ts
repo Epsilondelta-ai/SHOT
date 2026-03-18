@@ -91,5 +91,7 @@ export default {
     passwordRequired: 'Bitte gib ein Passwort ein.',
     enterPassword: 'Passwort eingeben',
     join: 'Beitreten',
+    kick: 'Rauswerfen',
+    systemKicked: 'wurde aus dem Raum geworfen.',
   },
 };

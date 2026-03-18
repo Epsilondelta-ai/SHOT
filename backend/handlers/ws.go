@@ -35,6 +35,7 @@ type MemberInfo struct {
 	UserID        string    `json:"userId"`
 	BotID         string    `json:"botId,omitempty"`
 	Username      string    `json:"username"`
+	OwnerUsername string    `json:"ownerUsername,omitempty"`
 	AvatarURL     string    `json:"avatarUrl"`
 	IsSpectator   bool      `json:"isSpectator"`
 	CanInviteBots bool      `json:"canInviteBots"`
@@ -68,6 +69,10 @@ func buildMemberInfoList(roomID string) []MemberInfo {
 			if err := db.DB.First(&bot, "id = ?", m.BotID).Error; err == nil {
 				info.Username = bot.Name
 				info.AvatarURL = bot.AvatarURL
+			}
+			var owner models.User
+			if err := db.DB.First(&owner, "id = ?", m.UserID).Error; err == nil {
+				info.OwnerUsername = owner.Username
 			}
 		} else {
 			var user models.User

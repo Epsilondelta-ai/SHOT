@@ -148,6 +148,8 @@ const t = useTranslations(lang);
   tGrantBotInvite: t.rooms.grantBotInvite,
   tRevokeBotInvite: t.rooms.revokeBotInvite,
   tInvite: t.rooms.invite,
+  tKick: t.rooms.kick,
+  tSystemKicked: t.rooms.systemKicked,
 }} is:inline>
   const scene = document.getElementById('scene-gameroom');
   const leaveBtn = document.getElementById('leave-room-btn');
@@ -252,9 +254,10 @@ const t = useTranslations(lang);
       const slot = document.createElement('div');
       slot.className = 'flex flex-col items-center gap-1';
       if (member) {
-        const isMemberHost = member.userId === roomState.hostId;
         const isBot = !!member.botId;
-        const isClickable = isHost() && member.userId !== currentUserId;
+        const isMemberHost = member.userId === roomState.hostId && !isBot;
+        const isMine = member.userId === currentUserId;
+        const isClickable = (isHost() && !isMine) || (isBot && isMine);
         slot.className += isClickable ? ' cursor-pointer hover:opacity-80 transition' : '';
         slot.innerHTML = `
           <div class="relative">
@@ -264,6 +267,7 @@ const t = useTranslations(lang);
             ${isBot ? '<span class="absolute -bottom-0.5 -right-0.5 text-xs">🤖</span>' : ''}
           </div>
           <p class="text-white/70 text-xs truncate w-full text-center max-w-[64px]">${isMemberHost ? '⭐ ' : ''}${member.username}</p>
+          ${isBot && member.ownerUsername ? `<p class="text-white/30 text-xs truncate w-full text-center max-w-[64px]">${member.ownerUsername}</p>` : ''}
           ${member.canInviteBots && !isBot ? '<p class="text-blue-300 text-xs">🔑</p>' : ''}
         `;
         if (isClickable) {
@@ -291,7 +295,7 @@ const t = useTranslations(lang);
           <img src="${s.avatarUrl || characterSrc}" alt="${s.username}"
             class="w-5 h-5 rounded-full object-cover bg-amber-800"
             onerror="this.src='${characterSrc}'" />
-          <span class="text-white/50 text-xs">${s.username}</span>
+          <span class="text-white/50 text-xs">${s.userId === roomState.hostId ? '⭐ ' : ''}${s.username}</span>
           <span class="text-white/30 text-xs">(${tSpectating})</span>
         `;
         spectatorSlotsEl.appendChild(el);
@@ -311,6 +315,10 @@ const t = useTranslations(lang);
     // Host-only UI
     editRoomBtn.classList.toggle('hidden', !isHost());
     startBtn.classList.toggle('hidden', !isHost());
+    const nonSpectatorCount = members.filter(m => !m.isSpectator).length;
+    startBtn.disabled = nonSpectatorCount < 5;
+    startBtn.className = startBtn.className.replace(/ opacity-40 cursor-not-allowed| cursor-not-allowed| opacity-40/g, '');
+    if (nonSpectatorCount < 5) startBtn.classList.add('opacity-40', 'cursor-not-allowed');
     inviteBotBtn.classList.toggle('hidden', !canInviteBots());
   }
 
@@ -319,15 +327,15 @@ const t = useTranslations(lang);
     paUsername.textContent = member.username;
     paActions.innerHTML = '';
 
-    if (isHost()) {
-      const addBtn = (label, onClick) => {
-        const btn = document.createElement('button');
-        btn.className = 'w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition text-left px-3';
-        btn.textContent = label;
-        btn.addEventListener('click', () => { closeModal(paModal); onClick(); });
-        paActions.appendChild(btn);
-      };
+    const addBtn = (label, onClick) => {
+      const btn = document.createElement('button');
+      btn.className = 'w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition text-left px-3';
+      btn.textContent = label;
+      btn.addEventListener('click', () => { closeModal(paModal); onClick(); });
+      paActions.appendChild(btn);
+    };
 
+    if (isHost()) {
       if (!member.botId) {
         addBtn(tTransferHost, () => doTransferHost(member.userId));
         if (member.canInviteBots) {
@@ -336,9 +344,22 @@ const t = useTranslations(lang);
           addBtn(tGrantBotInvite, () => doSetPermission(member.userId, true));
         }
       }
+      addBtn(`🚫 ${tKick}`, () => doKick(member));
+    } else if (member.botId && member.userId === currentUserId) {
+      // Bot owner can kick their own bot even if not host
+      addBtn(`🚫 ${tKick}`, () => doKick(member));
     }
 
     openModal(paModal);
+  }
+
+  async function doKick(member) {
+    const token = getToken();
+    await fetch(`${apiUrl}/api/rooms/${currentRoom.id}/kick`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(member.botId ? { botId: member.botId } : { targetUserId: member.userId }),
+    }).catch(() => null);
   }
 
   async function doTransferHost(targetUserId) {
@@ -491,6 +512,9 @@ const t = useTranslations(lang);
           appendSystemMessage(`${msg.username} ${tSystemJoined}`);
         } else if (msg.type === 'leave') {
           appendSystemMessage(`${msg.username} ${tSystemLeft}`);
+        } else if (msg.type === 'kicked') {
+          appendSystemMessage(tSystemKicked);
+          setTimeout(() => leaveRoom(), 1500);
         } else if (msg.type === 'room_update') {
           updateUI(msg, msg.members || []);
         } else if (msg.type === 'room_closed') {

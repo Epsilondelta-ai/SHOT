@@ -91,5 +91,7 @@ export default {
     passwordRequired: 'パスワードを入力してください。',
     enterPassword: 'パスワードを入力',
     join: '入室',
+    kick: 'キック',
+    systemKicked: 'が退出させられました。',
   },
 };

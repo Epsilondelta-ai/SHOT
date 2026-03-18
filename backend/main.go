@@ -45,6 +45,7 @@ func main() {
 	api.Post("/rooms/:id/invite-bot", handlers.InviteBot)
 	api.Patch("/rooms/:id/members/:userId/permissions", handlers.SetMemberPermission)
 	api.Post("/rooms/:id/transfer-host", handlers.TransferHost)
+	api.Post("/rooms/:id/kick", handlers.KickFromRoom)
 	api.Patch("/rooms/:id", handlers.UpdateRoom)
 	api.Use("/rooms/:id/ws", func(c *fiber.Ctx) error {
 		if fws.IsWebSocketUpgrade(c) {

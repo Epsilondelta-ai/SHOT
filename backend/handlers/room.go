@@ -5,6 +5,7 @@ import (
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/models"
+	"github.com/epsilondelta/shot/ws"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -335,6 +336,51 @@ func UpdateRoom(c *fiber.Ctx) error {
 		"password":    body.Password,
 	}
 	db.DB.Model(&models.Room{}).Where("id = ?", roomID).Updates(updates)
+	broadcastRoomUpdate(roomID)
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// KickFromRoom POST /api/rooms/:id/kick
+func KickFromRoom(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	roomID := c.Params("id")
+
+	var room models.Room
+	if err := db.DB.First(&room, "id = ?", roomID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "room not found"})
+	}
+	var body struct {
+		TargetUserID string `json:"targetUserId"`
+		BotID        string `json:"botId"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid body"})
+	}
+
+	if body.BotID != "" {
+		// Bot owner or host can kick their own bot
+		var member models.RoomMember
+		if err := db.DB.Where("room_id = ? AND bot_id = ?", roomID, body.BotID).First(&member).Error; err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "bot not in room"})
+		}
+		if room.HostID != userID && member.UserID != userID {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "forbidden"})
+		}
+		db.DB.Where("room_id = ? AND bot_id = ?", roomID, body.BotID).Delete(&models.RoomMember{})
+	} else if body.TargetUserID != "" && body.TargetUserID != userID {
+		if room.HostID != userID {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "host only"})
+		}
+		// Delete from DB first, then close WS to avoid race with disconnect handler
+		db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, body.TargetUserID).Delete(&models.RoomMember{})
+		ws.H.KickClient(roomID, body.TargetUserID)
+	} else {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid target"})
+	}
+
 	broadcastRoomUpdate(roomID)
 	return c.JSON(fiber.Map{"ok": true})
 }

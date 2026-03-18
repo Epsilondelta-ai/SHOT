@@ -91,5 +91,7 @@ export default {
     passwordRequired: 'Введите пароль.',
     enterPassword: 'Введите пароль',
     join: 'Войти',
+    kick: 'Выгнать',
+    systemKicked: 'был выгнан из комнаты.',
   },
 };

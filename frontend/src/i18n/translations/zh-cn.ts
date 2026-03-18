@@ -91,5 +91,7 @@ export default {
     passwordRequired: '请输入密码。',
     enterPassword: '请输入密码',
     join: '进入',
+    kick: '踢出',
+    systemKicked: '被踢出了房间。',
   },
 };

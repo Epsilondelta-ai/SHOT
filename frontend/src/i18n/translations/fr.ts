@@ -91,5 +91,7 @@ export default {
     passwordRequired: 'Veuillez entrer un mot de passe.',
     enterPassword: 'Entrez le mot de passe',
     join: 'Rejoindre',
+    kick: 'Expulser',
+    systemKicked: 'a été expulsé de la salle.',
   },
 };

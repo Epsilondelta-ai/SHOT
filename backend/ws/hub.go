@@ -68,6 +68,23 @@ func (h *Hub) BroadcastJSON(roomID string, v any) {
 	}
 }
 
+func (h *Hub) KickClient(roomID, userID string) {
+	data, _ := json.Marshal(Message{Type: "kicked"})
+	h.mu.RLock()
+	var target *Client
+	for c := range h.rooms[roomID] {
+		if c.UserID == userID {
+			target = c
+			break
+		}
+	}
+	h.mu.RUnlock()
+	if target != nil {
+		target.Conn.WriteMessage(1, data)
+		target.Conn.Close()
+	}
+}
+
 func (h *Hub) BroadcastRoomClosed(roomID string) {
 	data, _ := json.Marshal(Message{Type: "room_closed"})
 	h.mu.RLock()

@@ -91,5 +91,7 @@ export default {
     passwordRequired: '비밀번호를 입력해주세요.',
     enterPassword: '비밀번호를 입력하세요',
     join: '입장',
+    kick: '추방',
+    systemKicked: '님이 추방되었습니다.',
   },
 };

@@ -91,5 +91,7 @@ export default {
     passwordRequired: 'Please enter a password.',
     enterPassword: 'Enter password',
     join: 'Join',
+    kick: 'Kick',
+    systemKicked: 'was kicked from the room.',
   },
 };
