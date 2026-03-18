@@ -141,7 +141,6 @@ const t = useTranslations(lang);
   tSystemJoined: t.rooms.systemJoined,
   tSystemLeft: t.rooms.systemLeft,
   tRoomClosed: t.rooms.roomClosed,
-  tSpectating: t.rooms.spectating,
   tSpectate: t.rooms.spectate,
   tUnspectate: t.rooms.unspectate,
   tTransferHost: t.rooms.transferHost,
@@ -299,7 +298,6 @@ const t = useTranslations(lang);
             class="w-5 h-5 rounded-full object-cover bg-amber-800"
             onerror="this.src='${characterSrc}'" />
           <span class="text-white/50 text-xs">${s.userId === roomState.hostId ? '⭐ ' : ''}${s.username}</span>
-          <span class="text-white/30 text-xs">(${tSpectating})</span>
         `;
         spectatorSlotsEl.appendChild(el);
       });
