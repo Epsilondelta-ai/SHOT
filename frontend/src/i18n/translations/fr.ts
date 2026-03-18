@@ -89,6 +89,7 @@ export default {
     privateRoom: 'Salle Privée',
     password: 'Mot de passe',
     passwordRequired: 'Veuillez entrer un mot de passe.',
+    invalidPassword: 'Mot de passe incorrect.',
     enterPassword: 'Entrez le mot de passe',
     join: 'Rejoindre',
     kick: 'Expulser',

@@ -89,6 +89,7 @@ export default {
     privateRoom: '비밀방',
     password: '비밀번호',
     passwordRequired: '비밀번호를 입력해주세요.',
+    invalidPassword: '비밀번호가 올바르지 않습니다.',
     enterPassword: '비밀번호를 입력하세요',
     join: '입장',
     kick: '추방',

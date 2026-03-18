@@ -89,6 +89,7 @@ export default {
     privateRoom: '私密房间',
     password: '密码',
     passwordRequired: '请输入密码。',
+    invalidPassword: '密码不正确。',
     enterPassword: '请输入密码',
     join: '进入',
     kick: '踢出',

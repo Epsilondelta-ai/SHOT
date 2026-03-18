@@ -114,7 +114,7 @@ const t = useTranslations(lang);
   </div>
 </div>
 
-<script define:vars={{ apiUrl, tRoomsCreating: t.rooms.creating, tRoomsCreate: t.rooms.create, tStatusWaiting: t.rooms.statusWaiting, tStatusPlaying: t.rooms.statusPlaying, tSpectators: t.rooms.spectators, tBots: t.rooms.bots }} is:inline>
+<script define:vars={{ apiUrl, tRoomsCreating: t.rooms.creating, tRoomsCreate: t.rooms.create, tStatusWaiting: t.rooms.statusWaiting, tStatusPlaying: t.rooms.statusPlaying, tSpectators: t.rooms.spectators, tBots: t.rooms.bots, tPasswordRequired: t.rooms.passwordRequired, tInvalidPassword: t.rooms.invalidPassword }} is:inline>
   const scene = document.getElementById('scene-rooms');
   const createRoomBtn = document.getElementById('create-room-btn');
   const createRoomModal = document.getElementById('create-room-modal');
@@ -227,6 +227,7 @@ const t = useTranslations(lang);
   joinConfirmBtn.addEventListener('click', () => {
     const pw = joinPasswordInput.value.trim();
     if (!pw) {
+      joinPasswordError.textContent = tPasswordRequired;
       joinPasswordError.classList.remove('hidden');
       return;
     }
@@ -301,6 +302,19 @@ const t = useTranslations(lang);
       createRoomModal.classList.remove('flex');
       document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
     }
+  });
+
+  // Handle join failure (wrong password or room became private)
+  document.addEventListener('room:join:error', (e) => {
+    const { room, hadPassword } = e.detail;
+    pendingRoom = room;
+    joinRoomName.textContent = room.name;
+    joinPasswordInput.value = '';
+    joinPasswordError.textContent = hadPassword ? tInvalidPassword : tPasswordRequired;
+    joinPasswordError.classList.remove('hidden');
+    joinRoomModal.classList.remove('hidden');
+    joinRoomModal.classList.add('flex');
+    joinPasswordInput.focus();
   });
 
   // Initial load

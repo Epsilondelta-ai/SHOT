@@ -129,6 +129,14 @@ func RoomSSE(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).SendString("room not found")
 	}
 
+	// For private rooms, verify the user has successfully joined (is a member)
+	if room.IsPrivate {
+		var member models.RoomMember
+		if err := db.DB.First(&member, "room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Error; err != nil {
+			return c.Status(fiber.StatusForbidden).SendString("forbidden")
+		}
+	}
+
 	// Resolve username and avatar
 	var user models.User
 	db.DB.First(&user, "id = ?", userID)

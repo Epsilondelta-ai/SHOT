@@ -89,6 +89,7 @@ export default {
     privateRoom: '秘密部屋',
     password: 'パスワード',
     passwordRequired: 'パスワードを入力してください。',
+    invalidPassword: 'パスワードが正しくありません。',
     enterPassword: 'パスワードを入力',
     join: '入室',
     kick: 'キック',

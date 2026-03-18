@@ -89,6 +89,7 @@ export default {
     privateRoom: 'Приватная комната',
     password: 'Пароль',
     passwordRequired: 'Введите пароль.',
+    invalidPassword: 'Неверный пароль.',
     enterPassword: 'Введите пароль',
     join: 'Войти',
     kick: 'Выгнать',

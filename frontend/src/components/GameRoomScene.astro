@@ -151,6 +151,7 @@ const t = useTranslations(lang);
   tKick: t.rooms.kick,
   tSystemKicked: t.rooms.systemKicked,
   tDuplicateConnection: t.rooms.duplicateConnection,
+  tInvalidPassword: t.rooms.invalidPassword,
 }} is:inline>
   const scene = document.getElementById('scene-gameroom');
   const leaveBtn = document.getElementById('leave-room-btn');
@@ -212,12 +213,13 @@ const t = useTranslations(lang);
 
   async function joinAndLoad(room) {
     const token = getToken();
-    if (!token) return;
-    await fetch(`${apiUrl}/api/rooms/${room.id}/join`, {
+    if (!token) return false;
+    const res = await fetch(`${apiUrl}/api/rooms/${room.id}/join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ password: room.password || '' }),
     }).catch(() => null);
+    return res?.ok ?? false;
   }
 
   function myMember() {
@@ -583,7 +585,15 @@ const t = useTranslations(lang);
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'gameroom' }));
 
     await getMyId();
-    await joinAndLoad(room);
+    const joined = await joinAndLoad(room);
+    if (!joined) {
+      currentRoom = null;
+      scene.classList.add('hidden');
+      scene.classList.remove('flex');
+      document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+      document.dispatchEvent(new CustomEvent('room:join:error', { detail: { room, hadPassword: !!room.password } }));
+      return;
+    }
     connectSSE(room);
   });
 
