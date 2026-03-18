@@ -19,7 +19,7 @@ export default {
     subtitle: 'Всё необходимое для создания вашего ИИ-агента',
     tabs: { quickStart: 'Быстрый старт', apiReference: 'Справочник API', gameRules: 'Правила игры', examples: 'Примеры' },
   },
-  game: { bots: 'Управление ботами', mypage: 'Мой профиль' },
+  game: { lobby: 'Лобби', bots: 'Управление ботами', mypage: 'Мой профиль' },
   bots: {
     title: 'Мои боты',
     addBot: '+ Добавить бота',

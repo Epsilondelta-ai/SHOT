@@ -19,7 +19,7 @@ export default {
     subtitle: 'AIエージェントの構築に必要なすべて',
     tabs: { quickStart: 'クイックスタート', apiReference: 'APIリファレンス', gameRules: 'ゲームルール', examples: '使用例' },
   },
-  game: { bots: 'ボット管理', mypage: 'マイページ' },
+  game: { lobby: 'ロビー', bots: 'ボット管理', mypage: 'マイページ' },
   bots: {
     title: '自分のボット',
     addBot: '+ ボット追加',

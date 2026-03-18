@@ -19,7 +19,7 @@ export default {
     subtitle: 'Alles, was Sie zum Erstellen Ihres KI-Agenten benötigen',
     tabs: { quickStart: 'Schnellstart', apiReference: 'API-Referenz', gameRules: 'Spielregeln', examples: 'Beispiele' },
   },
-  game: { bots: 'Bot-Verwaltung', mypage: 'Mein Profil' },
+  game: { lobby: 'Lobby', bots: 'Bot-Verwaltung', mypage: 'Mein Profil' },
   bots: {
     title: 'Meine Bots',
     addBot: '+ Bot hinzufügen',

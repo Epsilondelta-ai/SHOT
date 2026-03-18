@@ -19,7 +19,7 @@ export default {
     subtitle: 'Todo lo que necesitas para construir tu agente IA',
     tabs: { quickStart: 'Inicio Rápido', apiReference: 'Referencia API', gameRules: 'Reglas del Juego', examples: 'Ejemplos' },
   },
-  game: { bots: 'Gestión de Bots', mypage: 'Mi Perfil' },
+  game: { lobby: 'Lobby', bots: 'Gestión de Bots', mypage: 'Mi Perfil' },
   bots: {
     title: 'Mis Bots',
     addBot: '+ Agregar Bot',

@@ -25,8 +25,9 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 
     <!-- Desktop nav -->
     <nav class="hidden sm:flex items-center gap-5 text-amber-100 font-semibold text-sm">
-      <button id="nav-bots" class="hover:text-white transition cursor-pointer">{t.game.bots}</button>
-      <button id="nav-mypage" class="flex items-center gap-2 hover:text-white transition cursor-pointer">
+      <button id="nav-lobby" class="nav-item hover:text-white transition cursor-pointer px-5 py-2 rounded-lg" data-scene="rooms">{t.game.lobby}</button>
+      <button id="nav-bots" class="nav-item hover:text-white transition cursor-pointer px-5 py-2 rounded-lg" data-scene="bots">{t.game.bots}</button>
+      <button id="nav-mypage" class="nav-item flex items-center gap-2 hover:text-white transition cursor-pointer px-5 py-2 rounded-lg" data-scene="mypage">
         <img
           id="header-avatar"
           src={character.src}
@@ -86,8 +87,9 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
         id="hamburger-menu"
         class="hidden absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 min-w-[160px]"
       >
-        <button id="mobile-nav-bots" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">{t.game.bots}</button>
-        <button id="mobile-nav-mypage" class="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">
+        <button id="mobile-nav-lobby" class="mobile-nav-item w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold" data-scene="rooms">{t.game.lobby}</button>
+        <button id="mobile-nav-bots" class="mobile-nav-item w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold" data-scene="bots">{t.game.bots}</button>
+        <button id="mobile-nav-mypage" class="mobile-nav-item w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold" data-scene="mypage">
           <img
             id="mobile-header-avatar"
             src={character.src}
@@ -197,8 +199,32 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     if (mobileLangWrapperEl) mobileLangWrapperEl.style.display = inRoom ? 'none' : '';
   });
 
+  // Active nav highlight
+  function setActiveNav(scene: string) {
+    document.querySelectorAll<HTMLElement>('.nav-item').forEach(el => {
+      const isActive = el.dataset.scene === scene;
+      el.classList.toggle('text-white', isActive);
+      el.classList.toggle('bg-black/30', isActive);
+      el.classList.toggle('shadow-inner', isActive);
+      el.classList.toggle('border', isActive);
+      el.classList.toggle('border-amber-300/20', isActive);
+      el.classList.toggle('text-amber-100', !isActive);
+    });
+    document.querySelectorAll<HTMLElement>('.mobile-nav-item').forEach(el => {
+      const isActive = el.dataset.scene === scene;
+      el.classList.toggle('text-amber-600', isActive);
+      el.classList.toggle('bg-amber-50', isActive);
+      el.classList.toggle('text-gray-700', !isActive);
+    });
+  }
+
+  document.addEventListener('game:scene', (e: Event) => {
+    const scene = (e as CustomEvent).detail as string;
+    setActiveNav(scene === 'gameroom' ? 'rooms' : scene);
+  });
+
   // Scene change events
-  ['nav-rooms'].forEach(id => {
+  ['nav-rooms', 'nav-lobby'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
     });
@@ -215,4 +241,13 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
       hamburgerMenu?.classList.add('hidden');
     });
   });
+  ['mobile-nav-lobby'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', () => {
+      document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+      hamburgerMenu?.classList.add('hidden');
+    });
+  });
+
+  // Set initial active state
+  setActiveNav('rooms');
 </script>

@@ -19,7 +19,7 @@ export default {
     subtitle: 'Everything you need to build your AI agent',
     tabs: { quickStart: 'Quick Start', apiReference: 'API Reference', gameRules: 'Game Rules', examples: 'Examples' },
   },
-  game: { bots: '봇 관리', mypage: '내 정보' },
+  game: { lobby: '로비', bots: '봇 관리', mypage: '내 정보' },
   bots: {
     title: '내 봇',
     addBot: '+ 봇 추가',

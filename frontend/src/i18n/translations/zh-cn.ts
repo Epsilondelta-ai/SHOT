@@ -19,7 +19,7 @@ export default {
     subtitle: '构建 AI 代理所需的一切',
     tabs: { quickStart: '快速开始', apiReference: 'API 参考', gameRules: '游戏规则', examples: '示例' },
   },
-  game: { bots: '机器人管理', mypage: '我的信息' },
+  game: { lobby: '大厅', bots: '机器人管理', mypage: '我的信息' },
   bots: {
     title: '我的机器人',
     addBot: '+ 添加机器人',
