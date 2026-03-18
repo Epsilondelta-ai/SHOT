@@ -603,7 +603,19 @@ const t = useTranslations(lang);
 
   document.addEventListener('game:scene', (e) => {
     if (e.detail !== 'gameroom') {
+      if (currentRoom) {
+        const token = getToken();
+        const roomId = currentRoom.id;
+        navigator.sendBeacon(`${apiUrl}/api/rooms/${roomId}/leave?token=${token}`);
+        currentRoom = null;
+        currentMembers = [];
+        chatMessages.innerHTML = '';
+        closeModal(paModal);
+        closeModal(editModal);
+        closeModal(inviteBotModal);
+      }
       if (es) { es.close(); es = null; }
+      document.dispatchEvent(new CustomEvent('room:sse', { detail: 'disconnected' }));
       scene.classList.add('hidden');
       scene.classList.remove('flex');
     }
