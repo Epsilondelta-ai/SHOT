@@ -1,4 +1,7 @@
 ---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import HeroBackground from '../../components/HeroBackground.astro';
 import { locales, type Locale } from '../../i18n/locales';
 
 export function getStaticPaths() {
@@ -6,33 +9,17 @@ export function getStaticPaths() {
 }
 
 const { lang } = Astro.params as { lang: Locale };
-
-const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 ---
-<!doctype html>
-<html lang={lang}>
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SHOT!</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body { width: 100%; height: 100%; background: #111111; overflow: hidden; }
-      #game-canvas { width: 100%; height: 100%; }
-    </style>
-  </head>
-  <body>
-    <div id="game-canvas"></div>
 
-    <script define:vars={{ apiUrl, lang }} is:inline>
-      const token = localStorage.getItem('token');
-      if (!token) {
-        window.location.replace('/' + lang + '/login');
-      }
-    </script>
+<BaseLayout title="SHOT!" bodyClass="bg-gray-950 min-h-screen flex flex-col">
+  <SiteHeader lang={lang} path="/game" />
 
-    <script>
-      import('../../game/index.ts');
-    </script>
-  </body>
-</html>
+  <HeroBackground class="flex-1 flex-col justify-center">
+  </HeroBackground>
+
+  <script define:vars={{ lang }} is:inline>
+    if (!localStorage.getItem('token')) {
+      window.location.replace('/' + lang + '/login');
+    }
+  </script>
+</BaseLayout>
