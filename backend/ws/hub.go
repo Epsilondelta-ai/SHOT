@@ -83,7 +83,9 @@ func (h *Hub) sendToLocalClients(roomID string, data []byte) {
 }
 
 func (h *Hub) controlLocalClient(roomID string, ctrl ctrlMsg) {
-	h.mu.RLock()
+	// Use write lock so we remove from map before closing the channel,
+	// preventing sendToLocalClients from sending to a closed channel.
+	h.mu.Lock()
 	var target *Client
 	for c := range h.rooms[roomID] {
 		if c.UserID == ctrl.UserID {
@@ -91,7 +93,14 @@ func (h *Hub) controlLocalClient(roomID string, ctrl ctrlMsg) {
 			break
 		}
 	}
-	h.mu.RUnlock()
+	if target != nil {
+		delete(h.rooms[roomID], target)
+		if len(h.rooms[roomID]) == 0 {
+			delete(h.rooms, roomID)
+		}
+	}
+	h.mu.Unlock()
+
 	if target == nil {
 		return
 	}
@@ -123,6 +132,39 @@ func (h *Hub) Register(c *Client) {
 	}
 	h.rooms[c.RoomID][c] = true
 	h.mu.Unlock()
+}
+
+// RegisterAndReplaceLocal atomically closes any existing local connection for
+// the same user+room and registers the new client. This avoids the race where
+// a Redis ctrl message for the old connection arrives after the new client is
+// registered and accidentally closes it.
+func (h *Hub) RegisterAndReplaceLocal(c *Client) {
+	h.mu.Lock()
+	if h.rooms[c.RoomID] == nil {
+		h.rooms[c.RoomID] = make(map[*Client]bool)
+	}
+	var old *Client
+	for existing := range h.rooms[c.RoomID] {
+		if existing.UserID == c.UserID {
+			old = existing
+			break
+		}
+	}
+	if old != nil {
+		delete(h.rooms[c.RoomID], old)
+	}
+	h.rooms[c.RoomID][c] = true
+	h.mu.Unlock()
+
+	if old != nil {
+		old.Replaced = true
+		data, _ := json.Marshal(Message{Type: "duplicate"})
+		select {
+		case old.Ch <- data:
+		default:
+		}
+		close(old.Ch)
+	}
 }
 
 func (h *Hub) Unregister(c *Client) {

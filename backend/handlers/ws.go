@@ -140,10 +140,10 @@ func RoomSSE(c *fiber.Ctx) error {
 		AvatarURL: user.AvatarURL,
 		RoomID:    roomID,
 	}
-	// Close any existing connection for this user in this room (duplicate tab/browser)
-	// Pass replaced=true so the old defer skips DB cleanup
-	ws.H.CloseClient(roomID, userID, true)
-	ws.H.Register(client)
+	// Atomically close any existing local connection and register new one.
+	// Using local-only replacement avoids a race where the Redis ctrl message
+	// arrives after the new client is registered and accidentally closes it.
+	ws.H.RegisterAndReplaceLocal(client)
 
 	// Broadcast join
 	ws.H.Broadcast(roomID, ws.Message{

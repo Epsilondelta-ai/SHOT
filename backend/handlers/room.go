@@ -399,7 +399,23 @@ func LeaveRoom(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
 	}
 	roomID := c.Params("id")
+	// Close the SSE connection (no-op if already closed).
 	ws.H.CloseClient(roomID, userID, false)
+	// Also delete directly from DB in case the SSE connection is already gone
+	// and the defer cleanup won't run.
+	db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Delete(&models.RoomMember{})
+	if !ws.H.HasClients(roomID) {
+		ws.H.BroadcastRoomClosed(roomID)
+		db.DB.Where("room_id = ?", roomID).Delete(&models.RoomMember{})
+		db.DB.Delete(&models.Room{}, "id = ?", roomID)
+	} else {
+		var currentRoom models.Room
+		db.DB.First(&currentRoom, "id = ?", roomID)
+		if currentRoom.HostID == userID {
+			transferHostToNext(roomID)
+		}
+		broadcastRoomUpdate(roomID)
+	}
 	return c.JSON(fiber.Map{"ok": true})
 }
 

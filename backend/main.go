@@ -24,6 +24,13 @@ func main() {
 	if err := db.ConnectRedis(); err != nil {
 		log.Fatal("Failed to connect to Redis:", err)
 	}
+
+	// Clean up rooms left over from previous server session.
+	// Room state is ephemeral (tied to SSE connections), so on restart
+	// all rooms are stale and must be removed.
+	db.DB.Exec("DELETE FROM room_members")
+	db.DB.Exec("DELETE FROM rooms")
+
 	ws.H = ws.NewHub(db.RDB)
 	ws.H.Start()
 	ws.SH = ws.NewSessionHub(db.RDB)
