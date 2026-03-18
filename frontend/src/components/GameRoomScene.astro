@@ -1,0 +1,198 @@
+---
+import character from '../assets/character.webp';
+import { type Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n';
+
+interface Props {
+  apiUrl: string;
+  lang: Locale;
+}
+
+const { apiUrl, lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<div id="scene-gameroom" class="hidden relative z-10 w-full flex-1 flex-col items-center overflow-y-auto py-8 px-4">
+  <div class="w-full max-w-3xl mx-auto">
+
+    <!-- Room header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3 min-w-0">
+        <button
+          id="leave-room-btn"
+          class="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-sm transition"
+        >
+          ← {t.rooms.leaveRoom}
+        </button>
+        <div class="min-w-0">
+          <h2 id="gameroom-name" class="text-white font-bold text-xl truncate"></h2>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span id="gameroom-status-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full"></span>
+            <span id="gameroom-private-badge" class="hidden text-xs text-amber-300">🔒 {t.rooms.privateRoom}</span>
+          </div>
+        </div>
+      </div>
+      <button
+        id="start-game-btn"
+        class="hidden flex-shrink-0 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-5 py-2.5 rounded-xl transition"
+      >
+        {t.rooms.startGame}
+      </button>
+    </div>
+
+    <!-- Player slots grid -->
+    <div class="mb-3">
+      <p class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">
+        {t.rooms.players} <span id="gameroom-player-count" class="text-white/70"></span>
+      </p>
+      <div id="gameroom-slots" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+    </div>
+
+    <!-- Spectators row -->
+    <div id="gameroom-spectator-row" class="hidden mt-4">
+      <p class="text-white/40 text-xs font-semibold uppercase tracking-wider mb-2">
+        👁 {t.rooms.spectators} <span id="gameroom-spectator-count" class="text-white/50"></span>
+      </p>
+    </div>
+
+    <!-- Waiting message -->
+    <p id="gameroom-waiting-msg" class="text-center text-white/30 text-sm mt-8">{t.rooms.waitingForPlayers}</p>
+  </div>
+</div>
+
+<script define:vars={{ apiUrl, characterSrc: character.src, tHost: t.rooms.host, tEmptySlot: t.rooms.emptySlot, tStatusWaiting: t.rooms.statusWaiting, tStatusPlaying: t.rooms.statusPlaying }} is:inline>
+  const scene = document.getElementById('scene-gameroom');
+  const leaveBtn = document.getElementById('leave-room-btn');
+  const startBtn = document.getElementById('start-game-btn');
+  const nameEl = document.getElementById('gameroom-name');
+  const statusBadge = document.getElementById('gameroom-status-badge');
+  const privateBadge = document.getElementById('gameroom-private-badge');
+  const playerCountEl = document.getElementById('gameroom-player-count');
+  const slotsEl = document.getElementById('gameroom-slots');
+  const spectatorRow = document.getElementById('gameroom-spectator-row');
+  const spectatorCountEl = document.getElementById('gameroom-spectator-count');
+
+  let currentRoom = null;
+  let currentUserId = null;
+
+  async function getMyId() {
+    if (currentUserId) return currentUserId;
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    const res = await fetch(`${apiUrl}/api/me`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
+    if (!res?.ok) return null;
+    const user = await res.json();
+    currentUserId = user.id;
+    return currentUserId;
+  }
+
+  async function joinAndLoad(room) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    // Call join (backend handles duplicate gracefully)
+    await fetch(`${apiUrl}/api/rooms/${room.id}/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ password: room.password || '' }),
+    }).catch(() => null);
+
+    // Fetch member list
+    const res = await fetch(`${apiUrl}/api/rooms/${room.id}/members`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    if (!res?.ok) return;
+    const members = await res.json();
+    renderSlots(room, members);
+  }
+
+  function renderRoom(room) {
+    currentRoom = room;
+    nameEl.textContent = room.name;
+
+    const isPlaying = room.status === 'playing';
+    statusBadge.textContent = isPlaying ? tStatusPlaying : tStatusWaiting;
+    statusBadge.className = `text-xs font-semibold px-2 py-0.5 rounded-full ${isPlaying ? 'bg-yellow-500/20 text-yellow-300' : 'bg-green-500/20 text-green-300'}`;
+
+    privateBadge.classList.toggle('hidden', !room.isPrivate);
+    playerCountEl.textContent = `${room.playerCount} / ${room.maxPlayers}`;
+
+    if (room.spectatorCount > 0) {
+      spectatorRow.classList.remove('hidden');
+      spectatorCountEl.textContent = room.spectatorCount;
+    } else {
+      spectatorRow.classList.add('hidden');
+    }
+  }
+
+  function renderSlots(room, members) {
+    slotsEl.innerHTML = '';
+    playerCountEl.textContent = `${members.length} / ${room.maxPlayers}`;
+
+    for (let i = 0; i < room.maxPlayers; i++) {
+      const slot = document.createElement('div');
+      const member = members[i];
+      const isHost = member && member.userId === room.hostId;
+
+      slot.className = `flex flex-col items-center gap-2 bg-black/40 rounded-xl p-3 ${member ? '' : 'opacity-40 border border-dashed border-white/20'}`;
+
+      if (member) {
+        const avatar = member.avatarUrl || characterSrc;
+        const name = member.username || '...';
+        slot.innerHTML = `
+          <img
+            src="${avatar}"
+            alt="${name}"
+            class="w-12 h-12 rounded-full object-cover bg-amber-800 border-2 ${isHost ? 'border-amber-400' : 'border-white/20'}"
+            onerror="this.src='${characterSrc}'"
+          />
+          <p class="text-white/80 text-xs truncate w-full text-center">${isHost ? '⭐ ' : ''}${name}</p>
+        `;
+      } else {
+        slot.innerHTML = `
+          <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
+            <span class="text-white/20 text-xl">+</span>
+          </div>
+          <p class="text-white/20 text-xs">${tEmptySlot}</p>
+        `;
+      }
+      slotsEl.appendChild(slot);
+    }
+  }
+
+  // Show when room:join fires
+  document.addEventListener('room:join', async (e) => {
+    const room = e.detail;
+    if (!room) return;
+
+    renderRoom(room);
+    scene.classList.remove('hidden');
+    scene.classList.add('flex');
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'gameroom' }));
+
+    await getMyId();
+    await joinAndLoad(room);
+
+    // Show start button for host
+    if (currentUserId && room.hostId === currentUserId) {
+      startBtn.classList.remove('hidden');
+    }
+  });
+
+  // Hide when game:scene fires with a different scene
+  document.addEventListener('game:scene', (e) => {
+    if (e.detail !== 'gameroom') {
+      scene.classList.add('hidden');
+      scene.classList.remove('flex');
+      startBtn.classList.add('hidden');
+    }
+  });
+
+  leaveBtn.addEventListener('click', () => {
+    currentRoom = null;
+    scene.classList.add('hidden');
+    scene.classList.remove('flex');
+    startBtn.classList.add('hidden');
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+  });
+</script>

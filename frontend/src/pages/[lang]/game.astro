@@ -5,6 +5,7 @@ import HeroBackground from '../../components/HeroBackground.astro';
 import MyPageScene from '../../components/MyPageScene.astro';
 import BotsScene from '../../components/BotsScene.astro';
 import RoomListScene from '../../components/RoomListScene.astro';
+import GameRoomScene from '../../components/GameRoomScene.astro';
 import { locales, type Locale } from '../../i18n/locales';
 
 export function getStaticPaths() {
@@ -20,6 +21,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 
   <HeroBackground class="flex-1 flex-col justify-center">
     <RoomListScene apiUrl={apiUrl} lang={lang} />
+    <GameRoomScene apiUrl={apiUrl} lang={lang} />
     <BotsScene apiUrl={apiUrl} lang={lang} />
     <MyPageScene apiUrl={apiUrl} lang={lang} />
   </HeroBackground>

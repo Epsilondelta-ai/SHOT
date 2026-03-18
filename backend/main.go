@@ -38,6 +38,8 @@ func main() {
 	api.Patch("/me", handlers.UpdateMe)
 	api.Get("/rooms", handlers.ListRooms)
 	api.Post("/rooms", handlers.CreateRoom)
+	api.Post("/rooms/:id/join", handlers.JoinRoom)
+	api.Get("/rooms/:id/members", handlers.GetRoomMembers)
 	api.Get("/bots", handlers.ListBots)
 	api.Post("/bots", handlers.CreateBot)
 	api.Patch("/bots/:id", handlers.UpdateBot)

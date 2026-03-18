@@ -114,7 +114,7 @@ const t = useTranslations(lang);
   </div>
 </div>
 
-<script define:vars={{ apiUrl, tRoomsCreating: t.rooms.creating, tRoomsCreate: t.rooms.create, tStatusWaiting: t.rooms.statusWaiting, tStatusPlaying: t.rooms.statusPlaying }} is:inline>
+<script define:vars={{ apiUrl, tRoomsCreating: t.rooms.creating, tRoomsCreate: t.rooms.create, tStatusWaiting: t.rooms.statusWaiting, tStatusPlaying: t.rooms.statusPlaying, tSpectators: t.rooms.spectators, tBots: t.rooms.bots }} is:inline>
   const scene = document.getElementById('scene-rooms');
   const createRoomBtn = document.getElementById('create-room-btn');
   const createRoomModal = document.getElementById('create-room-modal');
@@ -200,8 +200,10 @@ const t = useTranslations(lang);
           <p class="text-white font-semibold truncate">${room.isPrivate ? '🔒 ' : ''}${room.name}</p>
           <p class="${statusColor(room.status)} text-xs">${statusLabel(room.status)}</p>
         </div>
-        <div class="text-white/50 text-sm flex-shrink-0">
-          ${room.playerCount} / ${room.maxPlayers}
+        <div class="flex flex-col items-end gap-0.5 flex-shrink-0 text-xs">
+          <span class="text-white/70">👤 ${room.playerCount} / ${room.maxPlayers}</span>
+          ${room.botCount > 0 ? `<span class="text-blue-300">🤖 ${room.botCount} ${tBots}</span>` : ''}
+          ${room.spectatorCount > 0 ? `<span class="text-white/40">👁 ${room.spectatorCount} ${tSpectators}</span>` : ''}
         </div>
       `;
       card.addEventListener('click', () => {
@@ -294,9 +296,10 @@ const t = useTranslations(lang);
     roomCreateBtn.textContent = tRoomsCreate;
 
     if (res?.ok) {
+      const room = await res.json();
       createRoomModal.classList.add('hidden');
       createRoomModal.classList.remove('flex');
-      loadRooms();
+      document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
     }
   });
 
