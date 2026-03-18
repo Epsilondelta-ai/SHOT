@@ -61,5 +61,10 @@ export default {
     refresh: '更新',
     statusWaiting: '待機中',
     statusPlaying: 'ゲーム中',
+    privateRoom: '秘密部屋',
+    password: 'パスワード',
+    passwordRequired: 'パスワードを入力してください。',
+    enterPassword: 'パスワードを入力',
+    join: '入室',
   },
 };

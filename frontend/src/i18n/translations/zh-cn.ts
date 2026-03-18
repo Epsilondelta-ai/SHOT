@@ -61,5 +61,10 @@ export default {
     refresh: '刷新',
     statusWaiting: '等待中',
     statusPlaying: '游戏中',
+    privateRoom: '私密房间',
+    password: '密码',
+    passwordRequired: '请输入密码。',
+    enterPassword: '请输入密码',
+    join: '进入',
   },
 };

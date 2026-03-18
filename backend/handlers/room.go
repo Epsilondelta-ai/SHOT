@@ -25,6 +25,7 @@ func ListRooms(c *fiber.Ctx) error {
 			"status":      r.Status,
 			"maxPlayers":  r.MaxPlayers,
 			"playerCount": r.PlayerCount,
+			"isPrivate":   r.IsPrivate,
 			"createdAt":   r.CreatedAt,
 		}
 	}
@@ -41,6 +42,8 @@ func CreateRoom(c *fiber.Ctx) error {
 	var body struct {
 		Name       string `json:"name"`
 		MaxPlayers int    `json:"maxPlayers"`
+		IsPrivate  bool   `json:"isPrivate"`
+		Password   string `json:"password"`
 	}
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
@@ -48,7 +51,10 @@ func CreateRoom(c *fiber.Ctx) error {
 	if body.Name == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "name is required"})
 	}
-	if body.MaxPlayers < 2 || body.MaxPlayers > 16 {
+	if body.IsPrivate && body.Password == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "password is required for private room"})
+	}
+	if body.MaxPlayers < 5 || body.MaxPlayers > 12 {
 		body.MaxPlayers = 8
 	}
 
@@ -56,6 +62,8 @@ func CreateRoom(c *fiber.Ctx) error {
 		Name:       body.Name,
 		HostID:     userID,
 		MaxPlayers: body.MaxPlayers,
+		IsPrivate:  body.IsPrivate,
+		Password:   body.Password,
 	}
 	if result := db.DB.Create(&room); result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create room"})
@@ -68,6 +76,7 @@ func CreateRoom(c *fiber.Ctx) error {
 		"status":      room.Status,
 		"maxPlayers":  room.MaxPlayers,
 		"playerCount": room.PlayerCount,
+		"isPrivate":   room.IsPrivate,
 		"createdAt":   room.CreatedAt,
 	})
 }

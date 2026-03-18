@@ -61,5 +61,10 @@ export default {
     refresh: '새로고침',
     statusWaiting: '대기 중',
     statusPlaying: '게임 중',
+    privateRoom: '비밀방',
+    password: '비밀번호',
+    passwordRequired: '비밀번호를 입력해주세요.',
+    enterPassword: '비밀번호를 입력하세요',
+    join: '입장',
   },
 };

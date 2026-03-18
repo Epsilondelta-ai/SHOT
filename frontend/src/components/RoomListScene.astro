@@ -32,7 +32,7 @@ const t = useTranslations(lang);
       </div>
     </div>
     <div id="room-list" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <p id="room-list-empty" class="text-white/40 text-sm text-center py-6">{t.rooms.empty}</p>
+      <p id="room-list-empty" class="text-white/40 text-sm text-center py-6 col-span-3">{t.rooms.empty}</p>
     </div>
   </div>
 </div>
@@ -54,7 +54,7 @@ const t = useTranslations(lang);
       <p id="room-name-error" class="text-red-400 text-xs mt-1 hidden">{t.rooms.roomNameRequired}</p>
     </div>
 
-    <div class="mb-6">
+    <div class="mb-5">
       <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.maxPlayers}</label>
       <select
         id="room-max-players"
@@ -66,9 +66,50 @@ const t = useTranslations(lang);
       </select>
     </div>
 
+    <div class="mb-5">
+      <label class="flex items-center gap-2 cursor-pointer select-none">
+        <input id="room-private-check" type="checkbox" class="w-4 h-4 accent-amber-400" />
+        <span class="text-sm font-semibold text-white/70">🔒 {t.rooms.privateRoom}</span>
+      </label>
+    </div>
+
+    <div id="room-password-field" class="mb-6 hidden">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.password} <span class="text-red-400">*</span></label>
+      <input
+        id="room-password-input"
+        type="password"
+        maxlength="50"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        placeholder={t.rooms.password}
+      />
+      <p id="room-password-error" class="text-red-400 text-xs mt-1 hidden">{t.rooms.passwordRequired}</p>
+    </div>
+
     <div class="flex gap-3">
       <button id="room-create-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.rooms.create}</button>
       <button id="room-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Join Private Room Modal -->
+<div id="join-room-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-2">🔒 <span id="join-room-name"></span></h3>
+    <p class="text-white/50 text-sm mb-6">{t.rooms.enterPassword}</p>
+    <div class="mb-6">
+      <input
+        id="join-password-input"
+        type="password"
+        maxlength="50"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        placeholder={t.rooms.password}
+      />
+      <p id="join-password-error" class="text-red-400 text-xs mt-1 hidden">{t.rooms.passwordRequired}</p>
+    </div>
+    <div class="flex gap-3">
+      <button id="join-confirm-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.rooms.join}</button>
+      <button id="join-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
     </div>
   </div>
 </div>
@@ -85,6 +126,19 @@ const t = useTranslations(lang);
   const roomList = document.getElementById('room-list');
   const roomListEmpty = document.getElementById('room-list-empty');
   const refreshBtn = document.getElementById('refresh-rooms-btn');
+  const privateCheck = document.getElementById('room-private-check');
+  const passwordField = document.getElementById('room-password-field');
+  const roomPasswordInput = document.getElementById('room-password-input');
+  const roomPasswordError = document.getElementById('room-password-error');
+
+  const joinRoomModal = document.getElementById('join-room-modal');
+  const joinRoomName = document.getElementById('join-room-name');
+  const joinPasswordInput = document.getElementById('join-password-input');
+  const joinPasswordError = document.getElementById('join-password-error');
+  const joinConfirmBtn = document.getElementById('join-confirm-btn');
+  const joinCancelBtn = document.getElementById('join-cancel-btn');
+
+  let pendingRoom = null;
 
   // Show/hide based on scene events
   document.addEventListener('game:scene', (e) => {
@@ -94,6 +148,17 @@ const t = useTranslations(lang);
     } else {
       scene.classList.add('hidden');
       scene.classList.remove('flex');
+    }
+  });
+
+  // Toggle password field
+  privateCheck.addEventListener('change', () => {
+    if (privateCheck.checked) {
+      passwordField.classList.remove('hidden');
+    } else {
+      passwordField.classList.add('hidden');
+      roomPasswordInput.value = '';
+      roomPasswordError.classList.add('hidden');
     }
   });
 
@@ -132,7 +197,7 @@ const t = useTranslations(lang);
       card.className = 'room-card flex items-center gap-3 bg-black/40 hover:bg-black/60 rounded-xl px-4 py-3 cursor-pointer transition';
       card.innerHTML = `
         <div class="flex-1 min-w-0">
-          <p class="text-white font-semibold truncate">${room.name}</p>
+          <p class="text-white font-semibold truncate">${room.isPrivate ? '🔒 ' : ''}${room.name}</p>
           <p class="${statusColor(room.status)} text-xs">${statusLabel(room.status)}</p>
         </div>
         <div class="text-white/50 text-sm flex-shrink-0">
@@ -140,17 +205,51 @@ const t = useTranslations(lang);
         </div>
       `;
       card.addEventListener('click', () => {
-        document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+        if (room.isPrivate) {
+          pendingRoom = room;
+          joinRoomName.textContent = room.name;
+          joinPasswordInput.value = '';
+          joinPasswordError.classList.add('hidden');
+          joinRoomModal.classList.remove('hidden');
+          joinRoomModal.classList.add('flex');
+          joinPasswordInput.focus();
+        } else {
+          document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+        }
       });
       roomList.appendChild(card);
     });
   }
+
+  // Join private room
+  joinConfirmBtn.addEventListener('click', () => {
+    const pw = joinPasswordInput.value.trim();
+    if (!pw) {
+      joinPasswordError.classList.remove('hidden');
+      return;
+    }
+    joinPasswordError.classList.add('hidden');
+    joinRoomModal.classList.add('hidden');
+    joinRoomModal.classList.remove('flex');
+    document.dispatchEvent(new CustomEvent('room:join', { detail: { ...pendingRoom, password: pw } }));
+    pendingRoom = null;
+  });
+
+  joinCancelBtn.addEventListener('click', () => {
+    joinRoomModal.classList.add('hidden');
+    joinRoomModal.classList.remove('flex');
+    pendingRoom = null;
+  });
 
   refreshBtn.addEventListener('click', loadRooms);
 
   createRoomBtn.addEventListener('click', () => {
     roomNameInput.value = '';
     roomNameError.classList.add('hidden');
+    privateCheck.checked = false;
+    passwordField.classList.add('hidden');
+    roomPasswordInput.value = '';
+    roomPasswordError.classList.add('hidden');
     createRoomModal.classList.remove('hidden');
     createRoomModal.classList.add('flex');
   });
@@ -168,6 +267,14 @@ const t = useTranslations(lang);
     }
     roomNameError.classList.add('hidden');
 
+    const isPrivate = privateCheck.checked;
+    const password = roomPasswordInput.value.trim();
+    if (isPrivate && !password) {
+      roomPasswordError.classList.remove('hidden');
+      return;
+    }
+    roomPasswordError.classList.add('hidden');
+
     const token = localStorage.getItem('token');
     if (!token) return;
 
@@ -180,7 +287,7 @@ const t = useTranslations(lang);
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ name, maxPlayers: parseInt(roomMaxPlayers.value) }),
+      body: JSON.stringify({ name, maxPlayers: parseInt(roomMaxPlayers.value), isPrivate, password }),
     }).catch(() => null);
 
     roomCreateBtn.disabled = false;

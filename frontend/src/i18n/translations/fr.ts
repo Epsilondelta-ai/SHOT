@@ -61,5 +61,10 @@ export default {
     refresh: 'Actualiser',
     statusWaiting: 'En attente',
     statusPlaying: 'En jeu',
+    privateRoom: 'Salle Privée',
+    password: 'Mot de passe',
+    passwordRequired: 'Veuillez entrer un mot de passe.',
+    enterPassword: 'Entrez le mot de passe',
+    join: 'Rejoindre',
   },
 };

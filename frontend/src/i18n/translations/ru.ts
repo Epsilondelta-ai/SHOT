@@ -61,5 +61,10 @@ export default {
     refresh: 'Обновить',
     statusWaiting: 'Ожидание',
     statusPlaying: 'Игра',
+    privateRoom: 'Приватная комната',
+    password: 'Пароль',
+    passwordRequired: 'Введите пароль.',
+    enterPassword: 'Введите пароль',
+    join: 'Войти',
   },
 };
