@@ -145,6 +145,37 @@ func Me(c *fiber.Ctx) error {
 	})
 }
 
+// GetMyRoom GET /api/me/room
+func GetMyRoom(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	var member models.RoomMember
+	if err := db.DB.Where("user_id = ? AND bot_id = ''", userID).First(&member).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "not in any room"})
+	}
+
+	var room models.Room
+	if err := db.DB.First(&room, "id = ?", member.RoomID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "room not found"})
+	}
+
+	return c.JSON(fiber.Map{
+		"id":             room.ID,
+		"name":           room.Name,
+		"hostId":         room.HostID,
+		"status":         room.Status,
+		"maxPlayers":     room.MaxPlayers,
+		"playerCount":    room.PlayerCount,
+		"botCount":       room.BotCount,
+		"spectatorCount": room.SpectatorCount,
+		"isPrivate":      room.IsPrivate,
+		"createdAt":      room.CreatedAt,
+	})
+}
+
 // GoogleRedirect GET /api/auth/google
 func GoogleRedirect(c *fiber.Ctx) error {
 	if os.Getenv("GOOGLE_CLIENT_ID") == "" {

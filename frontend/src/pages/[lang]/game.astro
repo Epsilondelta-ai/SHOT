@@ -45,6 +45,16 @@ const t = useTranslations(lang);
         } catch {}
       });
       window.addEventListener('beforeunload', () => sessionEs.close());
+
+      // Restore previous room session if the user was already in a room
+      fetch(`${apiUrl}/api/me/room`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => res.ok ? res.json() : null)
+        .then(room => {
+          if (room) {
+            document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+          }
+        })
+        .catch(() => {});
     }
   </script>
 </BaseLayout>
