@@ -614,5 +614,5 @@ const t = useTranslations(lang);
 
   leaveBtn.addEventListener('click', leaveRoom);
   chatSendBtn.addEventListener('click', sendChat);
-  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
+  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) sendChat(); });
 </script>
