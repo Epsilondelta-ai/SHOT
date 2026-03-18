@@ -14,7 +14,7 @@ const t = useTranslations(lang);
 <div id="scene-rooms" class="relative z-10 w-full flex-1 flex-col items-center overflow-y-auto py-8 px-4">
   <div class="w-full max-w-4xl mx-auto">
     <div class="flex items-center justify-between mb-4">
-      <h2 class="text-white font-bold text-lg">{t.rooms.title}</h2>
+      <h2 class="text-white font-bold text-lg [text-shadow:_1px_1px_3px_black,_-1px_-1px_3px_black,_1px_-1px_3px_black,_-1px_1px_3px_black]">{t.rooms.title}</h2>
       <div class="flex gap-2">
         <button
           id="refresh-rooms-btn"
@@ -32,7 +32,7 @@ const t = useTranslations(lang);
       </div>
     </div>
     <div id="room-list" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-      <p id="room-list-empty" class="text-white/40 text-sm text-center py-6 col-span-3">{t.rooms.empty}</p>
+      <p id="room-list-empty" class="text-white/60 text-sm text-center py-6 col-span-3 [text-shadow:_1px_1px_3px_rgba(0,0,0,0.6)]">{t.rooms.empty}</p>
     </div>
   </div>
 </div>
