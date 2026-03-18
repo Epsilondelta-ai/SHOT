@@ -133,6 +133,12 @@ func JoinRoom(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "room not found"})
 	}
 
+	// Check if already a member (e.g. room creator rejoining their own room)
+	var existing models.RoomMember
+	if result := db.DB.First(&existing, "room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID); result.Error == nil {
+		return c.JSON(fiber.Map{"ok": true})
+	}
+
 	if room.IsPrivate {
 		var body struct {
 			Password string `json:"password"`
@@ -140,12 +146,6 @@ func JoinRoom(c *fiber.Ctx) error {
 		if err := c.BodyParser(&body); err != nil || body.Password != room.Password {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "invalid password"})
 		}
-	}
-
-	// Check if already a member
-	var existing models.RoomMember
-	if result := db.DB.First(&existing, "room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID); result.Error == nil {
-		return c.JSON(fiber.Map{"ok": true})
 	}
 
 	member := models.RoomMember{RoomID: roomID, UserID: userID, JoinedAt: time.Now()}
