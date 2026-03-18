@@ -3,6 +3,7 @@ import { Image } from 'astro:assets';
 import logo from '../assets/logo.webp';
 import character from '../assets/character.webp';
 import { locales, localeLabels, type Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n';
 
 interface Props {
   lang: Locale;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 const { lang, path = '/game' } = Astro.props;
+const t = useTranslations(lang);
 
 const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 ---
@@ -20,7 +22,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 
     <!-- Desktop nav -->
     <nav class="hidden sm:flex items-center gap-5 text-amber-900 font-semibold text-sm">
-      <button id="nav-bots" class="hover:text-white transition cursor-pointer">봇 관리</button>
+      <button id="nav-bots" class="hover:text-white transition cursor-pointer">{t.game.bots}</button>
       <button id="nav-mypage" class="flex items-center gap-2 hover:text-white transition cursor-pointer">
         <img
           id="header-avatar"
@@ -28,7 +30,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
           alt="프로필"
           class="w-7 h-7 rounded-full object-cover bg-amber-300"
         />
-        내 정보
+        {t.game.mypage}
       </button>
     </nav>
 
@@ -76,7 +78,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
         id="hamburger-menu"
         class="hidden absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 min-w-[160px]"
       >
-        <button id="mobile-nav-bots" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">봇 관리</button>
+        <button id="mobile-nav-bots" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">{t.game.bots}</button>
         <button id="mobile-nav-mypage" class="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">
           <img
             id="mobile-header-avatar"
@@ -84,7 +86,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
             alt="프로필"
             class="w-6 h-6 rounded-full object-cover bg-amber-200"
           />
-          내 정보
+          {t.game.mypage}
         </button>
         <hr class="my-1 border-gray-100" />
         <div class="px-4 py-2">
@@ -154,7 +156,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
     }
   });
 
-  // Scene change events — consumers can listen to these
+  // Scene change events
   ['nav-bots', 'mobile-nav-bots'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('game:scene', { detail: 'bots' }));

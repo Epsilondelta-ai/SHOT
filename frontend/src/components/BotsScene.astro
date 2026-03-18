@@ -36,11 +36,11 @@ const t = useTranslations(lang);
         id="add-bot-btn"
         class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm transition"
       >
-        + 봇 추가
+        {t.bots.addBot}
       </button>
     </div>
     <div id="bot-list" class="flex flex-col gap-3">
-      <p id="bot-list-empty" class="text-white/40 text-sm text-center py-6">아직 봇이 없습니다.</p>
+      <p id="bot-list-empty" class="text-white/40 text-sm text-center py-6">{t.bots.empty}</p>
     </div>
   </div>
 </div>
@@ -48,14 +48,14 @@ const t = useTranslations(lang);
 <!-- Add Bot Modal -->
 <div id="add-bot-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
   <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
-    <h3 class="text-lg font-bold text-amber-400 mb-6">봇 추가</h3>
+    <h3 class="text-lg font-bold text-amber-400 mb-6">{t.bots.addBotTitle}</h3>
 
     <div class="flex flex-col items-center mb-5">
       <label class="cursor-pointer group relative" for="bot-avatar-input">
         <img
           id="bot-avatar-preview"
           src=""
-          alt="봇 프로필"
+          alt=""
           class="w-20 h-20 rounded-full object-cover bg-amber-800 border-4 border-amber-400 group-hover:opacity-75 transition"
           style="display:none"
         />
@@ -64,24 +64,24 @@ const t = useTranslations(lang);
         </div>
       </label>
       <input id="bot-avatar-input" type="file" accept="image/*" class="hidden" />
-      <p class="text-white/40 text-xs mt-2">프로필 이미지 (선택)</p>
+      <p class="text-white/40 text-xs mt-2">{t.bots.avatarOptional}</p>
     </div>
 
     <div class="mb-6">
-      <label class="block text-sm font-semibold text-white/70 mb-1">봇 이름 <span class="text-red-400">*</span></label>
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.bots.botName} <span class="text-red-400">*</span></label>
       <input
         id="bot-name-input"
         type="text"
         maxlength="100"
         class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
-        placeholder="봇 이름 입력"
+        placeholder={t.bots.botName}
       />
-      <p id="bot-name-error" class="text-red-400 text-xs mt-1 hidden">봇 이름을 입력해주세요.</p>
+      <p id="bot-name-error" class="text-red-400 text-xs mt-1 hidden">{t.bots.botNameRequired}</p>
     </div>
 
     <div class="flex gap-3">
-      <button id="bot-create-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">만들기</button>
-      <button id="bot-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">취소</button>
+      <button id="bot-create-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.bots.create}</button>
+      <button id="bot-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
     </div>
   </div>
 </div>
@@ -89,36 +89,36 @@ const t = useTranslations(lang);
 <!-- Edit Bot Modal -->
 <div id="edit-bot-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
   <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
-    <h3 class="text-lg font-bold text-amber-400 mb-6">봇 수정</h3>
+    <h3 class="text-lg font-bold text-amber-400 mb-6">{t.bots.editBotTitle}</h3>
 
     <div class="flex flex-col items-center mb-5">
       <label class="cursor-pointer group relative" for="edit-bot-avatar-input">
         <img
           id="edit-bot-avatar-preview"
           src=""
-          alt="봇 프로필"
+          alt=""
           class="w-20 h-20 rounded-full object-cover bg-amber-800 border-4 border-amber-400 group-hover:opacity-75 transition"
         />
       </label>
       <input id="edit-bot-avatar-input" type="file" accept="image/*" class="hidden" />
-      <p class="text-white/40 text-xs mt-2">클릭해서 이미지 변경</p>
+      <p class="text-white/40 text-xs mt-2">{t.bots.clickToChange}</p>
     </div>
 
     <div class="mb-6">
-      <label class="block text-sm font-semibold text-white/70 mb-1">봇 이름 <span class="text-red-400">*</span></label>
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.bots.botName} <span class="text-red-400">*</span></label>
       <input
         id="edit-bot-name-input"
         type="text"
         maxlength="100"
         class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
-        placeholder="봇 이름 입력"
+        placeholder={t.bots.botName}
       />
-      <p id="edit-bot-name-error" class="text-red-400 text-xs mt-1 hidden">봇 이름을 입력해주세요.</p>
+      <p id="edit-bot-name-error" class="text-red-400 text-xs mt-1 hidden">{t.bots.botNameRequired}</p>
     </div>
 
     <div class="flex gap-3">
-      <button id="edit-bot-save-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">저장</button>
-      <button id="edit-bot-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">취소</button>
+      <button id="edit-bot-save-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.common.save}</button>
+      <button id="edit-bot-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
     </div>
   </div>
 </div>
@@ -127,39 +127,37 @@ const t = useTranslations(lang);
 <div id="apikey-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
   <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
     <div class="text-3xl text-center mb-3">🎉</div>
-    <h3 class="text-lg font-bold text-amber-400 mb-1 text-center">봇이 생성됐습니다!</h3>
+    <h3 class="text-lg font-bold text-amber-400 mb-1 text-center">{t.bots.created}</h3>
     <p class="text-white/50 text-xs text-center mb-4">For AI Agents / Moltbot / Clawdbot / OpenClawbot</p>
 
     <div class="bg-black/50 rounded-xl p-4 mb-4 text-sm text-white/90 leading-relaxed font-mono whitespace-pre-wrap" id="apikey-message"></div>
 
-    <!-- API Key 단독 표시 -->
     <div class="mb-2">
-      <p class="text-white/50 text-xs mb-1">API Key</p>
+      <p class="text-white/50 text-xs mb-1">{t.bots.apiKey}</p>
       <div class="bg-amber-950/60 border border-amber-500/40 rounded-xl px-4 py-3 font-mono text-amber-300 text-sm break-all select-all" id="apikey-display"></div>
     </div>
 
-    <!-- 경고 메시지 -->
     <div class="flex items-start gap-2 bg-red-900/40 border border-red-500/40 rounded-xl px-4 py-3 mb-5">
       <span class="text-red-400 text-base mt-0.5">⚠️</span>
-      <p class="text-red-300 text-xs leading-relaxed">이 API Key는 지금 꼭 저장하셔야 합니다. 이 창을 닫으면 다시 확인할 수 없습니다.</p>
+      <p class="text-red-300 text-xs leading-relaxed">{t.bots.apiKeyWarning}</p>
     </div>
 
     <button
       id="apikey-copy-btn"
       class="w-full bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition mb-3"
     >
-      클립보드에 복사
+      {t.bots.copyToClipboard}
     </button>
     <button
       id="apikey-close-btn"
       class="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition"
     >
-      닫기
+      {t.common.close}
     </button>
   </div>
 </div>
 
-<script define:vars={{ apiUrl }} is:inline>
+<script define:vars={{ apiUrl, tBotsCreating: t.bots.creating, tBotsCreate: t.bots.create, tSaving: t.mypage.saving, tCommonSave: t.common.save, tBotsCopied: t.bots.copied, tBotsCopyToClipboard: t.bots.copyToClipboard, tCommonEdit: t.common.edit, tCommonDelete: t.common.delete }} is:inline>
   const scene = document.getElementById('scene-bots');
   const addBotBtn = document.getElementById('add-bot-btn');
   const addBotModal = document.getElementById('add-bot-modal');
@@ -233,8 +231,8 @@ const t = useTranslations(lang);
           <p class="text-white font-semibold truncate">${bot.name}</p>
           <p class="text-white/40 text-xs">${createdAt}</p>
         </div>
-        <button data-id="${bot.id}" data-name="${bot.name}" data-avatar="${bot.avatarUrl || ''}" class="edit-bot-btn text-white/40 hover:text-amber-400 transition text-sm mr-2">수정</button>
-        <button data-id="${bot.id}" class="delete-bot-btn text-white/40 hover:text-red-400 transition text-sm">삭제</button>
+        <button data-id="${bot.id}" data-name="${bot.name}" data-avatar="${bot.avatarUrl || ''}" class="edit-bot-btn text-white/40 hover:text-amber-400 transition text-sm mr-2">${tCommonEdit}</button>
+        <button data-id="${bot.id}" class="delete-bot-btn text-white/40 hover:text-red-400 transition text-sm">${tCommonDelete}</button>
       `;
       botList.appendChild(card);
     });
@@ -286,7 +284,7 @@ const t = useTranslations(lang);
     if (!token) return;
 
     editBotSaveBtn.disabled = true;
-    editBotSaveBtn.textContent = '저장 중...';
+    editBotSaveBtn.textContent = tSaving;
 
     const body = { name };
     if (editPendingAvatarBase64) body.avatarUrl = editPendingAvatarBase64;
@@ -301,7 +299,7 @@ const t = useTranslations(lang);
     }).catch(() => null);
 
     editBotSaveBtn.disabled = false;
-    editBotSaveBtn.textContent = '저장';
+    editBotSaveBtn.textContent = tCommonSave;
 
     if (res?.ok) {
       editBotModal.classList.add('hidden');
@@ -361,7 +359,7 @@ const t = useTranslations(lang);
     if (!token) return;
 
     botCreateBtn.disabled = true;
-    botCreateBtn.textContent = '생성 중...';
+    botCreateBtn.textContent = tBotsCreating;
 
     const body = { name };
     if (pendingAvatarBase64) body.avatarUrl = pendingAvatarBase64;
@@ -376,7 +374,7 @@ const t = useTranslations(lang);
     }).catch(() => null);
 
     botCreateBtn.disabled = false;
-    botCreateBtn.textContent = '만들기';
+    botCreateBtn.textContent = tBotsCreate;
 
     if (!res?.ok) return;
     const bot = await res.json();
@@ -396,8 +394,8 @@ const t = useTranslations(lang);
 
   apikeyCopyBtn.addEventListener('click', () => {
     navigator.clipboard.writeText(apikeyMessage.textContent).then(() => {
-      apikeyCopyBtn.textContent = '복사됨 ✓';
-      setTimeout(() => { apikeyCopyBtn.textContent = '클립보드에 복사'; }, 2000);
+      apikeyCopyBtn.textContent = tBotsCopied;
+      setTimeout(() => { apikeyCopyBtn.textContent = tBotsCopyToClipboard; }, 2000);
     });
   });
 

@@ -1,17 +1,21 @@
 ---
 import { Image } from 'astro:assets';
 import character from '../assets/character.webp';
+import { type Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n';
 
 interface Props {
   apiUrl: string;
+  lang: Locale;
 }
 
-const { apiUrl } = Astro.props;
+const { apiUrl, lang } = Astro.props;
+const t = useTranslations(lang);
 ---
 
 <div id="scene-mypage" class="hidden relative z-10 w-full flex-1 flex items-center justify-center p-6">
   <div class="bg-black/60 backdrop-blur-sm rounded-2xl p-8 w-full max-w-md text-white">
-    <h2 class="text-xl font-bold mb-6 text-amber-400">내 정보</h2>
+    <h2 class="text-xl font-bold mb-6 text-amber-400">{t.mypage.title}</h2>
 
     <!-- Avatar -->
     <div class="flex flex-col items-center mb-6">
@@ -23,28 +27,28 @@ const { apiUrl } = Astro.props;
           class="w-24 h-24 rounded-full object-cover bg-amber-800 border-4 border-amber-400 group-hover:opacity-75 transition"
         />
         <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
-          <span class="bg-black/70 text-white text-xs rounded-full px-2 py-1">변경</span>
+          <span class="bg-black/70 text-white text-xs rounded-full px-2 py-1">{t.common.edit}</span>
         </div>
       </label>
       <input id="avatar-input" type="file" accept="image/*" class="hidden" />
-      <p class="text-white/50 text-xs mt-2">클릭해서 이미지 변경</p>
+      <p class="text-white/50 text-xs mt-2">{t.mypage.clickToChange}</p>
     </div>
 
     <!-- Username -->
     <div class="mb-6">
-      <label class="block text-sm font-semibold text-white/70 mb-1">닉네임</label>
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.mypage.nickname}</label>
       <input
         id="mypage-username"
         type="text"
         maxlength="50"
         class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
-        placeholder="닉네임 입력"
+        placeholder={t.mypage.nickname}
       />
     </div>
 
     <!-- Email (read-only) -->
     <div class="mb-8">
-      <label class="block text-sm font-semibold text-white/70 mb-1">이메일</label>
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.mypage.email}</label>
       <p id="mypage-email" class="text-white/50 text-sm px-1"></p>
     </div>
 
@@ -54,13 +58,13 @@ const { apiUrl } = Astro.props;
         id="mypage-save-btn"
         class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition"
       >
-        저장
+        {t.common.save}
       </button>
       <button
         id="mypage-cancel-btn"
         class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition"
       >
-        취소
+        {t.common.cancel}
       </button>
     </div>
 
@@ -68,7 +72,7 @@ const { apiUrl } = Astro.props;
   </div>
 </div>
 
-<script define:vars={{ apiUrl }} is:inline>
+<script define:vars={{ apiUrl, tSave: t.common.save, tSaving: t.mypage.saving, tSaved: t.mypage.saved, tSaveFailed: t.mypage.saveFailed }} is:inline>
   const scene = document.getElementById('scene-mypage');
   const avatarImg = document.getElementById('mypage-avatar');
   const avatarInput = document.getElementById('avatar-input');
@@ -95,7 +99,6 @@ const { apiUrl } = Astro.props;
     }
   }
 
-  // Show scene on game:scene mypage event
   document.addEventListener('game:scene', (e) => {
     if (e.detail === 'mypage') {
       scene.classList.remove('hidden');
@@ -108,7 +111,6 @@ const { apiUrl } = Astro.props;
     }
   });
 
-  // Avatar file input
   avatarInput.addEventListener('change', (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -121,13 +123,12 @@ const { apiUrl } = Astro.props;
     reader.readAsDataURL(file);
   });
 
-  // Save
   saveBtn.addEventListener('click', async () => {
     const token = localStorage.getItem('token');
     if (!token) return;
 
     saveBtn.disabled = true;
-    saveBtn.textContent = '저장 중...';
+    saveBtn.textContent = tSaving;
 
     const body = { username: usernameInput.value };
     if (pendingAvatarBase64 !== null) {
@@ -144,21 +145,19 @@ const { apiUrl } = Astro.props;
     }).catch(() => null);
 
     saveBtn.disabled = false;
-    saveBtn.textContent = '저장';
+    saveBtn.textContent = tSave;
 
     if (res?.ok) {
       const user = await res.json();
-      // Update header avatar
       document.getElementById('header-avatar')?.setAttribute('src', user.avatarUrl || avatarImg.src);
       document.getElementById('mobile-header-avatar')?.setAttribute('src', user.avatarUrl || avatarImg.src);
-      showMsg('저장되었습니다.', true);
+      showMsg(tSaved, true);
       pendingAvatarBase64 = null;
     } else {
-      showMsg('저장에 실패했습니다.', false);
+      showMsg(tSaveFailed, false);
     }
   });
 
-  // Cancel
   cancelBtn.addEventListener('click', () => {
     scene.classList.add('hidden');
     scene.classList.remove('flex');
