@@ -5,7 +5,7 @@ import (
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/models"
-	"github.com/epsilondelta/shot/ws"
+	"github.com/epsilondelta/shot/hub"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -399,7 +399,7 @@ func KickFromRoom(c *fiber.Ctx) error {
 		}
 		// Delete from DB first, then close WS to avoid race with disconnect handler
 		db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, body.TargetUserID).Delete(&models.RoomMember{})
-		ws.H.KickClient(roomID, body.TargetUserID)
+		hub.H.KickClient(roomID, body.TargetUserID)
 	} else {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid target"})
 	}
@@ -423,12 +423,12 @@ func LeaveRoom(c *fiber.Ctx) error {
 	}
 	roomID := c.Params("id")
 	// Close the SSE connection (no-op if already closed).
-	ws.H.CloseClient(roomID, userID, false)
+	hub.H.CloseClient(roomID, userID, false)
 	// Also delete directly from DB in case the SSE connection is already gone
 	// and the defer cleanup won't run.
 	db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Delete(&models.RoomMember{})
-	if !ws.H.HasClients(roomID) {
-		ws.H.BroadcastRoomClosed(roomID)
+	if !hub.H.HasClients(roomID) {
+		hub.H.BroadcastRoomClosed(roomID)
 		db.DB.Where("room_id = ?", roomID).Delete(&models.RoomMember{})
 		db.DB.Delete(&models.Room{}, "id = ?", roomID)
 	} else {
@@ -465,7 +465,7 @@ func SendChat(c *fiber.Ctx) error {
 	var user models.User
 	db.DB.First(&user, "id = ?", userID)
 
-	ws.H.BroadcastJSON(roomID, map[string]any{
+	hub.H.BroadcastJSON(roomID, map[string]any{
 		"type":      "chat",
 		"userId":    userID,
 		"username":  user.Username,

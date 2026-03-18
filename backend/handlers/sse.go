@@ -7,7 +7,7 @@ import (
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/models"
-	"github.com/epsilondelta/shot/ws"
+	"github.com/epsilondelta/shot/hub"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gofiber/fiber/v2"
 )
@@ -112,7 +112,7 @@ func broadcastRoomUpdate(roomID string) {
 		IsPrivate:  room.IsPrivate,
 		Members:    buildMemberInfoList(roomID),
 	}
-	ws.H.BroadcastJSON(roomID, msg)
+	hub.H.BroadcastJSON(roomID, msg)
 }
 
 func transferHostToNext(roomID string) {
@@ -154,7 +154,7 @@ func RoomSSE(c *fiber.Ctx) error {
 	var user models.User
 	db.DB.First(&user, "id = ?", userID)
 
-	client := &ws.Client{
+	client := &hub.Client{
 		Ch:        make(chan []byte, 64),
 		UserID:    userID,
 		Username:  user.Username,
@@ -164,10 +164,10 @@ func RoomSSE(c *fiber.Ctx) error {
 	// Atomically close any existing local connection and register new one.
 	// Using local-only replacement avoids a race where the Redis ctrl message
 	// arrives after the new client is registered and accidentally closes it.
-	ws.H.RegisterAndReplaceLocal(client)
+	hub.H.RegisterAndReplaceLocal(client)
 
 	// Broadcast join
-	ws.H.Broadcast(roomID, ws.Message{
+	hub.H.Broadcast(roomID, hub.Message{
 		Type:      "join",
 		UserID:    userID,
 		Username:  user.Username,
@@ -182,20 +182,20 @@ func RoomSSE(c *fiber.Ctx) error {
 
 	c.Context().SetBodyStreamWriter(func(w *bufio.Writer) {
 		defer func() {
-			ws.H.Unregister(client)
+			hub.H.Unregister(client)
 			if client.Replaced {
 				// Superseded by a newer connection — skip DB cleanup
 				return
 			}
-			ws.H.Broadcast(roomID, ws.Message{
+			hub.H.Broadcast(roomID, hub.Message{
 				Type:     "leave",
 				UserID:   userID,
 				Username: user.Username,
 			})
 			db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Delete(&models.RoomMember{})
-			empty := !ws.H.HasClients(roomID)
+			empty := !hub.H.HasClients(roomID)
 			if empty {
-				ws.H.BroadcastRoomClosed(roomID)
+				hub.H.BroadcastRoomClosed(roomID)
 				db.DB.Where("room_id = ?", roomID).Delete(&models.RoomMember{})
 				db.DB.Delete(&models.Room{}, "id = ?", roomID)
 			} else {

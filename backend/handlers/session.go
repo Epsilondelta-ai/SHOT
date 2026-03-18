@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/epsilondelta/shot/ws"
+	"github.com/epsilondelta/shot/hub"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -21,7 +21,7 @@ func SessionSSE(c *fiber.Ctx) error {
 	}
 
 	ch := make(chan []byte, 8)
-	ws.SH.Register(userID, ch)
+	hub.SH.Register(userID, ch)
 
 	c.Set("Content-Type", "text/event-stream")
 	c.Set("Cache-Control", "no-cache")
@@ -29,7 +29,7 @@ func SessionSSE(c *fiber.Ctx) error {
 	c.Set("X-Accel-Buffering", "no")
 
 	c.Context().SetBodyStreamWriter(func(w *bufio.Writer) {
-		defer ws.SH.Unregister(userID, ch)
+		defer hub.SH.Unregister(userID, ch)
 
 		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()

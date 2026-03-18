@@ -6,7 +6,7 @@ import (
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/handlers"
-	"github.com/epsilondelta/shot/ws"
+	"github.com/epsilondelta/shot/hub"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -31,10 +31,10 @@ func main() {
 	db.DB.Exec("DELETE FROM room_members")
 	db.DB.Exec("DELETE FROM rooms")
 
-	ws.H = ws.NewHub(db.RDB)
-	ws.H.Start()
-	ws.SH = ws.NewSessionHub(db.RDB)
-	ws.SH.Start()
+	hub.H = hub.NewHub(db.RDB)
+	hub.H.Start()
+	hub.SH = hub.NewSessionHub(db.RDB)
+	hub.SH.Start()
 
 	app := fiber.New()
 	app.Use(logger.New())
