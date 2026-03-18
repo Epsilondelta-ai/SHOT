@@ -206,17 +206,22 @@ const t = useTranslations(lang);
           ${room.spectatorCount > 0 ? `<span class="text-white/40">👁 ${room.spectatorCount} ${tSpectators}</span>` : ''}
         </div>
       `;
-      card.addEventListener('click', () => {
-        if (room.isPrivate) {
-          pendingRoom = room;
-          joinRoomName.textContent = room.name;
+      card.addEventListener('click', async () => {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${apiUrl}/api/rooms/${room.id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => null);
+        const fresh = res?.ok ? await res.json() : room;
+        if (fresh.isPrivate) {
+          pendingRoom = fresh;
+          joinRoomName.textContent = fresh.name;
           joinPasswordInput.value = '';
           joinPasswordError.classList.add('hidden');
           joinRoomModal.classList.remove('hidden');
           joinRoomModal.classList.add('flex');
           joinPasswordInput.focus();
         } else {
-          document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+          document.dispatchEvent(new CustomEvent('room:join', { detail: fresh }));
         }
       });
       roomList.appendChild(card);

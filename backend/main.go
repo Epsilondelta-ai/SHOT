@@ -54,6 +54,7 @@ func main() {
 	api.Patch("/me", handlers.UpdateMe)
 	api.Get("/rooms", handlers.ListRooms)
 	api.Post("/rooms", handlers.CreateRoom)
+	api.Get("/rooms/:id", handlers.GetRoom)
 	api.Post("/rooms/:id/join", handlers.JoinRoom)
 	api.Get("/rooms/:id/members", handlers.GetRoomMembers)
 	api.Post("/rooms/:id/spectate", handlers.SpectateRoom)

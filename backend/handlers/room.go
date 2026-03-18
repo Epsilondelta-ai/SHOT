@@ -38,6 +38,33 @@ func ListRooms(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
+// GetRoom GET /api/rooms/:id
+func GetRoom(c *fiber.Ctx) error {
+	_, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	roomID := c.Params("id")
+	var room models.Room
+	if err := db.DB.First(&room, "id = ?", roomID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "room not found"})
+	}
+
+	return c.JSON(fiber.Map{
+		"id":             room.ID,
+		"name":           room.Name,
+		"hostId":         room.HostID,
+		"status":         room.Status,
+		"maxPlayers":     room.MaxPlayers,
+		"playerCount":    room.PlayerCount,
+		"botCount":       room.BotCount,
+		"spectatorCount": room.SpectatorCount,
+		"isPrivate":      room.IsPrivate,
+		"createdAt":      room.CreatedAt,
+	})
+}
+
 // CreateRoom POST /api/rooms
 func CreateRoom(c *fiber.Ctx) error {
 	userID, err := getUserIDFromToken(c)
