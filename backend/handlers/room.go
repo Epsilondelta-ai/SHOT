@@ -399,7 +399,7 @@ func LeaveRoom(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
 	}
 	roomID := c.Params("id")
-	ws.H.CloseClient(roomID, userID)
+	ws.H.CloseClient(roomID, userID, false)
 	return c.JSON(fiber.Map{"ok": true})
 }
 

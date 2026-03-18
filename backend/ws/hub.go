@@ -11,6 +11,7 @@ type Client struct {
 	Username  string
 	AvatarURL string
 	RoomID    string
+	Replaced  bool // true when superseded by a newer connection; skip DB cleanup
 }
 
 type Message struct {
@@ -48,6 +49,12 @@ func (h *Hub) Unregister(c *Client) bool {
 	return empty
 }
 
+func (h *Hub) HasClients(roomID string) bool {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	return len(h.rooms[roomID]) > 0
+}
+
 func (h *Hub) Broadcast(roomID string, msg Message) {
 	data, _ := json.Marshal(msg)
 	h.send(roomID, data)
@@ -70,7 +77,8 @@ func (h *Hub) send(roomID string, data []byte) {
 }
 
 // CloseClient closes the SSE channel for a user, triggering their cleanup defer.
-func (h *Hub) CloseClient(roomID, userID string) {
+// If replaced is true, the cleanup defer will skip DB operations (duplicate connection case).
+func (h *Hub) CloseClient(roomID, userID string, replaced bool) {
 	h.mu.RLock()
 	var target *Client
 	for c := range h.rooms[roomID] {
@@ -81,6 +89,14 @@ func (h *Hub) CloseClient(roomID, userID string) {
 	}
 	h.mu.RUnlock()
 	if target != nil {
+		target.Replaced = replaced
+		if replaced {
+			data, _ := json.Marshal(Message{Type: "duplicate"})
+			select {
+			case target.Ch <- data:
+			default:
+			}
+		}
 		close(target.Ch)
 	}
 }

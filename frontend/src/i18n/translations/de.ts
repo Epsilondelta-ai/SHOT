@@ -92,6 +92,8 @@ export default {
     enterPassword: 'Passwort eingeben',
     join: 'Beitreten',
     kick: 'Rauswerfen',
+    duplicateConnection: 'Von einem anderen Tab oder Browser verbunden. Diese Verbindung wurde getrennt.',
+    sessionReplaced: 'Von einem anderen Tab oder Browser verbunden. Die aktuelle Sitzung wurde beendet.',
     systemKicked: 'wurde aus dem Raum geworfen.',
   },
 };

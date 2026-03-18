@@ -92,6 +92,8 @@ export default {
     enterPassword: 'Ingresa la contraseña',
     join: 'Entrar',
     kick: 'Expulsar',
+    duplicateConnection: 'Conectado desde otra pestaña o navegador. Esta sesión ha sido desconectada.',
+    sessionReplaced: 'Conectado desde otra pestaña o navegador. La sesión actual ha sido terminada.',
     systemKicked: 'fue expulsado de la sala.',
   },
 };

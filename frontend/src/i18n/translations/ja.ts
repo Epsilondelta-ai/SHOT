@@ -92,6 +92,8 @@ export default {
     enterPassword: 'パスワードを入力',
     join: '入室',
     kick: 'キック',
+    duplicateConnection: '別のタブまたはブラウザから接続されたため、この接続が切断されました。',
+    sessionReplaced: '別のタブまたはブラウザから接続されたため、現在のセッションが終了しました。',
     systemKicked: 'が退出させられました。',
   },
 };

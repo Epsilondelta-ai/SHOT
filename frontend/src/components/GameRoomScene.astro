@@ -150,6 +150,7 @@ const t = useTranslations(lang);
   tInvite: t.rooms.invite,
   tKick: t.rooms.kick,
   tSystemKicked: t.rooms.systemKicked,
+  tDuplicateConnection: t.rooms.duplicateConnection,
 }} is:inline>
   const scene = document.getElementById('scene-gameroom');
   const leaveBtn = document.getElementById('leave-room-btn');
@@ -511,6 +512,11 @@ const t = useTranslations(lang);
           appendSystemMessage(`${msg.username} ${tSystemJoined}`);
         } else if (msg.type === 'leave') {
           appendSystemMessage(`${msg.username} ${tSystemLeft}`);
+        } else if (msg.type === 'duplicate') {
+          es.close(); es = null; // prevent auto-reconnect
+          appendSystemMessage(tDuplicateConnection);
+          currentRoom = null; // prevent POST /leave from closing the new connection
+          setTimeout(() => leaveRoom(), 2000);
         } else if (msg.type === 'kicked') {
           appendSystemMessage(tSystemKicked);
           setTimeout(() => leaveRoom(), 1500);

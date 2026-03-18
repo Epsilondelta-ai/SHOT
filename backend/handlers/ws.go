@@ -140,6 +140,9 @@ func RoomSSE(c *fiber.Ctx) error {
 		AvatarURL: user.AvatarURL,
 		RoomID:    roomID,
 	}
+	// Close any existing connection for this user in this room (duplicate tab/browser)
+	// Pass replaced=true so the old defer skips DB cleanup
+	ws.H.CloseClient(roomID, userID, true)
 	ws.H.Register(client)
 
 	// Broadcast join
@@ -158,13 +161,18 @@ func RoomSSE(c *fiber.Ctx) error {
 
 	c.Context().SetBodyStreamWriter(func(w *bufio.Writer) {
 		defer func() {
-			empty := ws.H.Unregister(client)
+			ws.H.Unregister(client)
+			if client.Replaced {
+				// Superseded by a newer connection — skip DB cleanup
+				return
+			}
 			ws.H.Broadcast(roomID, ws.Message{
 				Type:     "leave",
 				UserID:   userID,
 				Username: user.Username,
 			})
 			db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Delete(&models.RoomMember{})
+			empty := !ws.H.HasClients(roomID)
 			if empty {
 				ws.H.BroadcastRoomClosed(roomID)
 				db.DB.Where("room_id = ?", roomID).Delete(&models.RoomMember{})

@@ -92,6 +92,8 @@ export default {
     enterPassword: 'Enter password',
     join: 'Join',
     kick: 'Kick',
+    duplicateConnection: 'Connected from another tab or browser. This session has been disconnected.',
+    sessionReplaced: 'Connected from another tab or browser. Your current session has been terminated.',
     systemKicked: 'was kicked from the room.',
   },
 };

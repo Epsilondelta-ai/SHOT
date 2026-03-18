@@ -92,6 +92,8 @@ export default {
     enterPassword: '请输入密码',
     join: '进入',
     kick: '踢出',
+    duplicateConnection: '已从其他标签页或浏览器连接，当前连接已断开。',
+    sessionReplaced: '已从其他标签页或浏览器连接，当前会话已终止。',
     systemKicked: '被踢出了房间。',
   },
 };

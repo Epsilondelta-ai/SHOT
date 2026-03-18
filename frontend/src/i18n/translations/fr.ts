@@ -92,6 +92,8 @@ export default {
     enterPassword: 'Entrez le mot de passe',
     join: 'Rejoindre',
     kick: 'Expulser',
+    duplicateConnection: 'Connecté depuis un autre onglet ou navigateur. Cette session a été déconnectée.',
+    sessionReplaced: 'Connecté depuis un autre onglet ou navigateur. La session actuelle a été terminée.',
     systemKicked: 'a été expulsé de la salle.',
   },
 };

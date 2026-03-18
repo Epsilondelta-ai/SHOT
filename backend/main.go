@@ -34,6 +34,7 @@ func main() {
 	})
 
 	api := app.Group("/api")
+	api.Get("/session/sse", handlers.SessionSSE)
 	api.Get("/me", handlers.Me)
 	api.Patch("/me", handlers.UpdateMe)
 	api.Get("/rooms", handlers.ListRooms)

@@ -93,5 +93,7 @@ export default {
     join: '입장',
     kick: '추방',
     systemKicked: '님이 추방되었습니다.',
+    duplicateConnection: '다른 탭 또는 브라우저에서 접속하여 연결이 끊겼습니다.',
+    sessionReplaced: '다른 탭 또는 브라우저에서 접속하여 현재 세션이 종료되었습니다.',
   },
 };
