@@ -12,55 +12,86 @@ const { apiUrl, lang } = Astro.props;
 const t = useTranslations(lang);
 ---
 
-<div id="scene-gameroom" class="hidden relative z-10 w-full flex-1 flex-col items-center overflow-y-auto py-8 px-4">
-  <div class="w-full max-w-3xl mx-auto">
+<div id="scene-gameroom" class="hidden relative z-10 w-full flex-1 flex-col overflow-hidden">
+  <div class="flex flex-col sm:flex-row flex-1 min-h-0 max-w-5xl mx-auto w-full px-4 py-6 gap-4">
 
-    <!-- Room header -->
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-3 min-w-0">
+    <!-- Left: Room info + player slots -->
+    <div class="flex flex-col gap-4 sm:w-72 flex-shrink-0">
+      <!-- Room header -->
+      <div class="flex items-center gap-2">
         <button
           id="leave-room-btn"
-          class="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-sm transition"
+          class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-sm transition"
         >
           ← {t.rooms.leaveRoom}
         </button>
-        <div class="min-w-0">
-          <h2 id="gameroom-name" class="text-white font-bold text-xl truncate"></h2>
-          <div class="flex items-center gap-2 mt-0.5">
-            <span id="gameroom-status-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full"></span>
-            <span id="gameroom-private-badge" class="hidden text-xs text-amber-300">🔒 {t.rooms.privateRoom}</span>
-          </div>
+        <button
+          id="start-game-btn"
+          class="hidden ml-auto bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-4 py-1.5 rounded-xl text-sm transition"
+        >
+          {t.rooms.startGame}
+        </button>
+      </div>
+
+      <!-- Room name + badges -->
+      <div class="bg-black/40 rounded-2xl p-4">
+        <h2 id="gameroom-name" class="text-white font-bold text-lg truncate mb-1"></h2>
+        <div class="flex items-center gap-2 flex-wrap">
+          <span id="gameroom-status-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full"></span>
+          <span id="gameroom-private-badge" class="hidden text-xs text-amber-300">🔒 {t.rooms.privateRoom}</span>
         </div>
       </div>
-      <button
-        id="start-game-btn"
-        class="hidden flex-shrink-0 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-5 py-2.5 rounded-xl transition"
-      >
-        {t.rooms.startGame}
-      </button>
+
+      <!-- Player slots -->
+      <div class="bg-black/40 rounded-2xl p-4">
+        <p class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3">
+          {t.rooms.players} <span id="gameroom-player-count" class="text-white/70"></span>
+        </p>
+        <div id="gameroom-slots" class="grid grid-cols-3 gap-2"></div>
+      </div>
+
+      <!-- Spectators -->
+      <div id="gameroom-spectator-row" class="hidden bg-black/20 rounded-xl px-4 py-2">
+        <p class="text-white/40 text-xs">👁 {t.rooms.spectators}: <span id="gameroom-spectator-count" class="text-white/50"></span></p>
+      </div>
     </div>
 
-    <!-- Player slots grid -->
-    <div class="mb-3">
-      <p class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">
-        {t.rooms.players} <span id="gameroom-player-count" class="text-white/70"></span>
-      </p>
-      <div id="gameroom-slots" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+    <!-- Right: Chat -->
+    <div class="flex flex-col flex-1 min-h-0 bg-black/40 rounded-2xl overflow-hidden">
+      <div class="px-4 py-3 border-b border-white/10">
+        <p class="text-white/60 text-sm font-semibold">{t.rooms.chat}</p>
+      </div>
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2 min-h-0"></div>
+      <div class="flex gap-2 p-3 border-t border-white/10">
+        <input
+          id="chat-input"
+          type="text"
+          maxlength="300"
+          placeholder={t.rooms.chatPlaceholder}
+          class="flex-1 bg-white/10 border border-white/20 rounded-xl px-4 py-2 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+        />
+        <button
+          id="chat-send-btn"
+          class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm transition"
+        >
+          {t.rooms.chatSend}
+        </button>
+      </div>
     </div>
-
-    <!-- Spectators row -->
-    <div id="gameroom-spectator-row" class="hidden mt-4">
-      <p class="text-white/40 text-xs font-semibold uppercase tracking-wider mb-2">
-        👁 {t.rooms.spectators} <span id="gameroom-spectator-count" class="text-white/50"></span>
-      </p>
-    </div>
-
-    <!-- Waiting message -->
-    <p id="gameroom-waiting-msg" class="text-center text-white/30 text-sm mt-8">{t.rooms.waitingForPlayers}</p>
   </div>
 </div>
 
-<script define:vars={{ apiUrl, characterSrc: character.src, tHost: t.rooms.host, tEmptySlot: t.rooms.emptySlot, tStatusWaiting: t.rooms.statusWaiting, tStatusPlaying: t.rooms.statusPlaying }} is:inline>
+<script define:vars={{
+  apiUrl,
+  characterSrc: character.src,
+  tHost: t.rooms.host,
+  tEmptySlot: t.rooms.emptySlot,
+  tStatusWaiting: t.rooms.statusWaiting,
+  tStatusPlaying: t.rooms.statusPlaying,
+  tSystemJoined: t.rooms.systemJoined,
+  tSystemLeft: t.rooms.systemLeft,
+  tRoomClosed: t.rooms.roomClosed,
+}} is:inline>
   const scene = document.getElementById('scene-gameroom');
   const leaveBtn = document.getElementById('leave-room-btn');
   const startBtn = document.getElementById('start-game-btn');
@@ -71,9 +102,13 @@ const t = useTranslations(lang);
   const slotsEl = document.getElementById('gameroom-slots');
   const spectatorRow = document.getElementById('gameroom-spectator-row');
   const spectatorCountEl = document.getElementById('gameroom-spectator-count');
+  const chatMessages = document.getElementById('chat-messages');
+  const chatInput = document.getElementById('chat-input');
+  const chatSendBtn = document.getElementById('chat-send-btn');
 
   let currentRoom = null;
   let currentUserId = null;
+  let socket = null;
 
   async function getMyId() {
     if (currentUserId) return currentUserId;
@@ -89,15 +124,11 @@ const t = useTranslations(lang);
   async function joinAndLoad(room) {
     const token = localStorage.getItem('token');
     if (!token) return;
-
-    // Call join (backend handles duplicate gracefully)
     await fetch(`${apiUrl}/api/rooms/${room.id}/join`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ password: room.password || '' }),
     }).catch(() => null);
-
-    // Fetch member list
     const res = await fetch(`${apiUrl}/api/rooms/${room.id}/members`, {
       headers: { Authorization: `Bearer ${token}` },
     }).catch(() => null);
@@ -106,17 +137,68 @@ const t = useTranslations(lang);
     renderSlots(room, members);
   }
 
+  function connectWS(room) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const wsBase = apiUrl.replace(/^http/, 'ws');
+    socket = new WebSocket(`${wsBase}/api/rooms/${room.id}/ws?token=${token}`);
+
+    socket.addEventListener('message', (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'chat') {
+          appendChatMessage(msg);
+        } else if (msg.type === 'join') {
+          appendSystemMessage(`${msg.username} ${tSystemJoined}`);
+          joinAndLoad(room);
+        } else if (msg.type === 'leave') {
+          appendSystemMessage(`${msg.username} ${tSystemLeft}`);
+          joinAndLoad(room);
+        } else if (msg.type === 'room_closed') {
+          appendSystemMessage(tRoomClosed);
+          setTimeout(() => leaveRoom(), 1500);
+        }
+      } catch {}
+    });
+
+    socket.addEventListener('close', () => { socket = null; });
+  }
+
+  function appendChatMessage(msg) {
+    const isMine = msg.userId === currentUserId;
+    const el = document.createElement('div');
+    el.className = `flex items-end gap-2 ${isMine ? 'flex-row-reverse' : ''}`;
+    el.innerHTML = `
+      <img src="${msg.avatarUrl || characterSrc}" alt="${msg.username}"
+        class="w-7 h-7 rounded-full object-cover flex-shrink-0 bg-amber-800"
+        onerror="this.src='${characterSrc}'" />
+      <div class="max-w-[70%]">
+        ${!isMine ? `<p class="text-white/40 text-xs mb-0.5 px-1">${msg.username}</p>` : ''}
+        <div class="px-3 py-2 rounded-2xl text-sm ${isMine ? 'bg-amber-500 text-gray-900 rounded-br-sm' : 'bg-white/10 text-white rounded-bl-sm'}">
+          ${msg.message}
+        </div>
+      </div>
+    `;
+    chatMessages.appendChild(el);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  function appendSystemMessage(text) {
+    const el = document.createElement('p');
+    el.className = 'text-center text-white/30 text-xs my-1';
+    el.textContent = text;
+    chatMessages.appendChild(el);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
   function renderRoom(room) {
     currentRoom = room;
     nameEl.textContent = room.name;
-
     const isPlaying = room.status === 'playing';
     statusBadge.textContent = isPlaying ? tStatusPlaying : tStatusWaiting;
     statusBadge.className = `text-xs font-semibold px-2 py-0.5 rounded-full ${isPlaying ? 'bg-yellow-500/20 text-yellow-300' : 'bg-green-500/20 text-green-300'}`;
-
     privateBadge.classList.toggle('hidden', !room.isPrivate);
     playerCountEl.textContent = `${room.playerCount} / ${room.maxPlayers}`;
-
     if (room.spectatorCount > 0) {
       spectatorRow.classList.remove('hidden');
       spectatorCountEl.textContent = room.spectatorCount;
@@ -128,30 +210,22 @@ const t = useTranslations(lang);
   function renderSlots(room, members) {
     slotsEl.innerHTML = '';
     playerCountEl.textContent = `${members.length} / ${room.maxPlayers}`;
-
     for (let i = 0; i < room.maxPlayers; i++) {
-      const slot = document.createElement('div');
       const member = members[i];
       const isHost = member && member.userId === room.hostId;
-
-      slot.className = `flex flex-col items-center gap-2 bg-black/40 rounded-xl p-3 ${member ? '' : 'opacity-40 border border-dashed border-white/20'}`;
-
+      const slot = document.createElement('div');
+      slot.className = `flex flex-col items-center gap-1 ${member ? '' : 'opacity-40'}`;
       if (member) {
-        const avatar = member.avatarUrl || characterSrc;
-        const name = member.username || '...';
         slot.innerHTML = `
-          <img
-            src="${avatar}"
-            alt="${name}"
-            class="w-12 h-12 rounded-full object-cover bg-amber-800 border-2 ${isHost ? 'border-amber-400' : 'border-white/20'}"
-            onerror="this.src='${characterSrc}'"
-          />
-          <p class="text-white/80 text-xs truncate w-full text-center">${isHost ? '⭐ ' : ''}${name}</p>
+          <img src="${member.avatarUrl || characterSrc}" alt="${member.username}"
+            class="w-10 h-10 rounded-full object-cover bg-amber-800 border-2 ${isHost ? 'border-amber-400' : 'border-white/20'}"
+            onerror="this.src='${characterSrc}'" />
+          <p class="text-white/70 text-xs truncate w-full text-center">${isHost ? '⭐' : ''} ${member.username}</p>
         `;
       } else {
         slot.innerHTML = `
-          <div class="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center">
-            <span class="text-white/20 text-xl">+</span>
+          <div class="w-10 h-10 rounded-full bg-white/5 border border-dashed border-white/20 flex items-center justify-center">
+            <span class="text-white/20 text-sm">+</span>
           </div>
           <p class="text-white/20 text-xs">${tEmptySlot}</p>
         `;
@@ -160,39 +234,52 @@ const t = useTranslations(lang);
     }
   }
 
-  // Show when room:join fires
+  function sendChat() {
+    const msg = chatInput.value.trim();
+    if (!msg || !socket || socket.readyState !== WebSocket.OPEN) return;
+    socket.send(JSON.stringify({ type: 'chat', message: msg }));
+    chatInput.value = '';
+  }
+
+  function leaveRoom() {
+    if (socket) { socket.close(); socket = null; }
+    currentRoom = null;
+    chatMessages.innerHTML = '';
+    scene.classList.add('hidden');
+    scene.classList.remove('flex');
+    startBtn.classList.add('hidden');
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+  }
+
   document.addEventListener('room:join', async (e) => {
     const room = e.detail;
     if (!room) return;
-
+    if (socket) { socket.close(); socket = null; }
+    chatMessages.innerHTML = '';
     renderRoom(room);
     scene.classList.remove('hidden');
     scene.classList.add('flex');
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'gameroom' }));
-
     await getMyId();
     await joinAndLoad(room);
-
-    // Show start button for host
+    connectWS(room);
     if (currentUserId && room.hostId === currentUserId) {
       startBtn.classList.remove('hidden');
     }
   });
 
-  // Hide when game:scene fires with a different scene
   document.addEventListener('game:scene', (e) => {
     if (e.detail !== 'gameroom') {
+      if (socket) { socket.close(); socket = null; }
       scene.classList.add('hidden');
       scene.classList.remove('flex');
       startBtn.classList.add('hidden');
     }
   });
 
-  leaveBtn.addEventListener('click', () => {
-    currentRoom = null;
-    scene.classList.add('hidden');
-    scene.classList.remove('flex');
-    startBtn.classList.add('hidden');
-    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+  leaveBtn.addEventListener('click', leaveRoom);
+  chatSendBtn.addEventListener('click', sendChat);
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendChat();
   });
 </script>
