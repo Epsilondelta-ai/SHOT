@@ -36,6 +36,7 @@ type GameState struct {
 	GameID           string        `json:"gameId"`
 	RoomID           string        `json:"roomId"`
 	Status           string        `json:"status"` // "playing" | "finished"
+	Result           string        `json:"result,omitempty"` // "agent_win" | "spy_win" | "draw" — set when finished
 	Players          []PlayerState `json:"players"`
 	Deck             []string      `json:"deck"`
 	Discard          []string      `json:"discard"`

@@ -547,6 +547,7 @@ func handleDeath(state *GameState, killer, victim *PlayerState) []Event {
 
 func endGame(state *GameState, result string) []Event {
 	state.Status = "finished"
+	state.Result = result
 	now := time.Now()
 
 	// Update DB
