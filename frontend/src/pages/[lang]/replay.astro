@@ -83,6 +83,28 @@ const t = useTranslations(lang);
   hittedSrc: hittedImg.src,
   healedSrc: healedImg.src,
   jailSrc: jailImg.src,
+  tNotFound: t.docs.replay.notFound,
+  tNoId: t.docs.replay.noId,
+  tPlayers: t.docs.replay.players,
+  tTurns: t.docs.replay.turns,
+  tInProgress: t.docs.replay.inProgress,
+  tDrew: t.docs.replay.drew,
+  tAttacked: t.docs.replay.attacked,
+  tHealed: t.docs.replay.healed,
+  tJailed: t.docs.replay.jailed,
+  tInspected: t.docs.replay.inspected,
+  tRevealed: t.docs.replay.revealed,
+  tKilled: t.docs.replay.killed,
+  tKillReward: t.docs.replay.killReward,
+  tFriendlyFire: t.docs.replay.friendlyFire,
+  tTurnStarted: t.docs.replay.turnStarted,
+  tTurnEnded: t.docs.replay.turnEnded,
+  tTimedOut: t.docs.replay.timedOut,
+  tGameOver: t.docs.replay.gameOver,
+  tChatMessage: t.docs.replay.chatMessage,
+  tOverflowDiscard: t.docs.replay.overflowDiscard,
+  tCopy: t.docs.replay.copy,
+  tCopied: t.docs.replay.copied,
 }} is:inline>
   const playersEl = document.getElementById('replay-players');
   const metaEl = document.getElementById('replay-meta');
@@ -238,23 +260,23 @@ const t = useTranslations(lang);
     const targetName = action.targetId ? (replayData?.players.find(p => (p.botId || p.userId) === action.targetId)?.username || action.targetId) : '';
 
     switch (action.actionType) {
-      case 'draw': return `${actorName} drew ${payload.count || 0} card(s)`;
+      case 'draw': return `${actorName} ${tDrew} (${payload.count || 0})`;
       case 'game_action':
-        if (payload.card === 'attack') return `${actorName} attacked ${targetName} (HP: ${payload.targetHP})`;
-        if (payload.card === 'heal') return `${actorName} healed ${targetName} (HP: ${payload.targetHP})`;
-        if (payload.card === 'jail') return `${actorName} jailed ${targetName}`;
-        if (payload.card === 'inspect') return `${actorName} inspected ${targetName} → ${payload.revealedRole}`;
-        if (payload.card === 'reveal') return `${actorName} revealed identity: ${payload.role}`;
-        return `${actorName} used ${payload.card || 'card'}`;
-      case 'death': return `${targetName} was killed by ${actorName} (Role: ${payload.role})`;
-      case 'kill_reward': return `${actorName} received kill reward`;
-      case 'friendly_fire_jail': return `${actorName} was jailed for friendly fire`;
-      case 'turn_start': return `--- Turn ${payload.turnCount} ---`;
-      case 'end_turn': return `${actorName} ended their turn`;
-      case 'timeout': return `${actorName} timed out`;
-      case 'game_end': return `Game Over: ${payload.result}`;
-      case 'game_chat': return `${payload.username}: ${payload.message}`;
-      case 'overflow_discard': return `${actorName}'s cards overflowed: ${(payload.discarded || []).join(', ')} discarded`;
+        if (payload.card === 'attack') return `${actorName} → ${targetName} ${tAttacked} (HP: ${payload.targetHP})`;
+        if (payload.card === 'heal') return `${actorName} → ${targetName} ${tHealed} (HP: ${payload.targetHP})`;
+        if (payload.card === 'jail') return `${actorName} → ${targetName} ${tJailed}`;
+        if (payload.card === 'inspect') return `${actorName} → ${targetName} ${tInspected} → ${payload.revealedRole}`;
+        if (payload.card === 'reveal') return `${actorName} ${tRevealed}: ${payload.role}`;
+        return `${actorName} → ${payload.card || '?'}`;
+      case 'death': return `${targetName} ${tKilled} ${actorName} (${payload.role})`;
+      case 'kill_reward': return `${actorName} ${tKillReward}`;
+      case 'friendly_fire_jail': return `${actorName} ${tFriendlyFire}`;
+      case 'turn_start': return `--- ${tTurnStarted} ${payload.turnCount} ---`;
+      case 'end_turn': return `${actorName} ${tTurnEnded}`;
+      case 'timeout': return `${actorName} ${tTimedOut}`;
+      case 'game_end': return `${tGameOver}: ${payload.result}`;
+      case 'game_chat': return `[${tChatMessage}] ${payload.username}: ${payload.message}`;
+      case 'overflow_discard': return `${actorName} ${tOverflowDiscard}: ${(payload.discarded || []).join(', ')}`;
       default: return `${action.actionType}`;
     }
   }
@@ -279,14 +301,14 @@ const t = useTranslations(lang);
     ]);
 
     if (!metaRes.ok || !actionsRes.ok) {
-      metaEl.textContent = 'Replay not found';
+      metaEl.textContent = tNotFound;
       return;
     }
 
     replayData = await metaRes.json();
     actions = await actionsRes.json();
 
-    metaEl.textContent = `${replayData.playerCount} players · ${replayData.turnCount} turns · ${replayData.result || 'in progress'}`;
+    metaEl.textContent = `${replayData.playerCount} ${tPlayers} · ${replayData.turnCount} ${tTurns} · ${replayData.result || tInProgress}`;
 
     if (actions.length > 0) {
       goToFrame(0);

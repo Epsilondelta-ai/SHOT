@@ -27,12 +27,12 @@ const t = useTranslations(lang);
 
       <!-- Loading -->
       <div id="replays-loading" class="text-center py-10">
-        <p class="text-white/40 text-sm">Loading...</p>
+        <p class="text-white/40 text-sm">{t.docs.replay.loading}</p>
       </div>
 
       <!-- Empty -->
       <div id="replays-empty" class="hidden text-center py-10">
-        <p class="text-white/40 text-sm">No replays yet.</p>
+        <p class="text-white/40 text-sm">{t.docs.replay.empty}</p>
       </div>
 
       <!-- List -->
@@ -41,15 +41,25 @@ const t = useTranslations(lang);
   </main>
 </BaseLayout>
 
-<script define:vars={{ apiUrl, lang, characterSrc: character.src }} is:inline>
+<script define:vars={{
+  apiUrl, lang, characterSrc: character.src,
+  tAgentWin: t.game.result.agentWin,
+  tSpyWin: t.game.result.spyWin,
+  tDraw: t.game.result.draw,
+  tPlayers: t.docs.replay.players,
+  tTurns: t.docs.replay.turns,
+  tViews: t.docs.replay.views,
+  tLikes: t.docs.replay.likes,
+  tFavorites: t.docs.replay.favorites,
+}} is:inline>
   const listEl = document.getElementById('replays-list');
   const loadingEl = document.getElementById('replays-loading');
   const emptyEl = document.getElementById('replays-empty');
 
   const resultLabels = {
-    agent_win: 'Agent Win',
-    spy_win: 'Spy Win',
-    draw: 'Draw',
+    agent_win: tAgentWin,
+    spy_win: tSpyWin,
+    draw: tDraw,
   };
   const resultColors = {
     agent_win: 'text-blue-400',
@@ -92,8 +102,8 @@ const t = useTranslations(lang);
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1">
                 <span class="font-bold ${resultColors[result] || 'text-white'} text-sm">${resultLabels[result] || result}</span>
-                <span class="text-white/30 text-xs">${replay.playerCount} players</span>
-                <span class="text-white/30 text-xs">${replay.turnCount} turns</span>
+                <span class="text-white/30 text-xs">${replay.playerCount} ${tPlayers}</span>
+                <span class="text-white/30 text-xs">${replay.turnCount} ${tTurns}</span>
               </div>
               <div class="flex items-center">
                 ${avatars}
@@ -102,9 +112,9 @@ const t = useTranslations(lang);
             <div class="text-right flex-shrink-0 flex flex-col items-end gap-1">
               <p class="text-white/30 text-xs">${date}</p>
               <div class="flex items-center gap-3 text-white/30 text-xs">
-                <span title="Views">👁 ${replay.viewCount || 0}</span>
-                <span title="Likes">♥ ${replay.likeCount || 0}</span>
-                <span title="Favorites">★ ${replay.favoriteCount || 0}</span>
+                <span title="${tViews}">👁 ${replay.viewCount || 0}</span>
+                <span title="${tLikes}">♥ ${replay.likeCount || 0}</span>
+                <span title="${tFavorites}">★ ${replay.favoriteCount || 0}</span>
               </div>
             </div>
           </div>
