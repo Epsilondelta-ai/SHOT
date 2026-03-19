@@ -106,7 +106,10 @@ export default {
     },
     replay: {
       loading: 'Cargando...',
+      tabAll: 'Todos',
+      tabFavorites: 'Favoritos',
       empty: 'Aún no hay repeticiones.',
+      emptyFavorites: 'Aún no hay favoritos.',
       notFound: 'Repetición no encontrada',
       noId: 'No se proporcionó ID de repetición',
       players: 'jugadores',

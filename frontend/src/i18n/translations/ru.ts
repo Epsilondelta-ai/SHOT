@@ -106,7 +106,10 @@ export default {
     },
     replay: {
       loading: 'Загрузка...',
+      tabAll: 'Все',
+      tabFavorites: 'Избранное',
       empty: 'Повторов пока нет.',
+      emptyFavorites: 'Нет избранных повторов.',
       notFound: 'Повтор не найден',
       noId: 'ID повтора не указан',
       players: 'игроки',

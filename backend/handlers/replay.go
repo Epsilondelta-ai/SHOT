@@ -76,6 +76,70 @@ func ReplayUnfavorite(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"ok": true})
 }
 
+// ListFavoriteReplays GET /api/replays/favorites (auth required)
+func ListFavoriteReplays(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	var favs []models.ReplayFavorite
+	db.DB.Where("user_id = ?", userID).Order("created_at DESC").Limit(100).Find(&favs)
+
+	gameIDs := make([]string, len(favs))
+	for i, f := range favs {
+		gameIDs[i] = f.GameID
+	}
+
+	if len(gameIDs) == 0 {
+		return c.JSON([]fiber.Map{})
+	}
+
+	var games []models.Game
+	db.DB.Where("id IN ? AND status = ?", gameIDs, "finished").Find(&games)
+
+	// Preserve favorite order
+	gameMap := make(map[string]models.Game, len(games))
+	for _, g := range games {
+		gameMap[g.ID] = g
+	}
+
+	result := make([]fiber.Map, 0, len(favs))
+	for _, f := range favs {
+		g, ok := gameMap[f.GameID]
+		if !ok {
+			continue
+		}
+		var players []models.GamePlayer
+		db.DB.Where("game_id = ?", g.ID).Find(&players)
+
+		playerList := make([]fiber.Map, len(players))
+		for j, p := range players {
+			playerList[j] = fiber.Map{
+				"username":  p.Username,
+				"avatarUrl": p.AvatarURL,
+				"role":      p.Role,
+			}
+		}
+
+		result = append(result, fiber.Map{
+			"id":            g.ID,
+			"title":         g.Title,
+			"result":        g.Result,
+			"playerCount":   g.PlayerCount,
+			"turnCount":     g.TurnCount,
+			"viewCount":     g.ViewCount,
+			"likeCount":     g.LikeCount,
+			"favoriteCount": g.FavoriteCount,
+			"finishedAt":    g.FinishedAt,
+			"players":       playerList,
+			"isFavorited":   true,
+		})
+	}
+
+	return c.JSON(result)
+}
+
 // ListReplays GET /api/replays (public, no auth required)
 func ListReplays(c *fiber.Ctx) error {
 	var games []models.Game

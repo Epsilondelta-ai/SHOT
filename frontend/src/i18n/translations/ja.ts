@@ -106,7 +106,10 @@ export default {
     },
     replay: {
       loading: '読み込み中...',
+      tabAll: 'すべて',
+      tabFavorites: 'お気に入り',
       empty: 'まだリプレイがありません。',
+      emptyFavorites: 'お気に入りのリプレイがありません。',
       notFound: 'リプレイが見つかりません',
       noId: 'リプレイIDが指定されていません',
       players: 'プレイヤー',

@@ -32,18 +32,33 @@ const t = useTranslations(lang);
         <p class="text-gray-400">{t.game.result.watchReplay}</p>
       </div>
 
-      <!-- Loading -->
-      <div id="replays-loading" class="text-center py-10">
-        <p class="text-white/40 text-sm">{t.docs.replay.loading}</p>
+      <!-- Tabs (shown only for logged-in users) -->
+      <div id="replays-tabs" class="hidden flex gap-1 mb-6 bg-white/5 rounded-xl p-1 w-fit">
+        <button id="tab-all" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-gray-800 text-white">{t.docs.replay.tabAll}</button>
+        <button id="tab-favorites" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition text-white/50 hover:text-white">{t.docs.replay.tabFavorites}</button>
       </div>
 
-      <!-- Empty -->
-      <div id="replays-empty" class="hidden text-center py-10">
-        <p class="text-white/40 text-sm">{t.docs.replay.empty}</p>
+      <!-- All replays section -->
+      <div id="all-section">
+        <div id="replays-loading" class="text-center py-10">
+          <p class="text-white/40 text-sm">{t.docs.replay.loading}</p>
+        </div>
+        <div id="replays-empty" class="hidden text-center py-10">
+          <p class="text-white/40 text-sm">{t.docs.replay.empty}</p>
+        </div>
+        <div id="replays-list" class="hidden flex flex-col gap-3"></div>
       </div>
 
-      <!-- List -->
-      <div id="replays-list" class="hidden flex flex-col gap-3"></div>
+      <!-- Favorites section -->
+      <div id="fav-section" class="hidden">
+        <div id="fav-loading" class="text-center py-10">
+          <p class="text-white/40 text-sm">{t.docs.replay.loading}</p>
+        </div>
+        <div id="fav-empty" class="hidden text-center py-10">
+          <p class="text-white/40 text-sm">{t.docs.replay.emptyFavorites}</p>
+        </div>
+        <div id="fav-list" class="hidden flex flex-col gap-3"></div>
+      </div>
     </div>
   </main>
 
@@ -126,6 +141,9 @@ const t = useTranslations(lang);
   tViews: t.docs.replay.views,
   tLikes: t.docs.replay.likes,
   tFavorites: t.docs.replay.favorites,
+  tTabAll: t.docs.replay.tabAll,
+  tTabFavorites: t.docs.replay.tabFavorites,
+  tEmptyFavorites: t.docs.replay.emptyFavorites,
   tNotFound: t.docs.replay.notFound,
   tInProgress: t.docs.replay.inProgress,
   tDrew: t.docs.replay.drew,
@@ -150,69 +168,111 @@ const t = useTranslations(lang);
   const listEl = document.getElementById('replays-list');
   const loadingEl = document.getElementById('replays-loading');
   const emptyEl = document.getElementById('replays-empty');
+  const favListEl = document.getElementById('fav-list');
+  const favLoadingEl = document.getElementById('fav-loading');
+  const favEmptyEl = document.getElementById('fav-empty');
+  const allSection = document.getElementById('all-section');
+  const favSection = document.getElementById('fav-section');
+  const tabsEl = document.getElementById('replays-tabs');
+  const tabAllBtn = document.getElementById('tab-all');
+  const tabFavBtn = document.getElementById('tab-favorites');
 
   const resultLabels = { agent_win: tAgentWin, spy_win: tSpyWin, draw: tDraw };
   const resultColors = { agent_win: 'text-blue-400', spy_win: 'text-red-400', draw: 'text-amber-400' };
+
+  function makeReplayCard(replay, targetList) {
+    const result = replay.result || 'draw';
+    const date = replay.finishedAt ? new Date(replay.finishedAt).toLocaleString() : '';
+    const avatars = (replay.players || []).slice(0, 8).map(p =>
+      `<img src="${p.avatarUrl || characterSrc}" alt="${p.username}"
+        class="w-7 h-7 rounded-full object-cover border-2 ${p.role === 'spy' ? 'border-red-500' : 'border-blue-400'} -ml-2 first:ml-0"
+        onerror="this.src='${characterSrc}'" title="${p.username} (${p.role})" />`
+    ).join('');
+
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'w-full text-left bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-amber-500/30 rounded-xl px-5 py-4 transition';
+    card.innerHTML = `
+      <div class="flex items-center gap-4">
+        <div class="flex-1 min-w-0">
+          <p class="text-white font-semibold text-sm truncate mb-0.5">${replay.title || 'Untitled'}</p>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold ${resultColors[result] || 'text-white'} text-xs">${resultLabels[result] || result}</span>
+            <span class="text-white/30 text-xs">${replay.playerCount} ${tPlayers}</span>
+            <span class="text-white/30 text-xs">${replay.turnCount} ${tTurns}</span>
+          </div>
+          <div class="flex items-center">${avatars}</div>
+        </div>
+        <div class="text-right flex-shrink-0 flex flex-col items-end gap-1">
+          <p class="text-white/30 text-xs">${date}</p>
+          <div class="flex items-center gap-3 text-white/30 text-xs">
+            <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> ${replay.viewCount || 0}</span>
+            <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" alt="Heart" class="inline-block w-4 h-4" /> ${replay.likeCount || 0}</span>
+            <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" alt="Star" class="inline-block w-4 h-4" /> ${replay.favoriteCount || 0}</span>
+          </div>
+        </div>
+      </div>
+    `;
+    card.addEventListener('click', () => openReplayModal(replay.id));
+    targetList.appendChild(card);
+  }
 
   async function loadReplays() {
     try {
       const res = await fetch(`${apiUrl}/api/replays`);
       if (!res.ok) throw new Error();
       const replays = await res.json();
-
       loadingEl.classList.add('hidden');
-
-      if (!replays || replays.length === 0) {
-        emptyEl.classList.remove('hidden');
-        return;
-      }
-
+      if (!replays || replays.length === 0) { emptyEl.classList.remove('hidden'); return; }
       listEl.classList.remove('hidden');
-
-      replays.forEach(replay => {
-        const result = replay.result || 'draw';
-        const date = replay.finishedAt ? new Date(replay.finishedAt).toLocaleString() : '';
-
-        const avatars = (replay.players || []).slice(0, 8).map(p =>
-          `<img src="${p.avatarUrl || characterSrc}" alt="${p.username}"
-            class="w-7 h-7 rounded-full object-cover border-2 ${p.role === 'spy' ? 'border-red-500' : 'border-blue-400'} -ml-2 first:ml-0"
-            onerror="this.src='${characterSrc}'" title="${p.username} (${p.role})" />`
-        ).join('');
-
-        const card = document.createElement('button');
-        card.type = 'button';
-        card.className = 'w-full text-left bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-amber-500/30 rounded-xl px-5 py-4 transition';
-
-        card.innerHTML = `
-          <div class="flex items-center gap-4">
-            <div class="flex-1 min-w-0">
-              <p class="text-white font-semibold text-sm truncate mb-0.5">${replay.title || 'Untitled'}</p>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="font-bold ${resultColors[result] || 'text-white'} text-xs">${resultLabels[result] || result}</span>
-                <span class="text-white/30 text-xs">${replay.playerCount} ${tPlayers}</span>
-                <span class="text-white/30 text-xs">${replay.turnCount} ${tTurns}</span>
-              </div>
-              <div class="flex items-center">${avatars}</div>
-            </div>
-            <div class="text-right flex-shrink-0 flex flex-col items-end gap-1">
-              <p class="text-white/30 text-xs">${date}</p>
-              <div class="flex items-center gap-3 text-white/30 text-xs">
-                <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> ${replay.viewCount || 0}</span>
-                <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" alt="Heart" class="inline-block w-4 h-4" /> ${replay.likeCount || 0}</span>
-                <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" alt="Star" class="inline-block w-4 h-4" /> ${replay.favoriteCount || 0}</span>
-              </div>
-            </div>
-          </div>
-        `;
-
-        card.addEventListener('click', () => openReplayModal(replay.id));
-        listEl.appendChild(card);
-      });
+      replays.forEach(r => makeReplayCard(r, listEl));
     } catch {
       loadingEl.classList.add('hidden');
       emptyEl.classList.remove('hidden');
     }
   }
+
+  let favLoaded = false;
+  async function loadFavorites() {
+    if (favLoaded) return;
+    favLoaded = true;
+    const token = getToken();
+    try {
+      const res = await fetch(`${apiUrl}/api/replays/favorites`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      const replays = await res.json();
+      favLoadingEl.classList.add('hidden');
+      if (!replays || replays.length === 0) { favEmptyEl.classList.remove('hidden'); return; }
+      favListEl.classList.remove('hidden');
+      replays.forEach(r => makeReplayCard(r, favListEl));
+    } catch {
+      favLoadingEl.classList.add('hidden');
+      favEmptyEl.classList.remove('hidden');
+    }
+  }
+
+  function setActiveTab(tab) {
+    if (tab === 'all') {
+      allSection.classList.remove('hidden');
+      favSection.classList.add('hidden');
+      tabAllBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-gray-800 text-white';
+      tabFavBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-semibold transition text-white/50 hover:text-white';
+    } else {
+      allSection.classList.add('hidden');
+      favSection.classList.remove('hidden');
+      tabAllBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-semibold transition text-white/50 hover:text-white';
+      tabFavBtn.className = 'px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-gray-800 text-white';
+      loadFavorites();
+    }
+  }
+
+  tabAllBtn.addEventListener('click', () => setActiveTab('all'));
+  tabFavBtn.addEventListener('click', () => setActiveTab('favorites'));
+
+  // Show tabs only for logged-in users
+  if (getToken()) tabsEl.classList.remove('hidden');
 
   loadReplays();
 

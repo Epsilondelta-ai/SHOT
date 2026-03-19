@@ -106,7 +106,10 @@ export default {
     },
     replay: {
       loading: 'Wird geladen...',
+      tabAll: 'Alle',
+      tabFavorites: 'Favoriten',
       empty: 'Noch keine Wiederholungen.',
+      emptyFavorites: 'Noch keine Favoriten.',
       notFound: 'Wiederholung nicht gefunden',
       noId: 'Keine Wiederholungs-ID angegeben',
       players: 'Spieler',

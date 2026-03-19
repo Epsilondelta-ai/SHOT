@@ -80,6 +80,7 @@ func main() {
 	api.Get("/games/:id/state", handlers.GetGameState)
 	api.Post("/games/:id/leave", handlers.GameLeave)
 	api.Get("/replays", handlers.ListReplays)
+	api.Get("/replays/favorites", handlers.ListFavoriteReplays)
 	api.Get("/replays/:gameId", handlers.GetReplay)
 	api.Get("/replays/:gameId/actions", handlers.GetReplayActions)
 	api.Post("/replays/:gameId/view", handlers.ReplayView)

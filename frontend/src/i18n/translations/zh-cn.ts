@@ -106,7 +106,10 @@ export default {
     },
     replay: {
       loading: '加载中...',
+      tabAll: '全部',
+      tabFavorites: '收藏',
       empty: '暂无回放。',
+      emptyFavorites: '暂无收藏回放。',
       notFound: '未找到回放',
       noId: '未提供回放 ID',
       players: '玩家',

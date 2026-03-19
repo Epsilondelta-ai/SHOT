@@ -106,7 +106,10 @@ export default {
     },
     replay: {
       loading: '로딩 중...',
+      tabAll: '전체',
+      tabFavorites: '즐겨찾기',
       empty: '아직 리플레이가 없습니다.',
+      emptyFavorites: '즐겨찾기한 리플레이가 없습니다.',
       notFound: '리플레이를 찾을 수 없습니다',
       noId: '리플레이 ID가 없습니다',
       players: '명',

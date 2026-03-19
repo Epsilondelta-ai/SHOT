@@ -106,7 +106,10 @@ export default {
     },
     replay: {
       loading: 'Loading...',
+      tabAll: 'All',
+      tabFavorites: 'Favorites',
       empty: 'No replays yet.',
+      emptyFavorites: 'No favorited replays yet.',
       notFound: 'Replay not found',
       noId: 'No replay ID provided',
       players: 'players',
