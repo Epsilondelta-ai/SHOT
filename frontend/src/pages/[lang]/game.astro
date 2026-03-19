@@ -102,7 +102,10 @@ const t = useTranslations(lang);
         screen.classList.remove('flex');
       }
 
-      // Listen for game_start from SSE → show loading, then switch to game scene
+      // GamePlayScene signals it is fully ready (state loaded, scene visible)
+      document.addEventListener('game:ready', hideLoadingScreen);
+
+      // Listen for game_start from SSE → show loading, then dispatch to GamePlayScene
       document.addEventListener('room:sse:game_start', (e) => {
         const { gameId } = e.detail;
         showLoadingScreen();
@@ -110,7 +113,7 @@ const t = useTranslations(lang);
           document.dispatchEvent(new CustomEvent('game:start', {
             detail: { gameId, userId }
           }));
-          hideLoadingScreen();
+          // hideLoadingScreen is called via game:ready dispatched by GamePlayScene
         });
       });
 
@@ -127,7 +130,7 @@ const t = useTranslations(lang);
                 document.dispatchEvent(new CustomEvent('game:start', {
                   detail: { gameId: room.gameId, userId }
                 }));
-                hideLoadingScreen();
+                // hideLoadingScreen is called via game:ready dispatched by GamePlayScene
               });
             } else {
               document.dispatchEvent(new CustomEvent('room:join', { detail: room }));

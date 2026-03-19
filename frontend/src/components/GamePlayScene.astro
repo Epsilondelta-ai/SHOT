@@ -864,7 +864,12 @@ const t = useTranslations(lang);
     myPlayerID = userId;
 
     const state = await loadGameState(gameId);
-    if (!state) return;
+    if (!state) {
+      // Failed to load game state — hide loading screen and return to rooms
+      document.dispatchEvent(new CustomEvent('game:ready'));
+      exitToLobby();
+      return;
+    }
     gameState = state;
 
     scene.classList.remove('hidden');
@@ -873,6 +878,8 @@ const t = useTranslations(lang);
 
     updateUI();
     startTimerCountdown();
+    // Notify game.astro that the scene is fully ready — hides loading screen
+    document.dispatchEvent(new CustomEvent('game:ready'));
   });
 
   // Debounced state reload — batch rapid SSE events into one API call
