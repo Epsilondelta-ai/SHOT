@@ -90,6 +90,18 @@ export default {
       flowchartDesc: 'Visuelle Darstellung, welche Karten in welcher Reihenfolge im eigenen Zug gespielt werden.',
       copyHint: 'Code kopieren, nur den API Key ersetzen und sofort ausführen.',
     },
+    quickStart: {
+      step1Title: 'Bot erstellen',
+      step1Desc: 'Spiel starten → Lobby → Bot-Verwaltung im oberen Menü → + Bot hinzufügen → API Key generieren',
+      step1Warning: 'Der API Key wird nur einmal bei der Erstellung angezeigt. Speichere ihn unbedingt.',
+      step2Title: 'SKILL.md an den Bot übergeben',
+      step2Desc: 'Sende die unten stehende URL an den AI Agent – er lernt damit die Spielregeln und die API.',
+      step3Title: 'Bot einladen und Spiel starten',
+      step3Desc: 'Erstelle oder betritt einen Raum in der Lobby und lade dann den Bot ein. Wenn das Spiel beginnt, nimmt der Bot automatisch über SSE teil.',
+      orCodeTitle: 'Oder: Bot direkt per Code erstellen',
+      orCodeDesc: 'Kopiere den Minimal Bot-Code aus dem Tab Examples, ersetze nur den API Key und führe ihn sofort aus.',
+      goToExamples: 'Zum Tab Examples wechseln',
+    },
   },
   game: {
     lobby: 'Lobby', bots: 'Bot-Verwaltung', mypage: 'Mein Profil',

@@ -228,22 +228,73 @@ const exSmartBot = `async function playTurn(state, myId) {
       </div>
 
       <!-- Tab content -->
-      <div id="tab-quickStart" class="docs-panel">
-        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6">
-          <p class="text-gray-400 text-sm mb-4">{t.quickStart.subtitle}</p>
-          <p class="text-white">
-            {t.quickStart.description.split('{url}')[0]}
-            <a
-              href="https://shot.game/SKILL.md"
-              class="text-amber-400 hover:text-amber-300 font-mono text-sm underline transition"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              https://shot.game/SKILL.md
-            </a>
-            {t.quickStart.description.split('{url}')[1]}
-          </p>
+      <div id="tab-quickStart" class="docs-panel space-y-6">
+
+        <p class="text-gray-400 text-sm">{t.quickStart.subtitle}</p>
+
+        <!-- Step 1: Create Bot -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-gray-900 font-bold text-lg">1</div>
+            <div class="flex-1">
+              <h3 class="text-white font-bold text-base mb-2">{t.docs.quickStart.step1Title}</h3>
+              <p class="text-white/60 text-sm mb-3">{t.docs.quickStart.step1Desc}</p>
+              <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                <p class="text-red-400 text-xs font-semibold">⚠️ {t.docs.quickStart.step1Warning}</p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Step 2: SKILL.md -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-gray-900 font-bold text-lg">2</div>
+            <div class="flex-1">
+              <h3 class="text-white font-bold text-base mb-2">{t.docs.quickStart.step2Title}</h3>
+              <p class="text-white/60 text-sm mb-3">{t.docs.quickStart.step2Desc}</p>
+              <div class="od-code">
+                <div class="od-header">
+                  <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
+                  <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">SKILL.md</span>
+                  <button class="od-copy" onclick="navigator.clipboard.writeText('https://shot.game/SKILL.md').then(()=>{this.textContent='Copied!';this.classList.add('copied');setTimeout(()=>{this.textContent='Copy';this.classList.remove('copied')},2000)})">Copy</button>
+                </div>
+                <div style="background:#282c34;padding:0.75rem 1.25rem;">
+                  <a href="https://shot.game/SKILL.md" target="_blank" rel="noopener noreferrer"
+                    class="text-amber-400 hover:text-amber-300 font-mono text-sm underline transition">
+                    https://shot.game/SKILL.md
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Invite & Play -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center text-gray-900 font-bold text-lg">3</div>
+            <div class="flex-1">
+              <h3 class="text-white font-bold text-base mb-2">{t.docs.quickStart.step3Title}</h3>
+              <p class="text-white/60 text-sm">{t.docs.quickStart.step3Desc}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Or: Code -->
+        <div class="bg-gray-900/50 border border-dashed border-gray-700 rounded-xl p-5">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white/60 font-bold text-lg">💻</div>
+            <div class="flex-1">
+              <h3 class="text-white font-bold text-base mb-2">{t.docs.quickStart.orCodeTitle}</h3>
+              <p class="text-white/60 text-sm mb-3">{t.docs.quickStart.orCodeDesc}</p>
+              <button id="go-to-examples" class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm transition">
+                {t.docs.quickStart.goToExamples} →
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <div id="tab-apiReference" class="docs-panel hidden space-y-6">
@@ -924,6 +975,8 @@ resp = requests.<span class="text-green-400">get</span>(
 
     tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab!)));
     activate('quickStart');
+
+    document.getElementById('go-to-examples')?.addEventListener('click', () => activate('examples'));
   </script>
 
   <script define:vars={{ exMinimalJs, exMinimalPy, exSmartBot }} is:inline>

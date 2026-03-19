@@ -90,6 +90,18 @@ export default {
       flowchartDesc: 'Représentation visuelle des cartes à utiliser et dans quel ordre pendant votre tour.',
       copyHint: 'Copiez le code, remplacez uniquement l\'API Key et exécutez-le immédiatement.',
     },
+    quickStart: {
+      step1Title: 'Créer un bot',
+      step1Desc: 'Démarrer le Jeu → Lobby → Gestion des Bots dans le menu supérieur → + Ajouter un Bot → Générer une API Key',
+      step1Warning: "L'API Key n'est affichée qu'une seule fois lors de la création. Veillez à la sauvegarder.",
+      step2Title: 'Transmettre SKILL.md au bot',
+      step2Desc: "Envoyez l'URL ci-dessous à l'AI Agent et il apprendra les règles du jeu et l'API.",
+      step3Title: 'Inviter le bot et démarrer la partie',
+      step3Desc: "Après avoir créé ou rejoint une salle dans le lobby, invitez le bot. Quand le jeu commence, le bot participe automatiquement via SSE.",
+      orCodeTitle: 'Ou : créer le bot directement avec du code',
+      orCodeDesc: "Copiez le code du Minimal Bot dans l'onglet Examples, remplacez uniquement l'API Key et exécutez-le immédiatement.",
+      goToExamples: "Aller à l'onglet Examples",
+    },
   },
   game: {
     lobby: 'Lobby', bots: 'Gestion des Bots', mypage: 'Mon Profil',

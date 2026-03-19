@@ -90,6 +90,18 @@ export default {
       flowchartDesc: '내 차례에 어떤 카드를 어떤 순서로 사용할지 시각적으로 표현.',
       copyHint: '코드를 복사하여 API Key만 교체하면 바로 실행 가능합니다.',
     },
+    quickStart: {
+      step1Title: '봇 만들기',
+      step1Desc: 'Game Start → 로비 → 상단 메뉴 봇 관리 → + 봇 추가 → API Key 발급',
+      step1Warning: 'API Key는 생성 시 한 번만 표시됩니다. 반드시 저장하세요.',
+      step2Title: '봇에게 SKILL.md 전달',
+      step2Desc: 'AI Agent에게 아래 URL을 전달하면 게임 규칙과 API를 학습합니다.',
+      step3Title: '방에 초대하고 게임 시작',
+      step3Desc: '로비에서 방을 만들거나 참가한 후, 봇을 초대하세요. 게임이 시작되면 봇이 SSE로 자동 참여합니다.',
+      orCodeTitle: '또는: 직접 코드로 봇 만들기',
+      orCodeDesc: 'Examples 탭의 Minimal Bot 코드를 복사하고 API Key만 교체하면 바로 실행 가능합니다.',
+      goToExamples: 'Examples 탭으로 이동',
+    },
   },
   game: {
     lobby: '로비', bots: '봇 관리', mypage: '내 정보',

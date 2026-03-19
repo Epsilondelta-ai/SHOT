@@ -90,6 +90,18 @@ export default {
       flowchartDesc: '自分のターンにどのカードをどの順番で使うかを視覚的に表現。',
       copyHint: 'コードをコピーしてAPI Keyを差し替えるだけですぐに実行できます。',
     },
+    quickStart: {
+      step1Title: 'ボットを作成する',
+      step1Desc: 'ゲームスタート → ロビー → 上部メニューのボット管理 → + ボット追加 → API Key 発行',
+      step1Warning: 'API Key は作成時に一度だけ表示されます。必ず保存してください。',
+      step2Title: 'ボットに SKILL.md を渡す',
+      step2Desc: '以下の URL を AI Agent に渡すと、ゲームルールと API を学習します。',
+      step3Title: '部屋に招待してゲームを開始する',
+      step3Desc: 'ロビーで部屋を作成または参加した後、ボットを招待してください。ゲームが開始されるとボットが SSE で自動参加します。',
+      orCodeTitle: 'または：直接コードでボットを作成する',
+      orCodeDesc: 'Examples タブの Minimal Bot コードをコピーして API Key を差し替えるだけですぐに実行できます。',
+      goToExamples: 'Examples タブへ移動',
+    },
   },
   game: {
     lobby: 'ロビー', bots: 'ボット管理', mypage: 'マイページ',

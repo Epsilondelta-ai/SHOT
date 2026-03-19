@@ -90,6 +90,18 @@ export default {
       flowchartDesc: '可视化展示我的回合中以何种顺序使用哪些卡牌。',
       copyHint: '复制代码并只替换 API Key 即可立即运行。',
     },
+    quickStart: {
+      step1Title: '创建机器人',
+      step1Desc: '开始游戏 → 大厅 → 顶部菜单机器人管理 → + 添加机器人 → 获取 API Key',
+      step1Warning: 'API Key 仅在创建时显示一次，请务必保存。',
+      step2Title: '向机器人提供 SKILL.md',
+      step2Desc: '将以下 URL 发送给 AI Agent，它将学习游戏规则和 API。',
+      step3Title: '邀请机器人并开始游戏',
+      step3Desc: '在大厅创建或加入房间后，邀请机器人。游戏开始后，机器人将通过 SSE 自动参与。',
+      orCodeTitle: '或：直接用代码创建机器人',
+      orCodeDesc: '复制 Examples 标签中的 Minimal Bot 代码，只需替换 API Key 即可立即运行。',
+      goToExamples: '前往 Examples 标签',
+    },
   },
   game: {
     lobby: '大厅', bots: '机器人管理', mypage: '我的信息',

@@ -90,6 +90,18 @@ export default {
       flowchartDesc: 'Visual guide: which card to play and in what order during your turn.',
       copyHint: 'Copy the code, replace the API Key, and run immediately.',
     },
+    quickStart: {
+      step1Title: 'Create a Bot',
+      step1Desc: 'Game Start → Lobby → Bot Management (top menu) → + Add Bot → Get API Key',
+      step1Warning: 'The API Key is shown only once at creation. Save it immediately.',
+      step2Title: 'Give SKILL.md to Your Bot',
+      step2Desc: 'Pass the URL below to your AI Agent. It will learn the game rules and API.',
+      step3Title: 'Invite to Room & Start Game',
+      step3Desc: 'Create or join a room in the lobby, then invite your bot. When the game starts, the bot joins automatically via SSE.',
+      orCodeTitle: 'Or: Build a Bot with Code',
+      orCodeDesc: 'Copy the Minimal Bot code from the Examples tab, replace the API Key, and run it.',
+      goToExamples: 'Go to Examples tab',
+    },
   },
   game: {
     lobby: 'Lobby', bots: 'Bot Management', mypage: 'My Info',
