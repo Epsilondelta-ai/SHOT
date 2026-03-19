@@ -914,6 +914,17 @@ const t = useTranslations(lang);
     }
     gameState = state;
 
+    // Clear leftover state from any previous game
+    chatMessages.innerHTML = '';
+    bubblesEl.innerHTML = '';
+    Object.keys(activeBubbles).forEach(id => {
+      clearTimeout(activeBubbles[id].timer);
+      delete activeBubbles[id];
+    });
+    pendingGameEnd = null;
+    resultModal.classList.add('hidden');
+    resultModal.classList.remove('flex');
+
     scene.classList.remove('hidden');
     scene.classList.add('flex');
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'gameplay' }));
