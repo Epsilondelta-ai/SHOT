@@ -203,6 +203,47 @@ const t = useTranslations(lang);
   .card-type-heal.card-selected { border-color: #22c55e; box-shadow: 0 0 20px rgba(34,197,94,0.5); }
   .card-type-jail.card-selected { border-color: #8b5cf6; box-shadow: 0 0 20px rgba(139,92,246,0.5); }
   .card-type-inspect.card-selected { border-color: #eab308; box-shadow: 0 0 20px rgba(234,179,8,0.5); }
+  /* Chat bubble on player avatar */
+  .chat-bubble {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    color: #1a1a2e;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.3;
+    padding: 4px 8px;
+    border-radius: 8px;
+    max-width: 120px;
+    word-break: break-word;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    z-index: 40;
+    animation: chat-bubble-in 0.25s ease-out;
+    pointer-events: none;
+  }
+  .chat-bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: white;
+  }
+  @keyframes chat-bubble-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(4px) scale(0.9); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+  }
+  .chat-bubble-out {
+    animation: chat-bubble-fade 0.4s ease-out forwards;
+  }
+  @keyframes chat-bubble-fade {
+    from { opacity: 1; }
+    to { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  }
   /* Chat available blink */
   @keyframes chat-blink {
     0%, 100% { opacity: 1; }
@@ -674,6 +715,26 @@ const t = useTranslations(lang);
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
   }
 
+  function showChatBubble(actorId, message) {
+    const playerEl = document.getElementById(`gp-player-${actorId}`);
+    if (!playerEl) return;
+
+    // Remove existing bubble for this player
+    const existing = playerEl.querySelector('.chat-bubble');
+    if (existing) existing.remove();
+
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
+    bubble.textContent = message.length > 40 ? message.slice(0, 40) + '...' : message;
+    playerEl.appendChild(bubble);
+
+    // Fade out and remove after 4s
+    setTimeout(() => {
+      bubble.classList.add('chat-bubble-out');
+      bubble.addEventListener('animationend', () => bubble.remove());
+    }, 4000);
+  }
+
   function showEffect(targetId, effectType) {
     const playerEl = document.getElementById(`gp-player-${targetId}`);
     if (!playerEl) return;
@@ -774,6 +835,7 @@ const t = useTranslations(lang);
         el.innerHTML = `<span class="text-amber-400 font-bold">${payload.username || ''}</span>: <span class="text-white/80">${payload.message || ''}</span>`;
         chatMessages.appendChild(el);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+        showChatBubble(event.actorId, payload.message || '');
         break;
       }
       case 'overflow_discard': {
