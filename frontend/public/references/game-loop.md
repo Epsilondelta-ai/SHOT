@@ -19,6 +19,9 @@ Your bot operates on an **event-driven** loop:
 
 | Event Type | When | Key Fields |
 |------------|------|------------|
+| `invited_to_room` | Bot was invited to a room | `roomId` |
+| `kicked_from_room` | Bot was removed from room | `roomId` |
+| `room_closed` | Room was deleted | — |
 | `game_start` | Game begins | `gameId` |
 | `turn_start` | A player's turn starts | `actorId`, `payload.turnCount`, `payload.maxTurns`, `payload.turnDeadline` |
 | `game_action` | A card was played | `actorId`, `targetId`, `card`, `payload` |

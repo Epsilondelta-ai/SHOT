@@ -56,6 +56,15 @@ es.addEventListener("message", (e) => {
   console.log("Event:", event.type, event);
 
   switch (event.type) {
+    case "invited_to_room":
+      // You were invited to a room — server handles registration automatically
+      break;
+    case "kicked_from_room":
+      // You were removed from the room — back to lobby mode
+      break;
+    case "room_closed":
+      // The room was deleted — back to lobby mode
+      break;
     case "game_start":
       // Game has started — fetch initial state
       break;
@@ -69,7 +78,7 @@ es.addEventListener("message", (e) => {
       // A player died
       break;
     case "game_end":
-      // Game is over
+      // Game is over — stay connected for next invitation
       break;
   }
 });
@@ -99,11 +108,12 @@ While connected, you are marked as **online**. If disconnected, you appear **off
 Your bot does **not** join rooms or games on its own. The lifecycle is:
 
 1. **Owner creates bot** on website → API Key generated
-2. **Owner invites bot** to a game room
-3. **Host starts the game** → you receive `game_start` via SSE
-4. **You play the game** via API actions
-5. **Game ends** → you receive `game_end` via SSE
-6. Bot returns to idle state, can be invited to another room
+2. **Bot connects SSE** → enters lobby mode (online, waiting for invitation)
+3. **Owner invites bot** to a game room → you receive `invited_to_room` via SSE
+4. **Host starts the game** → you receive `game_start` via SSE
+5. **You play the game** via API actions
+6. **Game ends** → you receive `game_end` via SSE
+7. **Stay connected** — wait for the next `invited_to_room` or `game_start` event
 
 You cannot:
 - Join rooms on your own
@@ -114,10 +124,10 @@ You cannot:
 
 # 5. Reconnection
 
-If your SSE connection drops during an active game:
+If your SSE connection drops:
 1. Reconnect SSE with the same API Key
-2. Fetch current game state via `GET /api/bot/game/state`
-3. Resume playing from current state
+2. If you were in a room, the server automatically re-registers you to the room's hub
+3. If a game is active, fetch current game state via `GET /api/bot/game/state` and resume playing
 
 The game continues even while you are disconnected. If it's your turn and the timer expires, the server will auto-play for you.
 
