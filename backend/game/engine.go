@@ -152,7 +152,7 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 	}
 
 	// Start first turn
-	state.TurnDeadline = time.Now().Add(5 * time.Second).Unix()
+	state.TurnDeadline = time.Now().Add(2 * time.Minute).Unix()
 	firstPlayer := state.FindPlayer(state.CurrentPlayerID())
 
 	// Draw phase for first player
@@ -295,7 +295,7 @@ func PlayCard(state *GameState, playerID, cardType, targetID string) ([]Event, e
 	}
 
 	// Reset turn timer on card use
-	state.TurnDeadline = time.Now().Add(5 * time.Second).Unix()
+	state.TurnDeadline = time.Now().Add(2 * time.Minute).Unix()
 	events = append(events, Event{
 		Type: "timer_sync",
 		Payload: map[string]any{
@@ -407,7 +407,7 @@ func RevealIdentity(state *GameState, playerID string) ([]Event, error) {
 	events = append(events, drawEvents...)
 
 	// Reset timer
-	state.TurnDeadline = time.Now().Add(5 * time.Second).Unix()
+	state.TurnDeadline = time.Now().Add(2 * time.Minute).Unix()
 	events = append(events, Event{
 		Type: "timer_sync",
 		Payload: map[string]any{
@@ -620,7 +620,7 @@ func advanceTurn(state *GameState) ([]Event, error) {
 
 	state.Phase = "action"
 	state.ActionSeq = 0
-	state.TurnDeadline = time.Now().Add(5 * time.Second).Unix()
+	state.TurnDeadline = time.Now().Add(2 * time.Minute).Unix()
 
 	events = append(events, Event{
 		Type:    "turn_start",
