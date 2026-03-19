@@ -1,6 +1,10 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
+import bulletImg from '../../assets/bullet.webp';
+import healImg from '../../assets/heal.webp';
+import handcuffImg from '../../assets/handcuff.webp';
+import findImg from '../../assets/find.webp';
 import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
 
@@ -63,8 +67,155 @@ const t = useTranslations(lang);
         <p class="text-gray-500 italic">Coming soon...</p>
       </div>
 
-      <div id="tab-gameRules" class="docs-panel hidden">
-        <p class="text-gray-500 italic">Coming soon...</p>
+      <div id="tab-gameRules" class="docs-panel hidden space-y-6">
+
+        <!-- Roles -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="bg-blue-950/40 border border-blue-500/30 rounded-xl p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm">A</span>
+              <h3 class="text-blue-400 font-bold text-lg">{t.game.role.agent}</h3>
+            </div>
+            <p class="text-white/80 text-sm mb-2">HP 3</p>
+            <p class="text-white/60 text-sm">{t.docs.rules.agentGoal}</p>
+          </div>
+          <div class="bg-red-950/40 border border-red-500/30 rounded-xl p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white font-bold text-sm">S</span>
+              <h3 class="text-red-400 font-bold text-lg">{t.game.role.spy}</h3>
+            </div>
+            <p class="text-white/80 text-sm mb-2">HP 3</p>
+            <p class="text-white/60 text-sm">{t.docs.rules.spyGoal}</p>
+            <p class="text-red-300/50 text-xs mt-2">{t.docs.rules.spyKnowEachOther}</p>
+          </div>
+        </div>
+
+        <!-- Composition table -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <h3 class="text-amber-400 font-bold text-lg mb-3">{t.docs.rules.compositionTitle}</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="text-white/50 border-b border-gray-700">
+                  <th class="text-left py-2 px-2">{t.rooms.players}</th>
+                  <th class="text-center py-2 px-2 text-red-400">{t.game.role.spy}</th>
+                  <th class="text-center py-2 px-2 text-blue-400">{t.game.role.agent}</th>
+                  <th class="text-right py-2 px-2"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { total: 5, spies: 1, agents: 4, rec: false },
+                  { total: 6, spies: 2, agents: 4, rec: false },
+                  { total: 7, spies: 2, agents: 5, rec: false },
+                  { total: 8, spies: 3, agents: 5, rec: false },
+                  { total: 9, spies: 3, agents: 6, rec: true },
+                  { total: 10, spies: 3, agents: 7, rec: false },
+                  { total: 11, spies: 4, agents: 7, rec: false },
+                  { total: 12, spies: 4, agents: 8, rec: false },
+                ].map(r => (
+                  <tr class={`border-b border-gray-800 ${r.rec ? 'bg-amber-500/10' : ''}`}>
+                    <td class="py-2 px-2 text-white font-semibold">{r.total}</td>
+                    <td class="py-2 px-2 text-center text-red-400 font-bold">{r.spies}</td>
+                    <td class="py-2 px-2 text-center text-blue-400 font-bold">{r.agents}</td>
+                    <td class="py-2 px-2 text-right">{r.rec ? <span class="text-amber-400 text-xs font-semibold">{t.docs.rules.recommended}</span> : ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Cards -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <h3 class="text-amber-400 font-bold text-lg mb-4">{t.docs.rules.cardsTitle}</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { name: t.game.card.attack, img: bulletImg.src, limit: '6', fate: t.docs.rules.recycled, fateColor: 'text-green-400', desc: '1 DMG', qty: '×5' },
+              { name: t.game.card.heal, img: healImg.src, limit: '2', fate: t.docs.rules.recycled, fateColor: 'text-green-400', desc: '+1 HP', qty: '×2' },
+              { name: t.game.card.jail, img: handcuffImg.src, limit: '1', fate: t.docs.rules.banished, fateColor: 'text-red-400', desc: '1T seal', qty: '×1' },
+              { name: t.game.card.inspect, img: findImg.src, limit: t.docs.rules.unlimited, fate: t.docs.rules.banished, fateColor: 'text-red-400', desc: 'ID check', qty: '×2/spy' },
+            ].map(c => (
+              <div class="bg-black/40 rounded-xl p-3 flex flex-col items-center gap-2 border border-white/10">
+                <img src={c.img} alt={c.name} class="w-12 h-12 object-contain" />
+                <p class="text-white font-bold text-sm">{c.name}</p>
+                <p class="text-white/50 text-xs">{c.desc}</p>
+                <div class="w-full border-t border-white/10 pt-2 mt-1 space-y-1">
+                  <p class="text-white/40 text-xs">{t.docs.rules.holdLimit}: <span class="text-white/70">{c.limit}</span></p>
+                  <p class="text-white/40 text-xs">{t.docs.rules.afterUse}: <span class={c.fateColor}>{c.fate}</span></p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Turn flow -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <h3 class="text-amber-400 font-bold text-lg mb-4">{t.docs.rules.turnFlowTitle}</h3>
+          <div class="flex items-center justify-center gap-2 sm:gap-4 flex-wrap">
+            <div class="bg-blue-500/20 border border-blue-500/30 rounded-xl px-4 py-3 text-center">
+              <p class="text-blue-400 font-bold text-2xl mb-1">1</p>
+              <p class="text-white/80 text-xs">{t.docs.rules.draw2}</p>
+            </div>
+            <span class="text-white/30 text-2xl">→</span>
+            <div class="bg-amber-500/20 border border-amber-500/30 rounded-xl px-4 py-3 text-center">
+              <p class="text-amber-400 font-bold text-2xl mb-1">2</p>
+              <p class="text-white/80 text-xs">{t.docs.rules.playCards}</p>
+            </div>
+            <span class="text-white/30 text-2xl">→</span>
+            <div class="bg-green-500/20 border border-green-500/30 rounded-xl px-4 py-3 text-center">
+              <p class="text-green-400 font-bold text-2xl mb-1">3</p>
+              <p class="text-white/80 text-xs">{t.docs.rules.endTurn}</p>
+            </div>
+          </div>
+          <div class="mt-4 space-y-1">
+            <p class="text-white/50 text-xs text-center">{t.docs.rules.mustAttack}</p>
+            <p class="text-white/50 text-xs text-center">{t.docs.rules.turnTimer}</p>
+          </div>
+        </div>
+
+        <!-- Win conditions -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="bg-blue-950/40 border border-blue-500/30 rounded-xl p-4 text-center">
+            <p class="text-3xl mb-2">🛡</p>
+            <p class="text-blue-400 font-bold text-sm">{t.game.result.agentWin}</p>
+            <p class="text-white/50 text-xs mt-1">{t.docs.rules.agentWinDesc}</p>
+          </div>
+          <div class="bg-red-950/40 border border-red-500/30 rounded-xl p-4 text-center">
+            <p class="text-3xl mb-2">🔴</p>
+            <p class="text-red-400 font-bold text-sm">{t.game.result.spyWin}</p>
+            <p class="text-white/50 text-xs mt-1">{t.docs.rules.spyWinDesc}</p>
+          </div>
+          <div class="bg-gray-800/40 border border-gray-600/30 rounded-xl p-4 text-center">
+            <p class="text-3xl mb-2">⚖️</p>
+            <p class="text-amber-400 font-bold text-sm">{t.game.result.draw}</p>
+            <p class="text-white/50 text-xs mt-1">{t.docs.rules.drawDesc}</p>
+          </div>
+        </div>
+
+        <!-- Detailed rules (accordions) -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+          <h3 class="text-amber-400 font-bold text-lg px-5 pt-5 pb-3">{t.docs.rules.detailsTitle}</h3>
+          {[
+            { title: t.docs.rules.attackRules, desc: t.docs.rules.attackDesc },
+            { title: t.docs.rules.deathRules, desc: t.docs.rules.deathDesc },
+            { title: t.docs.rules.jailRules, desc: t.docs.rules.jailDesc },
+            { title: t.docs.rules.identityRules, desc: t.docs.rules.identityDesc },
+            { title: t.docs.rules.deckRules, desc: t.docs.rules.deckDesc },
+            { title: t.docs.rules.chatRules, desc: t.docs.rules.chatDesc },
+          ].map(item => (
+            <details class="border-t border-gray-800 group">
+              <summary class="px-5 py-3 cursor-pointer text-white/80 text-sm font-semibold hover:bg-white/5 transition flex items-center justify-between">
+                {item.title}
+                <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
+              </summary>
+              <div class="px-5 pb-4">
+                <p class="text-white/50 text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            </details>
+          ))}
+        </div>
+
       </div>
 
       <div id="tab-examples" class="docs-panel hidden">
