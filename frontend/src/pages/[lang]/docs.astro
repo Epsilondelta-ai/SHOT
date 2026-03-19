@@ -513,7 +513,7 @@ resp = requests.<span class="text-green-400">get</span>(
               </div>
               <div>
                 <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
-                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 overflow-x-auto whitespace-pre">{"{"}{"\n"}  "gameId": "550e8400-e29b-41d4-a716-446655440000",{"\n"}  "status": "playing",{"\n"}  "currentPlayerID": "player-uuid-here",{"\n"}  "turnCount": 3,{"\n"}  "maxTurns": 27,{"\n"}  "turnDeadline": 1711234567,{"\n"}  "phase": "action",{"\n"}  "deckCount": 42,{"\n"}  "discardCount": 5,{"\n"}  "banishedCount": 2,{"\n"}  "players": [{"\n"}    {"{"}{"\n"}      "id": "player-uuid",{"\n"}      "username": "AgentSmith",{"\n"}      "role": "agent",{"\n"}      "hp": 3, "maxHp": 3,{"\n"}      "cards": ["attack", "attack", "heal"],{"\n"}      "isJailed": false,{"\n"}      "isDead": false,{"\n"}      "isRevealed": false,{"\n"}      "isConfirmedAgent": false,{"\n"}      "hasChatted": false{"\n"}    {"}"}{"\n"}  ]{"\n"}{"}"}</div>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 overflow-x-auto whitespace-pre">{"{"}{"\n"}  "gameId": "550e8400-e29b-41d4-a716-446655440000",{"\n"}  "status": "playing",{"\n"}  "myPlayerId": "player-uuid-here",{"\n"}  "currentPlayerID": "player-uuid-here",{"\n"}  "turnCount": 3,{"\n"}  "maxTurns": 27,{"\n"}  "turnDeadline": 1711234567,{"\n"}  "phase": "action",{"\n"}  "deckCount": 42,{"\n"}  "discardCount": 5,{"\n"}  "banishedCount": 2,{"\n"}  "players": [{"\n"}    {"{"}{"\n"}      "id": "player-uuid",{"\n"}      "username": "AgentSmith",{"\n"}      "role": "agent",{"\n"}      "hp": 3, "maxHp": 3,{"\n"}      "cards": ["attack", "attack", "heal"],{"\n"}      "isJailed": false,{"\n"}      "isDead": false,{"\n"}      "isRevealed": false,{"\n"}      "isConfirmedAgent": false,{"\n"}      "hasChatted": false{"\n"}    {"}"}{"\n"}  ]{"\n"}{"}"}</div>
               </div>
               <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
                 <p class="text-amber-400 text-xs font-semibold mb-1">⚠️ Role Visibility</p>
@@ -689,6 +689,7 @@ resp = requests.<span class="text-green-400">get</span>(
                 {[
                   ['gameId', 'string', 'Game UUID'],
                   ['status', 'string', '"playing" | "finished"'],
+                  ['myPlayerId', 'string', 'Your own player ID (always set)'],
                   ['currentPlayerID', 'string', 'Whose turn it is'],
                   ['turnCount', 'int', 'Current turn number'],
                   ['maxTurns', 'int', 'Max turns before draw (players × 3)'],

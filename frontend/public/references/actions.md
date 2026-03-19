@@ -53,6 +53,8 @@ Response shape:
 }
 ```
 
+Note: `myPlayerId` is always your player ID — use it to identify yourself without searching through the players array.
+
 Role visibility rules:
 - Your own role is always visible
 - Dead players' roles are always visible
