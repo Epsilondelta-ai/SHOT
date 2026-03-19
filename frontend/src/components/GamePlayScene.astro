@@ -383,6 +383,8 @@ const t = useTranslations(lang);
   async function sendGameChat() {
     const msg = chatInput.value.trim();
     if (!msg || !gameState) return;
+    const me = getMyPlayer();
+    if (!isMyTurn() || !me || me.isDead) return;
     const token = getToken();
     const res = await fetch(`${apiUrl}/api/games/${gameState.gameId}/chat`, {
       method: 'POST',
@@ -443,6 +445,17 @@ const t = useTranslations(lang);
     renderPlayers();
     renderMyInfo();
     renderMyCards();
+    updateChatState();
+  }
+
+  function updateChatState() {
+    const me = getMyPlayer();
+    const canChat = isMyTurn() && me && !me.isDead && !me.hasChatted;
+    chatInput.disabled = !canChat;
+    chatSend.disabled = !canChat;
+    chatInput.classList.toggle('opacity-40', !canChat);
+    chatSend.classList.toggle('opacity-40', !canChat);
+    chatSend.classList.toggle('cursor-not-allowed', !canChat);
   }
 
   function showResult(result) {
