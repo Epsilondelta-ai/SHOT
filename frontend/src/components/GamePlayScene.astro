@@ -43,6 +43,7 @@ const t = useTranslations(lang);
       <div class="flex-1 relative flex items-center justify-center min-h-0">
         <div id="gp-players" class="relative w-full h-full flex items-center justify-center"></div>
         <div id="gp-effects" class="absolute inset-0 pointer-events-none"></div>
+        <div id="gp-bubbles" class="absolute inset-0 pointer-events-none"></div>
       </div>
 
       <!-- Side panel (desktop only) -->
@@ -338,6 +339,8 @@ const t = useTranslations(lang);
   const scene = document.getElementById('scene-gameplay');
   const playersEl = document.getElementById('gp-players');
   const effectsEl = document.getElementById('gp-effects');
+  const bubblesEl = document.getElementById('gp-bubbles');
+  const activeBubbles = {}; // actorId → { el, timer }
   const turnInfoEl = document.getElementById('gp-turn-info');
   const timerEl = document.getElementById('gp-timer');
   const myRoleEl = document.getElementById('gp-my-role');
@@ -740,20 +743,38 @@ const t = useTranslations(lang);
     const playerEl = document.getElementById(`gp-player-${actorId}`);
     if (!playerEl) return;
 
-    // Remove existing bubble for this player
-    const existing = playerEl.querySelector('.chat-bubble');
-    if (existing) existing.remove();
+    // Cancel any existing bubble for this player
+    if (activeBubbles[actorId]) {
+      clearTimeout(activeBubbles[actorId].timer);
+      activeBubbles[actorId].el.remove();
+      delete activeBubbles[actorId];
+    }
+
+    // Position above the player circle using the overlay layer
+    const playerRect = playerEl.getBoundingClientRect();
+    const containerRect = bubblesEl.getBoundingClientRect();
+    const cx = playerRect.left - containerRect.left + playerRect.width / 2;
+    const cy = playerRect.top - containerRect.top;
 
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
+    bubble.style.position = 'absolute';
+    bubble.style.left = `${cx}px`;
+    bubble.style.top = `${cy}px`;
+    bubble.style.transform = 'translate(-50%, -100%)';
     bubble.textContent = message.length > 40 ? message.slice(0, 40) + '...' : message;
-    playerEl.appendChild(bubble);
+    bubblesEl.appendChild(bubble);
 
     // Fade out and remove after 4s
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       bubble.classList.add('chat-bubble-out');
-      bubble.addEventListener('animationend', () => bubble.remove());
+      bubble.addEventListener('animationend', () => {
+        bubble.remove();
+        delete activeBubbles[actorId];
+      });
     }, 4000);
+
+    activeBubbles[actorId] = { el: bubble, timer };
   }
 
   function showEffect(targetId, effectType) {
