@@ -550,6 +550,9 @@ const t = useTranslations(lang);
         } else if (msg.type === 'room_closed') {
           appendSystemMessage(tRoomClosed);
           setTimeout(() => leaveRoom(), 1500);
+        } else if (msg.type === 'resync_needed') {
+          reloadRoomState().catch(() => null);
+          document.dispatchEvent(new CustomEvent('room:sse:game', { detail: msg }));
         }
       } catch {}
     });

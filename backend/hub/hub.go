@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -13,12 +14,13 @@ import (
 var ctx = context.Background()
 
 type Client struct {
-	Ch        chan []byte
-	UserID    string
-	Username  string
-	AvatarURL string
-	RoomID    string
-	Replaced  bool
+	Ch          chan []byte
+	UserID      string
+	Username    string
+	AvatarURL   string
+	RoomID      string
+	Replaced    bool
+	NeedsResync int32 // atomic: 1 = messages were dropped, client should resync state
 }
 
 type Message struct {
@@ -98,6 +100,7 @@ func (h *Hub) sendToLocalClients(roomID string, data []byte) {
 		case c.Ch <- data:
 		default:
 			log.Printf("[hub] warn: dropped message for user %s in room %s (channel full)", c.UserID, roomID)
+			atomic.StoreInt32(&c.NeedsResync, 1)
 		}
 	}
 }
@@ -158,7 +161,7 @@ func (h *Hub) Register(c *Client) {
 // the same user+room and registers the new client. This avoids the race where
 // a Redis ctrl message for the old connection arrives after the new client is
 // registered and accidentally closes it.
-func (h *Hub) RegisterAndReplaceLocal(c *Client) {
+func (h *Hub) RegisterAndReplaceLocal(c *Client) bool {
 	h.mu.Lock()
 	if h.rooms[c.RoomID] == nil {
 		h.rooms[c.RoomID] = make(map[*Client]bool)
@@ -185,6 +188,7 @@ func (h *Hub) RegisterAndReplaceLocal(c *Client) {
 		}
 		close(old.Ch)
 	}
+	return old != nil
 }
 
 func (h *Hub) Unregister(c *Client) {

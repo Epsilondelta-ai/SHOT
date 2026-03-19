@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"github.com/epsilondelta/shot/db"
-	"github.com/epsilondelta/shot/models"
 	"github.com/epsilondelta/shot/hub"
+	"github.com/epsilondelta/shot/models"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gofiber/fiber/v2"
 )
@@ -168,15 +170,18 @@ func RoomSSE(c *fiber.Ctx) error {
 	// Atomically close any existing local connection and register new one.
 	// Using local-only replacement avoids a race where the Redis ctrl message
 	// arrives after the new client is registered and accidentally closes it.
-	hub.H.RegisterAndReplaceLocal(client)
+	wasReplaced := hub.H.RegisterAndReplaceLocal(client)
 
-	// Broadcast join
-	hub.H.Broadcast(roomID, hub.Message{
-		Type:      "join",
-		UserID:    userID,
-		Username:  user.Username,
-		AvatarURL: user.AvatarURL,
-	})
+	// Only broadcast join for new connections, not reconnects.
+	// Reconnects are detected by the presence of a previous local client.
+	if !wasReplaced {
+		hub.H.Broadcast(roomID, hub.Message{
+			Type:      "join",
+			UserID:    userID,
+			Username:  user.Username,
+			AvatarURL: user.AvatarURL,
+		})
+	}
 	broadcastRoomUpdate(roomID)
 
 	c.Set("Content-Type", "text/event-stream")
@@ -237,6 +242,13 @@ func RoomSSE(c *fiber.Ctx) error {
 				fmt.Fprintf(w, "data: %s\n\n", data)
 				if err := w.Flush(); err != nil {
 					return
+				}
+				// If messages were dropped while the channel was full, tell the
+				// client to re-fetch state so it doesn't get stuck with a stale UI.
+				if atomic.CompareAndSwapInt32(&client.NeedsResync, 1, 0) {
+					resync, _ := json.Marshal(map[string]string{"type": "resync_needed"})
+					fmt.Fprintf(w, "data: %s\n\n", resync)
+					w.Flush() //nolint:errcheck
 				}
 			case <-ticker.C:
 				fmt.Fprintf(w, ": ping\n\n")
