@@ -603,7 +603,25 @@ const t = useTranslations(lang);
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     }).catch(() => null);
-    if (res?.ok) scheduleStateReload();
+    if (res?.ok) {
+      scheduleStateReload();
+    } else if (res) {
+      const body = await res.json().catch(() => null);
+      if (body?.error?.includes('attack')) {
+        showToast(tMustAttack);
+      }
+    }
+  }
+
+  function showToast(msg) {
+    const existing = document.getElementById('gp-toast');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.id = 'gp-toast';
+    el.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-red-500/90 text-white text-sm font-bold px-4 py-2 rounded-xl shadow-lg';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
   }
 
   async function revealIdentity() {
