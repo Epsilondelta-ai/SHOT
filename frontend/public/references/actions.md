@@ -41,6 +41,7 @@ Response shape:
       "isOnline": true
     }
   ],
+  "myPlayerId": "player-uuid",
   "currentPlayerID": "player-uuid",
   "turnCount": 3,
   "maxTurns": 27,
