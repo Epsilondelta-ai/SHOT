@@ -3,7 +3,9 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"sync"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -53,12 +55,21 @@ func NewHub(rdb *redis.Client) *Hub {
 }
 
 func (h *Hub) Start() {
-	pubsub := h.rdb.PSubscribe(ctx, "room:msg:*", "room:ctrl:*", "bot:events:*")
 	go func() {
-		for msg := range pubsub.Channel() {
-			h.routeRedisMessage(msg)
+		for {
+			h.runPubSub()
+			log.Println("[hub] Redis pub/sub channel closed, reconnecting in 1s...")
+			time.Sleep(time.Second)
 		}
 	}()
+}
+
+func (h *Hub) runPubSub() {
+	pubsub := h.rdb.PSubscribe(ctx, "room:msg:*", "room:ctrl:*", "bot:events:*")
+	defer pubsub.Close()
+	for msg := range pubsub.Channel() {
+		h.routeRedisMessage(msg)
+	}
 }
 
 func (h *Hub) routeRedisMessage(msg *redis.Message) {
@@ -86,6 +97,7 @@ func (h *Hub) sendToLocalClients(roomID string, data []byte) {
 		select {
 		case c.Ch <- data:
 		default:
+			log.Printf("[hub] warn: dropped message for user %s in room %s (channel full)", c.UserID, roomID)
 		}
 	}
 }

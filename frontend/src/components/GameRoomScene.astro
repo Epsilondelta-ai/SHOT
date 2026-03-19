@@ -196,6 +196,7 @@ const t = useTranslations(lang);
   let currentUserId = null;
   let currentMembers = [];
   let es = null;
+  let sseConnected = false;
 
   async function getMyId() {
     if (currentUserId) return currentUserId;
@@ -498,12 +499,28 @@ const t = useTranslations(lang);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
+  async function reloadRoomState() {
+    if (!currentRoom) return;
+    const token = getToken();
+    const [roomRes, membersRes] = await Promise.all([
+      fetch(`${apiUrl}/api/rooms/${currentRoom.id}`, { headers: { Authorization: `Bearer ${token}` } }),
+      fetch(`${apiUrl}/api/rooms/${currentRoom.id}/members`, { headers: { Authorization: `Bearer ${token}` } }),
+    ]);
+    if (!roomRes.ok || !membersRes.ok) return;
+    const [room, members] = await Promise.all([roomRes.json(), membersRes.json()]);
+    updateUI(room, members);
+  }
+
   function connectSSE(room) {
     const token = getToken();
     if (!token) return;
     es = new EventSource(`${apiUrl}/api/rooms/${room.id}/sse?token=${token}`);
 
     es.addEventListener('open', () => {
+      if (sseConnected && currentRoom) {
+        reloadRoomState().catch(() => null);
+      }
+      sseConnected = true;
       document.dispatchEvent(new CustomEvent('room:sse', { detail: 'connected' }));
     });
 
@@ -564,6 +581,7 @@ const t = useTranslations(lang);
       }).catch(() => null);
     }
     if (es) { es.close(); es = null; }
+    sseConnected = false;
     document.dispatchEvent(new CustomEvent('room:sse', { detail: 'disconnected' }));
     currentRoom = null;
     currentMembers = [];
