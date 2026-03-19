@@ -395,13 +395,15 @@ const t = useTranslations(lang);
         ${p.role !== 'unknown' && p.id !== myPlayerID ? `<p class="text-xs ${p.role === 'spy' ? 'text-red-400' : 'text-blue-400'}">${p.role === 'spy' ? tSpy : p.isConfirmedAgent ? tConfirmedAgent : tAgent}</p>` : ''}
       `;
 
-      // Click to select as target
+      // Click/touch to select as target
       if (selectedCard && !p.isDead && p.id !== myPlayerID) {
         el.classList.add('cursor-pointer', 'hover:scale-110');
         el.addEventListener('click', () => playCard(p.id));
+        el.addEventListener('touchend', (e) => { e.preventDefault(); playCard(p.id); });
       } else if (selectedCard && !p.isDead && p.id === myPlayerID && selectedCard === 'heal') {
         el.classList.add('cursor-pointer', 'hover:scale-110');
         el.addEventListener('click', () => playCard(p.id));
+        el.addEventListener('touchend', (e) => { e.preventDefault(); playCard(p.id); });
       }
 
       playersEl.appendChild(el);
@@ -496,33 +498,54 @@ const t = useTranslations(lang);
         <div class="card-desc">${cardDescs[card] || ''}</div>
       `;
 
-      // Hover/touch feedback always works (even disabled)
+      // Hover feedback (desktop)
       el.addEventListener('mouseenter', () => el.classList.add('card-touched'));
       el.addEventListener('mouseleave', () => { if (!isSelected) el.classList.remove('card-touched'); });
 
+      // Card selection logic (shared)
+      function selectCard() {
+        if (isDisabled) return;
+        if (selectedCard === card) {
+          selectedCard = null;
+          targetIndicator.classList.add('hidden');
+          cardHand.classList.remove('hand-active');
+        } else {
+          selectedCard = card;
+          targetIndicator.classList.remove('hidden');
+          cardHand.classList.add('hand-active');
+        }
+        renderMyCards();
+        renderPlayers();
+      }
+
+      // Mobile touch — select card directly on touch
+      let touchedByTouch = false;
       el.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        touchedByTouch = true;
         cardHand.classList.add('hand-active');
         document.querySelectorAll('.card-hand-item.card-touched').forEach(c => c.classList.remove('card-touched'));
         el.classList.add('card-touched');
       }, { passive: false });
 
-      // Click to select — only when usable
-      if (!isDisabled) {
-        el.addEventListener('click', () => {
-          if (selectedCard === card) {
-            selectedCard = null;
-            targetIndicator.classList.add('hidden');
-            cardHand.classList.remove('hand-active');
-          } else {
-            selectedCard = card;
-            targetIndicator.classList.remove('hidden');
-            cardHand.classList.add('hand-active');
-          }
-          renderMyCards();
-          renderPlayers();
-        });
-      }
+      el.addEventListener('touchend', (e) => {
+        if (!touchedByTouch) return;
+        touchedByTouch = false;
+        // Only select if finger lifted on the same card (not dragged away)
+        const touch = e.changedTouches[0];
+        const rect = el.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          selectCard();
+        }
+      });
+
+      // Desktop click
+      el.addEventListener('click', (e) => {
+        // Skip if this was a touch interaction (already handled)
+        if (e.sourceCapabilities?.firesTouchEvents) return;
+        selectCard();
+      });
 
       myCardsEl.appendChild(el);
     });
