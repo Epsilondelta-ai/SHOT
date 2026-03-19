@@ -40,7 +40,7 @@ func Connect() error {
 		return err
 	}
 
-	return DB.AutoMigrate(&models.User{}, &models.Bot{}, &models.Room{}, &models.RoomMember{})
+	return DB.AutoMigrate(&models.User{}, &models.Bot{}, &models.Room{}, &models.RoomMember{}, &models.Game{}, &models.GamePlayer{}, &models.GameAction{})
 }
 
 func getEnv(key, fallback string) string {

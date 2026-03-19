@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/epsilondelta/shot/db"
+	"github.com/epsilondelta/shot/game"
 	"github.com/epsilondelta/shot/handlers"
 	"github.com/epsilondelta/shot/hub"
 	"github.com/gofiber/fiber/v2"
@@ -26,15 +27,18 @@ func main() {
 	}
 
 	// Clean up rooms left over from previous server session.
-	// Room state is ephemeral (tied to SSE connections), so on restart
-	// all rooms are stale and must be removed.
-	db.DB.Exec("DELETE FROM room_members")
-	db.DB.Exec("DELETE FROM rooms")
+	// Only delete rooms that are NOT playing — active games are preserved
+	// and their state is recovered from Redis by the TimerManager.
+	db.DB.Exec("DELETE FROM room_members WHERE room_id IN (SELECT id FROM rooms WHERE status != 'playing')")
+	db.DB.Exec("DELETE FROM rooms WHERE status != 'playing'")
 
 	hub.H = hub.NewHub(db.RDB)
 	hub.H.Start()
 	hub.SH = hub.NewSessionHub(db.RDB)
 	hub.SH.Start()
+
+	game.TM = game.NewTimerManager(db.RDB)
+	game.TM.RecoverTimers()
 
 	app := fiber.New()
 	app.Use(logger.New())
@@ -68,6 +72,15 @@ func main() {
 	api.Get("/rooms/:id/sse", handlers.RoomSSE)
 	api.Post("/rooms/:id/leave", handlers.LeaveRoom)
 	api.Post("/rooms/:id/chat", handlers.SendChat)
+	api.Post("/rooms/:id/start", handlers.StartGame)
+	api.Post("/games/:id/play-card", handlers.GamePlayCard)
+	api.Post("/games/:id/end-turn", handlers.GameEndTurn)
+	api.Post("/games/:id/reveal", handlers.GameReveal)
+	api.Post("/games/:id/chat", handlers.GameChat)
+	api.Get("/games/:id/state", handlers.GetGameState)
+	api.Post("/games/:id/leave", handlers.GameLeave)
+	api.Get("/replays/:gameId", handlers.GetReplay)
+	api.Get("/replays/:gameId/actions", handlers.GetReplayActions)
 	api.Get("/bots", handlers.ListBots)
 	api.Post("/bots", handlers.CreateBot)
 	api.Patch("/bots/:id", handlers.UpdateBot)

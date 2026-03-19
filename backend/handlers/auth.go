@@ -162,7 +162,7 @@ func GetMyRoom(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "room not found"})
 	}
 
-	return c.JSON(fiber.Map{
+	result := fiber.Map{
 		"id":             room.ID,
 		"name":           room.Name,
 		"hostId":         room.HostID,
@@ -173,7 +173,17 @@ func GetMyRoom(c *fiber.Ctx) error {
 		"spectatorCount": room.SpectatorCount,
 		"isPrivate":      room.IsPrivate,
 		"createdAt":      room.CreatedAt,
-	})
+	}
+
+	// If room is playing, include gameId for reconnection
+	if room.Status == "playing" {
+		var activeGame models.Game
+		if err := db.DB.Where("room_id = ? AND status = ?", room.ID, "playing").First(&activeGame).Error; err == nil {
+			result["gameId"] = activeGame.ID
+		}
+	}
+
+	return c.JSON(result)
 }
 
 // GoogleRedirect GET /api/auth/google

@@ -1,0 +1,637 @@
+---
+import bulletImg from '../assets/bullet.webp';
+import healImg from '../assets/heal.webp';
+import handcuffImg from '../assets/handcuff.webp';
+import findImg from '../assets/find.webp';
+import hittedImg from '../assets/hitted.webp';
+import healedImg from '../assets/healed.webp';
+import jailImg from '../assets/jail.webp';
+import character from '../assets/character.webp';
+import { type Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n';
+
+interface Props {
+  apiUrl: string;
+  lang: Locale;
+}
+
+const { apiUrl, lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<div id="scene-gameplay" class="hidden relative z-10 w-full flex-1 flex-col overflow-hidden min-h-0">
+  <div class="flex flex-col flex-1 min-h-0 max-w-6xl mx-auto w-full px-4 py-2 gap-2">
+
+    <!-- Top bar: Turn info + Timer + Chat toggle -->
+    <div class="flex items-center justify-between bg-black/40 rounded-2xl px-4 py-2">
+      <div class="flex items-center gap-4">
+        <span id="gp-turn-info" class="text-white font-bold text-sm"></span>
+        <div class="flex items-center gap-1">
+          <span class="text-white/50 text-xs">{t.game.deck.remaining}:</span>
+          <span id="gp-deck-count" class="text-white text-xs font-bold">0</span>
+          <span class="text-white/30 mx-1">|</span>
+          <span class="text-white/50 text-xs">{t.game.deck.banished}:</span>
+          <span id="gp-banished-count" class="text-white text-xs font-bold">0</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div id="gp-timer" class="text-amber-400 font-mono font-bold text-lg">2:00</div>
+        <div id="gp-sse-status" title="SSE connection">
+          <span id="gp-sse-dot" class="inline-block w-2.5 h-2.5 rounded-full bg-green-500"></span>
+        </div>
+        <button id="gp-chat-toggle" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-xl text-xs transition">{t.rooms.chat}</button>
+      </div>
+    </div>
+
+    <!-- Main area: Players + Side panel -->
+    <div class="flex flex-1 min-h-0 gap-3">
+
+      <!-- Players area (table view) -->
+      <div class="flex-1 relative flex items-center justify-center">
+        <div id="gp-players" class="relative w-full h-full flex items-center justify-center"></div>
+
+        <!-- Effect overlay container -->
+        <div id="gp-effects" class="absolute inset-0 pointer-events-none"></div>
+      </div>
+
+      <!-- Side panel: My info + Cards -->
+      <div class="flex flex-col gap-2 w-56 flex-shrink-0">
+        <!-- My role info -->
+        <div id="gp-my-info" class="bg-black/40 rounded-2xl px-4 py-3">
+          <p class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1">{t.game.role.agent}</p>
+          <p id="gp-my-role" class="text-white font-bold text-base mb-1"></p>
+          <div class="flex items-center gap-1">
+            <span class="text-white/50 text-xs">HP:</span>
+            <div id="gp-my-hp" class="flex gap-0.5"></div>
+          </div>
+          <p id="gp-my-status" class="text-white/40 text-xs mt-1"></p>
+        </div>
+
+        <!-- My cards -->
+        <div class="bg-black/40 rounded-2xl px-3 py-3 flex-1 flex flex-col min-h-0">
+          <p class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">{t.game.action.selectCard}</p>
+          <div id="gp-my-cards" class="flex flex-wrap gap-2 overflow-y-auto flex-1 content-start"></div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-col gap-2">
+          <button id="gp-end-turn-btn" class="w-full bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2 rounded-xl text-sm transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>{t.game.turn.endTurn}</button>
+          <button id="gp-reveal-btn" class="hidden w-full bg-red-500 hover:bg-red-400 text-white font-bold py-2 rounded-xl text-sm transition">{t.game.reveal.button}</button>
+          <button id="gp-leave-btn" class="hidden w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">{t.game.leave.dead}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game chat (toggleable) -->
+    <div id="gp-chat-panel" class="hidden bg-black/40 rounded-2xl overflow-hidden" style="height:200px;">
+      <div class="flex flex-col h-full">
+        <div id="gp-chat-messages" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1 min-h-0"></div>
+        <div class="flex gap-2 p-2 border-t border-white/10">
+          <input id="gp-chat-input" type="text" maxlength="300"
+            placeholder={t.game.chat.placeholder}
+            class="flex-1 bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 text-white placeholder-white/30 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400" />
+          <button id="gp-chat-send" class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-3 py-1.5 rounded-xl text-xs transition">{t.rooms.chatSend}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Target selection indicator -->
+<div id="gp-target-indicator" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm shadow-lg">
+  {t.game.action.selectTarget}
+  <button id="gp-cancel-target" class="ml-2 bg-gray-900/30 px-2 py-0.5 rounded text-xs">{t.common.cancel}</button>
+</div>
+
+<!-- Game result modal -->
+<div id="gp-result-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/80 px-4">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl text-center">
+    <h2 id="gp-result-title" class="text-3xl font-bold mb-2"></h2>
+    <p id="gp-result-subtitle" class="text-white/60 text-sm mb-6"></p>
+    <div id="gp-result-players" class="flex flex-wrap justify-center gap-3 mb-6"></div>
+    <div class="flex gap-3">
+      <button id="gp-result-replay" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-xl transition">{t.game.result.watchReplay}</button>
+      <button id="gp-result-lobby" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.game.result.backToLobby}</button>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{
+  apiUrl,
+  lang,
+  characterSrc: character.src,
+  bulletSrc: bulletImg.src,
+  healSrc: healImg.src,
+  handcuffSrc: handcuffImg.src,
+  findSrc: findImg.src,
+  hittedSrc: hittedImg.src,
+  healedSrc: healedImg.src,
+  jailSrc: jailImg.src,
+  tYourTurn: t.game.turn.yourTurn,
+  tWaiting: t.game.turn.waiting,
+  tTurnInfo: t.game.turn.turnInfo,
+  tEndTurn: t.game.turn.endTurn,
+  tMustAttack: t.game.action.mustAttack,
+  tSelectTarget: t.game.action.selectTarget,
+  tAgent: t.game.role.agent,
+  tSpy: t.game.role.spy,
+  tUnknown: t.game.role.unknown,
+  tConfirmedAgent: t.game.role.confirmedAgent,
+  tJailed: t.game.status.jailed,
+  tDead: t.game.status.dead,
+  tAgentWin: t.game.result.agentWin,
+  tSpyWin: t.game.result.spyWin,
+  tDraw: t.game.result.draw,
+  tVictory: t.game.result.victory,
+  tDefeat: t.game.result.defeat,
+  tChatLimit: t.game.chat.limit,
+  tRevealConfirm: t.game.reveal.confirm,
+  tOverflowDiscarded: t.game.overflow.discarded,
+  tLeaveNotAllowed: t.game.leave.notAllowed,
+}} is:inline>
+  const scene = document.getElementById('scene-gameplay');
+  const playersEl = document.getElementById('gp-players');
+  const effectsEl = document.getElementById('gp-effects');
+  const turnInfoEl = document.getElementById('gp-turn-info');
+  const timerEl = document.getElementById('gp-timer');
+  const deckCountEl = document.getElementById('gp-deck-count');
+  const banishedCountEl = document.getElementById('gp-banished-count');
+  const myRoleEl = document.getElementById('gp-my-role');
+  const myHPEl = document.getElementById('gp-my-hp');
+  const myStatusEl = document.getElementById('gp-my-status');
+  const myCardsEl = document.getElementById('gp-my-cards');
+  const endTurnBtn = document.getElementById('gp-end-turn-btn');
+  const revealBtn = document.getElementById('gp-reveal-btn');
+  const leaveBtn = document.getElementById('gp-leave-btn');
+  const chatToggle = document.getElementById('gp-chat-toggle');
+  const chatPanel = document.getElementById('gp-chat-panel');
+  const chatMessages = document.getElementById('gp-chat-messages');
+  const chatInput = document.getElementById('gp-chat-input');
+  const chatSend = document.getElementById('gp-chat-send');
+  const targetIndicator = document.getElementById('gp-target-indicator');
+  const cancelTargetBtn = document.getElementById('gp-cancel-target');
+  const resultModal = document.getElementById('gp-result-modal');
+  const resultTitle = document.getElementById('gp-result-title');
+  const resultSubtitle = document.getElementById('gp-result-subtitle');
+  const resultPlayers = document.getElementById('gp-result-players');
+  const resultReplay = document.getElementById('gp-result-replay');
+  const resultLobby = document.getElementById('gp-result-lobby');
+
+  const cardImages = { attack: bulletSrc, heal: healSrc, jail: handcuffSrc, inspect: findSrc };
+  const effectImages = { attack: hittedSrc, heal: healedSrc, jail: jailSrc };
+
+  let gameState = null;
+  let myPlayerID = null;
+  let selectedCard = null;
+  let timerInterval = null;
+
+  function getToken() { return localStorage.getItem('token'); }
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+
+  function startTimerCountdown() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (!gameState) return;
+      const remaining = Math.max(0, gameState.turnDeadline - Math.floor(Date.now() / 1000));
+      timerEl.textContent = formatTime(remaining);
+      if (remaining <= 30) {
+        timerEl.classList.add('text-red-400');
+        timerEl.classList.remove('text-amber-400');
+      } else {
+        timerEl.classList.add('text-amber-400');
+        timerEl.classList.remove('text-red-400');
+      }
+    }, 250);
+  }
+
+  function isMyTurn() {
+    return gameState && gameState.currentPlayerID === myPlayerID;
+  }
+
+  function getMyPlayer() {
+    return gameState?.players?.find(p => p.id === myPlayerID);
+  }
+
+  function renderPlayers() {
+    if (!gameState) return;
+    playersEl.innerHTML = '';
+    const players = gameState.players;
+    const count = players.length;
+    const cx = playersEl.clientWidth / 2;
+    const cy = playersEl.clientHeight / 2;
+    const rx = Math.min(cx - 50, 220);
+    const ry = Math.min(cy - 40, 160);
+
+    players.forEach((p, i) => {
+      const angle = (2 * Math.PI * i / count) - Math.PI / 2;
+      const x = cx + rx * Math.cos(angle) - 36;
+      const y = cy + ry * Math.sin(angle) - 36;
+
+      const isCurrentTurn = p.id === gameState.currentPlayerID;
+      const borderColor = p.isDead ? (p.role === 'spy' ? 'border-red-500' : 'border-blue-400') :
+                          p.isRevealed ? 'border-red-500' :
+                          p.isConfirmedAgent ? 'border-blue-400' :
+                          'border-white/20';
+
+      const el = document.createElement('div');
+      el.className = `absolute flex flex-col items-center gap-0.5 transition-all duration-300`;
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.style.width = '72px';
+      el.id = `gp-player-${p.id}`;
+
+      const badge = p.isDead ? (p.role === 'spy' ? '🔴' : '🛡') :
+                    p.isRevealed ? '🔴' :
+                    p.isConfirmedAgent ? '🛡' : '';
+
+      el.innerHTML = `
+        <div class="relative ${isCurrentTurn ? 'ring-4 ring-amber-400/60 shadow-[0_0_12px_rgba(251,191,36,0.5)] rounded-full' : ''}">
+          <img src="${p.avatarUrl || characterSrc}" alt="${p.username}"
+            class="w-12 h-12 rounded-full object-cover border-3 ${borderColor} ${p.isDead ? 'opacity-40 grayscale' : ''}"
+            onerror="this.src='${characterSrc}'" />
+          ${badge ? `<span class="absolute -top-1 -right-1 text-xs">${badge}</span>` : ''}
+          ${p.isJailed ? `<img src="${jailSrc}" class="absolute inset-0 w-12 h-12 opacity-60" />` : ''}
+        </div>
+        <p class="text-xs truncate w-full text-center ${isCurrentTurn ? 'text-amber-400 font-bold' : 'text-white/70'} ${p.isDead ? 'opacity-40' : ''}">${p.username}</p>
+        <div class="flex gap-0.5">${renderHPPips(p.hp, p.maxHp)}</div>
+        <p class="text-white/30 text-xs">${p.cards ? p.cards.length : 0} cards</p>
+        ${p.role !== 'unknown' && p.id !== myPlayerID ? `<p class="text-xs ${p.role === 'spy' ? 'text-red-400' : 'text-blue-400'}">${p.role === 'spy' ? tSpy : p.isConfirmedAgent ? tConfirmedAgent : tAgent}</p>` : ''}
+      `;
+
+      // Click to select as target
+      if (selectedCard && !p.isDead && p.id !== myPlayerID) {
+        el.classList.add('cursor-pointer', 'hover:scale-110');
+        el.addEventListener('click', () => playCard(p.id));
+      } else if (selectedCard && !p.isDead && p.id === myPlayerID && selectedCard === 'heal') {
+        el.classList.add('cursor-pointer', 'hover:scale-110');
+        el.addEventListener('click', () => playCard(p.id));
+      }
+
+      playersEl.appendChild(el);
+    });
+  }
+
+  function renderHPPips(hp, maxHp) {
+    let pips = '';
+    for (let i = 0; i < maxHp; i++) {
+      pips += `<span class="w-2 h-2 rounded-full ${i < hp ? 'bg-red-500' : 'bg-white/20'}"></span>`;
+    }
+    return pips;
+  }
+
+  function renderMyInfo() {
+    const me = getMyPlayer();
+    if (!me) return;
+
+    const roleText = me.role === 'spy' ? tSpy : me.role === 'agent' ? tAgent : tUnknown;
+    const roleColor = me.role === 'spy' ? 'text-red-400' : me.role === 'agent' ? 'text-blue-400' : 'text-white/50';
+    myRoleEl.textContent = roleText;
+    myRoleEl.className = `font-bold text-base mb-1 ${roleColor}`;
+
+    myHPEl.innerHTML = renderHPPips(me.hp, me.maxHp);
+
+    let status = '';
+    if (me.isDead) status = tDead;
+    else if (me.isJailed) status = tJailed;
+    myStatusEl.textContent = status;
+
+    // Reveal button (spy only, not yet revealed, my turn)
+    revealBtn.classList.toggle('hidden', !(me.role === 'spy' && !me.isRevealed && isMyTurn()));
+
+    // Leave button (dead only)
+    leaveBtn.classList.toggle('hidden', !me.isDead);
+
+    // End turn button
+    const canEndTurn = isMyTurn() && !me.isDead && gameState.phase === 'action';
+    endTurnBtn.disabled = !canEndTurn;
+  }
+
+  function renderMyCards() {
+    const me = getMyPlayer();
+    if (!me) return;
+    myCardsEl.innerHTML = '';
+
+    me.cards.forEach((card) => {
+      const img = cardImages[card];
+      const isDisabled = me.isJailed && card === 'attack';
+      const isSelected = selectedCard === card;
+      const el = document.createElement('button');
+      el.className = `relative w-14 h-14 rounded-xl overflow-hidden border-2 transition ${
+        isSelected ? 'border-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]' :
+        isDisabled ? 'border-white/10 opacity-30 cursor-not-allowed' :
+        'border-white/20 hover:border-white/40 cursor-pointer'
+      }`;
+      el.disabled = isDisabled || !isMyTurn();
+      el.innerHTML = `<img src="${img}" alt="${card}" class="w-full h-full object-cover" />`;
+
+      if (!isDisabled && isMyTurn()) {
+        el.addEventListener('click', () => {
+          if (selectedCard === card) {
+            selectedCard = null;
+            targetIndicator.classList.add('hidden');
+          } else {
+            selectedCard = card;
+            targetIndicator.classList.remove('hidden');
+          }
+          renderMyCards();
+          renderPlayers();
+        });
+      }
+
+      myCardsEl.appendChild(el);
+    });
+  }
+
+  async function playCard(targetId) {
+    if (!selectedCard || !gameState) return;
+    const card = selectedCard;
+    selectedCard = null;
+    targetIndicator.classList.add('hidden');
+
+    const token = getToken();
+    await fetch(`${apiUrl}/api/games/${gameState.gameId}/play-card`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ cardType: card, targetId }),
+    }).catch(() => null);
+  }
+
+  async function endTurn() {
+    if (!gameState) return;
+    const token = getToken();
+    await fetch(`${apiUrl}/api/games/${gameState.gameId}/end-turn`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+  }
+
+  async function revealIdentity() {
+    if (!confirm(tRevealConfirm)) return;
+    if (!gameState) return;
+    const token = getToken();
+    await fetch(`${apiUrl}/api/games/${gameState.gameId}/reveal`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+  }
+
+  async function sendGameChat() {
+    const msg = chatInput.value.trim();
+    if (!msg || !gameState) return;
+    const token = getToken();
+    const res = await fetch(`${apiUrl}/api/games/${gameState.gameId}/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ message: msg }),
+    }).catch(() => null);
+    if (res?.ok) chatInput.value = '';
+  }
+
+  async function leaveGame() {
+    if (!gameState) return;
+    const me = getMyPlayer();
+    if (!me?.isDead) { alert(tLeaveNotAllowed); return; }
+    const token = getToken();
+    await fetch(`${apiUrl}/api/games/${gameState.gameId}/leave`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    exitToLobby();
+  }
+
+  function exitToLobby() {
+    gameState = null;
+    myPlayerID = null;
+    selectedCard = null;
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    scene.classList.add('hidden');
+    scene.classList.remove('flex');
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+  }
+
+  function showEffect(targetId, effectType) {
+    const playerEl = document.getElementById(`gp-player-${targetId}`);
+    if (!playerEl) return;
+    const img = effectImages[effectType];
+    if (!img) return;
+
+    const rect = playerEl.getBoundingClientRect();
+    const containerRect = effectsEl.getBoundingClientRect();
+    const x = rect.left - containerRect.left + rect.width / 2 - 24;
+    const y = rect.top - containerRect.top + rect.height / 2 - 24;
+
+    const el = document.createElement('img');
+    el.src = img;
+    el.className = 'absolute w-12 h-12 animate-ping pointer-events-none';
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    effectsEl.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
+
+  function updateUI() {
+    if (!gameState) return;
+    turnInfoEl.textContent = `${tTurnInfo} ${gameState.turnCount}/${gameState.maxTurns}`;
+    deckCountEl.textContent = String(gameState.deckCount || 0);
+    banishedCountEl.textContent = String(gameState.banishedCount || 0);
+
+    renderPlayers();
+    renderMyInfo();
+    renderMyCards();
+  }
+
+  function showResult(result) {
+    let title = tDraw;
+    if (result === 'agent_win') title = tAgentWin;
+    else if (result === 'spy_win') title = tSpyWin;
+
+    const me = getMyPlayer();
+    let subtitle = '';
+    if (me) {
+      const myTeamWon = (me.role === 'agent' && result === 'agent_win') ||
+                        (me.role === 'spy' && result === 'spy_win');
+      subtitle = result === 'draw' ? '' : myTeamWon ? tVictory : tDefeat;
+    }
+
+    resultTitle.textContent = title;
+    resultTitle.className = `text-3xl font-bold mb-2 ${
+      result === 'agent_win' ? 'text-blue-400' :
+      result === 'spy_win' ? 'text-red-400' : 'text-amber-400'
+    }`;
+    resultSubtitle.textContent = subtitle;
+
+    // Show all players with roles
+    resultPlayers.innerHTML = '';
+    if (gameState?.players) {
+      gameState.players.forEach(p => {
+        const el = document.createElement('div');
+        el.className = 'flex flex-col items-center gap-1';
+        el.innerHTML = `
+          <img src="${p.avatarUrl || characterSrc}" alt="${p.username}"
+            class="w-10 h-10 rounded-full object-cover border-2 ${p.role === 'spy' ? 'border-red-500' : 'border-blue-400'} ${p.isDead ? 'opacity-40 grayscale' : ''}"
+            onerror="this.src='${characterSrc}'" />
+          <p class="text-white/70 text-xs">${p.username}</p>
+          <p class="text-xs ${p.role === 'spy' ? 'text-red-400' : 'text-blue-400'}">${p.role === 'spy' ? tSpy : tAgent}</p>
+        `;
+        resultPlayers.appendChild(el);
+      });
+    }
+
+    resultModal.classList.remove('hidden');
+    resultModal.classList.add('flex');
+  }
+
+  function handleGameEvent(event) {
+    if (!gameState) return;
+
+    switch (event.type) {
+      case 'game_action': {
+        const card = event.card;
+        if (card === 'attack') showEffect(event.targetId, 'attack');
+        else if (card === 'heal') showEffect(event.targetId, 'heal');
+        else if (card === 'jail') showEffect(event.targetId, 'jail');
+        break;
+      }
+      case 'game_chat': {
+        const payload = event.payload || {};
+        const el = document.createElement('div');
+        el.className = 'text-xs';
+        el.innerHTML = `<span class="text-amber-400 font-bold">${payload.username || ''}</span>: <span class="text-white/80">${payload.message || ''}</span>`;
+        chatMessages.appendChild(el);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        break;
+      }
+      case 'overflow_discard': {
+        const payload = event.payload || {};
+        const el = document.createElement('p');
+        el.className = 'text-center text-amber-300/60 text-xs my-1';
+        el.textContent = `${tOverflowDiscarded}: ${(payload.discarded || []).join(', ')}`;
+        chatMessages.appendChild(el);
+        break;
+      }
+    }
+  }
+
+  async function loadGameState(gameId) {
+    const token = getToken();
+    const res = await fetch(`${apiUrl}/api/games/${gameId}/state`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    if (!res?.ok) return null;
+    return await res.json();
+  }
+
+  // Listen for game start
+  document.addEventListener('game:start', async (e) => {
+    const { gameId, userId } = e.detail;
+    myPlayerID = userId;
+
+    const state = await loadGameState(gameId);
+    if (!state) return;
+    gameState = state;
+
+    scene.classList.remove('hidden');
+    scene.classList.add('flex');
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'gameplay' }));
+
+    updateUI();
+    startTimerCountdown();
+  });
+
+  // Debounced state reload — batch rapid SSE events into one API call
+  let reloadTimer = null;
+  let pendingGameEnd = null;
+
+  function scheduleStateReload() {
+    if (reloadTimer) clearTimeout(reloadTimer);
+    reloadTimer = setTimeout(async () => {
+      reloadTimer = null;
+      if (!gameState) return;
+      const state = await loadGameState(gameState.gameId);
+      if (!state) return;
+      gameState = state;
+      updateUI();
+
+      if (state.status === 'finished') {
+        const result = pendingGameEnd?.payload?.result || state.result;
+        showResult(result);
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        pendingGameEnd = null;
+      }
+    }, 200);
+  }
+
+  // Listen for game events from SSE
+  document.addEventListener('game:event', (e) => {
+    const event = e.detail;
+    if (!gameState) return;
+
+    handleGameEvent(event);
+
+    if (event.type === 'game_end') {
+      pendingGameEnd = event;
+    }
+
+    if (event.type !== 'game_chat') {
+      scheduleStateReload();
+    }
+  });
+
+  // Listen for scene changes
+  document.addEventListener('game:scene', (e) => {
+    if (e.detail !== 'gameplay') {
+      scene.classList.add('hidden');
+      scene.classList.remove('flex');
+    }
+  });
+
+  // Event handlers
+  endTurnBtn.addEventListener('click', endTurn);
+  revealBtn.addEventListener('click', revealIdentity);
+  leaveBtn.addEventListener('click', leaveGame);
+  cancelTargetBtn.addEventListener('click', () => {
+    selectedCard = null;
+    targetIndicator.classList.add('hidden');
+    renderMyCards();
+    renderPlayers();
+  });
+  chatToggle.addEventListener('click', () => {
+    chatPanel.classList.toggle('hidden');
+  });
+  chatSend.addEventListener('click', sendGameChat);
+  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) sendGameChat(); });
+
+  resultLobby.addEventListener('click', () => {
+    resultModal.classList.add('hidden');
+    resultModal.classList.remove('flex');
+    exitToLobby();
+  });
+  resultReplay.addEventListener('click', () => {
+    if (gameState) {
+      window.open(`/${lang}/replay?id=${gameState.gameId}`, '_blank');
+    }
+  });
+
+  // SSE connection status indicator
+  const sseDot = document.getElementById('gp-sse-dot');
+
+  document.addEventListener('room:sse', (e) => {
+    if (!sseDot) return;
+    switch (e.detail) {
+      case 'connected':
+        sseDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-green-500';
+        break;
+      case 'reconnecting':
+        sseDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse';
+        break;
+      case 'disconnected':
+        sseDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-red-500';
+        break;
+    }
+  });
+</script>

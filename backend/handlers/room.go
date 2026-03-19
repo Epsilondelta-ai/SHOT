@@ -422,6 +422,16 @@ func LeaveRoom(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
 	}
 	roomID := c.Params("id")
+
+	// Check if the room has an active game — if so, don't destroy room/members
+	var room models.Room
+	db.DB.First(&room, "id = ?", roomID)
+	if room.Status == "playing" {
+		// Game in progress: close SSE but preserve room and members
+		hub.H.CloseClient(roomID, userID, false)
+		return c.JSON(fiber.Map{"ok": true})
+	}
+
 	// Close the SSE connection (no-op if already closed).
 	hub.H.CloseClient(roomID, userID, false)
 	// Also delete directly from DB in case the SSE connection is already gone

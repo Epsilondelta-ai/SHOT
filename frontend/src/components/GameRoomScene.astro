@@ -524,6 +524,10 @@ const t = useTranslations(lang);
         } else if (msg.type === 'kicked') {
           appendSystemMessage(tSystemKicked);
           setTimeout(() => leaveRoom(), 1500);
+        } else if (msg.type === 'game_start') {
+          document.dispatchEvent(new CustomEvent('room:sse:game_start', { detail: msg }));
+        } else if (msg.type === 'game_action' || msg.type === 'game_chat' || msg.type === 'game_end' || msg.type === 'turn_start' || msg.type === 'timer_sync' || msg.type === 'draw' || msg.type === 'overflow_discard' || msg.type === 'death' || msg.type === 'kill_reward' || msg.type === 'friendly_fire_jail' || msg.type === 'end_turn' || msg.type === 'timeout') {
+          document.dispatchEvent(new CustomEvent('room:sse:game', { detail: msg }));
         } else if (msg.type === 'room_update') {
           updateUI(msg, msg.members || []);
         } else if (msg.type === 'room_closed') {
@@ -603,19 +607,22 @@ const t = useTranslations(lang);
 
   document.addEventListener('game:scene', (e) => {
     if (e.detail !== 'gameroom') {
-      if (currentRoom) {
-        const token = getToken();
-        const roomId = currentRoom.id;
-        navigator.sendBeacon(`${apiUrl}/api/rooms/${roomId}/leave?token=${token}`);
-        currentRoom = null;
-        currentMembers = [];
-        chatMessages.innerHTML = '';
-        closeModal(paModal);
-        closeModal(editModal);
-        closeModal(inviteBotModal);
+      // Keep SSE alive during gameplay (game uses the same room SSE channel)
+      if (e.detail !== 'gameplay') {
+        if (currentRoom) {
+          const token = getToken();
+          const roomId = currentRoom.id;
+          navigator.sendBeacon(`${apiUrl}/api/rooms/${roomId}/leave?token=${token}`);
+          currentRoom = null;
+          currentMembers = [];
+          chatMessages.innerHTML = '';
+          closeModal(paModal);
+          closeModal(editModal);
+          closeModal(inviteBotModal);
+        }
+        if (es) { es.close(); es = null; }
+        document.dispatchEvent(new CustomEvent('room:sse', { detail: 'disconnected' }));
       }
-      if (es) { es.close(); es = null; }
-      document.dispatchEvent(new CustomEvent('room:sse', { detail: 'disconnected' }));
       scene.classList.add('hidden');
       scene.classList.remove('flex');
     }
@@ -626,10 +633,22 @@ const t = useTranslations(lang);
   });
 
   window.addEventListener('beforeunload', () => {
-    if (currentRoom) {
+    // Don't send leave during active gameplay (game handles its own lifecycle)
+    const gameplayScene = document.getElementById('scene-gameplay');
+    const isInGame = gameplayScene && gameplayScene.classList.contains('flex');
+    if (currentRoom && !isInGame) {
       const token = getToken();
       navigator.sendBeacon(`${apiUrl}/api/rooms/${currentRoom.id}/leave?token=${token}`);
     }
+  });
+
+  startBtn.addEventListener('click', async () => {
+    if (!currentRoom) return;
+    const token = getToken();
+    await fetch(`${apiUrl}/api/rooms/${currentRoom.id}/start`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
   });
 
   leaveBtn.addEventListener('click', leaveRoom);

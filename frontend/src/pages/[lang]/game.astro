@@ -6,6 +6,7 @@ import MyPageScene from '../../components/MyPageScene.astro';
 import BotsScene from '../../components/BotsScene.astro';
 import RoomListScene from '../../components/RoomListScene.astro';
 import GameRoomScene from '../../components/GameRoomScene.astro';
+import GamePlayScene from '../../components/GamePlayScene.astro';
 import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
 
@@ -24,6 +25,7 @@ const t = useTranslations(lang);
   <HeroBackground class="flex-1 flex-col justify-center min-h-0">
     <RoomListScene apiUrl={apiUrl} lang={lang} />
     <GameRoomScene apiUrl={apiUrl} lang={lang} />
+    <GamePlayScene apiUrl={apiUrl} lang={lang} />
     <BotsScene apiUrl={apiUrl} lang={lang} />
     <MyPageScene apiUrl={apiUrl} lang={lang} />
   </HeroBackground>
@@ -47,12 +49,43 @@ const t = useTranslations(lang);
       });
       window.addEventListener('beforeunload', () => sessionEs.close());
 
+      // Get current user ID for game events
+      let currentUserId = null;
+      fetch(`${apiUrl}/api/me`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => res.ok ? res.json() : null)
+        .then(user => { if (user) currentUserId = user.id; })
+        .catch(() => {});
+
+      // Listen for SSE game events and forward to GamePlayScene
+      document.addEventListener('room:sse:game', (e) => {
+        document.dispatchEvent(new CustomEvent('game:event', { detail: e.detail }));
+      });
+
+      // Listen for game_start from SSE → switch to game scene
+      document.addEventListener('room:sse:game_start', (e) => {
+        const { gameId } = e.detail;
+        document.dispatchEvent(new CustomEvent('game:start', {
+          detail: { gameId, userId: currentUserId }
+        }));
+      });
+
       // Restore previous room session if the user was already in a room
       fetch(`${apiUrl}/api/me/room`, { headers: { Authorization: `Bearer ${token}` } })
         .then(res => res.ok ? res.json() : null)
         .then(room => {
           if (room) {
-            document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+            if (room.status === 'playing' && room.gameId) {
+              // Reconnect directly to active game
+              document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+              // Wait a bit for user ID to resolve, then start game scene
+              setTimeout(() => {
+                document.dispatchEvent(new CustomEvent('game:start', {
+                  detail: { gameId: room.gameId, userId: currentUserId }
+                }));
+              }, 500);
+            } else {
+              document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+            }
           }
         })
         .catch(() => {});

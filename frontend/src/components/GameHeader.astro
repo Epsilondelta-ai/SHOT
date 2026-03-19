@@ -194,9 +194,14 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
   document.addEventListener('game:scene', (e: Event) => {
     const scene = (e as CustomEvent).detail as string;
     const inRoom = scene === 'gameroom';
+    const inGame = scene === 'gameplay';
     if (langMenuWrapper) langMenuWrapper.style.display = inRoom ? 'none' : '';
     if (mobileLangDivider) mobileLangDivider.style.display = inRoom ? 'none' : '';
     if (mobileLangWrapperEl) mobileLangWrapperEl.style.display = inRoom ? 'none' : '';
+
+    // Hide entire header during gameplay
+    const header = document.querySelector('header');
+    if (header) header.style.display = inGame ? 'none' : '';
   });
 
   // Active nav highlight

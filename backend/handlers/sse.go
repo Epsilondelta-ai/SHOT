@@ -187,6 +187,21 @@ func RoomSSE(c *fiber.Ctx) error {
 				// Superseded by a newer connection — skip DB cleanup
 				return
 			}
+
+			// Check if the room is in a playing state — if so, preserve room and members
+			var currentRoom models.Room
+			db.DB.First(&currentRoom, "id = ?", roomID)
+			if currentRoom.Status == "playing" {
+				// Game in progress: don't delete anything, just broadcast leave
+				hub.H.Broadcast(roomID, hub.Message{
+					Type:     "leave",
+					UserID:   userID,
+					Username: user.Username,
+				})
+				broadcastRoomUpdate(roomID)
+				return
+			}
+
 			hub.H.Broadcast(roomID, hub.Message{
 				Type:     "leave",
 				UserID:   userID,
@@ -199,7 +214,6 @@ func RoomSSE(c *fiber.Ctx) error {
 				db.DB.Where("room_id = ?", roomID).Delete(&models.RoomMember{})
 				db.DB.Delete(&models.Room{}, "id = ?", roomID)
 			} else {
-				var currentRoom models.Room
 				db.DB.First(&currentRoom, "id = ?", roomID)
 				if currentRoom.HostID == userID {
 					transferHostToNext(roomID)
