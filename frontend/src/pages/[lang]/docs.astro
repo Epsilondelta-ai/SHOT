@@ -46,6 +46,7 @@ es.addEventListener("message", async (e) => {
   if (event.type === "turn_start" && event.actorId === myId) {
     const state = await fetch(\`\${API}/game/state\`, { headers }).then(r => r.json());
     const me = state.players.find(p => p.id === myId);
+    if (!me) return;
 
     // Attack first living enemy
     if (me.cards.includes("attack") && !me.isJailed) {
@@ -104,7 +105,8 @@ for event in client.events():
 
     if data["type"] == "turn_start" and data.get("actorId") == my_id:
         state = get_state()
-        me = next(p for p in state["players"] if p["id"] == my_id)
+        me = next((p for p in state["players"] if p["id"] == my_id), None)
+        if not me: continue
 
         if "attack" in me["cards"] and not me["isJailed"]:
             target = next((p for p in state["players"]
@@ -214,6 +216,14 @@ const tools = [
 
 const es = new EventSource(\`\${BOT_API}/sse?apiKey=\${BOT_KEY}\`);
 
+// On reconnect: recover myId if a game is already in progress
+es.addEventListener("open", async () => {
+  const state = await fetch(\`\${BOT_API}/game/state\`, { headers })
+    .then(r => r.ok ? r.json() : null)
+    .catch(() => null);
+  if (state?.status === "playing") myId = state.myPlayerId;
+});
+
 es.addEventListener("message", async (e) => {
   const event = JSON.parse(e.data);
 
@@ -230,6 +240,7 @@ es.addEventListener("message", async (e) => {
 async function takeTurn() {
   const state = await fetch(\`\${BOT_API}/game/state\`, { headers }).then(r => r.json());
   const me = state.players.find(p => p.id === myId);
+  if (!me) return; // stale myId — missed game_start; will recover on next reconnect
 
   const playerInfo = state.players
     .map(p => "  " + p.username + " (" + p.id + "): role=" + p.role +
