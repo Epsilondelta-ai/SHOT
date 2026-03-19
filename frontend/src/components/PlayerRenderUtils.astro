@@ -1,0 +1,54 @@
+---
+// Shared player-circle rendering utilities.
+// Defines globals used by GamePlayScene and the replay viewer (both is:inline scripts).
+---
+<script is:inline>
+  (function () {
+    const _FLUENT = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis';
+    const _TG     = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects';
+
+    const _CARD_META = {
+      attack:  { img: `${_TG}/Pistol.webp`,                             cls: 'bg-red-500/20 text-red-300' },
+      heal:    { img: `${_TG}/Bandage.webp`,                            cls: 'bg-green-500/20 text-green-300' },
+      jail:    { img: `${_TG}/Locked.webp`,                             cls: 'bg-purple-500/20 text-purple-300' },
+      inspect: { img: `${_TG}/Magnifying%20Glass%20Tilted%20Left.webp`, cls: 'bg-yellow-500/20 text-yellow-300' },
+    };
+
+    window.renderCardBadges = function (cards) {
+      if (!cards || cards.length === 0) return '<span class="text-white/20 text-[9px]">—</span>';
+      const counts = {};
+      for (const c of cards) counts[c] = (counts[c] || 0) + 1;
+      return ['attack', 'heal', 'jail', 'inspect']
+        .filter(t => counts[t])
+        .map(t => {
+          const { img, cls } = _CARD_META[t];
+          return `<span class="inline-flex items-center gap-px ${cls} px-1 py-px rounded text-[9px] leading-none">` +
+                 `<img src="${img}" class="w-3 h-3" alt="${t}" />${counts[t] > 1 ? counts[t] : ''}</span>`;
+        }).join('');
+    };
+
+    window.renderHPPips = function (hp, maxHp) {
+      let pips = '';
+      for (let i = 0; i < maxHp; i++) {
+        pips += `<span class="w-2 h-2 rounded-full ${i < hp ? 'bg-red-500' : 'bg-white/20'}"></span>`;
+      }
+      return pips;
+    };
+
+    window.playerBorderColor = function (p) {
+      return p.isDead        ? (p.role === 'spy' ? 'border-red-500' : 'border-blue-400')
+           : p.isRevealed    ? 'border-red-500'
+           : p.isConfirmedAgent ? 'border-blue-400'
+           : 'border-white/20';
+    };
+
+    window.playerRoleBadge = function (p) {
+      const redCircle = `<img src="${_FLUENT}/Symbols/Red%20Circle.png" alt="spy" class="inline-block w-4 h-4" />`;
+      const shield    = `<img src="${_FLUENT}/Objects/Shield.png" alt="agent" class="inline-block w-4 h-4" />`;
+      if (p.isDead)            return p.role === 'spy' ? redCircle : shield;
+      if (p.isRevealed)        return redCircle;
+      if (p.isConfirmedAgent)  return shield;
+      return '';
+    };
+  })();
+</script>

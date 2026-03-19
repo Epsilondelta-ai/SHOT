@@ -11,6 +11,7 @@ import healedImg from '../../assets/healed.webp';
 import jailImg from '../../assets/jail.webp';
 import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
+import PlayerRenderUtils from '../../components/PlayerRenderUtils.astro';
 
 export function getStaticPaths() {
   return locales.map(lang => ({ params: { lang } }));
@@ -79,6 +80,7 @@ const t = useTranslations(lang);
   </HeroBackground>
 </BaseLayout>
 
+<PlayerRenderUtils />
 <script define:vars={{
   apiUrl, lang,
   characterSrc: character.src,
@@ -233,25 +235,14 @@ const t = useTranslations(lang);
       const x = cx + rx * Math.cos(angle) - 36;
       const y = cy + ry * Math.sin(angle) - 36;
 
-      const borderColor = p.isDead ? (p.role === 'spy' ? 'border-red-500' : 'border-blue-400') :
-                          p.isRevealed ? 'border-red-500' :
-                          p.isConfirmedAgent ? 'border-blue-400' :
-                          'border-white/20';
-
-      const badge = p.isDead ? (p.role === 'spy' ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Red%20Circle.png" alt="Red Circle" class="inline-block w-4 h-4" />' : '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" alt="Shield" class="inline-block w-4 h-4" />') :
-                    p.isRevealed ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Red%20Circle.png" alt="Red Circle" class="inline-block w-4 h-4" />' :
-                    p.isConfirmedAgent ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" alt="Shield" class="inline-block w-4 h-4" />' : '';
+      const borderColor = playerBorderColor(p);
+      const badge = playerRoleBadge(p);
 
       const el = document.createElement('div');
       el.className = 'absolute flex flex-col items-center gap-0.5';
       el.style.left = `${x}px`;
       el.style.top = `${y}px`;
       el.style.width = '72px';
-
-      let hpPips = '';
-      for (let h = 0; h < p.maxHp; h++) {
-        hpPips += `<span class="w-2 h-2 rounded-full ${h < p.hp ? 'bg-red-500' : 'bg-white/20'}"></span>`;
-      }
 
       el.innerHTML = `
         <div class="relative">
@@ -262,7 +253,8 @@ const t = useTranslations(lang);
           ${p.isJailed ? `<img src="${jailSrc}" class="absolute inset-0 w-12 h-12 opacity-60" />` : ''}
         </div>
         <p class="text-xs truncate w-full text-center text-white/70 ${p.isDead ? 'opacity-40' : ''}">${p.username}</p>
-        <div class="flex gap-0.5">${hpPips}</div>
+        <div class="flex gap-0.5">${renderHPPips(p.hp, p.maxHp)}</div>
+        <div class="flex flex-wrap justify-center gap-0.5 w-[72px]">${renderCardBadges(p.cards)}</div>
         <p class="text-xs ${p.role === 'spy' ? 'text-red-400' : 'text-blue-400'}">${p.role === 'spy' ? 'Spy' : 'Agent'}</p>
       `;
 
