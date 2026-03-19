@@ -43,22 +43,18 @@ const t = useTranslations(lang);
       </div>
     </div>
 
-    <!-- Main area: Players + Side panel -->
-    <div class="flex flex-1 min-h-0 gap-3">
+    <!-- Main area: Players + Info bar -->
+    <div class="flex flex-col sm:flex-row flex-1 min-h-0 gap-2">
 
-      <!-- Players area (table view) -->
-      <div class="flex-1 relative flex items-center justify-center">
+      <!-- Players area -->
+      <div class="flex-1 relative flex items-center justify-center min-h-0">
         <div id="gp-players" class="relative w-full h-full flex items-center justify-center"></div>
-
-        <!-- Effect overlay container -->
         <div id="gp-effects" class="absolute inset-0 pointer-events-none"></div>
       </div>
 
-      <!-- Side panel: My info + Cards -->
-      <div class="flex flex-col gap-2 w-56 flex-shrink-0">
-        <!-- My role info -->
+      <!-- Side panel (desktop only) -->
+      <div class="hidden sm:flex flex-col gap-2 w-48 flex-shrink-0">
         <div id="gp-my-info" class="bg-black/40 rounded-2xl px-4 py-3">
-          <p class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-1">{t.game.role.agent}</p>
           <p id="gp-my-role" class="text-white font-bold text-base mb-1"></p>
           <div class="flex items-center gap-1">
             <span class="text-white/50 text-xs">HP:</span>
@@ -66,20 +62,32 @@ const t = useTranslations(lang);
           </div>
           <p id="gp-my-status" class="text-white/40 text-xs mt-1"></p>
         </div>
-
-        <!-- My cards -->
-        <div class="bg-black/40 rounded-2xl px-3 py-3 flex-1 flex flex-col min-h-0">
-          <p class="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">{t.game.action.selectCard}</p>
-          <div id="gp-my-cards" class="flex flex-wrap gap-2 overflow-y-auto flex-1 content-start"></div>
-        </div>
-
-        <!-- Action buttons -->
         <div class="flex flex-col gap-2">
           <button id="gp-end-turn-btn" class="w-full bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2 rounded-xl text-sm transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>{t.game.turn.endTurn}</button>
           <button id="gp-reveal-btn" class="hidden w-full bg-red-500 hover:bg-red-400 text-white font-bold py-2 rounded-xl text-sm transition">{t.game.reveal.button}</button>
           <button id="gp-leave-btn" class="hidden w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">{t.game.leave.dead}</button>
         </div>
       </div>
+    </div>
+
+    <!-- Mobile info bar (mobile only) -->
+    <div class="sm:hidden flex items-center gap-3 bg-black/40 rounded-xl px-3 py-2">
+      <p id="gp-my-role-mobile" class="text-white font-bold text-sm"></p>
+      <div class="flex items-center gap-1">
+        <span class="text-white/50 text-xs">HP:</span>
+        <div id="gp-my-hp-mobile" class="flex gap-0.5"></div>
+      </div>
+      <p id="gp-my-status-mobile" class="text-white/40 text-xs"></p>
+      <div class="ml-auto flex gap-2">
+        <button id="gp-end-turn-btn-mobile" class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-3 py-1.5 rounded-xl text-xs transition disabled:opacity-40 disabled:cursor-not-allowed" disabled>{t.game.turn.endTurn}</button>
+        <button id="gp-reveal-btn-mobile" class="hidden bg-red-500 hover:bg-red-400 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition">{t.game.reveal.button}</button>
+        <button id="gp-leave-btn-mobile" class="hidden bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-xs transition">{t.game.leave.dead}</button>
+      </div>
+    </div>
+
+    <!-- Card hand (Slay the Spire style) -->
+    <div id="gp-card-hand" class="relative flex justify-center items-end" style="height:90px;margin-bottom:-10px;">
+      <div id="gp-my-cards" class="relative flex justify-center items-end"></div>
     </div>
 
     <!-- Game chat (toggleable) -->
@@ -96,6 +104,66 @@ const t = useTranslations(lang);
     </div>
   </div>
 </div>
+
+<style>
+  .card-hand-item {
+    position: absolute;
+    width: 64px;
+    height: 88px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.15);
+    background: #1a1a2e;
+    cursor: pointer;
+    transition: transform 0.25s ease, border-color 0.2s, box-shadow 0.2s, z-index 0s;
+    transform-origin: bottom center;
+  }
+  .card-hand-item:hover, .card-hand-item.card-touched {
+    transform: translateY(-60px) scale(1.15) !important;
+    z-index: 50 !important;
+    border-color: rgba(255,255,255,0.5);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  }
+  .card-hand-item.card-selected {
+    transform: translateY(-60px) scale(1.15) !important;
+    z-index: 50 !important;
+    border-color: #fbbf24;
+    box-shadow: 0 0 16px rgba(251,191,36,0.5);
+  }
+  .card-hand-item.card-disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    filter: grayscale(0.8);
+  }
+  .card-hand-item.card-disabled:hover {
+    transform: translateY(0) scale(1) !important;
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: none;
+  }
+  .card-hand-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+  .card-hand-item .card-label {
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 1px 3px black;
+  }
+  @media (max-width: 639px) {
+    .card-hand-item {
+      width: 56px;
+      height: 78px;
+    }
+  }
+</style>
 
 <!-- Target selection indicator -->
 <div id="gp-target-indicator" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm shadow-lg">
@@ -291,25 +359,37 @@ const t = useTranslations(lang);
 
     const roleText = me.role === 'spy' ? tSpy : me.role === 'agent' ? tAgent : tUnknown;
     const roleColor = me.role === 'spy' ? 'text-red-400' : me.role === 'agent' ? 'text-blue-400' : 'text-white/50';
-    myRoleEl.textContent = roleText;
-    myRoleEl.className = `font-bold text-base mb-1 ${roleColor}`;
-
-    myHPEl.innerHTML = renderHPPips(me.hp, me.maxHp);
-
+    const hpHTML = renderHPPips(me.hp, me.maxHp);
     let status = '';
     if (me.isDead) status = tDead;
     else if (me.isJailed) status = tJailed;
-    myStatusEl.textContent = status;
 
-    // Reveal button (spy only, not yet revealed, my turn)
-    revealBtn.classList.toggle('hidden', !(me.role === 'spy' && !me.isRevealed && isMyTurn()));
-
-    // Leave button (dead only)
-    leaveBtn.classList.toggle('hidden', !me.isDead);
-
-    // End turn button
+    const canReveal = me.role === 'spy' && !me.isRevealed && isMyTurn();
     const canEndTurn = isMyTurn() && !me.isDead && gameState.phase === 'action';
+
+    // Desktop
+    myRoleEl.textContent = roleText;
+    myRoleEl.className = `font-bold text-base mb-1 ${roleColor}`;
+    myHPEl.innerHTML = hpHTML;
+    myStatusEl.textContent = status;
+    revealBtn.classList.toggle('hidden', !canReveal);
+    leaveBtn.classList.toggle('hidden', !me.isDead);
     endTurnBtn.disabled = !canEndTurn;
+
+    // Mobile
+    const myRoleMobile = document.getElementById('gp-my-role-mobile');
+    const myHPMobile = document.getElementById('gp-my-hp-mobile');
+    const myStatusMobile = document.getElementById('gp-my-status-mobile');
+    const endTurnMobile = document.getElementById('gp-end-turn-btn-mobile');
+    const revealMobile = document.getElementById('gp-reveal-btn-mobile');
+    const leaveMobile = document.getElementById('gp-leave-btn-mobile');
+
+    if (myRoleMobile) { myRoleMobile.textContent = roleText; myRoleMobile.className = `font-bold text-sm ${roleColor}`; }
+    if (myHPMobile) myHPMobile.innerHTML = hpHTML;
+    if (myStatusMobile) myStatusMobile.textContent = status;
+    if (endTurnMobile) endTurnMobile.disabled = !canEndTurn;
+    if (revealMobile) revealMobile.classList.toggle('hidden', !canReveal);
+    if (leaveMobile) leaveMobile.classList.toggle('hidden', !me.isDead);
   }
 
   function renderMyCards() {
@@ -317,20 +397,42 @@ const t = useTranslations(lang);
     if (!me) return;
     myCardsEl.innerHTML = '';
 
-    me.cards.forEach((card) => {
-      const img = cardImages[card];
-      const isDisabled = me.isJailed && card === 'attack';
-      const isSelected = selectedCard === card;
-      const el = document.createElement('button');
-      el.className = `relative w-14 h-14 rounded-xl overflow-hidden border-2 transition ${
-        isSelected ? 'border-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]' :
-        isDisabled ? 'border-white/10 opacity-30 cursor-not-allowed' :
-        'border-white/20 hover:border-white/40 cursor-pointer'
-      }`;
-      el.disabled = isDisabled || !isMyTurn();
-      el.innerHTML = `<img src="${img}" alt="${card}" class="w-full h-full object-cover" />`;
+    const cards = me.cards;
+    const count = cards.length;
+    const maxFanAngle = 30;
+    const fanAngle = Math.min(maxFanAngle, count * 5);
+    const cardNames = { attack: 'ATK', heal: 'HEAL', jail: 'JAIL', inspect: 'FIND' };
 
-      if (!isDisabled && isMyTurn()) {
+    cards.forEach((card, i) => {
+      const img = cardImages[card];
+      const isDisabled = (me.isJailed && card === 'attack') || !isMyTurn();
+      const isSelected = selectedCard === card;
+
+      // Fan layout: angle and offset
+      const angleStep = count > 1 ? fanAngle / (count - 1) : 0;
+      const angle = count > 1 ? -fanAngle / 2 + angleStep * i : 0;
+      const yOffset = Math.abs(angle) * 0.8; // cards at edges are lower
+
+      const el = document.createElement('div');
+      el.className = `card-hand-item${isSelected ? ' card-selected' : ''}${isDisabled ? ' card-disabled' : ''}`;
+      el.style.transform = `translateY(${yOffset}px) rotate(${angle}deg)`;
+      el.style.zIndex = String(i + 1);
+      el.style.left = `${i * 40 - (count * 40) / 2 + 20}px`;
+
+      el.innerHTML = `<img src="${img}" alt="${card}" /><div class="card-label">${cardNames[card] || card}</div>`;
+
+      if (!isDisabled) {
+        // Desktop hover
+        el.addEventListener('mouseenter', () => el.classList.add('card-touched'));
+        el.addEventListener('mouseleave', () => { if (!isSelected) el.classList.remove('card-touched'); });
+
+        // Mobile touch
+        el.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          document.querySelectorAll('.card-hand-item.card-touched').forEach(c => c.classList.remove('card-touched'));
+          el.classList.add('card-touched');
+        }, { passive: false });
+
         el.addEventListener('click', () => {
           if (selectedCard === card) {
             selectedCard = null;
@@ -347,6 +449,13 @@ const t = useTranslations(lang);
       myCardsEl.appendChild(el);
     });
   }
+
+  // Dismiss card touch on outside tap
+  document.addEventListener('touchstart', (e) => {
+    if (!e.target.closest('.card-hand-item')) {
+      document.querySelectorAll('.card-hand-item.card-touched').forEach(c => c.classList.remove('card-touched'));
+    }
+  });
 
   async function playCard(targetId) {
     if (!selectedCard || !gameState) return;
@@ -608,6 +717,9 @@ const t = useTranslations(lang);
   endTurnBtn.addEventListener('click', endTurn);
   revealBtn.addEventListener('click', revealIdentity);
   leaveBtn.addEventListener('click', leaveGame);
+  document.getElementById('gp-end-turn-btn-mobile')?.addEventListener('click', endTurn);
+  document.getElementById('gp-reveal-btn-mobile')?.addEventListener('click', revealIdentity);
+  document.getElementById('gp-leave-btn-mobile')?.addEventListener('click', leaveGame);
   cancelTargetBtn.addEventListener('click', () => {
     selectedCard = null;
     targetIndicator.classList.add('hidden');
