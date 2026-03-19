@@ -161,6 +161,25 @@ const exSmartBot = `async function playTurn(state, myId) {
       align-items: center;
       gap: 0.5rem;
     }
+    .od-copy {
+      margin-left: auto;
+      background: transparent;
+      border: 1px solid #3e4451;
+      color: #5c6370;
+      font-size: 0.7rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .od-copy:hover {
+      color: #abb2bf;
+      border-color: #abb2bf;
+    }
+    .od-copy.copied {
+      color: #98c379;
+      border-color: #98c379;
+    }
     .od-dots {
       display: flex;
       gap: 6px;
@@ -776,6 +795,7 @@ resp = requests.<span class="text-green-400">get</span>(
             <div class="od-header">
               <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
               <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">minimal-bot.js</span>
+              <button class="od-copy" data-code-id="minimalJs">Copy</button>
             </div>
             <Code code={exMinimalJs} lang="js" theme="one-dark-pro" />
           </div>
@@ -792,6 +812,7 @@ resp = requests.<span class="text-green-400">get</span>(
             <div class="od-header">
               <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
               <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">minimal-bot.py</span>
+              <button class="od-copy" data-code-id="minimalPy">Copy</button>
             </div>
             <Code code={exMinimalPy} lang="python" theme="one-dark-pro" />
           </div>
@@ -808,6 +829,7 @@ resp = requests.<span class="text-green-400">get</span>(
             <div class="od-header">
               <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
               <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">smart-bot.js</span>
+              <button class="od-copy" data-code-id="smartBot">Copy</button>
             </div>
             <Code code={exSmartBot} lang="js" theme="one-dark-pro" />
           </div>
@@ -902,5 +924,25 @@ resp = requests.<span class="text-green-400">get</span>(
 
     tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.tab!)));
     activate('quickStart');
+  </script>
+
+  <script define:vars={{ exMinimalJs, exMinimalPy, exSmartBot }} is:inline>
+    const codeMap = { minimalJs: exMinimalJs, minimalPy: exMinimalPy, smartBot: exSmartBot };
+    document.querySelectorAll('.od-copy').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.codeId;
+        const code = codeMap[id];
+        if (!code) return;
+        try {
+          await navigator.clipboard.writeText(code);
+          btn.textContent = 'Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+            btn.classList.remove('copied');
+          }, 2000);
+        } catch {}
+      });
+    });
   </script>
 </BaseLayout>
