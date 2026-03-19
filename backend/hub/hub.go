@@ -236,9 +236,10 @@ func (h *Hub) CloseClient(roomID, userID string, replaced bool) {
 }
 
 // RegisterBot registers a bot client for receiving personal events via bot:events:{botID}.
-// If a previous client exists, it is marked as replaced and its channel is closed so the
-// old SSE goroutine exits cleanly without clobbering the new registration.
-// Returns the old client if one was replaced (caller may use it to clean up room hub).
+// If a previous client exists it is marked as Replaced and returned so the caller can
+// first remove it from the room hub (under mu.Lock) before closing its channel.
+// Closing the channel BEFORE unregistering from the room hub would create a race where
+// sendToLocalClients (holding mu.RLock) sends to an already-closed channel → panic.
 func (h *Hub) RegisterBot(botID string, c *Client) *Client {
 	h.botsMu.Lock()
 	old := h.bots[botID]
@@ -247,7 +248,6 @@ func (h *Hub) RegisterBot(botID string, c *Client) *Client {
 
 	if old != nil {
 		old.Replaced = true
-		close(old.Ch)
 	}
 	return old
 }

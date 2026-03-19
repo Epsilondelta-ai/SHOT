@@ -557,8 +557,8 @@ func endGame(state *GameState, result string) []Event {
 		"finished_at": now,
 	})
 
-	// Update room status
-	db.DB.Model(&models.Room{}).Where("id = ?", state.RoomID).Update("status", "finished")
+	// Reset room back to waiting so another game can start in the same room.
+	db.DB.Model(&models.Room{}).Where("id = ?", state.RoomID).Update("status", "waiting")
 
 	event := Event{
 		Type: "game_end",

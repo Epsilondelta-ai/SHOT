@@ -238,13 +238,14 @@ func InviteBot(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"ok": true})
 	}
 
-	// Check if bot is busy (in an active game in another room)
+	// Check if bot is busy in an active game in another room.
+	// Join rooms so stale RoomMember rows from finished/waiting rooms don't block re-invitation.
 	var busyMember models.RoomMember
-	if db.DB.Where("bot_id = ?", body.BotID).First(&busyMember).Error == nil {
-		var busyRoom models.Room
-		if db.DB.First(&busyRoom, "id = ?", busyMember.RoomID).Error == nil && busyRoom.Status == "playing" {
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "bot is in an active game"})
-		}
+	if db.DB.
+		Joins("JOIN rooms ON rooms.id = room_members.room_id").
+		Where("room_members.bot_id = ? AND rooms.status = ?", body.BotID, "playing").
+		First(&busyMember).Error == nil {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "bot is in an active game"})
 	}
 
 	// Check room capacity

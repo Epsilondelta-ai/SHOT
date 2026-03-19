@@ -31,20 +31,18 @@ func getBotFromAPIKey(c *fiber.Ctx) (*models.Bot, error) {
 }
 
 // findBotActiveGame finds the active game for a bot by looking up its room membership.
+// Joins rooms so that stale RoomMember rows from finished/waiting rooms are ignored —
+// only a membership in a currently-playing room qualifies.
 func findBotActiveGame(botID string) (*models.Game, *models.RoomMember, error) {
 	var member models.RoomMember
-	if err := db.DB.Where("bot_id = ?", botID).First(&member).Error; err != nil {
-		return nil, nil, fmt.Errorf("bot not in any room")
-	}
-	var room models.Room
-	if err := db.DB.First(&room, "id = ?", member.RoomID).Error; err != nil {
-		return nil, nil, fmt.Errorf("room not found")
-	}
-	if room.Status != "playing" {
-		return nil, &member, fmt.Errorf("no active game")
+	if err := db.DB.
+		Joins("JOIN rooms ON rooms.id = room_members.room_id").
+		Where("room_members.bot_id = ? AND rooms.status = ?", botID, "playing").
+		First(&member).Error; err != nil {
+		return nil, nil, fmt.Errorf("no active game")
 	}
 	var activeGame models.Game
-	if err := db.DB.Where("room_id = ? AND status = ?", room.ID, "playing").First(&activeGame).Error; err != nil {
+	if err := db.DB.Where("room_id = ? AND status = ?", member.RoomID, "playing").First(&activeGame).Error; err != nil {
 		return nil, &member, fmt.Errorf("game not found")
 	}
 	return &activeGame, &member, nil
@@ -92,11 +90,16 @@ func BotSSE(c *fiber.Ctx) error {
 	}
 
 	// Register bot for personal events (bot:events:{botID}).
-	// Returns old client if a previous connection existed; we explicitly remove it
-	// from the room hub so there is no window of duplicate delivery.
+	// RegisterBot marks the old client as Replaced and returns it WITHOUT closing its
+	// channel. We must unregister the old client from the room hub first (acquires
+	// mu.Lock) so that sendToLocalClients can no longer pick it up, and only then
+	// close its channel — avoiding a "send on closed channel" panic.
 	oldClient := hub.H.RegisterBot(bot.ID, client)
-	if oldClient != nil && oldClient.RoomID != "" {
-		hub.H.Unregister(oldClient)
+	if oldClient != nil {
+		if oldClient.RoomID != "" {
+			hub.H.Unregister(oldClient)
+		}
+		close(oldClient.Ch)
 	}
 
 	// If bot is already in a room, register to that room's hub.
