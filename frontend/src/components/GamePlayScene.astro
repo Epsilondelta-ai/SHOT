@@ -144,9 +144,16 @@ const t = useTranslations(lang);
     z-index: 50 !important;
   }
   .card-hand-item.card-disabled {
-    opacity: 0.35;
     cursor: not-allowed;
-    filter: grayscale(0.7);
+    filter: saturate(0.4) brightness(0.8);
+  }
+  .card-hand-item.card-disabled::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    border-radius: 10px;
+    pointer-events: none;
   }
   /* Disabled cards rise with the hand but don't pop up individually */
   #gp-card-hand:hover .card-hand-item.card-disabled:hover,
