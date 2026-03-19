@@ -26,13 +26,6 @@ const t = useTranslations(lang);
     <div class="flex items-center justify-between bg-black/40 rounded-2xl px-4 py-2">
       <div class="flex items-center gap-4">
         <span id="gp-turn-info" class="text-white font-bold text-sm"></span>
-        <div class="flex items-center gap-1">
-          <span class="text-white/50 text-xs">{t.game.deck.remaining}:</span>
-          <span id="gp-deck-count" class="text-white text-xs font-bold">0</span>
-          <span class="text-white/30 mx-1">|</span>
-          <span class="text-white/50 text-xs">{t.game.deck.banished}:</span>
-          <span id="gp-banished-count" class="text-white text-xs font-bold">0</span>
-        </div>
       </div>
       <div class="flex items-center gap-3">
         <div id="gp-timer" class="text-amber-400 font-mono font-bold text-lg">2:00</div>
@@ -90,16 +83,17 @@ const t = useTranslations(lang);
       <div id="gp-my-cards" class="relative flex justify-center items-end" style="height:120px;"></div>
     </div>
 
-    <!-- Game chat (toggleable) -->
-    <div id="gp-chat-panel" class="hidden bg-black/40 rounded-2xl overflow-hidden" style="height:200px;">
-      <div class="flex flex-col h-full">
-        <div id="gp-chat-messages" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1 min-h-0"></div>
-        <div class="flex gap-2 p-2 border-t border-white/10">
-          <input id="gp-chat-input" type="text" maxlength="300"
-            placeholder={t.game.chat.placeholder}
-            class="flex-1 bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 text-white placeholder-white/30 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400" />
-          <button id="gp-chat-send" class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-3 py-1.5 rounded-xl text-xs transition">{t.rooms.chatSend}</button>
-        </div>
+  </div>
+
+  <!-- Game chat (toggleable, overlay at bottom) -->
+  <div id="gp-chat-panel" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-black/90 rounded-t-2xl overflow-hidden" style="height:220px;">
+    <div class="flex flex-col h-full max-w-6xl mx-auto w-full">
+      <div id="gp-chat-messages" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1 min-h-0"></div>
+      <div class="flex gap-2 p-2 border-t border-white/10">
+        <input id="gp-chat-input" type="text" maxlength="300"
+          placeholder={t.game.chat.placeholder}
+          class="flex-1 bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 text-white placeholder-white/30 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400" />
+        <button id="gp-chat-send" class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-3 py-1.5 rounded-xl text-xs transition">{t.rooms.chatSend}</button>
       </div>
     </div>
   </div>
@@ -209,6 +203,23 @@ const t = useTranslations(lang);
   .card-type-heal.card-selected { border-color: #22c55e; box-shadow: 0 0 20px rgba(34,197,94,0.5); }
   .card-type-jail.card-selected { border-color: #8b5cf6; box-shadow: 0 0 20px rgba(139,92,246,0.5); }
   .card-type-inspect.card-selected { border-color: #eab308; box-shadow: 0 0 20px rgba(234,179,8,0.5); }
+  /* Chat available blink */
+  @keyframes chat-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  #gp-chat-toggle.chat-available {
+    animation: chat-blink 1.2s ease-in-out infinite;
+    background: rgba(251,191,36,0.3);
+    border: 1px solid rgba(251,191,36,0.5);
+  }
+  /* When chat is open, disable card hand interaction */
+  #gp-card-hand.chat-open {
+    pointer-events: none;
+  }
+  #gp-card-hand.chat-open .card-hand-item {
+    transform: translateY(80px) rotate(var(--card-angle, 0deg)) !important;
+  }
   @media (max-width: 639px) {
     .card-hand-item {
       width: 68px;
@@ -223,6 +234,9 @@ const t = useTranslations(lang);
     }
     #gp-card-hand:hover .card-hand-item.card-disabled,
     #gp-card-hand.hand-active .card-hand-item.card-disabled {
+      transform: translateY(65px) rotate(var(--card-angle, 0deg)) !important;
+    }
+    #gp-card-hand.chat-open .card-hand-item {
       transform: translateY(65px) rotate(var(--card-angle, 0deg)) !important;
     }
   }
@@ -285,8 +299,6 @@ const t = useTranslations(lang);
   const effectsEl = document.getElementById('gp-effects');
   const turnInfoEl = document.getElementById('gp-turn-info');
   const timerEl = document.getElementById('gp-timer');
-  const deckCountEl = document.getElementById('gp-deck-count');
-  const banishedCountEl = document.getElementById('gp-banished-count');
   const myRoleEl = document.getElementById('gp-my-role');
   const myHPEl = document.getElementById('gp-my-hp');
   const myStatusEl = document.getElementById('gp-my-status');
@@ -572,32 +584,37 @@ const t = useTranslations(lang);
     const card = selectedCard;
     selectedCard = null;
     targetIndicator.classList.add('hidden');
+    renderMyCards();
+    renderPlayers();
 
     const token = getToken();
-    await fetch(`${apiUrl}/api/games/${gameState.gameId}/play-card`, {
+    const res = await fetch(`${apiUrl}/api/games/${gameState.gameId}/play-card`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ cardType: card, targetId }),
     }).catch(() => null);
+    if (res?.ok) scheduleStateReload();
   }
 
   async function endTurn() {
     if (!gameState) return;
     const token = getToken();
-    await fetch(`${apiUrl}/api/games/${gameState.gameId}/end-turn`, {
+    const res = await fetch(`${apiUrl}/api/games/${gameState.gameId}/end-turn`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     }).catch(() => null);
+    if (res?.ok) scheduleStateReload();
   }
 
   async function revealIdentity() {
     if (!confirm(tRevealConfirm)) return;
     if (!gameState) return;
     const token = getToken();
-    await fetch(`${apiUrl}/api/games/${gameState.gameId}/reveal`, {
+    const res = await fetch(`${apiUrl}/api/games/${gameState.gameId}/reveal`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     }).catch(() => null);
+    if (res?.ok) scheduleStateReload();
   }
 
   async function sendGameChat() {
@@ -611,7 +628,10 @@ const t = useTranslations(lang);
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ message: msg }),
     }).catch(() => null);
-    if (res?.ok) chatInput.value = '';
+    if (res?.ok) {
+      chatInput.value = '';
+      scheduleStateReload();
+    }
   }
 
   async function leaveGame() {
@@ -659,8 +679,6 @@ const t = useTranslations(lang);
   function updateUI() {
     if (!gameState) return;
     turnInfoEl.textContent = `${tTurnInfo} ${gameState.turnCount}/${gameState.maxTurns}`;
-    deckCountEl.textContent = String(gameState.deckCount || 0);
-    banishedCountEl.textContent = String(gameState.banishedCount || 0);
 
     renderPlayers();
     renderMyInfo();
@@ -676,6 +694,7 @@ const t = useTranslations(lang);
     chatInput.classList.toggle('opacity-40', !canChat);
     chatSend.classList.toggle('opacity-40', !canChat);
     chatSend.classList.toggle('cursor-not-allowed', !canChat);
+    chatToggle.classList.toggle('chat-available', canChat);
   }
 
   function showResult(result) {
@@ -838,6 +857,10 @@ const t = useTranslations(lang);
   });
   chatToggle.addEventListener('click', () => {
     chatPanel.classList.toggle('hidden');
+    const cardHand = document.getElementById('gp-card-hand');
+    const isOpen = !chatPanel.classList.contains('hidden');
+    cardHand.classList.toggle('chat-open', isOpen);
+    if (isOpen) cardHand.classList.remove('hand-active');
   });
   chatSend.addEventListener('click', sendGameChat);
   chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) sendGameChat(); });
