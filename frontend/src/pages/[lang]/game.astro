@@ -7,6 +7,7 @@ import BotsScene from '../../components/BotsScene.astro';
 import RoomListScene from '../../components/RoomListScene.astro';
 import GameRoomScene from '../../components/GameRoomScene.astro';
 import GamePlayScene from '../../components/GamePlayScene.astro';
+import loadingImg from '../../assets/loading.webp';
 import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
 
@@ -20,6 +21,31 @@ const t = useTranslations(lang);
 ---
 
 <BaseLayout title="SHOT!" bodyClass="bg-gray-950 h-screen flex flex-col overflow-hidden">
+  <!-- Loading Screen -->
+  <div id="game-loading-screen" class="fixed inset-0 z-[60] hidden flex-col items-center justify-center" style="background: radial-gradient(ellipse at center, #532534 0%, #1a0a10 50%, #0a0408 100%)">
+    <img src={loadingImg.src} alt="Loading" class="loading-float w-64 h-64 object-contain mb-10" />
+    <div class="w-64 h-3 bg-gray-800 rounded-full overflow-hidden">
+      <div id="game-loading-bar" class="h-full bg-amber-400 rounded-full w-0"></div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    .loading-float {
+      animation: float 2s ease-in-out infinite;
+    }
+    @keyframes progress-fill {
+      from { width: 0%; }
+      to { width: 100%; }
+    }
+    .progress-fill {
+      animation: progress-fill 1s ease-in-out forwards;
+    }
+  </style>
+
   <GameHeader lang={lang} path="/game" />
 
   <HeroBackground class="flex-1 flex-col justify-center min-h-0">
@@ -61,12 +87,32 @@ const t = useTranslations(lang);
         document.dispatchEvent(new CustomEvent('game:event', { detail: e.detail }));
       });
 
-      // Listen for game_start from SSE → switch to game scene
+      // Loading screen helpers
+      function showLoadingScreen() {
+        const screen = document.getElementById('game-loading-screen');
+        const bar = document.getElementById('game-loading-bar');
+        bar.classList.remove('progress-fill');
+        bar.style.width = '0%';
+        screen.classList.remove('hidden');
+        screen.classList.add('flex');
+        requestAnimationFrame(() => { bar.classList.add('progress-fill'); });
+      }
+      function hideLoadingScreen() {
+        const screen = document.getElementById('game-loading-screen');
+        screen.classList.add('hidden');
+        screen.classList.remove('flex');
+      }
+
+      // Listen for game_start from SSE → show loading, then switch to game scene
       document.addEventListener('room:sse:game_start', (e) => {
         const { gameId } = e.detail;
-        document.dispatchEvent(new CustomEvent('game:start', {
-          detail: { gameId, userId: currentUserId }
-        }));
+        showLoadingScreen();
+        setTimeout(() => {
+          document.dispatchEvent(new CustomEvent('game:start', {
+            detail: { gameId, userId: currentUserId }
+          }));
+          hideLoadingScreen();
+        }, 1000);
       });
 
       // Restore previous room session if the user was already in a room
@@ -75,14 +121,15 @@ const t = useTranslations(lang);
         .then(room => {
           if (room) {
             if (room.status === 'playing' && room.gameId) {
-              // Reconnect directly to active game
+              // Reconnect directly to active game with loading screen
+              showLoadingScreen();
               document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
-              // Wait a bit for user ID to resolve, then start game scene
               setTimeout(() => {
                 document.dispatchEvent(new CustomEvent('game:start', {
                   detail: { gameId: room.gameId, userId: currentUserId }
                 }));
-              }, 500);
+                hideLoadingScreen();
+              }, 1000);
             } else {
               document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
             }
