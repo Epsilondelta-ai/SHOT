@@ -96,8 +96,9 @@ func BotSSE(c *fiber.Ctx) error {
 	}
 	hub.H.RegisterAndReplaceLocal(client)
 
-	// Mark bot online
+	// Mark bot online and notify room
 	SetBotOnline(bot.ID)
+	broadcastRoomUpdate(roomID)
 
 	c.Set("Content-Type", "text/event-stream")
 	c.Set("Cache-Control", "no-cache")
@@ -108,6 +109,7 @@ func BotSSE(c *fiber.Ctx) error {
 		defer func() {
 			hub.H.Unregister(client)
 			SetBotOffline(bot.ID)
+			broadcastRoomUpdate(roomID)
 		}()
 
 		ticker := time.NewTicker(15 * time.Second)
