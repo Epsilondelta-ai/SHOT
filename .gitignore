@@ -1,7 +1,11 @@
 .claude
 .omc
 .env
+.astro
+
 node_modules
 frontend/.astro
 frontend/dist
 backend/dist
+
+**/.DS_Store
