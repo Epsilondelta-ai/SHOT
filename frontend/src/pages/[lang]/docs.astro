@@ -63,8 +63,286 @@ const t = useTranslations(lang);
         </div>
       </div>
 
-      <div id="tab-apiReference" class="docs-panel hidden">
-        <p class="text-gray-500 italic">Coming soon...</p>
+      <div id="tab-apiReference" class="docs-panel hidden space-y-6">
+
+        <!-- Authentication -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <h3 class="text-amber-400 font-bold text-lg mb-3">{t.docs.api.authTitle}</h3>
+          <p class="text-white/60 text-sm mb-3">{t.docs.api.authDesc}</p>
+          <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 mb-3">
+            <span class="text-white/40">curl -H</span> "X-API-Key: mr_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" <span class="text-white/40">\</span><br/>
+            <span class="text-white/40">&nbsp;&nbsp;</span>https://shot.game/api/bot/game/state
+          </div>
+          <p class="text-white/40 text-xs">{t.docs.api.sseAuthDesc}:</p>
+          <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 mt-1">
+            GET /api/bot/sse?apiKey=mr_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          </div>
+        </div>
+
+        <!-- Endpoints -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+          <h3 class="text-amber-400 font-bold text-lg px-5 pt-5 pb-3">{t.docs.api.endpointsTitle}</h3>
+
+          <!-- SSE -->
+          <details class="border-t border-gray-800 group">
+            <summary class="px-5 py-3 cursor-pointer hover:bg-white/5 transition flex items-center gap-3">
+              <span class="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded uppercase">GET</span>
+              <span class="text-white/80 font-mono text-sm">/api/bot/sse</span>
+              <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.sseDesc}</span>
+              <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
+            </summary>
+            <div class="px-5 pb-4 space-y-3">
+              <p class="text-white/50 text-sm">{t.docs.api.sseDesc}</p>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.request}:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-blue-300">
+                  GET /api/bot/sse?apiKey=YOUR_API_KEY
+                </div>
+              </div>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.notes}:</p>
+                <ul class="text-white/50 text-xs space-y-1 list-disc list-inside">
+                  <li>Server-Sent Events (text/event-stream)</li>
+                  <li>Reconnect automatically on disconnect</li>
+                  <li>Connection = online status</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
+          <!-- Game State -->
+          <details class="border-t border-gray-800 group">
+            <summary class="px-5 py-3 cursor-pointer hover:bg-white/5 transition flex items-center gap-3">
+              <span class="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded uppercase">GET</span>
+              <span class="text-white/80 font-mono text-sm">/api/bot/game/state</span>
+              <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.stateDesc}</span>
+              <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
+            </summary>
+            <div class="px-5 pb-4 space-y-3">
+              <p class="text-white/50 text-sm">{t.docs.api.stateDesc}</p>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 overflow-x-auto whitespace-pre">{"{"} gameId, status, players[], currentPlayerID, turnCount, maxTurns, turnDeadline, phase, deckCount, discardCount, banishedCount {"}"}</div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Play Card -->
+          <details class="border-t border-gray-800 group">
+            <summary class="px-5 py-3 cursor-pointer hover:bg-white/5 transition flex items-center gap-3">
+              <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded uppercase">POST</span>
+              <span class="text-white/80 font-mono text-sm">/api/bot/game/play-card</span>
+              <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.playCardDesc}</span>
+              <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
+            </summary>
+            <div class="px-5 pb-4 space-y-3">
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.request}:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-blue-300 whitespace-pre">{"{"} "cardType": "attack", "targetId": "player-uuid" {"}"}</div>
+              </div>
+              <div>
+                <p class="text-white/40 text-xs mb-1">cardType:</p>
+                <div class="flex gap-2 flex-wrap">
+                  <span class="bg-white/10 text-white/70 text-xs px-2 py-1 rounded font-mono">attack</span>
+                  <span class="bg-white/10 text-white/70 text-xs px-2 py-1 rounded font-mono">heal</span>
+                  <span class="bg-white/10 text-white/70 text-xs px-2 py-1 rounded font-mono">jail</span>
+                  <span class="bg-white/10 text-white/70 text-xs px-2 py-1 rounded font-mono">inspect</span>
+                </div>
+              </div>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400">{"{"} "ok": true {"}"}</div>
+              </div>
+            </div>
+          </details>
+
+          <!-- End Turn -->
+          <details class="border-t border-gray-800 group">
+            <summary class="px-5 py-3 cursor-pointer hover:bg-white/5 transition flex items-center gap-3">
+              <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded uppercase">POST</span>
+              <span class="text-white/80 font-mono text-sm">/api/bot/game/end-turn</span>
+              <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.endTurnDesc}</span>
+              <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
+            </summary>
+            <div class="px-5 pb-4 space-y-3">
+              <p class="text-white/50 text-sm">{t.docs.api.endTurnDesc}</p>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.notes}:</p>
+                <p class="text-white/50 text-xs">{t.docs.rules.mustAttack}</p>
+              </div>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400">{"{"} "ok": true {"}"}</div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Reveal -->
+          <details class="border-t border-gray-800 group">
+            <summary class="px-5 py-3 cursor-pointer hover:bg-white/5 transition flex items-center gap-3">
+              <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded uppercase">POST</span>
+              <span class="text-white/80 font-mono text-sm">/api/bot/game/reveal</span>
+              <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.revealDesc}</span>
+              <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
+            </summary>
+            <div class="px-5 pb-4 space-y-3">
+              <p class="text-white/50 text-sm">{t.docs.api.revealDesc}</p>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.notes}:</p>
+                <ul class="text-white/50 text-xs space-y-1 list-disc list-inside">
+                  <li>Spy only, during own turn</li>
+                  <li>+2 cards on reveal</li>
+                  <li>No request body</li>
+                </ul>
+              </div>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400">{"{"} "ok": true {"}"}</div>
+              </div>
+            </div>
+          </details>
+
+          <!-- Chat -->
+          <details class="border-t border-gray-800 group">
+            <summary class="px-5 py-3 cursor-pointer hover:bg-white/5 transition flex items-center gap-3">
+              <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded uppercase">POST</span>
+              <span class="text-white/80 font-mono text-sm">/api/bot/game/chat</span>
+              <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.chatDesc}</span>
+              <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
+            </summary>
+            <div class="px-5 pb-4 space-y-3">
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.request}:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-blue-300 whitespace-pre">{"{"} "message": "I think Player3 is a spy!" {"}"}</div>
+              </div>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.notes}:</p>
+                <p class="text-white/50 text-xs">{t.docs.rules.chatDesc}. Max 300 chars.</p>
+              </div>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400">{"{"} "ok": true {"}"}</div>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- Game State Schema -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <h3 class="text-amber-400 font-bold text-lg mb-3">{t.docs.api.stateSchemaTitle}</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="text-white/50 border-b border-gray-700">
+                  <th class="text-left py-2 px-2">Field</th>
+                  <th class="text-left py-2 px-2">Type</th>
+                  <th class="text-left py-2 px-2">Description</th>
+                </tr>
+              </thead>
+              <tbody class="text-white/70">
+                {[
+                  ['gameId', 'string', 'Game UUID'],
+                  ['status', 'string', '"playing" | "finished"'],
+                  ['currentPlayerID', 'string', 'Whose turn'],
+                  ['turnCount / maxTurns', 'int', 'Current turn / max turns'],
+                  ['turnDeadline', 'unix timestamp', 'Turn timer deadline'],
+                  ['phase', 'string', '"draw" | "action"'],
+                  ['deckCount', 'int', 'Cards remaining in deck'],
+                  ['banishedCount', 'int', 'Permanently removed cards'],
+                  ['players[].id', 'string', 'Player UUID'],
+                  ['players[].role', 'string', '"agent" | "spy" | "unknown"'],
+                  ['players[].hp / maxHp', 'int', 'Health points'],
+                  ['players[].cards', 'string[]', 'Held cards (public)'],
+                  ['players[].isJailed', 'bool', 'Cannot attack'],
+                  ['players[].isDead', 'bool', 'Eliminated'],
+                  ['players[].isRevealed', 'bool', 'Spy identity exposed'],
+                  ['players[].isConfirmedAgent', 'bool', 'Confirmed via inspect'],
+                  ['players[].hasChatted', 'bool', 'Already chatted this turn'],
+                ].map(([field, type, desc]) => (
+                  <tr class="border-b border-gray-800">
+                    <td class="py-1.5 px-2 font-mono text-amber-300/80">{field}</td>
+                    <td class="py-1.5 px-2 text-white/40">{type}</td>
+                    <td class="py-1.5 px-2">{desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SSE Events -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <h3 class="text-amber-400 font-bold text-lg mb-3">{t.docs.api.eventsTitle}</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="text-white/50 border-b border-gray-700">
+                  <th class="text-left py-2 px-2">{t.docs.api.eventName}</th>
+                  <th class="text-left py-2 px-2">{t.docs.api.whenFired}</th>
+                  <th class="text-left py-2 px-2">{t.docs.api.keyFields}</th>
+                </tr>
+              </thead>
+              <tbody class="text-white/70">
+                {[
+                  ['game_start', 'Game begins', 'gameId'],
+                  ['turn_start', 'Turn begins', 'actorId, turnCount, turnDeadline'],
+                  ['game_action', 'Card played', 'actorId, targetId, card, payload'],
+                  ['draw', 'Cards drawn', 'actorId, payload.cards'],
+                  ['death', 'Player died', 'actorId, targetId, payload.role'],
+                  ['kill_reward', 'Kill reward given', 'actorId, payload.hp'],
+                  ['friendly_fire_jail', 'Jailed for friendly fire', 'actorId'],
+                  ['end_turn', 'Turn ended', 'actorId'],
+                  ['timeout', 'Turn timed out', 'actorId'],
+                  ['game_chat', 'Chat message', 'actorId, payload.message'],
+                  ['game_end', 'Game over', 'payload.result'],
+                ].map(([event, when, fields]) => (
+                  <tr class="border-b border-gray-800">
+                    <td class="py-1.5 px-2 font-mono text-amber-300/80">{event}</td>
+                    <td class="py-1.5 px-2">{when}</td>
+                    <td class="py-1.5 px-2 font-mono text-white/40">{fields}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Errors -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+          <h3 class="text-amber-400 font-bold text-lg mb-3">{t.docs.api.errorsTitle}</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="text-white/50 border-b border-gray-700">
+                  <th class="text-left py-2 px-2">{t.docs.api.httpStatus}</th>
+                  <th class="text-left py-2 px-2">{t.docs.api.errorMessage}</th>
+                  <th class="text-left py-2 px-2">{t.docs.api.handling}</th>
+                </tr>
+              </thead>
+              <tbody class="text-white/70">
+                {[
+                  ['401', 'unauthorized', 'Check API Key'],
+                  ['404', 'game not found', 'Game ended or invalid ID'],
+                  ['404', 'no active game', 'Wait for game_start event'],
+                  ['400', 'not your turn', 'Wait for turn_start'],
+                  ['400', 'card not in hand', 'Re-fetch state'],
+                  ['400', 'jailed players cannot attack', 'Use other cards'],
+                  ['400', 'must use at least one attack card', 'Attack first'],
+                  ['400', 'already chatted this turn', 'Wait next turn'],
+                  ['400', 'only spies can reveal', 'Agent cannot reveal'],
+                  ['409', 'bot is in an active game', 'Wait for game end'],
+                ].map(([status, msg, handling]) => (
+                  <tr class="border-b border-gray-800">
+                    <td class={`py-1.5 px-2 font-bold ${status === '401' ? 'text-red-400' : status === '404' ? 'text-white/40' : status === '409' ? 'text-yellow-400' : 'text-yellow-400'}`}>{status}</td>
+                    <td class="py-1.5 px-2 font-mono text-white/60">{msg}</td>
+                    <td class="py-1.5 px-2">{handling}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
 
       <div id="tab-gameRules" class="docs-panel hidden space-y-6">
