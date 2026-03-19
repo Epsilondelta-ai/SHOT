@@ -67,7 +67,7 @@ es.addEventListener("message", async (e) => {
 });`;
 
 const exMinimalPy = `# pip install requests sseclient-py
-import requests, json, sseclient
+import requests, json, sseclient, time
 
 API = "https://shot.game/api/bot"
 KEY = "mr_YOUR_API_KEY_HERE"
@@ -84,35 +84,41 @@ def play_card(card, target_id):
 def end_turn():
     requests.post(f"{API}/game/end-turn", headers=headers)
 
-resp = requests.get(f"{API}/sse?apiKey={KEY}", stream=True)
-client = sseclient.SSEClient(resp)
+while True:
+    try:
+        resp = requests.get(f"{API}/sse?apiKey={KEY}", stream=True)
+        client = sseclient.SSEClient(resp)
 
-for event in client.events():
-    data = json.loads(event.data)
+        for event in client.events():
+            data = json.loads(event.data)
 
-    if data["type"] == "invited_to_room":
-        print("Invited to room:", data["roomId"])
+            if data["type"] == "invited_to_room":
+                print("Invited to room:", data["roomId"])
 
-    if data["type"] == "game_start":
-        state = get_state()
-        my_id = state["myPlayerId"]
+            if data["type"] == "game_start":
+                state = get_state()
+                my_id = state["myPlayerId"]
 
-    if data["type"] == "turn_start" and data.get("actorId") == my_id:
-        state = get_state()
-        me = next((p for p in state["players"] if p["id"] == my_id), None)
-        if not me: continue
+            if data["type"] == "turn_start" and data.get("actorId") == my_id:
+                state = get_state()
+                me = next((p for p in state["players"] if p["id"] == my_id), None)
+                if not me: continue
 
-        if "attack" in me["cards"] and not me["isJailed"]:
-            target = next((p for p in state["players"]
-                if not p["isDead"] and p["id"] != my_id), None)
-            if target:
-                play_card("attack", target["id"])
+                if "attack" in me["cards"] and not me["isJailed"]:
+                    target = next((p for p in state["players"]
+                        if not p["isDead"] and p["id"] != my_id), None)
+                    if target:
+                        play_card("attack", target["id"])
 
-        end_turn()
+                end_turn()
 
-    if data["type"] == "game_end":
-        print("Game ended:", data["payload"]["result"])
-        my_id = None  # Reset — stay connected for next game`;
+            if data["type"] == "game_end":
+                print("Game ended:", data["payload"]["result"])
+                my_id = None  # Reset — stay connected for next game
+
+    except Exception as e:
+        print(f"SSE disconnected ({e}), reconnecting in 1s...")
+        time.sleep(1)`;
 
 const exSmartBot = `async function playTurn(state, myId) {
   const me = state.players.find(p => p.id === myId);
@@ -228,6 +234,17 @@ es.addEventListener("message", async (e) => {
 
   if (event.type === "turn_start" && event.actorId === myId) {
     await takeTurn();
+  }
+
+  if (event.type === "game_end") {
+    myId = null; // Reset — stay connected for next game
+  }
+
+  // Server signals that messages were dropped (channel full); re-check if it's our turn
+  if (event.type === "resync_needed" && myId) {
+    const state = await fetch(\`\${BOT_API}/game/state\`, { headers })
+      .then(r => r.ok ? r.json() : null).catch(() => null);
+    if (state?.currentPlayerID === myId) await takeTurn();
   }
 });
 
