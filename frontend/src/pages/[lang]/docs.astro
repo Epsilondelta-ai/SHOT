@@ -1,4 +1,5 @@
 ---
+import { Code } from 'astro:components';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import bulletImg from '../../assets/bullet.webp';
@@ -145,6 +146,41 @@ const exSmartBot = `async function playTurn(state, myId) {
 ---
 
 <BaseLayout title={`SHOT! - ${t.docs.title}`} bodyClass="min-h-screen flex flex-col bg-gray-950">
+  <style>
+    .od-code {
+      background: #282c34;
+      border: 1px solid #3e4451;
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+    .od-header {
+      background: #21252b;
+      border-bottom: 1px solid #3e4451;
+      padding: 0.75rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .od-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .od-dots span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .od-dot-red { background: #e06c75; }
+    .od-dot-yellow { background: #e5c07b; }
+    .od-dot-green { background: #98c379; }
+    .od-code .astro-code {
+      margin: 0;
+      border-radius: 0;
+      padding: 1rem 1.25rem;
+      font-size: 0.75rem;
+      line-height: 1.6;
+    }
+  </style>
   <SiteHeader lang={lang} path="/docs" />
 
   <main class="flex-1">
@@ -730,39 +766,51 @@ resp = requests.<span class="text-green-400">get</span>(
         </div>
 
         <!-- Example 1: Minimal Bot JS -->
-        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-800">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded">JS</span>
-              <h3 class="text-white font-bold">{t.docs.examples.minimalJsTitle}</h3>
-            </div>
-            <p class="text-white/50 text-sm">{t.docs.examples.minimalJsDesc}</p>
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded">JS</span>
+            <h3 class="text-white font-bold">{t.docs.examples.minimalJsTitle}</h3>
           </div>
-          <pre class="bg-black/60 p-4 font-mono text-xs text-white/70 overflow-x-auto m-0" set:text={exMinimalJs} />
+          <p class="text-white/50 text-sm mb-3">{t.docs.examples.minimalJsDesc}</p>
+          <div class="od-code">
+            <div class="od-header">
+              <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
+              <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">minimal-bot.js</span>
+            </div>
+            <Code code={exMinimalJs} lang="js" theme="one-dark-pro" />
+          </div>
         </div>
 
         <!-- Example 2: Minimal Bot Python -->
-        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-800">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded">PY</span>
-              <h3 class="text-white font-bold">{t.docs.examples.minimalPyTitle}</h3>
-            </div>
-            <p class="text-white/50 text-sm">{t.docs.examples.minimalPyDesc}</p>
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded">PY</span>
+            <h3 class="text-white font-bold">{t.docs.examples.minimalPyTitle}</h3>
           </div>
-          <pre class="bg-black/60 p-4 font-mono text-xs text-white/70 overflow-x-auto m-0" set:text={exMinimalPy} />
+          <p class="text-white/50 text-sm mb-3">{t.docs.examples.minimalPyDesc}</p>
+          <div class="od-code">
+            <div class="od-header">
+              <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
+              <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">minimal-bot.py</span>
+            </div>
+            <Code code={exMinimalPy} lang="python" theme="one-dark-pro" />
+          </div>
         </div>
 
         <!-- Example 3: Smart Bot -->
-        <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-          <div class="px-5 py-4 border-b border-gray-800">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded">JS</span>
-              <h3 class="text-white font-bold">{t.docs.examples.smartBotTitle}</h3>
-            </div>
-            <p class="text-white/50 text-sm">{t.docs.examples.smartBotDesc}</p>
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded">JS</span>
+            <h3 class="text-white font-bold">{t.docs.examples.smartBotTitle}</h3>
           </div>
-          <pre class="bg-black/60 p-4 font-mono text-xs text-white/70 overflow-x-auto m-0" set:text={exSmartBot} />
+          <p class="text-white/50 text-sm mb-3">{t.docs.examples.smartBotDesc}</p>
+          <div class="od-code">
+            <div class="od-header">
+              <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
+              <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">smart-bot.js</span>
+            </div>
+            <Code code={exSmartBot} lang="js" theme="one-dark-pro" />
+          </div>
         </div>
 
         <!-- Example 4: Decision Flowchart -->
