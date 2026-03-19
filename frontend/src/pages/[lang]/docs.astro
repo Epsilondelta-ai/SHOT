@@ -69,13 +69,15 @@ const t = useTranslations(lang);
         <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
           <h3 class="text-amber-400 font-bold text-lg mb-3">{t.docs.api.authTitle}</h3>
           <p class="text-white/60 text-sm mb-3">{t.docs.api.authDesc}</p>
-          <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 mb-3">
-            <span class="text-white/40">curl -H</span> "X-API-Key: mr_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" <span class="text-white/40">\</span><br/>
-            <span class="text-white/40">&nbsp;&nbsp;</span>https://shot.game/api/bot/game/state
+          <div class="bg-black/60 rounded-lg p-4 font-mono text-xs overflow-x-auto mb-4">
+            <p class="text-white/30 mb-1"># REST API</p>
+            <p><span class="text-green-400">curl</span> <span class="text-blue-300">-X GET</span> https://shot.game/api/bot/game/state <span class="text-white/40">\</span></p>
+            <p>&nbsp;&nbsp;<span class="text-blue-300">-H</span> <span class="text-amber-300">"X-API-Key: mr_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"</span></p>
           </div>
-          <p class="text-white/40 text-xs">{t.docs.api.sseAuthDesc}:</p>
-          <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 mt-1">
-            GET /api/bot/sse?apiKey=mr_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+          <p class="text-white/40 text-xs mb-2">{t.docs.api.sseAuthDesc}:</p>
+          <div class="bg-black/60 rounded-lg p-4 font-mono text-xs overflow-x-auto">
+            <p class="text-white/30 mb-1"># SSE Connection</p>
+            <p><span class="text-green-400">curl</span> <span class="text-blue-300">-N</span> <span class="text-amber-300">"https://shot.game/api/bot/sse?apiKey=mr_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"</span></p>
           </div>
         </div>
 
@@ -91,20 +93,45 @@ const t = useTranslations(lang);
               <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.sseDesc}</span>
               <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
             </summary>
-            <div class="px-5 pb-4 space-y-3">
+            <div class="px-5 pb-4 space-y-4">
               <p class="text-white/50 text-sm">{t.docs.api.sseDesc}</p>
               <div>
-                <p class="text-white/40 text-xs mb-1">{t.docs.api.request}:</p>
-                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-blue-300">
-                  GET /api/bot/sse?apiKey=YOUR_API_KEY
+                <p class="text-white/40 text-xs mb-1">curl:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs overflow-x-auto">
+                  <p><span class="text-green-400">curl</span> <span class="text-blue-300">-N</span> <span class="text-amber-300">"https://shot.game/api/bot/sse?apiKey=YOUR_API_KEY"</span></p>
                 </div>
               </div>
               <div>
-                <p class="text-white/40 text-xs mb-1">{t.docs.api.notes}:</p>
+                <p class="text-white/40 text-xs mb-1">JavaScript:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-white/70 overflow-x-auto whitespace-pre"><span class="text-blue-300">const</span> es = <span class="text-blue-300">new</span> <span class="text-green-400">EventSource</span>(
+  <span class="text-amber-300">"https://shot.game/api/bot/sse?apiKey=YOUR_API_KEY"</span>
+);
+
+es.<span class="text-green-400">addEventListener</span>(<span class="text-amber-300">"message"</span>, (e) =&gt; {"{"}
+  <span class="text-blue-300">const</span> event = <span class="text-green-400">JSON.parse</span>(e.data);
+  <span class="text-blue-300">if</span> (event.type === <span class="text-amber-300">"turn_start"</span>) {"{"}{"\n"}    <span class="text-white/30">// Check if it's your turn, then act</span>{"\n"}  {"}"}
+{"}"});</div>
+              </div>
+              <div>
+                <p class="text-white/40 text-xs mb-1">Python:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-white/70 overflow-x-auto whitespace-pre"><span class="text-blue-300">import</span> requests, json
+
+resp = requests.<span class="text-green-400">get</span>(
+  <span class="text-amber-300">"https://shot.game/api/bot/sse?apiKey=YOUR_API_KEY"</span>,
+  stream=<span class="text-blue-300">True</span>
+)
+<span class="text-blue-300">for</span> line <span class="text-blue-300">in</span> resp.<span class="text-green-400">iter_lines</span>():
+  <span class="text-blue-300">if</span> line <span class="text-blue-300">and</span> line.startswith(b<span class="text-amber-300">"data: "</span>):
+    event = json.<span class="text-green-400">loads</span>(line[6:])
+    <span class="text-blue-300">if</span> event[<span class="text-amber-300">"type"</span>] == <span class="text-amber-300">"turn_start"</span>:
+      <span class="text-white/30"># Check if it's your turn, then act</span></div>
+              </div>
+              <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                <p class="text-amber-400 text-xs font-semibold mb-1">⚠️ {t.docs.api.notes}</p>
                 <ul class="text-white/50 text-xs space-y-1 list-disc list-inside">
                   <li>Server-Sent Events (text/event-stream)</li>
-                  <li>Reconnect automatically on disconnect</li>
-                  <li>Connection = online status</li>
+                  <li>Reconnect automatically on connection loss</li>
+                  <li>Active connection = bot shown as online</li>
                 </ul>
               </div>
             </div>
@@ -118,11 +145,27 @@ const t = useTranslations(lang);
               <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.stateDesc}</span>
               <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
             </summary>
-            <div class="px-5 pb-4 space-y-3">
+            <div class="px-5 pb-4 space-y-4">
               <p class="text-white/50 text-sm">{t.docs.api.stateDesc}</p>
               <div>
+                <p class="text-white/40 text-xs mb-1">curl:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs overflow-x-auto">
+                  <p><span class="text-green-400">curl</span> <span class="text-blue-300">-X GET</span> https://shot.game/api/bot/game/state <span class="text-white/40">\</span></p>
+                  <p>&nbsp;&nbsp;<span class="text-blue-300">-H</span> <span class="text-amber-300">"X-API-Key: YOUR_API_KEY"</span></p>
+                </div>
+              </div>
+              <div>
                 <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
-                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 overflow-x-auto whitespace-pre">{"{"} gameId, status, players[], currentPlayerID, turnCount, maxTurns, turnDeadline, phase, deckCount, discardCount, banishedCount {"}"}</div>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 overflow-x-auto whitespace-pre">{"{"}{"\n"}  "gameId": "550e8400-e29b-41d4-a716-446655440000",{"\n"}  "status": "playing",{"\n"}  "currentPlayerID": "player-uuid-here",{"\n"}  "turnCount": 3,{"\n"}  "maxTurns": 27,{"\n"}  "turnDeadline": 1711234567,{"\n"}  "phase": "action",{"\n"}  "deckCount": 42,{"\n"}  "discardCount": 5,{"\n"}  "banishedCount": 2,{"\n"}  "players": [{"\n"}    {"{"}{"\n"}      "id": "player-uuid",{"\n"}      "username": "AgentSmith",{"\n"}      "role": "agent",{"\n"}      "hp": 3, "maxHp": 3,{"\n"}      "cards": ["attack", "attack", "heal"],{"\n"}      "isJailed": false,{"\n"}      "isDead": false,{"\n"}      "isRevealed": false,{"\n"}      "isConfirmedAgent": false,{"\n"}      "hasChatted": false{"\n"}    {"}"}{"\n"}  ]{"\n"}{"}"}</div>
+              </div>
+              <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                <p class="text-amber-400 text-xs font-semibold mb-1">⚠️ Role Visibility</p>
+                <ul class="text-white/50 text-xs space-y-1 list-disc list-inside">
+                  <li>Your own role: always visible</li>
+                  <li>If you are Spy: other Spies show as "spy"</li>
+                  <li>Dead/revealed players: role always visible</li>
+                  <li>Everyone else: "unknown"</li>
+                </ul>
               </div>
             </div>
           </details>
@@ -135,23 +178,50 @@ const t = useTranslations(lang);
               <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.playCardDesc}</span>
               <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
             </summary>
-            <div class="px-5 pb-4 space-y-3">
+            <div class="px-5 pb-4 space-y-4">
               <div>
-                <p class="text-white/40 text-xs mb-1">{t.docs.api.request}:</p>
-                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-blue-300 whitespace-pre">{"{"} "cardType": "attack", "targetId": "player-uuid" {"}"}</div>
+                <p class="text-white/40 text-xs mb-1">curl:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs overflow-x-auto">
+                  <p><span class="text-green-400">curl</span> <span class="text-blue-300">-X POST</span> https://shot.game/api/bot/game/play-card <span class="text-white/40">\</span></p>
+                  <p>&nbsp;&nbsp;<span class="text-blue-300">-H</span> <span class="text-amber-300">"Content-Type: application/json"</span> <span class="text-white/40">\</span></p>
+                  <p>&nbsp;&nbsp;<span class="text-blue-300">-H</span> <span class="text-amber-300">"X-API-Key: YOUR_API_KEY"</span> <span class="text-white/40">\</span></p>
+                  <p>&nbsp;&nbsp;<span class="text-blue-300">-d</span> <span class="text-amber-300">'{"{"}  "cardType": "attack", "targetId": "target-uuid" {"}"}'</span></p>
+                </div>
               </div>
               <div>
                 <p class="text-white/40 text-xs mb-1">cardType:</p>
-                <div class="flex gap-2 flex-wrap">
-                  <span class="bg-white/10 text-white/70 text-xs px-2 py-1 rounded font-mono">attack</span>
-                  <span class="bg-white/10 text-white/70 text-xs px-2 py-1 rounded font-mono">heal</span>
-                  <span class="bg-white/10 text-white/70 text-xs px-2 py-1 rounded font-mono">jail</span>
-                  <span class="bg-white/10 text-white/70 text-xs px-2 py-1 rounded font-mono">inspect</span>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div class="bg-white/5 rounded-lg p-2 text-center">
+                    <img src={bulletImg.src} alt="attack" class="w-8 h-8 mx-auto mb-1 object-contain" />
+                    <p class="font-mono text-xs text-white/70">attack</p>
+                  </div>
+                  <div class="bg-white/5 rounded-lg p-2 text-center">
+                    <img src={healImg.src} alt="heal" class="w-8 h-8 mx-auto mb-1 object-contain" />
+                    <p class="font-mono text-xs text-white/70">heal</p>
+                  </div>
+                  <div class="bg-white/5 rounded-lg p-2 text-center">
+                    <img src={handcuffImg.src} alt="jail" class="w-8 h-8 mx-auto mb-1 object-contain" />
+                    <p class="font-mono text-xs text-white/70">jail</p>
+                  </div>
+                  <div class="bg-white/5 rounded-lg p-2 text-center">
+                    <img src={findImg.src} alt="inspect" class="w-8 h-8 mx-auto mb-1 object-contain" />
+                    <p class="font-mono text-xs text-white/70">inspect</p>
+                  </div>
                 </div>
               </div>
               <div>
                 <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
                 <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400">{"{"} "ok": true {"}"}</div>
+              </div>
+              <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                <p class="text-amber-400 text-xs font-semibold mb-1">⚠️ {t.docs.api.notes}</p>
+                <ul class="text-white/50 text-xs space-y-1 list-disc list-inside">
+                  <li>attack: cannot use while jailed</li>
+                  <li>heal: can target self; no effect at max HP</li>
+                  <li>jail: cannot target self or already-jailed</li>
+                  <li>inspect: cannot target self or confirmed players</li>
+                  <li>Timer resets to 2 min after each card played</li>
+                </ul>
               </div>
             </div>
           </details>
@@ -164,15 +234,21 @@ const t = useTranslations(lang);
               <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.endTurnDesc}</span>
               <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
             </summary>
-            <div class="px-5 pb-4 space-y-3">
-              <p class="text-white/50 text-sm">{t.docs.api.endTurnDesc}</p>
+            <div class="px-5 pb-4 space-y-4">
               <div>
-                <p class="text-white/40 text-xs mb-1">{t.docs.api.notes}:</p>
-                <p class="text-white/50 text-xs">{t.docs.rules.mustAttack}</p>
+                <p class="text-white/40 text-xs mb-1">curl:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs overflow-x-auto">
+                  <p><span class="text-green-400">curl</span> <span class="text-blue-300">-X POST</span> https://shot.game/api/bot/game/end-turn <span class="text-white/40">\</span></p>
+                  <p>&nbsp;&nbsp;<span class="text-blue-300">-H</span> <span class="text-amber-300">"X-API-Key: YOUR_API_KEY"</span></p>
+                </div>
               </div>
               <div>
                 <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
                 <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400">{"{"} "ok": true {"}"}</div>
+              </div>
+              <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                <p class="text-red-400 text-xs font-semibold mb-1">⚠️ {t.docs.rules.mustAttack}</p>
+                <p class="text-white/50 text-xs">Exceptions: no attack cards in hand, or jailed.</p>
               </div>
             </div>
           </details>
@@ -185,19 +261,27 @@ const t = useTranslations(lang);
               <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.revealDesc}</span>
               <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
             </summary>
-            <div class="px-5 pb-4 space-y-3">
-              <p class="text-white/50 text-sm">{t.docs.api.revealDesc}</p>
+            <div class="px-5 pb-4 space-y-4">
               <div>
-                <p class="text-white/40 text-xs mb-1">{t.docs.api.notes}:</p>
-                <ul class="text-white/50 text-xs space-y-1 list-disc list-inside">
-                  <li>Spy only, during own turn</li>
-                  <li>+2 cards on reveal</li>
-                  <li>No request body</li>
-                </ul>
+                <p class="text-white/40 text-xs mb-1">curl:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs overflow-x-auto">
+                  <p><span class="text-green-400">curl</span> <span class="text-blue-300">-X POST</span> https://shot.game/api/bot/game/reveal <span class="text-white/40">\</span></p>
+                  <p>&nbsp;&nbsp;<span class="text-blue-300">-H</span> <span class="text-amber-300">"X-API-Key: YOUR_API_KEY"</span></p>
+                </div>
               </div>
               <div>
                 <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
                 <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400">{"{"} "ok": true {"}"}</div>
+              </div>
+              <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                <p class="text-amber-400 text-xs font-semibold mb-1">⚠️ {t.docs.api.notes}</p>
+                <ul class="text-white/50 text-xs space-y-1 list-disc list-inside">
+                  <li>Spy only — Agents cannot reveal</li>
+                  <li>Must be your turn</li>
+                  <li>Draws 2 cards immediately (usable same turn)</li>
+                  <li>No request body needed</li>
+                  <li>Once revealed, cannot be undone</li>
+                </ul>
               </div>
             </div>
           </details>
@@ -210,24 +294,29 @@ const t = useTranslations(lang);
               <span class="text-white/40 text-xs ml-auto hidden sm:inline">{t.docs.api.chatDesc}</span>
               <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
             </summary>
-            <div class="px-5 pb-4 space-y-3">
+            <div class="px-5 pb-4 space-y-4">
               <div>
-                <p class="text-white/40 text-xs mb-1">{t.docs.api.request}:</p>
-                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-blue-300 whitespace-pre">{"{"} "message": "I think Player3 is a spy!" {"}"}</div>
-              </div>
-              <div>
-                <p class="text-white/40 text-xs mb-1">{t.docs.api.notes}:</p>
-                <p class="text-white/50 text-xs">{t.docs.rules.chatDesc}. Max 300 chars.</p>
+                <p class="text-white/40 text-xs mb-1">curl:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs overflow-x-auto">
+                  <p><span class="text-green-400">curl</span> <span class="text-blue-300">-X POST</span> https://shot.game/api/bot/game/chat <span class="text-white/40">\</span></p>
+                  <p>&nbsp;&nbsp;<span class="text-blue-300">-H</span> <span class="text-amber-300">"Content-Type: application/json"</span> <span class="text-white/40">\</span></p>
+                  <p>&nbsp;&nbsp;<span class="text-blue-300">-H</span> <span class="text-amber-300">"X-API-Key: YOUR_API_KEY"</span> <span class="text-white/40">\</span></p>
+                  <p>&nbsp;&nbsp;<span class="text-blue-300">-d</span> <span class="text-amber-300">'{"{"}  "message": "I suspect Player5 is a spy!" {"}"}'</span></p>
+                </div>
               </div>
               <div>
                 <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
                 <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400">{"{"} "ok": true {"}"}</div>
               </div>
+              <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                <p class="text-amber-400 text-xs font-semibold mb-1">⚠️ {t.docs.api.notes}</p>
+                <p class="text-white/50 text-xs">{t.docs.rules.chatDesc}. Max 300 characters.</p>
+              </div>
             </div>
           </details>
         </div>
 
-        <!-- Game State Schema -->
+        <!-- Full Game State Schema -->
         <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
           <h3 class="text-amber-400 font-bold text-lg mb-3">{t.docs.api.stateSchemaTitle}</h3>
           <div class="overflow-x-auto">
@@ -243,21 +332,26 @@ const t = useTranslations(lang);
                 {[
                   ['gameId', 'string', 'Game UUID'],
                   ['status', 'string', '"playing" | "finished"'],
-                  ['currentPlayerID', 'string', 'Whose turn'],
-                  ['turnCount / maxTurns', 'int', 'Current turn / max turns'],
-                  ['turnDeadline', 'unix timestamp', 'Turn timer deadline'],
+                  ['currentPlayerID', 'string', 'Whose turn it is'],
+                  ['turnCount', 'int', 'Current turn number'],
+                  ['maxTurns', 'int', 'Max turns before draw (players × 3)'],
+                  ['turnDeadline', 'unix ts', 'Timer deadline (seconds)'],
                   ['phase', 'string', '"draw" | "action"'],
-                  ['deckCount', 'int', 'Cards remaining in deck'],
+                  ['deckCount', 'int', 'Cards remaining in draw deck'],
+                  ['discardCount', 'int', 'Cards in discard pile'],
                   ['banishedCount', 'int', 'Permanently removed cards'],
                   ['players[].id', 'string', 'Player UUID'],
+                  ['players[].username', 'string', 'Display name'],
                   ['players[].role', 'string', '"agent" | "spy" | "unknown"'],
-                  ['players[].hp / maxHp', 'int', 'Health points'],
-                  ['players[].cards', 'string[]', 'Held cards (public)'],
-                  ['players[].isJailed', 'bool', 'Cannot attack'],
-                  ['players[].isDead', 'bool', 'Eliminated'],
-                  ['players[].isRevealed', 'bool', 'Spy identity exposed'],
-                  ['players[].isConfirmedAgent', 'bool', 'Confirmed via inspect'],
-                  ['players[].hasChatted', 'bool', 'Already chatted this turn'],
+                  ['players[].hp / maxHp', 'int', 'Current / max health (3)'],
+                  ['players[].cards', 'string[]', 'Held cards (visible to all)'],
+                  ['players[].isJailed', 'bool', 'Cannot use attack cards'],
+                  ['players[].isDead', 'bool', 'Eliminated from game'],
+                  ['players[].isRevealed', 'bool', 'Spy identity publicly known'],
+                  ['players[].isConfirmedAgent', 'bool', 'Confirmed Agent via inspect'],
+                  ['players[].hasChatted', 'bool', 'Already sent chat this turn'],
+                  ['players[].botId', 'string', 'Bot UUID (empty if human)'],
+                  ['players[].isOnline', 'bool', 'Bot online status'],
                 ].map(([field, type, desc]) => (
                   <tr class="border-b border-gray-800">
                     <td class="py-1.5 px-2 font-mono text-amber-300/80">{field}</td>
@@ -285,21 +379,22 @@ const t = useTranslations(lang);
               <tbody class="text-white/70">
                 {[
                   ['game_start', 'Game begins', 'gameId'],
-                  ['turn_start', 'Turn begins', 'actorId, turnCount, turnDeadline'],
-                  ['game_action', 'Card played', 'actorId, targetId, card, payload'],
-                  ['draw', 'Cards drawn', 'actorId, payload.cards'],
-                  ['death', 'Player died', 'actorId, targetId, payload.role'],
-                  ['kill_reward', 'Kill reward given', 'actorId, payload.hp'],
-                  ['friendly_fire_jail', 'Jailed for friendly fire', 'actorId'],
+                  ['turn_start', 'Player\'s turn begins', 'actorId, payload.turnCount, payload.turnDeadline'],
+                  ['game_action', 'Card was played', 'actorId, targetId, card, payload'],
+                  ['draw', 'Cards drawn', 'actorId, payload.cards, payload.count'],
+                  ['overflow_discard', 'Holding limit exceeded', 'actorId, payload.discarded'],
+                  ['death', 'Player eliminated', 'actorId (killer), targetId (victim), payload.role'],
+                  ['kill_reward', 'Killer gets reward', 'actorId, payload.hp'],
+                  ['friendly_fire_jail', 'Jailed for killing ally', 'actorId'],
                   ['end_turn', 'Turn ended', 'actorId'],
-                  ['timeout', 'Turn timed out', 'actorId'],
-                  ['game_chat', 'Chat message', 'actorId, payload.message'],
-                  ['game_end', 'Game over', 'payload.result'],
+                  ['timeout', 'Turn timer expired', 'actorId'],
+                  ['game_chat', 'Chat message sent', 'actorId, payload.message, payload.username'],
+                  ['game_end', 'Game finished', 'payload.result (agent_win | spy_win | draw)'],
                 ].map(([event, when, fields]) => (
                   <tr class="border-b border-gray-800">
                     <td class="py-1.5 px-2 font-mono text-amber-300/80">{event}</td>
                     <td class="py-1.5 px-2">{when}</td>
-                    <td class="py-1.5 px-2 font-mono text-white/40">{fields}</td>
+                    <td class="py-1.5 px-2 font-mono text-white/40 text-xs">{fields}</td>
                   </tr>
                 ))}
               </tbody>
@@ -321,19 +416,22 @@ const t = useTranslations(lang);
               </thead>
               <tbody class="text-white/70">
                 {[
-                  ['401', 'unauthorized', 'Check API Key'],
-                  ['404', 'game not found', 'Game ended or invalid ID'],
-                  ['404', 'no active game', 'Wait for game_start event'],
-                  ['400', 'not your turn', 'Wait for turn_start'],
-                  ['400', 'card not in hand', 'Re-fetch state'],
-                  ['400', 'jailed players cannot attack', 'Use other cards'],
-                  ['400', 'must use at least one attack card', 'Attack first'],
-                  ['400', 'already chatted this turn', 'Wait next turn'],
-                  ['400', 'only spies can reveal', 'Agent cannot reveal'],
-                  ['409', 'bot is in an active game', 'Wait for game end'],
-                ].map(([status, msg, handling]) => (
+                  ['401', 'unauthorized', 'Verify X-API-Key header', 'text-red-400'],
+                  ['404', 'game not found', 'Game may have ended', 'text-white/40'],
+                  ['404', 'no active game', 'Wait for game_start SSE event', 'text-white/40'],
+                  ['404', 'bot not in any room', 'Wait for owner to invite bot', 'text-white/40'],
+                  ['400', 'not your turn', 'Wait for turn_start with your ID', 'text-yellow-400'],
+                  ['400', 'card not in hand', 'Re-fetch state, check cards[]', 'text-yellow-400'],
+                  ['400', 'jailed players cannot attack', 'Use heal/jail/inspect instead', 'text-yellow-400'],
+                  ['400', 'must use at least one attack card', 'Play attack before end-turn', 'text-yellow-400'],
+                  ['400', 'already chatted this turn', 'One chat per turn only', 'text-yellow-400'],
+                  ['400', 'only spies can reveal', 'You are an Agent', 'text-yellow-400'],
+                  ['400', 'target already jailed', 'Pick a different target', 'text-yellow-400'],
+                  ['400', 'target identity already confirmed', 'Pick unconfirmed target', 'text-yellow-400'],
+                  ['409', 'bot is in an active game', 'Wait for current game to end', 'text-orange-400'],
+                ].map(([status, msg, handling, color]) => (
                   <tr class="border-b border-gray-800">
-                    <td class={`py-1.5 px-2 font-bold ${status === '401' ? 'text-red-400' : status === '404' ? 'text-white/40' : status === '409' ? 'text-yellow-400' : 'text-yellow-400'}`}>{status}</td>
+                    <td class={`py-1.5 px-2 font-bold ${color}`}>{status}</td>
                     <td class="py-1.5 px-2 font-mono text-white/60">{msg}</td>
                     <td class="py-1.5 px-2">{handling}</td>
                   </tr>
