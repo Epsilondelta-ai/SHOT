@@ -38,6 +38,9 @@ type Event struct {
 
 // StartGame initializes a new game from room members.
 func StartGame(roomID string) (*GameState, []Event, error) {
+	var room models.Room
+	db.DB.First(&room, "id = ?", roomID)
+
 	var members []models.RoomMember
 	db.DB.Where("room_id = ? AND is_spectator = false", roomID).Order("joined_at ASC").Find(&members)
 
@@ -114,6 +117,7 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 	// Create game in DB
 	gameModel := models.Game{
 		RoomID:      roomID,
+		Title:       room.Name,
 		Status:      "playing",
 		PlayerCount: playerCount,
 		MaxTurns:    maxTurns,

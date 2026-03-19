@@ -308,7 +308,7 @@ const t = useTranslations(lang);
     replayData = await metaRes.json();
     actions = await actionsRes.json();
 
-    metaEl.textContent = `${replayData.playerCount} ${tPlayers} · ${replayData.turnCount} ${tTurns} · ${replayData.result || tInProgress}`;
+    metaEl.textContent = `${replayData.title || 'Untitled'} · ${replayData.playerCount} ${tPlayers} · ${replayData.turnCount} ${tTurns} · ${replayData.result || tInProgress}`;
 
     if (actions.length > 0) {
       goToFrame(0);

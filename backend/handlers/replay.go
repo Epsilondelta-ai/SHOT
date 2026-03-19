@@ -97,6 +97,7 @@ func ListReplays(c *fiber.Ctx) error {
 
 		result[i] = fiber.Map{
 			"id":            g.ID,
+			"title":         g.Title,
 			"result":        g.Result,
 			"playerCount":   g.PlayerCount,
 			"turnCount":     g.TurnCount,
@@ -138,6 +139,7 @@ func GetReplay(c *fiber.Ctx) error {
 
 	resp := fiber.Map{
 		"id":            game.ID,
+		"title":         game.Title,
 		"roomId":        game.RoomID,
 		"status":        game.Status,
 		"result":        game.Result,

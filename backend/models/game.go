@@ -10,6 +10,7 @@ import (
 type Game struct {
 	ID            string     `gorm:"primaryKey;type:varchar(36)"`
 	RoomID        string     `gorm:"type:varchar(36);not null;index"`
+	Title         string     `gorm:"size:100;not null;default:''"` // snapshot of room name
 	Status        string     `gorm:"size:20;not null;default:'playing'"` // playing | finished
 	Result        *string    `gorm:"size:20"`                            // agent_win | spy_win | draw
 	PlayerCount   int        `gorm:"not null"`
