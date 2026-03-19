@@ -33,7 +33,7 @@ es.addEventListener("message", async (e) => {
 
   if (event.type === "game_start") {
     const state = await fetch(\`\${API}/game/state\`, { headers }).then(r => r.json());
-    myId = state.players.find(p => p.role !== "unknown")?.id;
+    myId = state.myPlayerId;
   }
 
   if (event.type === "turn_start" && event.actorId === myId) {
@@ -82,7 +82,7 @@ for event in client.events():
 
     if data["type"] == "game_start":
         state = get_state()
-        my_id = next(p["id"] for p in state["players"] if p["role"] != "unknown")
+        my_id = state["myPlayerId"]
 
     if data["type"] == "turn_start" and data.get("actorId") == my_id:
         state = get_state()
@@ -113,12 +113,14 @@ const exSmartBot = `async function playTurn(state, myId) {
       if (unknown) await playCard("inspect", unknown.id);
     }
 
-    // 3. Attack revealed spies
-    const spy = alive.find(p => p.isRevealed);
-    if (spy && has("attack") && !me.isJailed) {
-      while (me.cards.includes("attack") && !spy.isDead) {
-        await playCard("attack", spy.id);
-        state = await getState(); // re-fetch after each card
+    // 3. Attack revealed spies (re-fetch state each iteration to avoid stale references)
+    if (alive.find(p => p.isRevealed) && has("attack") && !me.isJailed) {
+      while (true) {
+        state = await getState();
+        const currMe = state.players.find(p => p.id === myId);
+        const currSpy = state.players.find(p => p.isRevealed && !p.isDead);
+        if (!currSpy || !currMe.cards.includes("attack")) break;
+        await playCard("attack", currSpy.id);
       }
     }
   } else { // Spy

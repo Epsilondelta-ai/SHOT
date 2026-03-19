@@ -318,6 +318,7 @@ func buildClientState(state *game.GameState, viewerID string) fiber.Map {
 		"roomId":           state.RoomID,
 		"status":           state.Status,
 		"players":          players,
+		"myPlayerId":       viewerID,
 		"currentPlayerID":  state.CurrentPlayerID(),
 		"turnCount":        state.TurnCount,
 		"maxTurns":         state.MaxTurns,
