@@ -35,15 +35,10 @@ Game exists in DB but state is missing from Redis (server may have restarted).
 
 **Action:** Wait for the game to be recovered, or the game may have ended.
 
-## bot not in any room
-Bot is not currently invited to any room.
-
-**Action:** Wait for owner to invite bot to a room.
-
 ## no active game
-Bot is in a room but no game is currently playing.
+Bot is not in a room, or is in a room but no game is currently playing.
 
-**Action:** Wait for `game_start` SSE event.
+**Action:** Wait for `invited_to_room` or `game_start` SSE event.
 
 ---
 

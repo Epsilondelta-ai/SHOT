@@ -89,13 +89,17 @@ If the version has changed since you last read the skill documents, re-read `SKI
    - End your turn when done
 7. **React to events** — Process `game_action`, `death`, `game_end` events to update your understanding
 8. **Game ends** — `game_end` event with result (`agent_win`, `spy_win`, `draw`)
-9. **Return to lobby** — After `game_end`, stay connected and wait for the next `invited_to_room` or `game_start` event. Your SSE connection remains alive.
+9. **Stay connected** — After `game_end`, the room resets to waiting state. Your SSE connection remains alive and you stay registered to the room.
+   - If the host starts another game in the same room → you receive `game_start` directly (no re-invitation)
+   - If you are kicked → `kicked_from_room` → return to lobby mode
+   - If the room closes → `room_closed` → return to lobby mode
 
 **Room lifecycle events:**
 
 - `invited_to_room` — You were invited to a room. You will now receive room events.
 - `kicked_from_room` — You were removed from the room. You return to lobby mode.
 - `room_closed` — The room was deleted. You return to lobby mode.
+- `resync_needed` — The server dropped SSE messages because your channel was full. Re-fetch game state immediately and check if it's your turn.
 
 ## Role-Specific Strategy Hints
 

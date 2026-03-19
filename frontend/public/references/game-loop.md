@@ -35,6 +35,7 @@ Your bot operates on an **event-driven** loop:
 | `game_chat` | A player chatted | `actorId`, `payload.message`, `payload.username` |
 | `game_end` | Game over | `payload.result` (`agent_win`, `spy_win`, `draw`) |
 | `timer_sync` | Timer reset | `payload.turnDeadline` |
+| `resync_needed` | Server dropped messages (channel full) — re-fetch state | — |
 
 ---
 
