@@ -69,7 +69,7 @@ const t = useTranslations(lang);
     <div class="mb-5">
       <label class="flex items-center gap-2 cursor-pointer select-none">
         <input id="room-private-check" type="checkbox" class="w-4 h-4 accent-amber-400" />
-        <span class="text-sm font-semibold text-white/70">🔒 {t.rooms.privateRoom}</span>
+        <span class="text-sm font-semibold text-white/70"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Locked.png" alt="lock" class="inline-block w-4 h-4" /> {t.rooms.privateRoom}</span>
       </label>
     </div>
 
@@ -95,7 +95,7 @@ const t = useTranslations(lang);
 <!-- Join Private Room Modal -->
 <div id="join-room-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
   <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
-    <h3 class="text-lg font-bold text-amber-400 mb-2">🔒 <span id="join-room-name"></span></h3>
+    <h3 class="text-lg font-bold text-amber-400 mb-2"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Locked.png" alt="lock" class="inline-block w-5 h-5" /> <span id="join-room-name"></span></h3>
     <p class="text-white/50 text-sm mb-6">{t.rooms.enterPassword}</p>
     <div class="mb-6">
       <input
@@ -197,13 +197,13 @@ const t = useTranslations(lang);
       card.className = 'room-card flex items-center gap-3 bg-black/40 hover:bg-black/60 rounded-xl px-4 py-3 cursor-pointer transition';
       card.innerHTML = `
         <div class="flex-1 min-w-0">
-          <p class="text-white font-semibold truncate">${room.isPrivate ? '🔒 ' : ''}${room.name}</p>
+          <p class="text-white font-semibold truncate">${room.isPrivate ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Locked.png" alt="lock" class="inline-block w-4 h-4" /> ' : ''}${room.name}</p>
           <p class="${statusColor(room.status)} text-xs">${statusLabel(room.status)}</p>
         </div>
         <div class="flex flex-col items-end gap-0.5 flex-shrink-0 text-xs">
           <span class="text-white/70">👤 ${room.playerCount} / ${room.maxPlayers}</span>
-          ${room.botCount > 0 ? `<span class="text-blue-300">🤖 ${room.botCount} ${tBots}</span>` : ''}
-          ${room.spectatorCount > 0 ? `<span class="text-white/40">👁 ${room.spectatorCount} ${tSpectators}</span>` : ''}
+          ${room.botCount > 0 ? `<span class="text-blue-300"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Robot.png" alt="bot" class="inline-block w-4 h-4" /> ${room.botCount} ${tBots}</span>` : ''}
+          ${room.spectatorCount > 0 ? `<span class="text-white/40"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="eye" class="inline-block w-4 h-4" /> ${room.spectatorCount} ${tSpectators}</span>` : ''}
         </div>
       `;
       card.addEventListener('click', async () => {

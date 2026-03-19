@@ -245,9 +245,9 @@ const t = useTranslations(lang);
       el.style.width = '72px';
       el.id = `gp-player-${p.id}`;
 
-      const badge = p.isDead ? (p.role === 'spy' ? '🔴' : '🛡') :
-                    p.isRevealed ? '🔴' :
-                    p.isConfirmedAgent ? '🛡' : '';
+      const badge = p.isDead ? (p.role === 'spy' ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Red%20Circle.png" alt="spy" class="inline-block w-4 h-4" />' : '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" alt="agent" class="inline-block w-4 h-4" />') :
+                    p.isRevealed ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Red%20Circle.png" alt="spy" class="inline-block w-4 h-4" />' :
+                    p.isConfirmedAgent ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" alt="agent" class="inline-block w-4 h-4" />' : '';
 
       el.innerHTML = `
         <div class="relative ${isCurrentTurn ? 'ring-4 ring-amber-400/60 shadow-[0_0_12px_rgba(251,191,36,0.5)] rounded-full' : ''}">
