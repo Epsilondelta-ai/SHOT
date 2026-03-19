@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"github.com/epsilondelta/shot/db"
@@ -90,10 +91,15 @@ func BotSSE(c *fiber.Ctx) error {
 		AvatarURL: bot.AvatarURL,
 	}
 
-	// Register bot for personal events (bot:events:{botID})
-	hub.H.RegisterBot(bot.ID, client)
+	// Register bot for personal events (bot:events:{botID}).
+	// Returns old client if a previous connection existed; we explicitly remove it
+	// from the room hub so there is no window of duplicate delivery.
+	oldClient := hub.H.RegisterBot(bot.ID, client)
+	if oldClient != nil && oldClient.RoomID != "" {
+		hub.H.Unregister(oldClient)
+	}
 
-	// If bot is already in a room, register to that room's hub
+	// If bot is already in a room, register to that room's hub.
 	var member models.RoomMember
 	if err := db.DB.Where("bot_id = ?", bot.ID).First(&member).Error; err == nil {
 		client.RoomID = member.RoomID
@@ -110,11 +116,16 @@ func BotSSE(c *fiber.Ctx) error {
 
 	c.Context().SetBodyStreamWriter(func(w *bufio.Writer) {
 		defer func() {
+			// Skip cleanup if this connection was superseded by a newer one;
+			// the new connection already owns the bot/room registrations.
+			if client.Replaced {
+				return
+			}
 			if client.RoomID != "" {
 				hub.H.Unregister(client)
 				broadcastRoomUpdate(client.RoomID)
 			}
-			hub.H.UnregisterBot(bot.ID)
+			hub.H.UnregisterBot(bot.ID, client)
 			SetBotOffline(bot.ID)
 		}()
 
@@ -154,6 +165,12 @@ func BotSSE(c *fiber.Ctx) error {
 				fmt.Fprintf(w, "data: %s\n\n", data)
 				if err := w.Flush(); err != nil {
 					return
+				}
+				// If messages were dropped while channel was full, tell the bot to resync.
+				if atomic.CompareAndSwapInt32(&client.NeedsResync, 1, 0) {
+					resync, _ := json.Marshal(map[string]string{"type": "resync_needed"})
+					fmt.Fprintf(w, "data: %s\n\n", resync)
+					w.Flush() //nolint:errcheck
 				}
 			case <-ticker.C:
 				fmt.Fprintf(w, ": ping\n\n")

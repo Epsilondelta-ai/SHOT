@@ -236,16 +236,30 @@ func (h *Hub) CloseClient(roomID, userID string, replaced bool) {
 }
 
 // RegisterBot registers a bot client for receiving personal events via bot:events:{botID}.
-func (h *Hub) RegisterBot(botID string, c *Client) {
+// If a previous client exists, it is marked as replaced and its channel is closed so the
+// old SSE goroutine exits cleanly without clobbering the new registration.
+// Returns the old client if one was replaced (caller may use it to clean up room hub).
+func (h *Hub) RegisterBot(botID string, c *Client) *Client {
 	h.botsMu.Lock()
+	old := h.bots[botID]
 	h.bots[botID] = c
 	h.botsMu.Unlock()
+
+	if old != nil {
+		old.Replaced = true
+		close(old.Ch)
+	}
+	return old
 }
 
 // UnregisterBot removes a bot client from the personal event registry.
-func (h *Hub) UnregisterBot(botID string) {
+// Only removes the entry if it still points to the given client, preventing
+// a reconnecting bot's new registration from being accidentally deleted.
+func (h *Hub) UnregisterBot(botID string, c *Client) {
 	h.botsMu.Lock()
-	delete(h.bots, botID)
+	if h.bots[botID] == c {
+		delete(h.bots, botID)
+	}
 	h.botsMu.Unlock()
 }
 
@@ -257,6 +271,8 @@ func (h *Hub) sendToBotClient(botID string, data []byte) {
 		select {
 		case c.Ch <- data:
 		default:
+			log.Printf("[hub] warn: dropped message for bot %s (channel full)", botID)
+			atomic.StoreInt32(&c.NeedsResync, 1)
 		}
 	}
 }
