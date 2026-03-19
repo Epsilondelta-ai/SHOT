@@ -19,16 +19,14 @@ const t = useTranslations(lang);
 const fluentEmoji = (category: string, name: string) => `https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/${category}/${name}.png`;
 
 const exMinimalJs = `// npm install eventsource
-import { EventSource } from "eventsource";
+const EventSource = require("eventsource");
 
 const API = "https://shot.game/api/bot";
 const KEY = "mr_YOUR_API_KEY_HERE";
 const headers = { "X-API-Key": KEY, "Content-Type": "application/json" };
 let myId = null;
 
-// Connect SSE — works without being in a room (lobby mode)
 const es = new EventSource(\`\${API}/sse?apiKey=\${KEY}\`);
-console.log("Connecting to SSE... waiting for room invitation");
 
 es.addEventListener("message", async (e) => {
   const event = JSON.parse(e.data);
@@ -39,8 +37,7 @@ es.addEventListener("message", async (e) => {
 
   if (event.type === "game_start") {
     const state = await fetch(\`\${API}/game/state\`, { headers }).then(r => r.json());
-    myId = state.players.find(p => p.role !== "unknown")?.id;
-    console.log("Game started! I am:", myId);
+    myId = state.myPlayerId;
   }
 
   if (event.type === "turn_start" && event.actorId === myId) {
@@ -87,8 +84,6 @@ def play_card(card, target_id):
 def end_turn():
     requests.post(f"{API}/game/end-turn", headers=headers)
 
-# Connect SSE — works without being in a room (lobby mode)
-print("Connecting to SSE... waiting for room invitation")
 resp = requests.get(f"{API}/sse?apiKey={KEY}", stream=True)
 client = sseclient.SSEClient(resp)
 
@@ -96,12 +91,11 @@ for event in client.events():
     data = json.loads(event.data)
 
     if data["type"] == "invited_to_room":
-        print(f"Invited to room: {data['roomId']}")
+        print("Invited to room:", data["roomId"])
 
     if data["type"] == "game_start":
         state = get_state()
-        my_id = next(p["id"] for p in state["players"] if p["role"] != "unknown")
-        print(f"Game started! I am: {my_id}")
+        my_id = state["myPlayerId"]
 
     if data["type"] == "turn_start" and data.get("actorId") == my_id:
         state = get_state()
@@ -117,7 +111,7 @@ for event in client.events():
         end_turn()
 
     if data["type"] == "game_end":
-        print(f"Game ended: {data['payload']['result']}")
+        print("Game ended:", data["payload"]["result"])
         my_id = None  # Reset — stay connected for next game`;
 
 const exSmartBot = `async function playTurn(state, myId) {
@@ -583,7 +577,7 @@ resp = requests.<span class="text-green-400">get</span>(
               </div>
               <div>
                 <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
-                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 overflow-x-auto whitespace-pre">[{"\n"}  {"{"}{"\n"}    "turn": 1, "seq": 1,{"\n"}    "type": "draw",{"\n"}    "actorId": "player-uuid",{"\n"}    "targetId": "",{"\n"}    "payload": "{\"cards\":[\"attack\",\"attack\"],\"count\":2}"{"\n"}  {"}"},{"\n"}  {"{"}{"\n"}    "turn": 1, "seq": 2,{"\n"}    "type": "game_action",{"\n"}    "actorId": "player-uuid",{"\n"}    "targetId": "target-uuid",{"\n"}    "payload": "{\"card\":\"attack\",\"damage\":1}"{"\n"}  {"}"}{"\n"}]</div>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 overflow-x-auto whitespace-pre">{'[\n  {\n    "turn": 1, "seq": 1,\n    "type": "draw",\n    "actorId": "player-uuid",\n    "payload": "{\\"cards\\":[\\"attack\\"],\\"count\\":1}"\n  },\n  {\n    "turn": 1, "seq": 2,\n    "type": "game_action",\n    "actorId": "player-uuid",\n    "targetId": "target-uuid",\n    "payload": "{\\"card\\":\\"attack\\",\\"damage\\":1}"\n  }\n]'}</div>
               </div>
               <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
                 <p class="text-amber-400 text-xs font-semibold mb-1">⚠️ {t.docs.api.notes}</p>
