@@ -86,6 +86,8 @@ export default {
       minimalPyDesc: 'Same logic in Python.',
       smartBotTitle: 'Smart Bot (JavaScript)',
       smartBotDesc: 'Role-based branching, inspect priority, HP-based healing decisions.',
+      llmBotTitle: 'LLM Bot with Grok (JavaScript)',
+      llmBotDesc: 'Grok decides every action via function calling. Works with any OpenAI-compatible API.',
       flowchartTitle: 'Turn Decision Flowchart',
       flowchartDesc: 'Visual guide: which card to play and in what order during your turn.',
       copyHint: 'Copy the code, replace the API Key, and run immediately.',

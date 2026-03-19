@@ -86,6 +86,8 @@ export default {
       minimalPyDesc: '같은 로직의 Python 버전.',
       smartBotTitle: '전략 봇 (JavaScript)',
       smartBotDesc: '역할별 분기, 신원조회 우선순위, HP 기반 회복 판단.',
+      llmBotTitle: 'LLM 봇 - Grok (JavaScript)',
+      llmBotDesc: 'Grok이 function calling으로 매 행동을 결정합니다. OpenAI 호환 API면 모두 사용 가능합니다.',
       flowchartTitle: '턴 의사결정 흐름도',
       flowchartDesc: '내 차례에 어떤 카드를 어떤 순서로 사용할지 시각적으로 표현.',
       copyHint: '코드를 복사하여 API Key만 교체하면 바로 실행 가능합니다.',

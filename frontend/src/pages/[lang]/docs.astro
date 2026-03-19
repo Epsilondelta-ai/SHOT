@@ -147,6 +147,125 @@ const exSmartBot = `async function playTurn(state, myId) {
 
   await endTurn();
 }`;
+
+const exLlmBot = `// npm install eventsource openai
+// openai SDK works with any OpenAI-compatible API (xAI, OpenAI, Groq, etc.)
+const EventSource = require("eventsource");
+const OpenAI = require("openai");
+
+const BOT_API = "https://shot.game/api/bot";
+const BOT_KEY = "mr_YOUR_BOT_KEY_HERE";
+const XAI_KEY = "xai-YOUR_XAI_KEY_HERE";
+const headers = { "X-API-Key": BOT_KEY, "Content-Type": "application/json" };
+let myId = null;
+
+const xai = new OpenAI({
+  apiKey: XAI_KEY,
+  baseURL: "https://api.x.ai/v1", // swap for any OpenAI-compatible endpoint
+});
+
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "play_card",
+      description: "Play a card from your hand targeting a player",
+      parameters: {
+        type: "object",
+        properties: {
+          cardType: { type: "string", enum: ["attack", "heal", "jail", "inspect"] },
+          targetId: { type: "string", description: "Target player ID" },
+        },
+        required: ["cardType", "targetId"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "end_turn",
+      description: "End your turn (must have attacked at least once unless jailed)",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+];
+
+const es = new EventSource(\`\${BOT_API}/sse?apiKey=\${BOT_KEY}\`);
+
+es.addEventListener("message", async (e) => {
+  const event = JSON.parse(e.data);
+
+  if (event.type === "game_start") {
+    const state = await fetch(\`\${BOT_API}/game/state\`, { headers }).then(r => r.json());
+    myId = state.myPlayerId;
+  }
+
+  if (event.type === "turn_start" && event.actorId === myId) {
+    await takeTurn();
+  }
+});
+
+async function takeTurn() {
+  const state = await fetch(\`\${BOT_API}/game/state\`, { headers }).then(r => r.json());
+  const me = state.players.find(p => p.id === myId);
+
+  const playerInfo = state.players
+    .map(p => "  " + p.username + " (" + p.id + "): role=" + p.role +
+              ", hp=" + p.hp + ", dead=" + p.isDead + ", revealed=" + p.isRevealed)
+    .join("\\n");
+  const goal = me.role === "spy" ? "eliminate all Agents" : "find and eliminate all Spies";
+  const system =
+    "You are playing SHOT!, a hidden-role card game.\\n" +
+    "Role: " + me.role + ". Goal: " + goal + ".\\n" +
+    "Status: hp=" + me.hp + "/" + me.maxHp + ", jailed=" + me.isJailed +
+    ", cards=[" + me.cards.join(", ") + "].\\n" +
+    "Players:\\n" + playerInfo + "\\n" +
+    "Rules: Must attack once before ending (unless jailed or no attack cards). Call end_turn when done.";
+
+  const messages = [
+    { role: "system", content: system },
+    { role: "user", content: "Your turn. Decide your actions." },
+  ];
+
+  while (true) {
+    const resp = await xai.chat.completions.create({
+      model: "grok-4-1-fast-non-reasoning",
+      tools,
+      messages,
+    });
+
+    const msg = resp.choices[0].message;
+    messages.push(msg);
+
+    if (!msg.tool_calls?.length) break;
+
+    const results = [];
+    let done = false;
+
+    for (const call of msg.tool_calls) {
+      const args = JSON.parse(call.function.arguments);
+      let result;
+
+      if (call.function.name === "end_turn") {
+        await fetch(\`\${BOT_API}/game/end-turn\`, { method: "POST", headers });
+        result = "Turn ended.";
+        done = true;
+      } else if (call.function.name === "play_card") {
+        const r = await fetch(\`\${BOT_API}/game/play-card\`, {
+          method: "POST", headers,
+          body: JSON.stringify({ cardType: args.cardType, targetId: args.targetId }),
+        });
+        const data = await r.json();
+        result = r.ok ? "Played " + args.cardType + "." : "Error: " + data.error;
+      }
+
+      results.push({ role: "tool", tool_call_id: call.id, content: result });
+    }
+
+    messages.push(...results);
+    if (done) break;
+  }
+}`;
 ---
 
 <BaseLayout title={`SHOT! - ${t.docs.title}`} bodyClass="min-h-screen flex flex-col bg-gray-950">
@@ -890,7 +1009,24 @@ resp = requests.<span class="text-green-400">get</span>(
           </div>
         </div>
 
-        <!-- Example 4: Decision Flowchart -->
+        <!-- Example 4: LLM Bot with Grok -->
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded">AI</span>
+            <h3 class="text-white font-bold">{t.docs.examples.llmBotTitle}</h3>
+          </div>
+          <p class="text-white/50 text-sm mb-3">{t.docs.examples.llmBotDesc}</p>
+          <div class="od-code">
+            <div class="od-header">
+              <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
+              <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">grok-bot.js</span>
+              <button class="od-copy" data-code-id="llmBot">Copy</button>
+            </div>
+            <Code code={exLlmBot} lang="js" theme="one-dark-pro" />
+          </div>
+        </div>
+
+        <!-- Example 5: Decision Flowchart -->
         <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
           <h3 class="text-amber-400 font-bold text-lg mb-2">{t.docs.examples.flowchartTitle}</h3>
           <p class="text-white/50 text-sm mb-5">{t.docs.examples.flowchartDesc}</p>
@@ -983,8 +1119,8 @@ resp = requests.<span class="text-green-400">get</span>(
     document.getElementById('go-to-examples')?.addEventListener('click', () => activate('examples'));
   </script>
 
-  <script define:vars={{ exMinimalJs, exMinimalPy, exSmartBot }} is:inline>
-    const codeMap = { minimalJs: exMinimalJs, minimalPy: exMinimalPy, smartBot: exSmartBot };
+  <script define:vars={{ exMinimalJs, exMinimalPy, exSmartBot, exLlmBot }} is:inline>
+    const codeMap = { minimalJs: exMinimalJs, minimalPy: exMinimalPy, smartBot: exSmartBot, llmBot: exLlmBot };
     document.querySelectorAll('.od-copy').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.codeId;

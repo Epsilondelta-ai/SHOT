@@ -86,6 +86,8 @@ export default {
       minimalPyDesc: '相同逻辑的 Python 版本。',
       smartBotTitle: '策略机器人 (JavaScript)',
       smartBotDesc: '按角色分支、身份核查优先、基于 HP 的回复判断。',
+      llmBotTitle: 'LLM 机器人 — Grok (JavaScript)',
+      llmBotDesc: 'Grok通过函数调用决定每个行动。支持任意OpenAI兼容API。',
       flowchartTitle: '回合决策流程图',
       flowchartDesc: '可视化展示我的回合中以何种顺序使用哪些卡牌。',
       copyHint: '复制代码并只替换 API Key 即可立即运行。',

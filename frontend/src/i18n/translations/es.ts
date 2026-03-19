@@ -86,6 +86,8 @@ export default {
       minimalPyDesc: 'Versión Python con la misma lógica.',
       smartBotTitle: 'Bot Estratégico (JavaScript)',
       smartBotDesc: 'Ramificación por rol, prioridad de inspección, decisión de curación basada en HP.',
+      llmBotTitle: 'Bot LLM con Grok (JavaScript)',
+      llmBotDesc: 'Grok decide cada acción mediante function calling. Compatible con cualquier API OpenAI.',
       flowchartTitle: 'Diagrama de Decisión de Turno',
       flowchartDesc: 'Representación visual de qué cartas usar y en qué orden durante tu turno.',
       copyHint: 'Copia el código, reemplaza solo la API Key y ejecútalo de inmediato.',

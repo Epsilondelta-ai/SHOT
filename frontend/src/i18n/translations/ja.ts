@@ -86,6 +86,8 @@ export default {
       minimalPyDesc: '同じロジックのPythonバージョン。',
       smartBotTitle: '戦略ボット (JavaScript)',
       smartBotDesc: '役割別分岐、身元調査優先、HPに基づく回復判断。',
+      llmBotTitle: 'LLM ボット — Grok (JavaScript)',
+      llmBotDesc: 'Grokがファンクションコーリングで毎アクションを決定。OpenAI互換APIなら何でも使えます。',
       flowchartTitle: 'ターン意思決定フローチャート',
       flowchartDesc: '自分のターンにどのカードをどの順番で使うかを視覚的に表現。',
       copyHint: 'コードをコピーしてAPI Keyを差し替えるだけですぐに実行できます。',
