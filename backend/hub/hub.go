@@ -73,8 +73,8 @@ func (h *Hub) routeRedisMessage(msg *redis.Message) {
 			return
 		}
 		h.controlLocalClient(roomID, ctrl)
-	case len(msg.Channel) > 12 && msg.Channel[:12] == "bot:events:":
-		botID := msg.Channel[12:]
+	case len(msg.Channel) > 11 && msg.Channel[:11] == "bot:events:":
+		botID := msg.Channel[11:]
 		h.sendToBotClient(botID, []byte(msg.Payload))
 	}
 }
