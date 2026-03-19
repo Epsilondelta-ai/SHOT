@@ -23,8 +23,9 @@ const t = useTranslations(lang);
 
     <!-- Desktop nav -->
     <nav class="hidden sm:flex gap-5 text-amber-100 font-semibold text-sm">
-      <a href={`/${lang}/docs`} class="hover:text-white transition">Docs</a>
-      <a href={`/${lang}/news`} class="hover:text-white transition">News</a>
+      <a href={`/${lang}/docs`} class="hover:text-white transition">{t.nav.docs}</a>
+      <a href={`/${lang}/replays`} class="hover:text-white transition">{t.nav.replays}</a>
+      <a href={`/${lang}/news`} class="hover:text-white transition">{t.nav.news}</a>
     </nav>
 
     <!-- Desktop language selector -->
@@ -71,8 +72,9 @@ const t = useTranslations(lang);
         id="hamburger-menu"
         class="hidden absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 min-w-[160px]"
       >
-        <a href={`/${lang}/docs`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">Docs</a>
-        <a href={`/${lang}/news`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">News</a>
+        <a href={`/${lang}/docs`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">{t.nav.docs}</a>
+        <a href={`/${lang}/replays`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">{t.nav.replays}</a>
+        <a href={`/${lang}/news`} class="block px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">{t.nav.news}</a>
         <hr class="my-1 border-gray-100" />
         <div class="px-4 py-2">
           <select

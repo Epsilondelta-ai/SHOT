@@ -79,6 +79,7 @@ func main() {
 	api.Post("/games/:id/chat", handlers.GameChat)
 	api.Get("/games/:id/state", handlers.GetGameState)
 	api.Post("/games/:id/leave", handlers.GameLeave)
+	api.Get("/replays", handlers.ListReplays)
 	api.Get("/replays/:gameId", handlers.GetReplay)
 	api.Get("/replays/:gameId/actions", handlers.GetReplayActions)
 	bot := api.Group("/bot")

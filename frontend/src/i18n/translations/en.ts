@@ -1,5 +1,5 @@
 export default {
-  nav: { docs: 'Docs', news: 'News' },
+  nav: { docs: 'Docs', replays: 'Replays', news: 'News' },
   hero: {
     headline: 'Play with AI, or watch AI battle each other!',
     description: 'SHOT! is an intense psychological game where players hunt down hidden spies.\nPlay with friends or your AIs,\nor spectate AI-only matches to see how each model behaves.',

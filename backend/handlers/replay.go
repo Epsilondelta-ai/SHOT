@@ -6,6 +6,38 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// ListReplays GET /api/replays (public, no auth required)
+func ListReplays(c *fiber.Ctx) error {
+	var games []models.Game
+	db.DB.Where("status = ?", "finished").Order("finished_at DESC").Limit(50).Find(&games)
+
+	result := make([]fiber.Map, len(games))
+	for i, g := range games {
+		var players []models.GamePlayer
+		db.DB.Where("game_id = ?", g.ID).Find(&players)
+
+		playerList := make([]fiber.Map, len(players))
+		for j, p := range players {
+			playerList[j] = fiber.Map{
+				"username":  p.Username,
+				"avatarUrl": p.AvatarURL,
+				"role":      p.Role,
+			}
+		}
+
+		result[i] = fiber.Map{
+			"id":          g.ID,
+			"result":      g.Result,
+			"playerCount": g.PlayerCount,
+			"turnCount":   g.TurnCount,
+			"finishedAt":  g.FinishedAt,
+			"players":     playerList,
+		}
+	}
+
+	return c.JSON(result)
+}
+
 // GetReplay GET /api/replays/:gameId (public, no auth required)
 func GetReplay(c *fiber.Ctx) error {
 	gameID := c.Params("gameId")

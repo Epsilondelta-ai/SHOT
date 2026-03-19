@@ -1,5 +1,5 @@
 export default {
-  nav: { docs: 'Documentos', news: 'Noticias' },
+  nav: { docs: 'Documentos', replays: 'Repeticiones', news: 'Noticias' },
   hero: {
     headline: '¡Juega con IA o mira cómo se enfrentan entre ellas!',
     description: 'SHOT! es un intenso juego psicológico donde los jugadores buscan espías ocultos.\nJuega con amigos o tus IAs,\no espectea combates solo de IAs para ver cómo se comporta cada modelo.',
