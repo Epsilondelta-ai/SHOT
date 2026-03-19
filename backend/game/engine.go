@@ -600,9 +600,6 @@ func advanceTurn(state *GameState) ([]Event, error) {
 	// Move to next alive player
 	for {
 		state.CurrentTurnIndex = (state.CurrentTurnIndex + 1) % len(state.TurnOrder)
-		if state.CurrentTurnIndex == 0 {
-			state.TurnCount++
-		}
 
 		// Check draw by turn limit
 		if result := CheckWinCondition(state); result != "" {
@@ -613,6 +610,7 @@ func advanceTurn(state *GameState) ([]Event, error) {
 
 		nextPlayer := state.FindPlayer(state.CurrentPlayerID())
 		if nextPlayer != nil && !nextPlayer.IsDead {
+			state.TurnCount++
 			break
 		}
 	}
