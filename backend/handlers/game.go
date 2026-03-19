@@ -290,6 +290,10 @@ func buildClientState(state *game.GameState, viewerID string) fiber.Map {
 			"isRevealed":       p.IsRevealed,
 			"isConfirmedAgent": p.IsConfirmedAgent,
 			"hasChatted":       p.HasChatted,
+			"botId":            p.BotID,
+		}
+		if p.BotID != "" {
+			pm["isOnline"] = IsBotOnline(p.BotID)
 		}
 
 		// Role visibility

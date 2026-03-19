@@ -54,6 +54,7 @@ func ListBots(c *fiber.Ctx) error {
 			"id":        bot.ID,
 			"name":      bot.Name,
 			"avatarUrl": bot.AvatarURL,
+			"isOnline":  IsBotOnline(bot.ID),
 			"createdAt": bot.CreatedAt,
 		}
 	}

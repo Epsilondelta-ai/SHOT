@@ -266,7 +266,7 @@ const t = useTranslations(lang);
             <img src="${member.avatarUrl || characterSrc}" alt="${member.username}"
               class="w-10 h-10 rounded-full object-cover bg-amber-800 border-2 ${isMemberHost ? 'border-amber-400' : 'border-white/20'}"
               onerror="this.src='${characterSrc}'" />
-            ${isBot ? '<span class="absolute -bottom-0.5 -right-0.5 text-xs">🤖</span>' : ''}
+            ${isBot ? `<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-gray-900 ${member.isOnline ? 'bg-green-500' : 'bg-gray-500'}"></span>` : ''}
           </div>
           <p class="text-white/70 text-xs truncate w-full text-center max-w-[64px]">${isMemberHost ? '⭐ ' : ''}${member.username}</p>
           ${isBot && member.ownerUsername ? `<p class="text-white/30 text-xs truncate w-full text-center max-w-[64px]">${member.ownerUsername}</p>` : ''}

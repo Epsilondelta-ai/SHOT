@@ -39,6 +39,7 @@ type MemberInfo struct {
 	AvatarURL     string    `json:"avatarUrl"`
 	IsSpectator   bool      `json:"isSpectator"`
 	CanInviteBots bool      `json:"canInviteBots"`
+	IsOnline      bool      `json:"isOnline,omitempty"`
 	JoinedAt      time.Time `json:"joinedAt"`
 }
 
@@ -63,6 +64,9 @@ func buildMemberInfoList(roomID string) []MemberInfo {
 			IsSpectator:   m.IsSpectator,
 			CanInviteBots: m.CanInviteBots,
 			JoinedAt:      m.JoinedAt,
+		}
+		if m.BotID != "" {
+			info.IsOnline = IsBotOnline(m.BotID)
 		}
 		if m.BotID != "" {
 			var bot models.Bot

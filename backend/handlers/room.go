@@ -238,6 +238,15 @@ func InviteBot(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"ok": true})
 	}
 
+	// Check if bot is busy (in an active game in another room)
+	var busyMember models.RoomMember
+	if db.DB.Where("bot_id = ?", body.BotID).First(&busyMember).Error == nil {
+		var busyRoom models.Room
+		if db.DB.First(&busyRoom, "id = ?", busyMember.RoomID).Error == nil && busyRoom.Status == "playing" {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "bot is in an active game"})
+		}
+	}
+
 	// Check room capacity
 	if room.PlayerCount >= room.MaxPlayers {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "room is full"})
