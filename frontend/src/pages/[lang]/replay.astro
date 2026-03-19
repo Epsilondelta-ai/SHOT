@@ -31,7 +31,20 @@ const t = useTranslations(lang);
           <a href={`/${lang}/game`} class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-sm transition">← {t.game.result.backToLobby}</a>
           <h1 class="text-white font-bold text-base">{t.game.result.watchReplay}</h1>
         </div>
-        <div id="replay-meta" class="text-white/50 text-sm"></div>
+        <div class="flex items-center gap-4">
+          <div id="replay-meta" class="text-white/50 text-sm"></div>
+          <div class="flex items-center gap-3 ml-auto">
+            <span id="replay-views" class="text-white/30 text-xs flex items-center gap-1">👁 0</span>
+            <button id="replay-like-btn" class="flex items-center gap-1 text-white/40 hover:text-red-400 text-sm transition">
+              <span id="replay-like-icon">♡</span>
+              <span id="replay-like-count" class="text-xs">0</span>
+            </button>
+            <button id="replay-fav-btn" class="flex items-center gap-1 text-white/40 hover:text-amber-400 text-sm transition">
+              <span id="replay-fav-icon">☆</span>
+              <span id="replay-fav-count" class="text-xs">0</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Players display -->
@@ -313,5 +326,79 @@ const t = useTranslations(lang);
     goToFrame(frame);
   });
 
-  loadReplay();
+  // Like/Favorite/View
+  const viewsEl = document.getElementById('replay-views');
+  const likeBtn = document.getElementById('replay-like-btn');
+  const likeIcon = document.getElementById('replay-like-icon');
+  const likeCountEl = document.getElementById('replay-like-count');
+  const favBtn = document.getElementById('replay-fav-btn');
+  const favIcon = document.getElementById('replay-fav-icon');
+  const favCountEl = document.getElementById('replay-fav-count');
+
+  let isLiked = false;
+  let isFavorited = false;
+
+  function getToken() { return localStorage.getItem('token'); }
+
+  function updateLikeUI() {
+    likeIcon.textContent = isLiked ? '♥' : '♡';
+    likeBtn.className = `flex items-center gap-1 text-sm transition ${isLiked ? 'text-red-400' : 'text-white/40 hover:text-red-400'}`;
+  }
+
+  function updateFavUI() {
+    favIcon.textContent = isFavorited ? '★' : '☆';
+    favBtn.className = `flex items-center gap-1 text-sm transition ${isFavorited ? 'text-amber-400' : 'text-white/40 hover:text-amber-400'}`;
+  }
+
+  function updateCounts(data) {
+    viewsEl.textContent = '👁 ' + (data.viewCount || 0);
+    likeCountEl.textContent = String(data.likeCount || 0);
+    favCountEl.textContent = String(data.favoriteCount || 0);
+    isLiked = !!data.isLiked;
+    isFavorited = !!data.isFavorited;
+    updateLikeUI();
+    updateFavUI();
+  }
+
+  likeBtn.addEventListener('click', async () => {
+    const token = getToken();
+    if (!token) return;
+    const gameId = new URLSearchParams(window.location.search).get('id');
+    if (!gameId) return;
+    const method = isLiked ? 'DELETE' : 'POST';
+    await fetch(`${apiUrl}/api/replays/${gameId}/like`, {
+      method, headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    isLiked = !isLiked;
+    likeCountEl.textContent = String(parseInt(likeCountEl.textContent) + (isLiked ? 1 : -1));
+    updateLikeUI();
+  });
+
+  favBtn.addEventListener('click', async () => {
+    const token = getToken();
+    if (!token) return;
+    const gameId = new URLSearchParams(window.location.search).get('id');
+    if (!gameId) return;
+    const method = isFavorited ? 'DELETE' : 'POST';
+    await fetch(`${apiUrl}/api/replays/${gameId}/favorite`, {
+      method, headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    isFavorited = !isFavorited;
+    favCountEl.textContent = String(parseInt(favCountEl.textContent) + (isFavorited ? 1 : -1));
+    updateFavUI();
+  });
+
+  // Track view and load replay
+  async function init() {
+    const gameId = new URLSearchParams(window.location.search).get('id');
+    if (gameId) {
+      fetch(`${apiUrl}/api/replays/${gameId}/view`, { method: 'POST' }).catch(() => null);
+    }
+    await loadReplay();
+    if (replayData) {
+      updateCounts(replayData);
+    }
+  }
+
+  init();
 </script>

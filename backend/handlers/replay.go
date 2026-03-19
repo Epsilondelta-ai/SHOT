@@ -4,7 +4,77 @@ import (
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/models"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
+
+// ReplayView POST /api/replays/:gameId/view (public, no auth required)
+func ReplayView(c *fiber.Ctx) error {
+	gameID := c.Params("gameId")
+	db.DB.Model(&models.Game{}).Where("id = ?", gameID).UpdateColumn("view_count", gorm.Expr("view_count + 1"))
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// ReplayLike POST /api/replays/:gameId/like (auth required)
+func ReplayLike(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	gameID := c.Params("gameId")
+
+	like := models.ReplayLike{GameID: gameID, UserID: userID}
+	if err := db.DB.Create(&like).Error; err != nil {
+		return c.JSON(fiber.Map{"ok": true}) // already liked
+	}
+	db.DB.Model(&models.Game{}).Where("id = ?", gameID).UpdateColumn("like_count", gorm.Expr("like_count + 1"))
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// ReplayUnlike DELETE /api/replays/:gameId/like (auth required)
+func ReplayUnlike(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	gameID := c.Params("gameId")
+
+	result := db.DB.Where("game_id = ? AND user_id = ?", gameID, userID).Delete(&models.ReplayLike{})
+	if result.RowsAffected > 0 {
+		db.DB.Model(&models.Game{}).Where("id = ? AND like_count > 0", gameID).UpdateColumn("like_count", gorm.Expr("like_count - 1"))
+	}
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// ReplayFavorite POST /api/replays/:gameId/favorite (auth required)
+func ReplayFavorite(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	gameID := c.Params("gameId")
+
+	fav := models.ReplayFavorite{GameID: gameID, UserID: userID}
+	if err := db.DB.Create(&fav).Error; err != nil {
+		return c.JSON(fiber.Map{"ok": true}) // already favorited
+	}
+	db.DB.Model(&models.Game{}).Where("id = ?", gameID).UpdateColumn("favorite_count", gorm.Expr("favorite_count + 1"))
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// ReplayUnfavorite DELETE /api/replays/:gameId/favorite (auth required)
+func ReplayUnfavorite(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	gameID := c.Params("gameId")
+
+	result := db.DB.Where("game_id = ? AND user_id = ?", gameID, userID).Delete(&models.ReplayFavorite{})
+	if result.RowsAffected > 0 {
+		db.DB.Model(&models.Game{}).Where("id = ? AND favorite_count > 0", gameID).UpdateColumn("favorite_count", gorm.Expr("favorite_count - 1"))
+	}
+	return c.JSON(fiber.Map{"ok": true})
+}
 
 // ListReplays GET /api/replays (public, no auth required)
 func ListReplays(c *fiber.Ctx) error {
@@ -26,12 +96,15 @@ func ListReplays(c *fiber.Ctx) error {
 		}
 
 		result[i] = fiber.Map{
-			"id":          g.ID,
-			"result":      g.Result,
-			"playerCount": g.PlayerCount,
-			"turnCount":   g.TurnCount,
-			"finishedAt":  g.FinishedAt,
-			"players":     playerList,
+			"id":            g.ID,
+			"result":        g.Result,
+			"playerCount":   g.PlayerCount,
+			"turnCount":     g.TurnCount,
+			"viewCount":     g.ViewCount,
+			"likeCount":     g.LikeCount,
+			"favoriteCount": g.FavoriteCount,
+			"finishedAt":    g.FinishedAt,
+			"players":       playerList,
 		}
 	}
 
@@ -63,18 +136,36 @@ func GetReplay(c *fiber.Ctx) error {
 		}
 	}
 
-	return c.JSON(fiber.Map{
-		"id":          game.ID,
-		"roomId":      game.RoomID,
-		"status":      game.Status,
-		"result":      game.Result,
-		"playerCount": game.PlayerCount,
-		"turnCount":   game.TurnCount,
-		"maxTurns":    game.MaxTurns,
-		"createdAt":   game.CreatedAt,
-		"finishedAt":  game.FinishedAt,
-		"players":     playerList,
-	})
+	resp := fiber.Map{
+		"id":            game.ID,
+		"roomId":        game.RoomID,
+		"status":        game.Status,
+		"result":        game.Result,
+		"playerCount":   game.PlayerCount,
+		"turnCount":     game.TurnCount,
+		"maxTurns":      game.MaxTurns,
+		"viewCount":     game.ViewCount,
+		"likeCount":     game.LikeCount,
+		"favoriteCount": game.FavoriteCount,
+		"createdAt":     game.CreatedAt,
+		"finishedAt":    game.FinishedAt,
+		"players":       playerList,
+		"isLiked":       false,
+		"isFavorited":   false,
+	}
+
+	// Check if user has liked/favorited (optional auth)
+	if userID, err := getUserIDFromToken(c); err == nil && userID != "" {
+		var likeCount int64
+		db.DB.Model(&models.ReplayLike{}).Where("game_id = ? AND user_id = ?", gameID, userID).Count(&likeCount)
+		resp["isLiked"] = likeCount > 0
+
+		var favCount int64
+		db.DB.Model(&models.ReplayFavorite{}).Where("game_id = ? AND user_id = ?", gameID, userID).Count(&favCount)
+		resp["isFavorited"] = favCount > 0
+	}
+
+	return c.JSON(resp)
 }
 
 // GetReplayActions GET /api/replays/:gameId/actions (public, no auth required)

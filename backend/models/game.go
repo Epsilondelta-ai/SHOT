@@ -8,15 +8,44 @@ import (
 )
 
 type Game struct {
-	ID          string     `gorm:"primaryKey;type:varchar(36)"`
-	RoomID      string     `gorm:"type:varchar(36);not null;index"`
-	Status      string     `gorm:"size:20;not null;default:'playing'"` // playing | finished
-	Result      *string    `gorm:"size:20"`                            // agent_win | spy_win | draw
-	PlayerCount int        `gorm:"not null"`
-	TurnCount   int        `gorm:"not null;default:0"`
-	MaxTurns    int        `gorm:"not null"`
-	CreatedAt   time.Time
-	FinishedAt  *time.Time
+	ID            string     `gorm:"primaryKey;type:varchar(36)"`
+	RoomID        string     `gorm:"type:varchar(36);not null;index"`
+	Status        string     `gorm:"size:20;not null;default:'playing'"` // playing | finished
+	Result        *string    `gorm:"size:20"`                            // agent_win | spy_win | draw
+	PlayerCount   int        `gorm:"not null"`
+	TurnCount     int        `gorm:"not null;default:0"`
+	MaxTurns      int        `gorm:"not null"`
+	ViewCount     int        `gorm:"not null;default:0"`
+	LikeCount     int        `gorm:"not null;default:0"`
+	FavoriteCount int        `gorm:"not null;default:0"`
+	CreatedAt     time.Time
+	FinishedAt    *time.Time
+}
+
+type ReplayLike struct {
+	ID     string `gorm:"primaryKey;type:varchar(36)"`
+	GameID string `gorm:"type:varchar(36);not null;uniqueIndex:idx_replay_like"`
+	UserID string `gorm:"type:varchar(36);not null;uniqueIndex:idx_replay_like"`
+}
+
+func (r *ReplayLike) BeforeCreate(tx *gorm.DB) error {
+	if r.ID == "" {
+		r.ID = uuid.New().String()
+	}
+	return nil
+}
+
+type ReplayFavorite struct {
+	ID     string `gorm:"primaryKey;type:varchar(36)"`
+	GameID string `gorm:"type:varchar(36);not null;uniqueIndex:idx_replay_fav"`
+	UserID string `gorm:"type:varchar(36);not null;uniqueIndex:idx_replay_fav"`
+}
+
+func (r *ReplayFavorite) BeforeCreate(tx *gorm.DB) error {
+	if r.ID == "" {
+		r.ID = uuid.New().String()
+	}
+	return nil
 }
 
 func (g *Game) BeforeCreate(tx *gorm.DB) error {
