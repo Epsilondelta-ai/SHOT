@@ -2,6 +2,13 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import character from '../../assets/character.webp';
+import bulletImg from '../../assets/bullet.webp';
+import healImg from '../../assets/heal.webp';
+import handcuffImg from '../../assets/handcuff.webp';
+import findImg from '../../assets/find.webp';
+import hittedImg from '../../assets/hitted.webp';
+import healedImg from '../../assets/healed.webp';
+import jailImg from '../../assets/jail.webp';
 import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
 
@@ -39,10 +46,78 @@ const t = useTranslations(lang);
       <div id="replays-list" class="hidden flex flex-col gap-3"></div>
     </div>
   </main>
+
+  <!-- Replay modal -->
+  <div id="replay-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-start justify-center overflow-y-auto p-4">
+    <div class="w-full max-w-4xl bg-gray-950 border border-gray-800 rounded-2xl flex flex-col my-4">
+
+      <!-- Modal header -->
+      <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-800">
+        <div class="flex-1 min-w-0">
+          <h2 id="modal-title" class="text-white font-bold text-base truncate"></h2>
+          <p id="modal-meta" class="text-white/40 text-xs mt-0.5"></p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span id="modal-views" class="text-white/30 text-xs flex items-center gap-1">
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> 0
+          </span>
+          <button id="modal-like-btn" class="flex items-center gap-1 text-white/40 hover:text-red-400 text-sm transition">
+            <span id="modal-like-icon"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/White%20Heart.png" alt="Heart" class="inline-block w-4 h-4" /></span>
+            <span id="modal-like-count" class="text-xs">0</span>
+          </button>
+          <button id="modal-fav-btn" class="flex items-center gap-1 text-white/40 hover:text-amber-400 text-sm transition">
+            <span id="modal-fav-icon"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Star.png" alt="Star" class="inline-block w-4 h-4" /></span>
+            <span id="modal-fav-count" class="text-xs">0</span>
+          </button>
+          <button id="modal-close" class="text-white/40 hover:text-white text-xl leading-none transition px-1">✕</button>
+        </div>
+      </div>
+
+      <!-- Players display -->
+      <div class="relative bg-black/20 overflow-hidden" style="height: 340px;">
+        <div id="replay-players" class="relative w-full h-full flex items-center justify-center">
+          <p id="replay-loading-text" class="text-white/30 text-sm">{t.docs.replay.loading}</p>
+        </div>
+      </div>
+
+      <!-- Timeline controls -->
+      <div class="px-4 py-3 border-t border-gray-800">
+        <div class="flex items-center gap-2 mb-2">
+          <button id="replay-prev" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-sm transition" title="Previous (←)">←</button>
+          <button id="replay-play" class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-5 py-1.5 rounded-xl text-sm transition min-w-[80px]">▶ Play</button>
+          <button id="replay-next" class="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-xl text-sm transition" title="Next (→)">→</button>
+          <select id="replay-speed" class="bg-white/10 text-white text-xs px-2 py-1.5 rounded-xl border-0 cursor-pointer ml-1">
+            <option value="2500">0.5×</option>
+            <option value="1500" selected>1×</option>
+            <option value="750">2×</option>
+            <option value="300">5×</option>
+          </select>
+          <span id="replay-frame-info" class="text-white/50 text-sm ml-auto"></span>
+        </div>
+        <div id="replay-timeline" class="w-full h-2 bg-white/10 rounded-full cursor-pointer relative">
+          <div id="replay-progress" class="h-full bg-amber-500 rounded-full transition-all" style="width:0%"></div>
+        </div>
+      </div>
+
+      <!-- Action log -->
+      <div class="px-4 py-3 border-t border-gray-800">
+        <p id="replay-action-text" class="text-white/70 text-sm min-h-[1.25rem]"></p>
+      </div>
+
+    </div>
+  </div>
 </BaseLayout>
 
 <script define:vars={{
-  apiUrl, lang, characterSrc: character.src,
+  apiUrl, lang,
+  characterSrc: character.src,
+  bulletSrc: bulletImg.src,
+  healSrc: healImg.src,
+  handcuffSrc: handcuffImg.src,
+  findSrc: findImg.src,
+  hittedSrc: hittedImg.src,
+  healedSrc: healedImg.src,
+  jailSrc: jailImg.src,
   tAgentWin: t.game.result.agentWin,
   tSpyWin: t.game.result.spyWin,
   tDraw: t.game.result.draw,
@@ -51,21 +126,33 @@ const t = useTranslations(lang);
   tViews: t.docs.replay.views,
   tLikes: t.docs.replay.likes,
   tFavorites: t.docs.replay.favorites,
+  tNotFound: t.docs.replay.notFound,
+  tInProgress: t.docs.replay.inProgress,
+  tDrew: t.docs.replay.drew,
+  tAttacked: t.docs.replay.attacked,
+  tHealed: t.docs.replay.healed,
+  tJailed: t.docs.replay.jailed,
+  tInspected: t.docs.replay.inspected,
+  tRevealed: t.docs.replay.revealed,
+  tKilled: t.docs.replay.killed,
+  tKillReward: t.docs.replay.killReward,
+  tFriendlyFire: t.docs.replay.friendlyFire,
+  tTurnStarted: t.docs.replay.turnStarted,
+  tTurnEnded: t.docs.replay.turnEnded,
+  tTimedOut: t.docs.replay.timedOut,
+  tGameOver: t.docs.replay.gameOver,
+  tChatMessage: t.docs.replay.chatMessage,
+  tOverflowDiscard: t.docs.replay.overflowDiscard,
 }} is:inline>
+
+  // ── Replay list ────────────────────────────────────────────────────────────
+
   const listEl = document.getElementById('replays-list');
   const loadingEl = document.getElementById('replays-loading');
   const emptyEl = document.getElementById('replays-empty');
 
-  const resultLabels = {
-    agent_win: tAgentWin,
-    spy_win: tSpyWin,
-    draw: tDraw,
-  };
-  const resultColors = {
-    agent_win: 'text-blue-400',
-    spy_win: 'text-red-400',
-    draw: 'text-amber-400',
-  };
+  const resultLabels = { agent_win: tAgentWin, spy_win: tSpyWin, draw: tDraw };
+  const resultColors = { agent_win: 'text-blue-400', spy_win: 'text-red-400', draw: 'text-amber-400' };
 
   async function loadReplays() {
     try {
@@ -86,16 +173,15 @@ const t = useTranslations(lang);
         const result = replay.result || 'draw';
         const date = replay.finishedAt ? new Date(replay.finishedAt).toLocaleString() : '';
 
-        const card = document.createElement('a');
-        card.href = `/${lang}/replay?id=${replay.id}`;
-        card.className = 'block bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-amber-500/30 rounded-xl px-5 py-4 transition';
-
-        // Players avatars
         const avatars = (replay.players || []).slice(0, 8).map(p =>
           `<img src="${p.avatarUrl || characterSrc}" alt="${p.username}"
             class="w-7 h-7 rounded-full object-cover border-2 ${p.role === 'spy' ? 'border-red-500' : 'border-blue-400'} -ml-2 first:ml-0"
             onerror="this.src='${characterSrc}'" title="${p.username} (${p.role})" />`
         ).join('');
+
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'w-full text-left bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-amber-500/30 rounded-xl px-5 py-4 transition';
 
         card.innerHTML = `
           <div class="flex items-center gap-4">
@@ -106,21 +192,20 @@ const t = useTranslations(lang);
                 <span class="text-white/30 text-xs">${replay.playerCount} ${tPlayers}</span>
                 <span class="text-white/30 text-xs">${replay.turnCount} ${tTurns}</span>
               </div>
-              <div class="flex items-center">
-                ${avatars}
-              </div>
+              <div class="flex items-center">${avatars}</div>
             </div>
             <div class="text-right flex-shrink-0 flex flex-col items-end gap-1">
               <p class="text-white/30 text-xs">${date}</p>
               <div class="flex items-center gap-3 text-white/30 text-xs">
-                <span title="${tViews}"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> ${replay.viewCount || 0}</span>
-                <span title="${tLikes}"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" alt="Heart" class="inline-block w-4 h-4" /> ${replay.likeCount || 0}</span>
-                <span title="${tFavorites}"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" alt="Star" class="inline-block w-4 h-4" /> ${replay.favoriteCount || 0}</span>
+                <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> ${replay.viewCount || 0}</span>
+                <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" alt="Heart" class="inline-block w-4 h-4" /> ${replay.likeCount || 0}</span>
+                <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" alt="Star" class="inline-block w-4 h-4" /> ${replay.favoriteCount || 0}</span>
               </div>
             </div>
           </div>
         `;
 
+        card.addEventListener('click', () => openReplayModal(replay.id));
         listEl.appendChild(card);
       });
     } catch {
@@ -130,4 +215,385 @@ const t = useTranslations(lang);
   }
 
   loadReplays();
+
+  // ── Replay modal ───────────────────────────────────────────────────────────
+
+  const modal = document.getElementById('replay-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const modalMeta = document.getElementById('modal-meta');
+  const modalClose = document.getElementById('modal-close');
+  const playersEl = document.getElementById('replay-players');
+  const loadingTextEl = document.getElementById('replay-loading-text');
+  const frameInfoEl = document.getElementById('replay-frame-info');
+  const actionTextEl = document.getElementById('replay-action-text');
+  const progressEl = document.getElementById('replay-progress');
+  const timelineEl = document.getElementById('replay-timeline');
+  const prevBtn = document.getElementById('replay-prev');
+  const nextBtn = document.getElementById('replay-next');
+  const playBtn = document.getElementById('replay-play');
+  const speedEl = document.getElementById('replay-speed');
+
+  const viewsEl = document.getElementById('modal-views');
+  const likeBtn = document.getElementById('modal-like-btn');
+  const likeIcon = document.getElementById('modal-like-icon');
+  const likeCountEl = document.getElementById('modal-like-count');
+  const favBtn = document.getElementById('modal-fav-btn');
+  const favIcon = document.getElementById('modal-fav-icon');
+  const favCountEl = document.getElementById('modal-fav-count');
+
+  let replayData = null;
+  let actions = [];
+  let currentFrame = 0;
+  let isPlaying = false;
+  let playInterval = null;
+  let playSpeed = 1500;
+  let isModalOpen = false;
+  let currentGameId = null;
+  let isLiked = false;
+  let isFavorited = false;
+
+  function getToken() { return localStorage.getItem('token'); }
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function buildStateAtFrame(frame) {
+    if (!replayData) return null;
+    const players = replayData.players.map(p => ({
+      id: p.botId || p.userId,
+      username: p.username,
+      avatarUrl: p.avatarUrl,
+      role: p.role,
+      hp: p.startHP,
+      maxHp: p.startHP,
+      cards: [],
+      isJailed: false,
+      isDead: false,
+      isRevealed: false,
+      isConfirmedAgent: false,
+    }));
+    const findPlayer = (id) => players.find(p => p.id === id);
+
+    for (let i = 0; i <= frame && i < actions.length; i++) {
+      const action = actions[i];
+      const payload = typeof action.payload === 'string' ? JSON.parse(action.payload || '{}') : (action.payload || {});
+      const actor = findPlayer(action.actorId);
+      const target = action.targetId ? findPlayer(action.targetId) : null;
+
+      switch (action.actionType) {
+        case 'draw':
+          if (actor && payload.cards) actor.cards.push(...payload.cards);
+          break;
+        case 'game_action':
+          if (actor && payload.card) {
+            const idx = actor.cards.indexOf(payload.card);
+            if (idx >= 0) actor.cards.splice(idx, 1);
+          }
+          if (target && payload.targetHP !== undefined) target.hp = payload.targetHP;
+          if (target && payload.revealedRole) {
+            if (payload.revealedRole === 'agent') target.isConfirmedAgent = true;
+            else target.isRevealed = true;
+          }
+          if (target && payload.card === 'jail') target.isJailed = true;
+          break;
+        case 'death':
+          if (target) { target.isDead = true; target.isRevealed = true; }
+          break;
+        case 'kill_reward':
+          if (actor && payload.hp !== undefined) actor.hp = payload.hp;
+          break;
+        case 'friendly_fire_jail':
+          if (actor) actor.isJailed = true;
+          break;
+        case 'overflow_discard':
+          if (actor && payload.discarded) {
+            for (const c of payload.discarded) {
+              const idx = actor.cards.indexOf(c);
+              if (idx >= 0) actor.cards.splice(idx, 1);
+            }
+          }
+          break;
+      }
+    }
+    return { players, turn: actions[frame]?.turn || 1 };
+  }
+
+  function renderReplayPlayers(state, currentAction) {
+    if (!state) return;
+    playersEl.innerHTML = '';
+    const players = state.players;
+    const count = players.length;
+    const cx = playersEl.clientWidth / 2;
+    const cy = playersEl.clientHeight / 2;
+    const rx = Math.min(cx - 50, 220);
+    const ry = Math.min(cy - 40, 140);
+
+    const chatPayload = currentAction?.actionType === 'game_chat'
+      ? (typeof currentAction.payload === 'string' ? JSON.parse(currentAction.payload || '{}') : (currentAction.payload || {}))
+      : null;
+    const chatActorId = chatPayload ? currentAction.actorId : null;
+
+    players.forEach((p, i) => {
+      const angle = (2 * Math.PI * i / count) - Math.PI / 2;
+      const x = cx + rx * Math.cos(angle) - 36;
+      const y = cy + ry * Math.sin(angle) - 36;
+
+      const borderColor = p.isDead ? (p.role === 'spy' ? 'border-red-500' : 'border-blue-400') :
+                          p.isRevealed ? 'border-red-500' :
+                          p.isConfirmedAgent ? 'border-blue-400' : 'border-white/20';
+
+      const badge = p.isDead ? (p.role === 'spy'
+          ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Red%20Circle.png" alt="Red Circle" class="inline-block w-4 h-4" />'
+          : '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" alt="Shield" class="inline-block w-4 h-4" />')
+        : p.isRevealed
+          ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Red%20Circle.png" alt="Red Circle" class="inline-block w-4 h-4" />'
+          : p.isConfirmedAgent
+            ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Shield.png" alt="Shield" class="inline-block w-4 h-4" />'
+            : '';
+
+      const el = document.createElement('div');
+      el.className = 'absolute flex flex-col items-center gap-0.5';
+      el.style.left = `${x}px`;
+      el.style.top = `${y}px`;
+      el.style.width = '72px';
+
+      let hpPips = '';
+      for (let h = 0; h < p.maxHp; h++) {
+        hpPips += `<span class="w-2 h-2 rounded-full ${h < p.hp ? 'bg-red-500' : 'bg-white/20'}"></span>`;
+      }
+
+      el.innerHTML = `
+        <div class="relative">
+          <img src="${p.avatarUrl || characterSrc}" alt="${p.username}"
+            class="w-12 h-12 rounded-full object-cover border-2 ${borderColor} ${p.isDead ? 'opacity-40 grayscale' : ''}"
+            onerror="this.src='${characterSrc}'" />
+          ${badge ? `<span class="absolute -top-1 -right-1 text-xs">${badge}</span>` : ''}
+          ${p.isJailed ? `<img src="${jailSrc}" class="absolute inset-0 w-12 h-12 opacity-60" />` : ''}
+        </div>
+        <p class="text-xs truncate w-full text-center text-white/70 ${p.isDead ? 'opacity-40' : ''}">${p.username}</p>
+        <div class="flex gap-0.5">${hpPips}</div>
+        <p class="text-xs ${p.role === 'spy' ? 'text-red-400' : 'text-blue-400'}">${p.role === 'spy' ? 'Spy' : 'Agent'}</p>
+      `;
+      playersEl.appendChild(el);
+
+      // Speech bubble for chat
+      if (p.id === chatActorId && chatPayload?.message) {
+        const bubble = document.createElement('div');
+        bubble.className = 'absolute pointer-events-none z-10';
+        bubble.style.left = `${x + 36}px`;
+        bubble.style.top = `${y - 8}px`;
+        bubble.style.transform = 'translate(-50%, -100%)';
+        bubble.style.maxWidth = '140px';
+        bubble.innerHTML = `
+          <div style="position:relative;background:white;color:#111827;font-size:0.7rem;line-height:1.4;padding:0.4rem 0.55rem;border-radius:0.6rem;word-break:break-word;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.4);">
+            ${escapeHtml(chatPayload.message)}
+            <div style="position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid white;"></div>
+          </div>
+        `;
+        playersEl.appendChild(bubble);
+      }
+    });
+  }
+
+  function getActionDescription(action) {
+    const payload = typeof action.payload === 'string' ? JSON.parse(action.payload || '{}') : (action.payload || {});
+    const actorName = replayData?.players.find(p => (p.botId || p.userId) === action.actorId)?.username || action.actorId;
+    const targetName = action.targetId ? (replayData?.players.find(p => (p.botId || p.userId) === action.targetId)?.username || action.targetId) : '';
+
+    switch (action.actionType) {
+      case 'draw': return `${actorName} ${tDrew} (${payload.count || 0})`;
+      case 'game_action':
+        if (payload.card === 'attack') return `${actorName} → ${targetName} ${tAttacked} (HP: ${payload.targetHP})`;
+        if (payload.card === 'heal') return `${actorName} → ${targetName} ${tHealed} (HP: ${payload.targetHP})`;
+        if (payload.card === 'jail') return `${actorName} → ${targetName} ${tJailed}`;
+        if (payload.card === 'inspect') return `${actorName} → ${targetName} ${tInspected} → ${payload.revealedRole}`;
+        if (payload.card === 'reveal') return `${actorName} ${tRevealed}: ${payload.role}`;
+        return `${actorName} → ${payload.card || '?'}`;
+      case 'death': return `${targetName} ${tKilled} ${actorName} (${payload.role})`;
+      case 'kill_reward': return `${actorName} ${tKillReward}`;
+      case 'friendly_fire_jail': return `${actorName} ${tFriendlyFire}`;
+      case 'turn_start': return `--- ${tTurnStarted} ${payload.turnCount} ---`;
+      case 'end_turn': return `${actorName} ${tTurnEnded}`;
+      case 'timeout': return `${actorName} ${tTimedOut}`;
+      case 'game_end': return `${tGameOver}: ${payload.result}`;
+      case 'game_chat': return `[${tChatMessage}] ${payload.username}: ${payload.message}`;
+      case 'overflow_discard': return `${actorName} ${tOverflowDiscard}: ${(payload.discarded || []).join(', ')}`;
+      default: return `${action.actionType}`;
+    }
+  }
+
+  function goToFrame(frame) {
+    if (!actions.length) return;
+    currentFrame = Math.max(0, Math.min(frame, actions.length - 1));
+    const state = buildStateAtFrame(currentFrame);
+    const currentAction = actions[currentFrame];
+    renderReplayPlayers(state, currentAction);
+    frameInfoEl.textContent = `${currentFrame + 1} / ${actions.length}`;
+    progressEl.style.width = `${((currentFrame + 1) / actions.length) * 100}%`;
+    actionTextEl.textContent = getActionDescription(currentAction);
+  }
+
+  function stopPlay() {
+    isPlaying = false;
+    playBtn.textContent = '▶ Play';
+    if (playInterval) { clearInterval(playInterval); playInterval = null; }
+  }
+
+  function startPlay() {
+    if (!actions.length) return;
+    if (currentFrame >= actions.length - 1) goToFrame(0);
+    isPlaying = true;
+    playBtn.textContent = '⏸ Pause';
+    playInterval = setInterval(() => {
+      if (currentFrame >= actions.length - 1) { stopPlay(); return; }
+      goToFrame(currentFrame + 1);
+    }, playSpeed);
+  }
+
+  function updateLikeUI() {
+    likeIcon.innerHTML = isLiked
+      ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" alt="Heart" class="inline-block w-4 h-4" />'
+      : '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/White%20Heart.png" alt="Heart" class="inline-block w-4 h-4" />';
+    likeBtn.className = `flex items-center gap-1 text-sm transition ${isLiked ? 'text-red-400' : 'text-white/40 hover:text-red-400'}`;
+  }
+
+  function updateFavUI() {
+    favIcon.innerHTML = isFavorited
+      ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" alt="Star" class="inline-block w-4 h-4" />'
+      : '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Star.png" alt="Star" class="inline-block w-4 h-4" />';
+    favBtn.className = `flex items-center gap-1 text-sm transition ${isFavorited ? 'text-amber-400' : 'text-white/40 hover:text-amber-400'}`;
+  }
+
+  function updateCounts(data) {
+    viewsEl.innerHTML = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> ' + (data.viewCount || 0);
+    likeCountEl.textContent = String(data.likeCount || 0);
+    favCountEl.textContent = String(data.favoriteCount || 0);
+    isLiked = !!data.isLiked;
+    isFavorited = !!data.isFavorited;
+    updateLikeUI();
+    updateFavUI();
+    // Hide like/fav buttons for guests
+    const loggedIn = !!getToken();
+    likeBtn.classList.toggle('hidden', !loggedIn);
+    favBtn.classList.toggle('hidden', !loggedIn);
+  }
+
+  async function openReplayModal(gameId) {
+    // Reset state
+    stopPlay();
+    replayData = null;
+    actions = [];
+    currentFrame = 0;
+    currentGameId = gameId;
+    progressEl.style.width = '0%';
+    frameInfoEl.textContent = '';
+    actionTextEl.textContent = '';
+    modalTitle.textContent = '';
+    modalMeta.textContent = '';
+    playersEl.innerHTML = `<p class="text-white/30 text-sm">${loadingTextEl?.textContent || '...'}</p>`;
+
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    isModalOpen = true;
+
+    // Track view
+    fetch(`${apiUrl}/api/replays/${gameId}/view`, { method: 'POST' }).catch(() => null);
+
+    const [metaRes, actionsRes] = await Promise.all([
+      fetch(`${apiUrl}/api/replays/${gameId}`),
+      fetch(`${apiUrl}/api/replays/${gameId}/actions`),
+    ]);
+
+    if (!metaRes.ok || !actionsRes.ok) {
+      playersEl.innerHTML = `<p class="text-red-400 text-sm">${tNotFound}</p>`;
+      return;
+    }
+
+    replayData = await metaRes.json();
+    actions = await actionsRes.json();
+
+    const result = replayData.result || '';
+    const resultLabel = resultLabels[result] || (result || tInProgress);
+    const resultColor = resultColors[result] || 'text-white/60';
+
+    modalTitle.innerHTML = `${replayData.title || 'Untitled'} <span class="font-normal ${resultColor} text-sm">${resultLabel}</span>`;
+    modalMeta.textContent = `${replayData.playerCount} ${tPlayers} · ${replayData.turnCount} ${tTurns}`;
+
+    updateCounts(replayData);
+
+    if (actions.length > 0) {
+      goToFrame(0);
+    } else {
+      playersEl.innerHTML = `<p class="text-white/30 text-sm">${tInProgress}</p>`;
+    }
+  }
+
+  function closeModal() {
+    stopPlay();
+    isModalOpen = false;
+    currentGameId = null;
+    modal.classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  modalClose.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  prevBtn.addEventListener('click', () => { stopPlay(); goToFrame(currentFrame - 1); });
+  nextBtn.addEventListener('click', () => { stopPlay(); goToFrame(currentFrame + 1); });
+  playBtn.addEventListener('click', () => { isPlaying ? stopPlay() : startPlay(); });
+
+  speedEl.addEventListener('change', () => {
+    playSpeed = parseInt(speedEl.value);
+    if (isPlaying) {
+      clearInterval(playInterval);
+      playInterval = setInterval(() => {
+        if (currentFrame >= actions.length - 1) { stopPlay(); return; }
+        goToFrame(currentFrame + 1);
+      }, playSpeed);
+    }
+  });
+
+  timelineEl.addEventListener('click', (e) => {
+    const rect = timelineEl.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    stopPlay();
+    goToFrame(Math.floor(pct * actions.length));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!isModalOpen) return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.code === 'Space') { e.preventDefault(); isPlaying ? stopPlay() : startPlay(); }
+    if (e.code === 'ArrowLeft') { e.preventDefault(); stopPlay(); goToFrame(currentFrame - 1); }
+    if (e.code === 'ArrowRight') { e.preventDefault(); stopPlay(); goToFrame(currentFrame + 1); }
+    if (e.code === 'Escape') closeModal();
+  });
+
+  likeBtn.addEventListener('click', async () => {
+    const token = getToken();
+    if (!token || !currentGameId) return;
+    await fetch(`${apiUrl}/api/replays/${currentGameId}/like`, {
+      method: isLiked ? 'DELETE' : 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    isLiked = !isLiked;
+    likeCountEl.textContent = String(parseInt(likeCountEl.textContent) + (isLiked ? 1 : -1));
+    updateLikeUI();
+  });
+
+  favBtn.addEventListener('click', async () => {
+    const token = getToken();
+    if (!token || !currentGameId) return;
+    await fetch(`${apiUrl}/api/replays/${currentGameId}/favorite`, {
+      method: isFavorited ? 'DELETE' : 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    isFavorited = !isFavorited;
+    favCountEl.textContent = String(parseInt(favCountEl.textContent) + (isFavorited ? 1 : -1));
+    updateFavUI();
+  });
 </script>
