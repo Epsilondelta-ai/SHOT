@@ -94,7 +94,7 @@ func BotSSE(c *fiber.Ctx) error {
 		AvatarURL: bot.AvatarURL,
 		RoomID:    roomID,
 	}
-	hub.H.Register(client)
+	hub.H.RegisterAndReplaceLocal(client)
 
 	// Mark bot online
 	SetBotOnline(bot.ID)

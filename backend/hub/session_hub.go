@@ -62,26 +62,21 @@ func (h *SessionHub) closeLocalSession(userID string) {
 }
 
 func (h *SessionHub) Register(userID string, ch chan []byte) {
-	// Close existing local session (same server, different tab)
+	// Atomically swap old session with new one to avoid a race window
+	// where a concurrent Register could overwrite the new channel.
 	h.mu.Lock()
-	if old, ok := h.users[userID]; ok {
-		delete(h.users, userID)
-		h.mu.Unlock()
+	old := h.users[userID]
+	h.users[userID] = ch
+	h.mu.Unlock()
+
+	if old != nil {
 		data, _ := json.Marshal(map[string]string{"type": "session_replaced"})
 		select {
 		case old <- data:
 		default:
 		}
 		close(old)
-	} else {
-		h.mu.Unlock()
 	}
-
-	// Register new session before publishing so the local subscriber
-	// (which ignores our own publish) doesn't need to handle this case.
-	h.mu.Lock()
-	h.users[userID] = ch
-	h.mu.Unlock()
 
 	// Publish instanceID as payload so other servers can close stale sessions,
 	// while this server ignores the message (payload == instanceID).
