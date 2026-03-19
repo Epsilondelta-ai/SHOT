@@ -260,6 +260,13 @@ func InviteBot(c *fiber.Ctx) error {
 	}
 	db.DB.Create(&botMember)
 	broadcastRoomUpdate(roomID)
+
+	// Notify the bot's SSE connection so it can join the room hub
+	hub.H.PublishBotEvent(body.BotID, map[string]any{
+		"type":   "invited_to_room",
+		"roomId": roomID,
+	})
+
 	return c.JSON(fiber.Map{"ok": true})
 }
 
@@ -402,6 +409,12 @@ func KickFromRoom(c *fiber.Ctx) error {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "forbidden"})
 		}
 		db.DB.Where("room_id = ? AND bot_id = ?", roomID, body.BotID).Delete(&models.RoomMember{})
+
+		// Notify the bot's SSE connection so it can leave the room hub
+		hub.H.PublishBotEvent(body.BotID, map[string]any{
+			"type":   "kicked_from_room",
+			"roomId": roomID,
+		})
 	} else if body.TargetUserID != "" && body.TargetUserID != userID {
 		if room.HostID != userID {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "host only"})

@@ -35,7 +35,11 @@ type ctrlMsg struct {
 type Hub struct {
 	mu    sync.RWMutex
 	rooms map[string]map[*Client]bool
-	rdb   *redis.Client
+
+	botsMu sync.RWMutex
+	bots   map[string]*Client // botID -> client
+
+	rdb *redis.Client
 }
 
 var H *Hub
@@ -43,12 +47,13 @@ var H *Hub
 func NewHub(rdb *redis.Client) *Hub {
 	return &Hub{
 		rooms: make(map[string]map[*Client]bool),
+		bots:  make(map[string]*Client),
 		rdb:   rdb,
 	}
 }
 
 func (h *Hub) Start() {
-	pubsub := h.rdb.PSubscribe(ctx, "room:msg:*", "room:ctrl:*")
+	pubsub := h.rdb.PSubscribe(ctx, "room:msg:*", "room:ctrl:*", "bot:events:*")
 	go func() {
 		for msg := range pubsub.Channel() {
 			h.routeRedisMessage(msg)
@@ -68,6 +73,9 @@ func (h *Hub) routeRedisMessage(msg *redis.Message) {
 			return
 		}
 		h.controlLocalClient(roomID, ctrl)
+	case len(msg.Channel) > 12 && msg.Channel[:12] == "bot:events:":
+		botID := msg.Channel[12:]
+		h.sendToBotClient(botID, []byte(msg.Payload))
 	}
 }
 
@@ -209,4 +217,36 @@ func (h *Hub) CloseClient(roomID, userID string, replaced bool) {
 	}
 	payload, _ := json.Marshal(ctrlMsg{UserID: userID, EventType: eventType})
 	h.rdb.Publish(ctx, "room:ctrl:"+roomID, payload)
+}
+
+// RegisterBot registers a bot client for receiving personal events via bot:events:{botID}.
+func (h *Hub) RegisterBot(botID string, c *Client) {
+	h.botsMu.Lock()
+	h.bots[botID] = c
+	h.botsMu.Unlock()
+}
+
+// UnregisterBot removes a bot client from the personal event registry.
+func (h *Hub) UnregisterBot(botID string) {
+	h.botsMu.Lock()
+	delete(h.bots, botID)
+	h.botsMu.Unlock()
+}
+
+func (h *Hub) sendToBotClient(botID string, data []byte) {
+	h.botsMu.RLock()
+	c := h.bots[botID]
+	h.botsMu.RUnlock()
+	if c != nil {
+		select {
+		case c.Ch <- data:
+		default:
+		}
+	}
+}
+
+// PublishBotEvent publishes an event to a bot's personal channel.
+func (h *Hub) PublishBotEvent(botID string, event any) {
+	data, _ := json.Marshal(event)
+	h.rdb.Publish(ctx, "bot:events:"+botID, data)
 }

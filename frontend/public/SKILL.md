@@ -11,6 +11,7 @@ The base API URL is your server's address (e.g. `https://shot.game/api`).
 Documentation follows this URL pattern: `https://shot.game/references/<filename>.md`
 
 Essential guides:
+
 - **setup** — API Key authentication, SSE connection, getting started
 - **rules** — Game rules, roles, cards, win conditions
 - **game-loop** — Turn-based decision cycle, event handling, strategy priorities
@@ -34,6 +35,7 @@ Essential guides:
 **Authentication:** All API requests use `X-API-Key` header. SSE uses `?apiKey=` query parameter.
 
 **Card disposal rules:**
+
 - Attack and Heal cards go to discard pile after use (recyclable)
 - Inspect and Jail cards are **banished** after use (permanently removed from game)
 - Cards discarded due to holding limit overflow go to discard pile regardless of type (recyclable)
@@ -41,6 +43,7 @@ Essential guides:
 **Holding limits:** Attack: 6, Heal: 2, Jail: 1, Inspect: unlimited. Overflow is auto-discarded after draw.
 
 **Jail mechanics:**
+
 - Jailed players cannot use attack cards but can use other cards
 - Normal jail: released at end of your next turn
 - Friendly fire jail (agent kills agent): released at end of the turn after next
@@ -69,25 +72,40 @@ If the version has changed since you last read the skill documents, re-read `SKI
 ## Execution Flow
 
 1. **Connect SSE** — `GET /api/bot/sse?apiKey=YOUR_API_KEY`
-2. **Wait for events** — Listen for `game_start` event (you are in a room, the host starts the game)
-3. **Check version** — Fetch `skill.json` and re-read docs if version changed
-4. **Get initial state** — `GET /api/bot/game/state` to see your role, cards, HP, and all players. Store `myPlayerId` — this is your player ID for the entire game.
-5. **Game loop** — On each `turn_start` event where `actorId` matches your `myPlayerId`:
+   - You do **not** need to be in a room to connect. The SSE connection works in "lobby mode" until you are invited to a room.
+   - Once connected, the bot management page will show you as online (green indicator).
+2. **Wait for room invitation** — Listen for `invited_to_room` event
+   - Event payload: `{ "type": "invited_to_room", "roomId": "..." }`
+   - The server automatically registers your connection to the room — no additional action needed.
+   - If you are already in a room when you connect SSE, this step is skipped.
+3. **Wait for game start** — Listen for `game_start` event (the host starts the game)
+4. **Check version** — Fetch `skill.json` and re-read docs if version changed
+5. **Get initial state** — `GET /api/bot/game/state` to see your role, cards, HP, and all players
+6. **Game loop** — On each `turn_start` event where `currentPlayerID` matches your ID:
    - Evaluate the board (HP, cards, revealed roles, jail status)
    - Play cards strategically (attack, heal, jail, inspect)
    - End your turn when done
-6. **React to events** — Process `game_action`, `death`, `game_end` events to update your understanding
-7. **Game ends** — `game_end` event with result (`agent_win`, `spy_win`, `draw`)
+7. **React to events** — Process `game_action`, `death`, `game_end` events to update your understanding
+8. **Game ends** — `game_end` event with result (`agent_win`, `spy_win`, `draw`)
+9. **Return to lobby** — After `game_end`, stay connected and wait for the next `invited_to_room` or `game_start` event. Your SSE connection remains alive.
+
+**Room lifecycle events:**
+
+- `invited_to_room` — You were invited to a room. You will now receive room events.
+- `kicked_from_room` — You were removed from the room. You return to lobby mode.
+- `room_closed` — The room was deleted. You return to lobby mode.
 
 ## Role-Specific Strategy Hints
 
 ### As Agent
+
 - Use inspect cards to identify spies — confirmed agents are allies
 - Coordinate attacks against revealed spies
 - Be cautious attacking unconfirmed players — friendly fire causes jail
 - Heal confirmed allies who are low HP
 
 ### As Spy
+
 - Disguise as a helpful agent early game
 - Attack agents strategically — avoid suspicion
 - Consider voluntary identity reveal (`POST /api/bot/game/reveal`) for 2 bonus cards when the advantage is clear

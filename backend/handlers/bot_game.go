@@ -3,6 +3,7 @@ package handlers
 import (
 	"bufio"
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -68,7 +69,10 @@ func IsBotOnline(botID string) bool {
 	return err == nil && val > 0
 }
 
-// BotSSE GET /api/bot/sse — SSE connection for bots
+// BotSSE GET /api/bot/sse — SSE connection for bots.
+// Bots can connect without being in a room (lobby mode).
+// When invited to a room, the bot receives an "invited_to_room" event
+// and is automatically registered to the room's hub for game events.
 func BotSSE(c *fiber.Ctx) error {
 	apiKey := c.Query("apiKey")
 	if apiKey == "" {
@@ -79,26 +83,25 @@ func BotSSE(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).SendString("unauthorized")
 	}
 
-	// Find bot's room
-	var member models.RoomMember
-	if err := db.DB.Where("bot_id = ?", bot.ID).First(&member).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).SendString("bot not in any room")
-	}
-
-	roomID := member.RoomID
-
 	client := &hub.Client{
 		Ch:        make(chan []byte, 64),
 		UserID:    bot.UserID, // owner ID
 		Username:  bot.Name,
 		AvatarURL: bot.AvatarURL,
-		RoomID:    roomID,
 	}
-	hub.H.RegisterAndReplaceLocal(client)
 
-	// Mark bot online and notify room
+	// Register bot for personal events (bot:events:{botID})
+	hub.H.RegisterBot(bot.ID, client)
+
+	// If bot is already in a room, register to that room's hub
+	var member models.RoomMember
+	if err := db.DB.Where("bot_id = ?", bot.ID).First(&member).Error; err == nil {
+		client.RoomID = member.RoomID
+		hub.H.Register(client)
+		broadcastRoomUpdate(member.RoomID)
+	}
+
 	SetBotOnline(bot.ID)
-	broadcastRoomUpdate(roomID)
 
 	c.Set("Content-Type", "text/event-stream")
 	c.Set("Cache-Control", "no-cache")
@@ -107,15 +110,17 @@ func BotSSE(c *fiber.Ctx) error {
 
 	c.Context().SetBodyStreamWriter(func(w *bufio.Writer) {
 		defer func() {
-			hub.H.Unregister(client)
+			if client.RoomID != "" {
+				hub.H.Unregister(client)
+				broadcastRoomUpdate(client.RoomID)
+			}
+			hub.H.UnregisterBot(bot.ID)
 			SetBotOffline(bot.ID)
-			broadcastRoomUpdate(roomID)
 		}()
 
 		ticker := time.NewTicker(15 * time.Second)
 		defer ticker.Stop()
 
-		// Heartbeat to keep online status alive
 		heartbeat := time.NewTicker(10 * time.Second)
 		defer heartbeat.Stop()
 
@@ -124,6 +129,27 @@ func BotSSE(c *fiber.Ctx) error {
 			case data, ok := <-client.Ch:
 				if !ok {
 					return
+				}
+				// Handle room switching based on event type
+				var envelope struct {
+					Type   string `json:"type"`
+					RoomID string `json:"roomId,omitempty"`
+				}
+				if json.Unmarshal(data, &envelope) == nil {
+					switch envelope.Type {
+					case "invited_to_room":
+						if client.RoomID != "" {
+							hub.H.Unregister(client)
+						}
+						client.RoomID = envelope.RoomID
+						hub.H.Register(client)
+						broadcastRoomUpdate(envelope.RoomID)
+					case "kicked_from_room", "room_closed":
+						if client.RoomID != "" {
+							hub.H.Unregister(client)
+							client.RoomID = ""
+						}
+					}
 				}
 				fmt.Fprintf(w, "data: %s\n\n", data)
 				if err := w.Flush(); err != nil {
