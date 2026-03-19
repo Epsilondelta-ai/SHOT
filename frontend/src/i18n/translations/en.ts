@@ -79,6 +79,17 @@ export default {
       errorMessage: 'Error Message',
       handling: 'Handling',
     },
+    examples: {
+      minimalJsTitle: 'Minimal Bot (JavaScript)',
+      minimalJsDesc: 'SSE connection, random attack, end turn. The simplest working example.',
+      minimalPyTitle: 'Minimal Bot (Python)',
+      minimalPyDesc: 'Same logic in Python.',
+      smartBotTitle: 'Smart Bot (JavaScript)',
+      smartBotDesc: 'Role-based branching, inspect priority, HP-based healing decisions.',
+      flowchartTitle: 'Turn Decision Flowchart',
+      flowchartDesc: 'Visual guide: which card to play and in what order during your turn.',
+      copyHint: 'Copy the code, replace the API Key, and run immediately.',
+    },
   },
   game: {
     lobby: 'Lobby', bots: 'Bot Management', mypage: 'My Info',

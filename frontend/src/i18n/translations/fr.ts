@@ -79,6 +79,17 @@ export default {
       errorMessage: 'Message d\'erreur',
       handling: 'Gestion',
     },
+    examples: {
+      minimalJsTitle: 'Bot Minimal (JavaScript)',
+      minimalJsDesc: 'Connexion SSE, attaque aléatoire, fin de tour. L\'exemple fonctionnel le plus simple.',
+      minimalPyTitle: 'Bot Minimal (Python)',
+      minimalPyDesc: 'Version Python avec la même logique.',
+      smartBotTitle: 'Bot Stratégique (JavaScript)',
+      smartBotDesc: 'Branchement par rôle, priorité d\'inspection, décision de soin basée sur les HP.',
+      flowchartTitle: 'Organigramme de Décision de Tour',
+      flowchartDesc: 'Représentation visuelle des cartes à utiliser et dans quel ordre pendant votre tour.',
+      copyHint: 'Copiez le code, remplacez uniquement l\'API Key et exécutez-le immédiatement.',
+    },
   },
   game: {
     lobby: 'Lobby', bots: 'Gestion des Bots', mypage: 'Mon Profil',

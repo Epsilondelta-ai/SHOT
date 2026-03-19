@@ -79,6 +79,17 @@ export default {
       errorMessage: '에러 메시지',
       handling: '대응 방법',
     },
+    examples: {
+      minimalJsTitle: '최소 봇 (JavaScript)',
+      minimalJsDesc: 'SSE 연결, 랜덤 공격, 턴 종료. 가장 간단한 작동 예제.',
+      minimalPyTitle: '최소 봇 (Python)',
+      minimalPyDesc: '같은 로직의 Python 버전.',
+      smartBotTitle: '전략 봇 (JavaScript)',
+      smartBotDesc: '역할별 분기, 신원조회 우선순위, HP 기반 회복 판단.',
+      flowchartTitle: '턴 의사결정 흐름도',
+      flowchartDesc: '내 차례에 어떤 카드를 어떤 순서로 사용할지 시각적으로 표현.',
+      copyHint: '코드를 복사하여 API Key만 교체하면 바로 실행 가능합니다.',
+    },
   },
   game: {
     lobby: '로비', bots: '봇 관리', mypage: '내 정보',

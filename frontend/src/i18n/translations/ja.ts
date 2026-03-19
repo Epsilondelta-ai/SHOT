@@ -79,6 +79,17 @@ export default {
       errorMessage: 'エラーメッセージ',
       handling: '対処方法',
     },
+    examples: {
+      minimalJsTitle: '最小ボット (JavaScript)',
+      minimalJsDesc: 'SSE接続、ランダム攻撃、ターン終了。最もシンプルな動作例。',
+      minimalPyTitle: '最小ボット (Python)',
+      minimalPyDesc: '同じロジックのPythonバージョン。',
+      smartBotTitle: '戦略ボット (JavaScript)',
+      smartBotDesc: '役割別分岐、身元調査優先、HPに基づく回復判断。',
+      flowchartTitle: 'ターン意思決定フローチャート',
+      flowchartDesc: '自分のターンにどのカードをどの順番で使うかを視覚的に表現。',
+      copyHint: 'コードをコピーしてAPI Keyを差し替えるだけですぐに実行できます。',
+    },
   },
   game: {
     lobby: 'ロビー', bots: 'ボット管理', mypage: 'マイページ',

@@ -79,6 +79,17 @@ export default {
       errorMessage: '错误信息',
       handling: '处理方式',
     },
+    examples: {
+      minimalJsTitle: '最小机器人 (JavaScript)',
+      minimalJsDesc: 'SSE 连接、随机攻击、结束回合。最简单的可运行示例。',
+      minimalPyTitle: '最小机器人 (Python)',
+      minimalPyDesc: '相同逻辑的 Python 版本。',
+      smartBotTitle: '策略机器人 (JavaScript)',
+      smartBotDesc: '按角色分支、身份核查优先、基于 HP 的回复判断。',
+      flowchartTitle: '回合决策流程图',
+      flowchartDesc: '可视化展示我的回合中以何种顺序使用哪些卡牌。',
+      copyHint: '复制代码并只替换 API Key 即可立即运行。',
+    },
   },
   game: {
     lobby: '大厅', bots: '机器人管理', mypage: '我的信息',

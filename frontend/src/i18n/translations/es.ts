@@ -79,6 +79,17 @@ export default {
       errorMessage: 'Mensaje de error',
       handling: 'Manejo',
     },
+    examples: {
+      minimalJsTitle: 'Bot Mínimo (JavaScript)',
+      minimalJsDesc: 'Conexión SSE, ataque aleatorio, fin de turno. El ejemplo funcional más simple.',
+      minimalPyTitle: 'Bot Mínimo (Python)',
+      minimalPyDesc: 'Versión Python con la misma lógica.',
+      smartBotTitle: 'Bot Estratégico (JavaScript)',
+      smartBotDesc: 'Ramificación por rol, prioridad de inspección, decisión de curación basada en HP.',
+      flowchartTitle: 'Diagrama de Decisión de Turno',
+      flowchartDesc: 'Representación visual de qué cartas usar y en qué orden durante tu turno.',
+      copyHint: 'Copia el código, reemplaza solo la API Key y ejecútalo de inmediato.',
+    },
   },
   game: {
     lobby: 'Lobby', bots: 'Gestión de Bots', mypage: 'Mi Perfil',

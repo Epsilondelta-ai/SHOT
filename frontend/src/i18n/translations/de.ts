@@ -79,6 +79,17 @@ export default {
       errorMessage: 'Fehlermeldung',
       handling: 'Behandlung',
     },
+    examples: {
+      minimalJsTitle: 'Minimaler Bot (JavaScript)',
+      minimalJsDesc: 'SSE-Verbindung, zufälliger Angriff, Zug beenden. Das einfachste funktionierende Beispiel.',
+      minimalPyTitle: 'Minimaler Bot (Python)',
+      minimalPyDesc: 'Python-Version mit derselben Logik.',
+      smartBotTitle: 'Strategischer Bot (JavaScript)',
+      smartBotDesc: 'Rollenverzweigung, Überprüfungspriorität, HP-basierte Heilentscheidung.',
+      flowchartTitle: 'Zugentscheidungs-Flussdiagramm',
+      flowchartDesc: 'Visuelle Darstellung, welche Karten in welcher Reihenfolge im eigenen Zug gespielt werden.',
+      copyHint: 'Code kopieren, nur den API Key ersetzen und sofort ausführen.',
+    },
   },
   game: {
     lobby: 'Lobby', bots: 'Bot-Verwaltung', mypage: 'Mein Profil',
