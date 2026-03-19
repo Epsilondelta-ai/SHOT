@@ -75,12 +75,11 @@ const t = useTranslations(lang);
       });
       window.addEventListener('beforeunload', () => sessionEs.close());
 
-      // Get current user ID for game events
-      let currentUserId = null;
-      fetch(`${apiUrl}/api/me`, { headers: { Authorization: `Bearer ${token}` } })
+      // Get current user ID for game events — store as promise to avoid race condition
+      const currentUserIdPromise = fetch(`${apiUrl}/api/me`, { headers: { Authorization: `Bearer ${token}` } })
         .then(res => res.ok ? res.json() : null)
-        .then(user => { if (user) currentUserId = user.id; })
-        .catch(() => {});
+        .then(user => user?.id ?? null)
+        .catch(() => null);
 
       // Listen for SSE game events and forward to GamePlayScene
       document.addEventListener('room:sse:game', (e) => {
@@ -107,12 +106,12 @@ const t = useTranslations(lang);
       document.addEventListener('room:sse:game_start', (e) => {
         const { gameId } = e.detail;
         showLoadingScreen();
-        setTimeout(() => {
+        currentUserIdPromise.then(userId => {
           document.dispatchEvent(new CustomEvent('game:start', {
-            detail: { gameId, userId: currentUserId }
+            detail: { gameId, userId }
           }));
           hideLoadingScreen();
-        }, 1000);
+        });
       });
 
       // Restore previous room session if the user was already in a room
@@ -124,12 +123,12 @@ const t = useTranslations(lang);
               // Reconnect directly to active game with loading screen
               showLoadingScreen();
               document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
-              setTimeout(() => {
+              currentUserIdPromise.then(userId => {
                 document.dispatchEvent(new CustomEvent('game:start', {
-                  detail: { gameId: room.gameId, userId: currentUserId }
+                  detail: { gameId: room.gameId, userId }
                 }));
                 hideLoadingScreen();
-              }, 1000);
+              });
             } else {
               document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
             }

@@ -42,7 +42,7 @@ func (tm *TimerManager) StartTimer(gameID, roomID string, deadline int64) {
 	}
 
 	tm.timers[gameID] = time.AfterFunc(duration, func() {
-		tm.handleTimeout(gameID, roomID)
+		tm.handleTimeout(gameID, roomID, deadline)
 	})
 }
 
@@ -62,7 +62,7 @@ func (tm *TimerManager) ResetTimer(gameID, roomID string, deadline int64) {
 	tm.StartTimer(gameID, roomID, deadline)
 }
 
-func (tm *TimerManager) handleTimeout(gameID, roomID string) {
+func (tm *TimerManager) handleTimeout(gameID, roomID string, expectedDeadline int64) {
 	tm.mu.Lock()
 	delete(tm.timers, gameID)
 	tm.mu.Unlock()
@@ -74,6 +74,11 @@ func (tm *TimerManager) handleTimeout(gameID, roomID string) {
 	}
 
 	if state.Status != "playing" {
+		return
+	}
+
+	// 턴이 이미 수동으로 종료된 경우(deadline이 변경됨) 중복 실행 방지
+	if state.TurnDeadline != expectedDeadline {
 		return
 	}
 

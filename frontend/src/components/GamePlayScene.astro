@@ -857,17 +857,22 @@ const t = useTranslations(lang);
   const sseDot = document.getElementById('gp-sse-dot');
 
   document.addEventListener('room:sse', (e) => {
-    if (!sseDot) return;
-    switch (e.detail) {
-      case 'connected':
-        sseDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-green-500';
-        break;
-      case 'reconnecting':
-        sseDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse';
-        break;
-      case 'disconnected':
-        sseDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-red-500';
-        break;
+    if (sseDot) {
+      switch (e.detail) {
+        case 'connected':
+          sseDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-green-500';
+          break;
+        case 'reconnecting':
+          sseDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse';
+          break;
+        case 'disconnected':
+          sseDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-red-500';
+          break;
+      }
+    }
+    // SSE 재연결 시 게임 상태 재동기화: 연결 중 놓친 이벤트를 만회
+    if (e.detail === 'connected' && gameState) {
+      scheduleStateReload();
     }
   });
 </script>
