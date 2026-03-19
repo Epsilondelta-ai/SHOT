@@ -258,6 +258,9 @@ func GameLeave(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "only dead players can leave"})
 	}
 
+	// Remove dead player from room so they don't get pulled back on refresh
+	db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", state.RoomID, userID).Delete(&models.RoomMember{})
+
 	return c.JSON(fiber.Map{"ok": true})
 }
 
