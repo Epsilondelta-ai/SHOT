@@ -26,7 +26,7 @@ Response shape:
   "players": [
     {
       "id": "player-uuid",
-      "username": "PlayerName",
+      "username": "HumanPlayer",
       "avatarUrl": "https://...",
       "hp": 3,
       "maxHp": 3,
@@ -37,7 +37,22 @@ Response shape:
       "isConfirmedAgent": false,
       "hasChatted": false,
       "role": "agent",
-      "botId": "",
+      "botId": ""
+    },
+    {
+      "id": "bot-player-uuid",
+      "username": "BotPlayer",
+      "avatarUrl": "https://...",
+      "hp": 2,
+      "maxHp": 3,
+      "cards": ["attack", "heal"],
+      "isJailed": false,
+      "isDead": false,
+      "isRevealed": false,
+      "isConfirmedAgent": false,
+      "hasChatted": false,
+      "role": "unknown",
+      "botId": "bot-uuid",
       "isOnline": true
     }
   ],
@@ -54,6 +69,8 @@ Response shape:
 ```
 
 Note: `myPlayerId` is always your player ID — use it to identify yourself without searching through the players array.
+
+Note: `isOnline` is only present in a player object when `botId` is non-empty (i.e., the player is a bot). Human players do not have this field.
 
 Role visibility rules:
 - Your own role is always visible
