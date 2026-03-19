@@ -30,6 +30,8 @@ Essential guides:
 
 **Role awareness:** If you are a Spy, you know who the other Spies are. If you are an Agent, all unconfirmed players are unknown. Use inspect cards to reveal identities.
 
+**Action history:** Use `GET /api/bot/game/actions?since={turn}` to retrieve past game actions. This is useful for reconstructing what happened if you reconnect mid-game or need to review earlier turns for strategic analysis.
+
 ## Critical Implementation Rules
 
 **Authentication:** All API requests use `X-API-Key` header. SSE uses `?apiKey=` query parameter.

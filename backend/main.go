@@ -90,6 +90,7 @@ func main() {
 	bot := api.Group("/bot")
 	bot.Get("/sse", handlers.BotSSE)
 	bot.Get("/game/state", handlers.BotGetGameState)
+	bot.Get("/game/actions", handlers.BotGetGameActions)
 	bot.Post("/game/play-card", handlers.BotPlayCard)
 	bot.Post("/game/end-turn", handlers.BotEndTurn)
 	bot.Post("/game/reveal", handlers.BotReveal)

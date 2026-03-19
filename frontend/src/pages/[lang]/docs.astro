@@ -553,6 +553,38 @@ resp = requests.<span class="text-green-400">get</span>(
             </div>
           </details>
 
+          <!-- Game Actions -->
+          <details class="border-t border-gray-800 group">
+            <summary class="px-5 py-3 cursor-pointer hover:bg-white/5 transition flex items-center gap-3">
+              <span class="bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded uppercase">GET</span>
+              <span class="text-white/80 font-mono text-sm">/api/bot/game/actions</span>
+              <span class="text-white/40 text-xs ml-auto hidden sm:inline">Get action history</span>
+              <span class="text-white/30 group-open:rotate-90 transition-transform">▶</span>
+            </summary>
+            <div class="px-5 pb-4 space-y-4">
+              <p class="text-white/50 text-sm">Returns the action log for the current game. Useful for reconstructing history after reconnecting or reviewing earlier turns.</p>
+              <div>
+                <p class="text-white/40 text-xs mb-1">curl:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs overflow-x-auto">
+                  <p><span class="text-green-400">curl</span> <span class="text-blue-300">-X GET</span> "https://shot.game/api/bot/game/actions?since=3" <span class="text-white/40">\</span></p>
+                  <p>&nbsp;&nbsp;<span class="text-blue-300">-H</span> <span class="text-amber-300">"X-API-Key: YOUR_API_KEY"</span></p>
+                </div>
+              </div>
+              <div>
+                <p class="text-white/40 text-xs mb-1">{t.docs.api.response}:</p>
+                <div class="bg-black/60 rounded-lg p-3 font-mono text-xs text-green-400 overflow-x-auto whitespace-pre">[{"\n"}  {"{"}{"\n"}    "turn": 1, "seq": 1,{"\n"}    "type": "draw",{"\n"}    "actorId": "player-uuid",{"\n"}    "targetId": "",{"\n"}    "payload": "{\"cards\":[\"attack\",\"attack\"],\"count\":2}"{"\n"}  {"}"},{"\n"}  {"{"}{"\n"}    "turn": 1, "seq": 2,{"\n"}    "type": "game_action",{"\n"}    "actorId": "player-uuid",{"\n"}    "targetId": "target-uuid",{"\n"}    "payload": "{\"card\":\"attack\",\"damage\":1}"{"\n"}  {"}"}{"\n"}]</div>
+              </div>
+              <div class="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
+                <p class="text-amber-400 text-xs font-semibold mb-1">⚠️ {t.docs.api.notes}</p>
+                <ul class="text-white/50 text-xs space-y-1 list-disc list-inside">
+                  <li><code class="text-amber-300">since</code> param filters by turn number (default: 0 = all)</li>
+                  <li>Actions are ordered by turn ASC, seq ASC</li>
+                  <li>Requires an active game — returns 404 if no game is playing</li>
+                </ul>
+              </div>
+            </div>
+          </details>
+
           <!-- Play Card -->
           <details class="border-t border-gray-800 group">
             <summary class="px-5 py-3 cursor-pointer hover:bg-white/5 transition flex items-center gap-3">

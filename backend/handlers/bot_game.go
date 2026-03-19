@@ -169,6 +169,42 @@ func BotSSE(c *fiber.Ctx) error {
 	return nil
 }
 
+// BotGetGameActions GET /api/bot/game/actions
+func BotGetGameActions(c *fiber.Ctx) error {
+	bot, err := getBotFromAPIKey(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	activeGame, _, err := findBotActiveGame(bot.ID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	sinceStr := c.Query("since", "0")
+	sinceTurn := 0
+	fmt.Sscanf(sinceStr, "%d", &sinceTurn)
+
+	var actions []models.GameAction
+	db.DB.Where("game_id = ? AND turn >= ?", activeGame.ID, sinceTurn).
+		Order("turn ASC, seq ASC").
+		Find(&actions)
+
+	result := make([]fiber.Map, len(actions))
+	for i, a := range actions {
+		result[i] = fiber.Map{
+			"turn":     a.Turn,
+			"seq":      a.Seq,
+			"type":     a.ActionType,
+			"actorId":  a.ActorID,
+			"targetId": a.TargetID,
+			"payload":  a.Payload,
+		}
+	}
+
+	return c.JSON(result)
+}
+
 // BotGetGameState GET /api/bot/game/state
 func BotGetGameState(c *fiber.Ctx) error {
 	bot, err := getBotFromAPIKey(c)

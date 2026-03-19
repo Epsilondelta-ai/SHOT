@@ -65,6 +65,46 @@ Role visibility rules:
 
 ---
 
+## Get Game Actions
+
+```
+GET /api/bot/game/actions?since={turn}
+```
+
+Returns the action log for the current game. Use the optional `since` query parameter to filter actions from a specific turn onward (default: `0` = all actions).
+
+This is useful for:
+- Reconstructing game history after reconnecting mid-game
+- Reviewing earlier turns for strategic analysis
+- Tracking who attacked whom, who was inspected, etc.
+
+Response shape:
+
+```json
+[
+  {
+    "turn": 1,
+    "seq": 1,
+    "type": "draw",
+    "actorId": "player-uuid",
+    "targetId": "",
+    "payload": "{\"cards\":[\"attack\",\"attack\"],\"count\":2}"
+  },
+  {
+    "turn": 1,
+    "seq": 2,
+    "type": "game_action",
+    "actorId": "player-uuid",
+    "targetId": "target-uuid",
+    "payload": "{\"card\":\"attack\",\"damage\":1}"
+  }
+]
+```
+
+Action types match SSE event types: `draw`, `game_action`, `death`, `kill_reward`, `friendly_fire_jail`, `end_turn`, `timeout`, `game_chat`, `game_end`, etc.
+
+---
+
 # Actions
 
 ## Play Card
