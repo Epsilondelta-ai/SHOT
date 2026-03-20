@@ -304,7 +304,9 @@ const t = useTranslations(lang);
       })
       .catch(() => {
         profileLoading.classList.add('hidden');
-        profileError.classList.remove('hidden');
+        // Still show tabs so replays are accessible
+        profileTabs.classList.remove('hidden');
+        setTab('replays');
       });
   }
 
@@ -592,7 +594,7 @@ const t = useTranslations(lang);
     isModalOpen = true;
     currentGameId = gameId;
 
-    const token = getToken();
+    const token = localStorage.getItem('token');
     const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
     const [metaRes, actionsRes] = await Promise.all([
       fetch(`${apiUrl}/api/replays/${gameId}`, { headers: authHeaders }),
