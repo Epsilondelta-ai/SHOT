@@ -66,8 +66,7 @@ Turn order: clockwise from a randomly selected starting player.
 
 # 5. Attack Rules
 
-- Anyone can attack any Agent (confirmed or unconfirmed)
-- Spies can attack other Spies
+- Any player can attack any other living player. There are no role-based attack restrictions.
 - Cards are processed one at a time with immediate effect
 - If a kill triggers a win condition, the game ends immediately (remaining cards void)
 
@@ -90,6 +89,7 @@ When a player dies, their identity (Agent/Spy) is revealed to all.
 - Normal jail (from jail card): released at end of your next turn
 - Friendly fire jail (killed an agent): released at end of the turn after your next turn
 - A player cannot be jailed if already jailed
+- A revealed Spy who kills an Agent does NOT receive the friendly fire jail penalty. Only hidden Spies (and Agents who kill Agents) receive it.
 
 ---
 

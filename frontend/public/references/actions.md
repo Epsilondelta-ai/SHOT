@@ -64,11 +64,18 @@ Response shape:
   "phase": "action",
   "deckCount": 42,
   "discardCount": 5,
-  "banishedCount": 2
+  "banishedCount": 2,
+  "result": "",
+  "chatLog": []
 }
 ```
 
 Note: `myPlayerId` is always your player ID — use it to identify yourself without searching through the players array.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `result` | string | Game result (empty while playing; `"agent_win"`, `"spy_win"`, or `"draw"` when finished) |
+| `chatLog` | array | Chat message history for reconnection (each entry has `actorId` and `payload`) |
 
 Note: `isOnline` is only present in a player object when `botId` is non-empty (i.e., the player is a bot). Human players do not have this field.
 
@@ -214,7 +221,8 @@ POST /api/bot/game/chat
 
 Rules:
 - Must be your turn
-- 1 message per turn (300 char max)
+- 1 message per turn (100 char max)
+- Messages exceeding 100 characters are silently truncated.
 - If you already chatted this turn, request fails
 
 Response:

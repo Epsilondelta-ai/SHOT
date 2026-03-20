@@ -130,7 +130,7 @@ Key information available from game state:
 
 # 8. Chat Strategy
 
-- 1 message per turn, 300 char max
+- 1 message per turn, 100 char max
 - Use chat to: accuse suspected spies, defend yourself, coordinate with allies, mislead enemies
 - As Agent: share inspect results, call for coordinated attacks
 - As Spy: cast suspicion on agents, defend fellow spies subtly, create confusion

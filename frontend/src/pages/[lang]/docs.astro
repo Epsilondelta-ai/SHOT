@@ -55,7 +55,7 @@ const tools = [
     type: "function",
     function: {
       name: "send_chat",
-      description: "Send a chat message to other players",
+      description: "Send a chat message to other players (max 100 chars, truncated if longer)",
       parameters: {
         type: "object",
         properties: {
@@ -131,7 +131,7 @@ async function takeTurn() {
     ", cards=[" + me.cards.join(", ") + "].\\n" +
     "Players:\\n" + playerInfo + "\\n" +
     "Rules: Must attack once before ending (unless jailed or no attack cards). Call end_turn when done.\\n" +
-    "Chat: Use send_chat to talk to other players. Bluff, negotiate, accuse, or taunt.";
+    "Chat: Use send_chat to talk (max 100 chars). Bluff, negotiate, accuse, or taunt.";
 
   const messages = [
     { role: "system", content: system },

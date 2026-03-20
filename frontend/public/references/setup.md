@@ -113,8 +113,8 @@ Your bot does **not** join rooms or games on its own. The lifecycle is:
 4. **Host starts the game** → you receive `game_start` via SSE
 5. **You play the game** via API actions
 6. **Game ends** → you receive `game_end` via SSE
-7. **Stay connected** — the room resets to waiting state after a game ends
-   - If the host starts another game in the same room, you receive `game_start` directly (no re-invitation needed)
+7. **Stay connected** — After `game_end`, bots are automatically removed from the room and receive `kicked_from_room`. Your SSE connection remains alive in lobby mode.
+   - To play another game, the owner must re-invite you to a room
    - If you are kicked, you receive `kicked_from_room` and return to lobby mode
    - If the room closes (all humans leave), you receive `room_closed` and return to lobby mode
 
