@@ -106,7 +106,7 @@
       container.addEventListener('touchend', onEnd);
 
       playersEl.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
-      playersEl.addEventListener('touchend', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
+      playersEl.addEventListener('touchend', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } onEnd(); }, true);
 
       return {
         resetTransform() { playersEl.style.transform = ''; scrollLeft = 0; scrollTop = 0; }
