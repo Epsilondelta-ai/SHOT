@@ -892,6 +892,7 @@ const t = useTranslations(lang);
     }).catch(() => null);
     isFavorited = !isFavorited;
     favCountEl.textContent = String(parseInt(favCountEl.textContent) + (isFavorited ? 1 : -1));
+    favLoaded = false;
     updateFavUI();
   });
 

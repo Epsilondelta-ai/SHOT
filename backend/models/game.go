@@ -37,9 +37,10 @@ func (r *ReplayLike) BeforeCreate(tx *gorm.DB) error {
 }
 
 type ReplayFavorite struct {
-	ID     string `gorm:"primaryKey;type:varchar(36)"`
-	GameID string `gorm:"type:varchar(36);not null;uniqueIndex:idx_replay_fav"`
-	UserID string `gorm:"type:varchar(36);not null;uniqueIndex:idx_replay_fav"`
+	ID        string    `gorm:"primaryKey;type:varchar(36)"`
+	GameID    string    `gorm:"type:varchar(36);not null;uniqueIndex:idx_replay_fav"`
+	UserID    string    `gorm:"type:varchar(36);not null;uniqueIndex:idx_replay_fav"`
+	CreatedAt time.Time
 }
 
 func (r *ReplayFavorite) BeforeCreate(tx *gorm.DB) error {
