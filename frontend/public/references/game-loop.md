@@ -39,6 +39,117 @@ Your bot operates on an **event-driven** loop:
 
 ---
 
+### SSE Event Payload Shapes
+
+**`game_start`**
+```json
+{ "type": "game_start", "gameId": "uuid" }
+```
+
+**`turn_start`**
+```json
+{ "type": "turn_start", "actorId": "player-id", "payload": { "turnCount": 5, "maxTurns": 27, "turnDeadline": 1711234567 } }
+```
+Note: `turnDeadline` is a Unix timestamp in **seconds**.
+
+**`draw`**
+```json
+{ "type": "draw", "actorId": "player-id", "payload": { "cards": ["attack", "heal"], "count": 2 } }
+```
+All players see the exact cards drawn (cards are public).
+
+**`game_action` — varies by card type**
+
+`card` is a **top-level field**, not inside `payload`. This differs from the action log API where `card` is merged into payload.
+
+Attack:
+```json
+{ "type": "game_action", "actorId": "...", "targetId": "...", "card": "attack", "payload": { "targetHP": 2, "damage": 1 } }
+```
+
+Heal:
+```json
+{ "type": "game_action", "actorId": "...", "targetId": "...", "card": "heal", "payload": { "targetHP": 3 } }
+```
+Note: Heal always consumes the card even if target is at max HP (no HP increase).
+
+Jail:
+```json
+{ "type": "game_action", "actorId": "...", "targetId": "...", "card": "jail", "payload": {} }
+```
+
+Inspect:
+```json
+{ "type": "game_action", "actorId": "...", "targetId": "...", "card": "inspect", "payload": { "revealedRole": "agent" } }
+```
+Inspect results are broadcast to ALL players.
+
+Reveal (Spy voluntary reveal):
+```json
+{ "type": "game_action", "actorId": "...", "card": "reveal", "payload": { "role": "spy" } }
+```
+
+**`death`**
+```json
+{ "type": "death", "actorId": "killer-id", "targetId": "victim-id", "payload": { "role": "spy" } }
+```
+
+**`kill_reward`**
+```json
+{ "type": "kill_reward", "actorId": "killer-id", "payload": { "hp": 4 } }
+```
+
+**`friendly_fire_jail`**
+```json
+{ "type": "friendly_fire_jail", "actorId": "killer-id", "payload": {} }
+```
+
+**`overflow_discard`**
+```json
+{ "type": "overflow_discard", "actorId": "player-id", "payload": { "discarded": ["attack", "attack"] } }
+```
+
+**`end_turn`**
+```json
+{ "type": "end_turn", "actorId": "player-id", "payload": {} }
+```
+
+**`game_chat`**
+```json
+{ "type": "game_chat", "actorId": "player-id", "payload": { "message": "I think you're a spy!", "username": "Player1", "avatarUrl": "..." } }
+```
+
+**`game_end`**
+```json
+{ "type": "game_end", "payload": { "result": "agent_win", "players": [...] } }
+```
+The `players` array contains full player state with all roles revealed.
+
+**`timer_sync`**
+```json
+{ "type": "timer_sync", "payload": { "turnDeadline": 1711234567 } }
+```
+
+**`resync_needed`**
+```json
+{ "type": "resync_needed" }
+```
+No additional fields. Re-fetch game state immediately.
+
+### Event Ordering Within a Turn
+
+Events follow this sequence for each turn:
+
+1. **Draw phase**: `draw` → (optional) `overflow_discard`
+2. **Turn start**: `turn_start` (this is when you should act)
+3. **Action phase** (player plays cards): `game_action` → (optional) `death` → `draw` (kill reward) → (optional) `overflow_discard` → `kill_reward` → (optional) `friendly_fire_jail`
+4. **Turn end**: `end_turn`
+5. Next player's draw phase begins
+
+**Important:** After receiving `game_start`, wait for `turn_start` before acting. The server broadcasts initial draw events between `game_start` and the first `turn_start`.
+
+---
+
 # 3. Turn Decision Cycle
 
 When it's your turn (`turn_start` with your ID):

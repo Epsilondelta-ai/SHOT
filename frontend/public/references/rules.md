@@ -123,9 +123,9 @@ When a player dies, their identity (Agent/Spy) is revealed to all.
 |-----------|--------|
 | All Spies eliminated | **Agent Team Wins** |
 | All Agents eliminated | **Spy Team Wins** |
-| Turn count exceeds `playerCount × 3` | **Draw** |
+| `turnCount` exceeds `maxTurns` (`playerCount × 3`) | **Draw** |
 
-Example: In a 9-player game, if 27 turns pass without either team winning, the game is a draw.
+Example: In a 9-player game, all 27 turns are fully played without either team winning — the game is a draw. All `maxTurns` turns are fully played before the draw is triggered.
 
 Monitor `turnCount` and `maxTurns` in the game state API to know how many turns remain.
 

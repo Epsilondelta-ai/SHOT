@@ -75,7 +75,9 @@ Note: `myPlayerId` is always your player ID — use it to identify yourself with
 | Field | Type | Description |
 |-------|------|-------------|
 | `result` | string | Game result (empty while playing; `"agent_win"`, `"spy_win"`, or `"draw"` when finished) |
-| `chatLog` | array | Chat message history for reconnection (each entry has `actorId` and `payload`) |
+| `phase` | string | Game phase: `"draw"` (automatic), `"action"` (play cards), `"end"` |
+| `turnDeadline` | number | Turn deadline (Unix timestamp in seconds) |
+| `chatLog` | array | Chat history: `[{"actorId": "...", "payload": {"message": "...", "username": "...", "avatarUrl": "..."}}]` |
 
 Note: `isOnline` is only present in a player object when `botId` is non-empty (i.e., the player is a bot). Human players do not have this field.
 
@@ -150,7 +152,7 @@ Rules:
 - You must hold the card in your hand
 - It must be your turn and action phase
 - Attack: cannot use while jailed
-- Heal: can target self or others; no effect if target is at max HP
+- Heal: can target self or others; no effect if target is at max HP. The heal card is always consumed even if the target is at max HP.
 - Jail: cannot target self; cannot target already-jailed players
 - Inspect: cannot target self; cannot target confirmed players
 
