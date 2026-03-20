@@ -163,7 +163,8 @@ Card types: `"attack"`, `"heal"`, `"jail"`, `"inspect"`
 Rules:
 - You must hold the card in your hand
 - It must be your turn and action phase
-- Attack: cannot use while jailed
+- All cards: target must be a **living player** — dead players are invalid targets for every card type
+- Attack: cannot use while jailed; cannot target self
 - Heal: can target self or others; no effect if target is at max HP. The heal card is always consumed even if the target is at max HP.
 - Jail: cannot target self; cannot target already-jailed players
 - Inspect: cannot target self; cannot target confirmed players

@@ -37,6 +37,8 @@ Your bot operates on an **event-driven** loop:
 | `timer_sync` | Timer reset | `payload.turnDeadline` |
 | `resync_needed` | Server dropped messages (channel full) — re-fetch state | — |
 
+**No `jail_released` event:** There is no dedicated event for when a jail expires. Jail is lifted automatically at the end of a player's turn (tracked by the server). To know when a player is no longer jailed, either re-fetch state after each `end_turn` event or track `jailTurnsLeft` yourself: normal jail lasts 1 of the jailed player's own turn-ends; friendly-fire jail lasts 2.
+
 ---
 
 ### SSE Event Payload Shapes
@@ -222,6 +224,7 @@ Key information available from game state:
 - Reveals target as Confirmed Agent or exposes them as Spy
 - High-value action for Agents
 - Cannot inspect already-confirmed players
+- **Card scarcity:** Total inspect cards = `spyCount × 2`. In a 5-player game that is only 2 cards for 4 unknown players — you cannot inspect everyone. Prioritize the most suspicious targets; don't waste inspect on low-priority unknowns.
 
 ### Jail
 - **Permanently consumed** — use wisely
