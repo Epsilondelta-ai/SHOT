@@ -31,7 +31,14 @@ const t = useTranslations(lang);
 
   <!-- Bot List -->
   <div class="w-full max-w-lg">
-    <div class="flex items-center justify-end mb-4">
+    <div class="flex items-center justify-end gap-2 mb-4">
+      <button
+        id="refresh-bots-btn"
+        class="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-xl text-sm transition"
+        title={t.bots.refresh}
+      >
+        <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Counterclockwise%20Arrows%20Button.png" alt="refresh" class="w-5 h-5" />
+      </button>
       <button
         id="add-bot-btn"
         class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-4 py-2 rounded-xl text-sm transition"
@@ -157,7 +164,7 @@ const t = useTranslations(lang);
   </div>
 </div>
 
-<script define:vars={{ apiUrl, tBotsCreating: t.bots.creating, tBotsCreate: t.bots.create, tSaving: t.mypage.saving, tCommonSave: t.common.save, tBotsCopied: t.bots.copied, tBotsCopyToClipboard: t.bots.copyToClipboard, tCommonEdit: t.common.edit, tCommonDelete: t.common.delete }} is:inline>
+<script define:vars={{ apiUrl, tBotsCreating: t.bots.creating, tBotsCreate: t.bots.create, tSaving: t.mypage.saving, tCommonSave: t.common.save, tBotsCopied: t.bots.copied, tBotsCopyToClipboard: t.bots.copyToClipboard, tCommonEdit: t.common.edit, tCommonDelete: t.common.delete, tStatusOnline: t.bots.statusOnline, tStatusOffline: t.bots.statusOffline, tStatusInGame: t.bots.statusInGame }} is:inline>
   const scene = document.getElementById('scene-bots');
   const addBotBtn = document.getElementById('add-bot-btn');
   const addBotModal = document.getElementById('add-bot-modal');
@@ -174,6 +181,8 @@ const t = useTranslations(lang);
   const apikeyMessage = document.getElementById('apikey-message');
   const apikeyCopyBtn = document.getElementById('apikey-copy-btn');
   const apikeyCloseBtn = document.getElementById('apikey-close-btn');
+
+  const refreshBotsBtn = document.getElementById('refresh-bots-btn');
 
   const editBotModal = document.getElementById('edit-bot-modal');
   const editBotNameInput = document.getElementById('edit-bot-name-input');
@@ -232,7 +241,7 @@ const t = useTranslations(lang);
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-white font-semibold truncate">${bot.name}</p>
-          <p class="text-white/40 text-xs">${createdAt}</p>
+          <p class="text-xs">${bot.isInGame ? `<span class="text-amber-400">${tStatusInGame} · ${bot.roomName}</span>` : bot.isOnline ? `<span class="text-green-400">${tStatusOnline}</span>` : `<span class="text-white/40">${tStatusOffline}</span>`}</p>
         </div>
         <button data-id="${bot.id}" data-name="${bot.name}" data-avatar="${bot.avatarUrl || ''}" class="edit-bot-btn text-white/40 hover:text-amber-400 transition text-sm mr-2">${tCommonEdit}</button>
         <button data-id="${bot.id}" class="delete-bot-btn text-white/40 hover:text-red-400 transition text-sm">${tCommonDelete}</button>
@@ -320,6 +329,8 @@ const t = useTranslations(lang);
     });
     loadBots();
   }
+
+  refreshBotsBtn.addEventListener('click', loadBots);
 
   addBotBtn.addEventListener('click', () => {
     botNameInput.value = '';

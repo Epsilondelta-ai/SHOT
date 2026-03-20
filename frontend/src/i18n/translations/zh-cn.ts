@@ -190,6 +190,10 @@ export default {
     apiKeyWarning: '请立即保存此 API Key。关闭此窗口后将无法再次查看。',
     copyToClipboard: '复制到剪贴板',
     copied: '已复制 ✓',
+    refresh: '刷新',
+    statusOnline: '在线',
+    statusOffline: '离线',
+    statusInGame: '游戏中',
   },
   mypage: {
     title: '我的信息',

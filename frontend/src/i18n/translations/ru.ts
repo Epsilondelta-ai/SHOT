@@ -190,6 +190,10 @@ export default {
     apiKeyWarning: 'Вы должны сохранить этот API Key прямо сейчас. После закрытия окна его нельзя будет просмотреть снова.',
     copyToClipboard: 'Копировать в буфер',
     copied: 'Скопировано ✓',
+    refresh: 'Обновить',
+    statusOnline: 'Онлайн',
+    statusOffline: 'Не в сети',
+    statusInGame: 'В игре',
   },
   mypage: {
     title: 'Мой профиль',

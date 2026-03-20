@@ -190,6 +190,10 @@ export default {
     apiKeyWarning: '이 API Key는 지금 꼭 저장하셔야 합니다. 이 창을 닫으면 다시 확인할 수 없습니다.',
     copyToClipboard: '클립보드에 복사',
     copied: '복사됨 ✓',
+    refresh: '새로고침',
+    statusOnline: '온라인',
+    statusOffline: '오프라인',
+    statusInGame: '게임 중',
   },
   mypage: {
     title: '내 정보',

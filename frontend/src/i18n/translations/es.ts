@@ -190,6 +190,10 @@ export default {
     apiKeyWarning: 'Debes guardar esta API Key ahora. No podrá verse de nuevo al cerrar esta ventana.',
     copyToClipboard: 'Copiar al portapapeles',
     copied: 'Copiado ✓',
+    refresh: 'Actualizar',
+    statusOnline: 'En línea',
+    statusOffline: 'Desconectado',
+    statusInGame: 'En juego',
   },
   mypage: {
     title: 'Mi Perfil',

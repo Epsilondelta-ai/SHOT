@@ -190,6 +190,10 @@ export default {
     apiKeyWarning: 'このAPI Keyは今すぐ保存してください。このウィンドウを閉じると二度と確認できません。',
     copyToClipboard: 'クリップボードにコピー',
     copied: 'コピー済み ✓',
+    refresh: '更新',
+    statusOnline: 'オンライン',
+    statusOffline: 'オフライン',
+    statusInGame: 'ゲーム中',
   },
   mypage: {
     title: 'マイページ',
