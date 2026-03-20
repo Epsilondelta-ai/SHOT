@@ -255,35 +255,17 @@ const t = useTranslations(lang);
 
       // Speech bubble for chat actions — positioned toward center
       if (p.id === chatActorId && chatPayload?.message) {
-        const playerCX = x + 36, playerCY = y + 36;
-        const toCenter = Math.atan2(cy - playerCY, cx - playerCX);
-        const deg = ((toCenter * 180 / Math.PI) + 360) % 360;
-
-        let bLeft, bTop, bTransform, tailCSS;
-        if (deg >= 315 || deg < 45) {
-          bLeft = x + 80; bTop = y + 20; bTransform = 'translateY(-50%)';
-          tailCSS = 'left:-6px;top:50%;transform:translateY(-50%);border-top:6px solid transparent;border-bottom:6px solid transparent;border-right:6px solid white;';
-        } else if (deg >= 45 && deg < 135) {
-          bLeft = x + 36; bTop = y + 80; bTransform = 'translateX(-50%)';
-          tailCSS = 'left:50%;top:-6px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid white;';
-        } else if (deg >= 135 && deg < 225) {
-          bLeft = x - 8; bTop = y + 20; bTransform = 'translate(-100%, -50%)';
-          tailCSS = 'right:-6px;top:50%;transform:translateY(-50%);border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid white;';
-        } else {
-          bLeft = x + 36; bTop = y - 8; bTransform = 'translate(-50%, -100%)';
-          tailCSS = 'left:50%;bottom:-6px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid white;';
-        }
-
+        const dir = getBubbleDirection(x, y, cx, cy);
         const bubble = document.createElement('div');
         bubble.className = 'absolute pointer-events-none z-10';
-        bubble.style.left = `${bLeft}px`;
-        bubble.style.top = `${bTop}px`;
-        bubble.style.transform = bTransform;
+        bubble.style.left = `${dir.left}px`;
+        bubble.style.top = `${dir.top}px`;
+        bubble.style.transform = dir.transform;
         bubble.style.maxWidth = '140px';
         bubble.innerHTML = `
           <div style="position:relative;background:white;color:#111827;font-size:0.7rem;line-height:1.4;padding:0.4rem 0.55rem;border-radius:0.6rem;word-break:break-word;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.4);">
             ${escapeHtml(chatPayload.message)}
-            <div style="position:absolute;width:0;height:0;${tailCSS}"></div>
+            <div style="position:absolute;width:0;height:0;${dir.tailCSS}"></div>
           </div>
         `;
         playersEl.appendChild(bubble);
@@ -479,43 +461,7 @@ const t = useTranslations(lang);
   }
 
   // Drag/swipe panning for players area
-  (function() {
-    const container = playersEl.parentElement;
-    let isDragging = false, startX = 0, startY = 0, scrollLeft = 0, scrollTop = 0, moved = false;
-    playersEl.style.cursor = 'grab';
-    playersEl.style.userSelect = 'none';
-    playersEl.style.touchAction = 'none';
-
-    function onStart(x, y) {
-      isDragging = true; moved = false;
-      startX = x; startY = y;
-      const t = playersEl.style.transform.match(/translate\((.+?)px,\s*(.+?)px\)/);
-      scrollLeft = t ? parseFloat(t[1]) : 0;
-      scrollTop = t ? parseFloat(t[2]) : 0;
-      playersEl.style.cursor = 'grabbing';
-    }
-    function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
-    function onMove(x, y) {
-      if (!isDragging) return;
-      const dx = x - startX, dy = y - startY;
-      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
-      const limitX = container.clientWidth * 0.5;
-      const limitY = container.clientHeight * 0.5;
-      const nx = clamp(scrollLeft + dx, -limitX, limitX);
-      const ny = clamp(scrollTop + dy, -limitY, limitY);
-      playersEl.style.transform = `translate(${nx}px, ${ny}px)`;
-    }
-    function onEnd() { isDragging = false; playersEl.style.cursor = 'grab'; }
-
-    container.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
-    window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
-    window.addEventListener('mouseup', onEnd);
-    container.addEventListener('touchstart', e => { const t = e.touches[0]; onStart(t.clientX, t.clientY); }, { passive: true });
-    container.addEventListener('touchmove', e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); }, { passive: true });
-    container.addEventListener('touchend', onEnd);
-
-    playersEl.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
-  })();
+  setupPlayerDrag(playersEl);
 
   init();
 </script>

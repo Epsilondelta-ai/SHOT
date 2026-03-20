@@ -48,5 +48,69 @@
       if (p.isConfirmedAgent)  return shield;
       return '';
     };
+
+    /** Returns {left, top, transform, tailCSS} for a bubble toward center */
+    window.getBubbleDirection = function (x, y, cx, cy) {
+      const playerCX = x + 36, playerCY = y + 36;
+      const toCenter = Math.atan2(cy - playerCY, cx - playerCX);
+      const deg = ((toCenter * 180 / Math.PI) + 360) % 360;
+      if (deg >= 315 || deg < 45) {
+        return { left: x + 80, top: y + 20, transform: 'translateY(-50%)',
+          tailCSS: 'left:-6px;top:50%;transform:translateY(-50%);border-top:6px solid transparent;border-bottom:6px solid transparent;border-right:6px solid white;' };
+      } else if (deg >= 45 && deg < 135) {
+        return { left: x + 36, top: y + 80, transform: 'translateX(-50%)',
+          tailCSS: 'left:50%;top:-6px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:6px solid white;' };
+      } else if (deg >= 135 && deg < 225) {
+        return { left: x - 8, top: y + 20, transform: 'translate(-100%, -50%)',
+          tailCSS: 'right:-6px;top:50%;transform:translateY(-50%);border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:6px solid white;' };
+      } else {
+        return { left: x + 36, top: y - 8, transform: 'translate(-50%, -100%)',
+          tailCSS: 'left:50%;bottom:-6px;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid white;' };
+      }
+    };
+
+    /** Setup drag/swipe panning on a players container, returns { resetTransform } */
+    window.setupPlayerDrag = function (playersEl) {
+      const container = playersEl.parentElement;
+      let isDragging = false, startX = 0, startY = 0, scrollLeft = 0, scrollTop = 0, moved = false;
+      playersEl.style.cursor = 'grab';
+      playersEl.style.userSelect = 'none';
+      playersEl.style.touchAction = 'none';
+
+      function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+      function onStart(x, y) {
+        isDragging = true; moved = false;
+        startX = x; startY = y;
+        const t = playersEl.style.transform.match(/translate\((.+?)px,\s*(.+?)px\)/);
+        scrollLeft = t ? parseFloat(t[1]) : 0;
+        scrollTop = t ? parseFloat(t[2]) : 0;
+        playersEl.style.cursor = 'grabbing';
+      }
+      function onMove(x, y) {
+        if (!isDragging) return;
+        const dx = x - startX, dy = y - startY;
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
+        const limitX = container.clientWidth * 0.5;
+        const limitY = container.clientHeight * 0.5;
+        const nx = clamp(scrollLeft + dx, -limitX, limitX);
+        const ny = clamp(scrollTop + dy, -limitY, limitY);
+        playersEl.style.transform = `translate(${nx}px, ${ny}px)`;
+      }
+      function onEnd() { isDragging = false; playersEl.style.cursor = 'grab'; }
+
+      container.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
+      window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+      window.addEventListener('mouseup', onEnd);
+      container.addEventListener('touchstart', e => { const t = e.touches[0]; onStart(t.clientX, t.clientY); }, { passive: true });
+      container.addEventListener('touchmove', e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); }, { passive: true });
+      container.addEventListener('touchend', onEnd);
+
+      playersEl.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
+      playersEl.addEventListener('touchend', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
+
+      return {
+        resetTransform() { playersEl.style.transform = ''; scrollLeft = 0; scrollTop = 0; }
+      };
+    };
   })();
 </script>

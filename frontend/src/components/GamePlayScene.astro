@@ -712,18 +712,33 @@ const t = useTranslations(lang);
       delete activeBubbles[actorId];
     }
 
-    // Position above the player circle using the overlay layer
+    // Position toward center using the overlay layer
     const playerRect = playerEl.getBoundingClientRect();
     const containerRect = bubblesEl.getBoundingClientRect();
-    const cx = playerRect.left - containerRect.left + playerRect.width / 2;
-    const cy = playerRect.top - containerRect.top;
+    const playerCX = playerRect.left - containerRect.left + playerRect.width / 2;
+    const playerCY = playerRect.top - containerRect.top + playerRect.height / 2;
+    const areaCX = containerRect.width / 2;
+    const areaCY = containerRect.height / 2;
+    const toCenter = Math.atan2(areaCY - playerCY, areaCX - playerCX);
+    const deg = ((toCenter * 180 / Math.PI) + 360) % 360;
+
+    let bLeft, bTop, bTransform;
+    if (deg >= 315 || deg < 45) {
+      bLeft = playerRect.right - containerRect.left + 8; bTop = playerCY; bTransform = 'translateY(-50%)';
+    } else if (deg >= 45 && deg < 135) {
+      bLeft = playerCX; bTop = playerRect.bottom - containerRect.top + 8; bTransform = 'translateX(-50%)';
+    } else if (deg >= 135 && deg < 225) {
+      bLeft = playerRect.left - containerRect.left - 8; bTop = playerCY; bTransform = 'translate(-100%, -50%)';
+    } else {
+      bLeft = playerCX; bTop = playerRect.top - containerRect.top - 8; bTransform = 'translate(-50%, -100%)';
+    }
 
     const bubble = document.createElement('div');
     bubble.className = 'chat-bubble';
     bubble.style.position = 'absolute';
-    bubble.style.left = `${cx}px`;
-    bubble.style.top = `${cy}px`;
-    bubble.style.transform = 'translate(-50%, -100%)';
+    bubble.style.left = `${bLeft}px`;
+    bubble.style.top = `${bTop}px`;
+    bubble.style.transform = bTransform;
     bubble.textContent = message.length > 40 ? message.slice(0, 40) + '...' : message;
     bubblesEl.appendChild(bubble);
 
@@ -1000,4 +1015,7 @@ const t = useTranslations(lang);
       scheduleStateReload();
     }
   });
+
+  // Drag/swipe panning for players area
+  setupPlayerDrag(playersEl);
 </script>
