@@ -4,6 +4,7 @@ import hittedImg from '../assets/hitted.webp';
 import healedImg from '../assets/healed.webp';
 import jailImg from '../assets/jail.webp';
 import character from '../assets/character.webp';
+import background2 from '../assets/background2.webp';
 import { type Locale } from '../i18n/locales';
 import { useTranslations } from '../i18n';
 
@@ -16,7 +17,7 @@ const { apiUrl, lang } = Astro.props;
 const t = useTranslations(lang);
 ---
 
-<div id="scene-gameplay" class="hidden relative z-10 w-full flex-1 flex-col overflow-hidden min-h-0">
+<div id="scene-gameplay" class="hidden relative z-10 w-full flex-1 flex-col overflow-hidden min-h-0 bg-cover bg-center bg-no-repeat" style={`background-image:linear-gradient(rgba(120,60,10,0.5),rgba(120,60,10,0.5)),url(${background2.src})`}
   <div class="flex flex-col flex-1 min-h-0 max-w-6xl mx-auto w-full px-4 py-2 gap-2">
 
     <!-- Top bar: Turn info + Timer + Chat toggle -->
@@ -929,6 +930,8 @@ const t = useTranslations(lang);
     startTimerCountdown();
     // Notify game.astro that the scene is fully ready — hides loading screen
     document.dispatchEvent(new CustomEvent('game:ready'));
+    // 초기 이벤트(draw, turn_start 등)가 gameState 설정 전에 도착해 무시될 수 있으므로 상태 재동기화
+    scheduleStateReload();
   });
 
   // Debounced state reload — batch rapid SSE events into one API call

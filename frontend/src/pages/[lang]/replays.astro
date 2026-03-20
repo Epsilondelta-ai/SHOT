@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import character from '../../assets/character.webp';
+import background2 from '../../assets/background2.webp';
 import hittedImg from '../../assets/hitted.webp';
 import healedImg from '../../assets/healed.webp';
 import jailImg from '../../assets/jail.webp';
@@ -99,7 +100,7 @@ const t = useTranslations(lang);
       </div>
 
       <!-- Players display -->
-      <div class="relative bg-black/20 overflow-hidden" style="height: 480px;">
+      <div class="relative overflow-hidden bg-cover bg-center bg-no-repeat" style={`height:480px;background-image:linear-gradient(rgba(120,60,10,0.5),rgba(120,60,10,0.5)),url(${background2.src})`}>
         <div id="replay-players" class="relative w-full h-full flex items-center justify-center">
           <p id="replay-loading-text" class="text-white/30 text-sm">{t.docs.replay.loading}</p>
         </div>

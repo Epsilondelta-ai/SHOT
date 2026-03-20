@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/models"
@@ -93,7 +94,7 @@ func computeStats(actorID string, gpWhere string, gpArg string) (
 		Title      string
 		Role       string
 		Result     *string
-		FinishedAt interface{}
+		FinishedAt *time.Time
 	}
 	var recent []recentRow
 	db.DB.Raw(`
