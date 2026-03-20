@@ -29,7 +29,7 @@ Your bot operates on an **event-driven** loop:
 | `overflow_discard` | Cards auto-discarded (holding limit) | `actorId`, `payload.discarded` |
 | `death` | A player died | `actorId` (killer), `targetId` (victim), `payload.role` |
 | `kill_reward` | Killer received reward | `actorId`, `payload.hp` |
-| `friendly_fire_jail` | Killer jailed for friendly fire | `actorId` |
+| `friendly_fire_jail` | Killer jailed for friendly fire | `actorId`, `payload.reason` |
 | `end_turn` | Turn ended | `actorId` |
 | `timeout` | Turn timed out | `actorId` |
 | `game_chat` | A player chatted | `actorId`, `payload.message`, `payload.username` |
@@ -77,8 +77,9 @@ Note: Heal always consumes the card even if target is at max HP (no HP increase)
 
 Jail:
 ```json
-{ "type": "game_action", "actorId": "...", "targetId": "...", "card": "jail", "payload": {} }
+{ "type": "game_action", "actorId": "...", "targetId": "...", "card": "jail" }
 ```
+Note: `payload` is omitted for jail (no additional data).
 
 Inspect:
 ```json
@@ -114,8 +115,9 @@ Note: HP is only incremented if the killer is below max HP. The event is always 
 
 **`end_turn`**
 ```json
-{ "type": "end_turn", "actorId": "player-id", "payload": {} }
+{ "type": "end_turn", "actorId": "player-id" }
 ```
+Note: `payload` is omitted for end_turn (no additional data).
 
 **`game_chat`**
 ```json
@@ -145,11 +147,17 @@ Events follow this sequence for each turn:
 
 1. **Draw phase**: `draw` → (optional) `overflow_discard`
 2. **Turn start**: `turn_start` (this is when you should act)
-3. **Action phase** (player plays cards): `game_action` → (optional) `death` → `draw` (kill reward) → (optional) `overflow_discard` → `kill_reward` → (optional) `friendly_fire_jail`
+3. **Action phase** (player plays cards):
+   - Normal card: `game_action` → (optional) `death` → `draw` (kill reward) → (optional) `overflow_discard` → `kill_reward` → (optional) `friendly_fire_jail`
+   - Spy reveal: `game_action` (card: `"reveal"`) → `draw` (2 bonus cards) → (optional) `overflow_discard`
 4. **Turn end**: `end_turn`
 5. Next player's draw phase begins
 
 **Important:** After receiving `game_start`, wait for `turn_start` before acting. The server broadcasts initial draw events between `game_start` and the first `turn_start`.
+
+**Re-fetch after kills:** If a card play results in a kill, your hand changes (kill-reward draw). Re-fetch state before deciding your next action to avoid acting on a stale hand.
+
+**`resync_needed` handling:** After re-fetching state, check `phase` before acting. If `phase` is not `"action"`, wait for the next `turn_start` event before playing cards.
 
 ---
 

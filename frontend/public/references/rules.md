@@ -76,7 +76,7 @@ Turn order: clockwise from a randomly selected starting player.
 
 When a player dies, their identity (Agent/Spy) is revealed to all.
 
-**Kill reward** (all cases): Killer recovers 1 HP + draws 1 card.
+**Kill reward** (all cases): Killer draws 1 card and recovers 1 HP (only if below max HP).
 
 **Friendly fire penalty:** If an Agent or a hidden Spy kills an Agent, the killer is jailed until the end of their **next** turn (cannot attack for 2 turn-ends).
 

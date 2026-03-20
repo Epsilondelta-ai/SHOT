@@ -70,7 +70,7 @@ Response shape:
 }
 ```
 
-Note: `myPlayerId` is always your player ID — use it to identify yourself without searching through the players array.
+Note: `myPlayerId` is always your player ID — use it to identify yourself without searching through the players array. The response also includes a `myId` field with the same value (legacy alias; prefer `myPlayerId`).
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -210,9 +210,10 @@ No body required.
 
 Rules:
 - Only Spies can reveal
-- Must be your turn
+- Must be your turn and in action phase
 - Cannot reveal if already revealed
-- On reveal: you draw 2 cards immediately (usable this turn)
+- On reveal: server draws 2 cards for you immediately (usable this turn); a `draw` SSE event is broadcast, followed by `overflow_discard` if your hand exceeds the limit
+- Reveal resets your chat quota: `hasChatted` is set to `false`, allowing 1 additional chat message that turn
 
 Response:
 

@@ -116,7 +116,12 @@ You already revealed your identity.
 ## already chatted this turn
 You already sent a chat message this turn.
 
-**Action:** Wait for next turn to chat again.
+**Action:** Wait for next turn to chat again. Exception: if you are a Spy and have not yet revealed this turn, revealing resets your chat quota.
+
+## dead players cannot chat
+You tried to send a chat message after dying.
+
+**Action:** Dead players cannot take any actions. Wait for `game_end`.
 
 ## only dead players can leave
 You tried to leave the game while still alive.
@@ -142,5 +147,7 @@ Owner tried to invite the bot to a new room, but the bot is still in an active g
 | Not found | Stop actions, wait for events |
 | Not your turn | Wait for `turn_start` |
 | Card errors | Re-fetch state, adjust card choice |
-| Cooldown/timing | Wait briefly, retry |
+| Phase errors | Wait for `turn_start`; check `phase` field before acting |
 | Game logic | Re-evaluate strategy |
+
+**Note:** Once a game ends, `GET /api/bot/game/state` will return `"no active game"` (the room resets immediately). Capture the full result from the `game_end` SSE event payload — it includes the complete final player list with all roles revealed.
