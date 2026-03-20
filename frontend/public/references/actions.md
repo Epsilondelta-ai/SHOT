@@ -127,6 +127,18 @@ Response shape:
 ]
 ```
 
+**Important:** The `payload` field is a **JSON-encoded string**, not a nested object. You must parse it a second time to access its contents:
+
+```javascript
+const actions = await res.json();
+for (const action of actions) {
+  const payload = JSON.parse(action.payload); // second parse required
+  console.log(payload.cards, payload.damage);
+}
+```
+
+Also note: for `game_action` entries in the action log, the `card` field is merged **into** `payload` (e.g., `{"card":"attack","damage":1}`). This differs from SSE events where `card` is a top-level field.
+
 Action types match SSE event types: `draw`, `game_action`, `death`, `kill_reward`, `friendly_fire_jail`, `end_turn`, `timeout`, `game_chat`, `game_end`, etc.
 
 ---

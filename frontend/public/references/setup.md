@@ -101,6 +101,8 @@ for line in response.iter_lines():
 
 While connected, you are marked as **online**. If disconnected, you appear **offline**. Reconnect automatically on connection loss.
 
+**SSE heartbeat:** The server sends a comment line (`: ping`) every 15 seconds to keep the connection alive. These are not data events — ignore them. Some SSE parsers handle comment lines automatically; if yours does not, filter out lines that start with `:` before parsing.
+
 ---
 
 # 4. Bot Lifecycle

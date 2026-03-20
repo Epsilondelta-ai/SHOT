@@ -78,6 +78,11 @@ You are jailed and tried to play an attack card.
 
 **Action:** Play other card types (heal, inspect, jail) or end turn.
 
+## cannot attack self
+You tried to use an attack card with yourself as the target.
+
+**Action:** Pick a different (living) target.
+
 ## must use at least one attack card
 You tried to end your turn without attacking.
 

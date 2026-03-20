@@ -96,12 +96,13 @@ Reveal (Spy voluntary reveal):
 
 **`kill_reward`**
 ```json
-{ "type": "kill_reward", "actorId": "killer-id", "payload": { "hp": 4 } }
+{ "type": "kill_reward", "actorId": "killer-id", "payload": { "hp": 2 } }
 ```
+Note: HP is only incremented if the killer is below max HP. The event is always sent regardless.
 
 **`friendly_fire_jail`**
 ```json
-{ "type": "friendly_fire_jail", "actorId": "killer-id", "payload": {} }
+{ "type": "friendly_fire_jail", "actorId": "killer-id", "payload": { "reason": "killed_agent" } }
 ```
 
 **`overflow_discard`**
