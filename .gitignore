@@ -2,6 +2,8 @@
 .omc
 .env
 .astro
+.moai
+.mcp.json
 
 node_modules
 frontend/.astro
