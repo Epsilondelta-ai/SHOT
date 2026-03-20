@@ -181,12 +181,15 @@ func (h *Hub) RegisterAndReplaceLocal(c *Client) bool {
 
 	if old != nil {
 		old.Replaced = true
-		data, _ := json.Marshal(Message{Type: "duplicate"})
-		select {
-		case old.Ch <- data:
-		default:
-		}
-		close(old.Ch)
+		func() {
+			defer func() { recover() }()
+			data, _ := json.Marshal(Message{Type: "duplicate"})
+			select {
+			case old.Ch <- data:
+			default:
+			}
+			close(old.Ch)
+		}()
 	}
 	return old != nil
 }

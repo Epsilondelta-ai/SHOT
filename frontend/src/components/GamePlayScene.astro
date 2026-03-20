@@ -84,7 +84,7 @@ const t = useTranslations(lang);
   </div>
 
   <!-- Game chat (toggleable, overlay at bottom) -->
-  <div id="gp-chat-panel" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-black/90 rounded-t-2xl overflow-hidden" style="height:220px;">
+  <div id="gp-chat-panel" class="hidden absolute bottom-0 left-0 right-0 z-30 bg-black/60 backdrop-blur-sm rounded-t-2xl overflow-hidden" style="height:220px;">
     <div class="flex flex-col h-full max-w-6xl mx-auto w-full">
       <div id="gp-chat-messages" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1 min-h-0"></div>
       <div class="flex gap-2 p-2 border-t border-white/10">
@@ -1009,7 +1009,7 @@ const t = useTranslations(lang);
   });
   resultReplay.addEventListener('click', () => {
     if (gameState) {
-      window.open(`/${lang}/replay?id=${gameState.gameId}`, '_blank');
+      window.open(`/${lang}/replays?id=${gameState.gameId}`, '_blank');
     }
   });
 
