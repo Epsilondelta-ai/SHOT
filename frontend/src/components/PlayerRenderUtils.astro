@@ -109,7 +109,8 @@
       playersEl.addEventListener('touchend', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } onEnd(); }, true);
 
       return {
-        resetTransform() { playersEl.style.transform = ''; scrollLeft = 0; scrollTop = 0; }
+        resetTransform() { playersEl.style.transform = ''; scrollLeft = 0; scrollTop = 0; },
+        wasDragged() { return moved; }
       };
     };
   })();

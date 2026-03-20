@@ -630,7 +630,7 @@ const t = useTranslations(lang);
   }
 
   modalClose.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  modal.addEventListener('click', (e) => { if (e.target === modal && !playerDrag.wasDragged()) closeModal(); });
 
   prevBtn.addEventListener('click', () => { stopPlay(); goToFrame(currentFrame - 1); });
   nextBtn.addEventListener('click', () => { stopPlay(); goToFrame(currentFrame + 1); });
@@ -677,5 +677,5 @@ const t = useTranslations(lang);
   });
 
   // Drag/swipe panning for players area
-  setupPlayerDrag(playersEl);
+  const playerDrag = setupPlayerDrag(playersEl);
 </script>
