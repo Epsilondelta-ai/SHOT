@@ -268,7 +268,12 @@ const t = useTranslations(lang);
         phAvatar.src = data.avatarUrl || characterSrc;
         phAvatar.onerror = () => { phAvatar.src = characterSrc; };
         document.getElementById('ph-username').textContent = data.username;
-        document.getElementById('ph-type-badge').textContent = profileType === 'bot' ? tBot : tHuman;
+        const badgeEl = document.getElementById('ph-type-badge');
+        if (profileType === 'bot') {
+          badgeEl.innerHTML = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Robot.png" alt="Bot" class="inline-block w-5 h-5" />';
+        } else {
+          badgeEl.classList.add('hidden');
+        }
         if (data.ownerUsername) {
           const ownerEl = document.getElementById('ph-owner');
           ownerEl.textContent = `${tOwnerLabel}: ${data.ownerUsername}`;
