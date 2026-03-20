@@ -692,11 +692,16 @@ const t = useTranslations(lang);
       scrollTop = t ? parseFloat(t[2]) : 0;
       playersEl.style.cursor = 'grabbing';
     }
+    function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
     function onMove(x, y) {
       if (!isDragging) return;
       const dx = x - startX, dy = y - startY;
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
-      playersEl.style.transform = `translate(${scrollLeft + dx}px, ${scrollTop + dy}px)`;
+      const limitX = container.clientWidth * 0.5;
+      const limitY = container.clientHeight * 0.5;
+      const nx = clamp(scrollLeft + dx, -limitX, limitX);
+      const ny = clamp(scrollTop + dy, -limitY, limitY);
+      playersEl.style.transform = `translate(${nx}px, ${ny}px)`;
     }
     function onEnd() { isDragging = false; playersEl.style.cursor = 'grab'; }
 
