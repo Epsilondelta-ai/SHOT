@@ -244,6 +244,9 @@ func BotGetGameState(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	game.GL.Lock(activeGame.ID)
+	defer game.GL.Unlock(activeGame.ID)
+
 	state, err := game.LoadState(db.RDB, activeGame.ID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "game state not found"})

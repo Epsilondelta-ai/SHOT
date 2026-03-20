@@ -397,6 +397,9 @@ func RevealIdentity(state *GameState, playerID string) ([]Event, error) {
 	if state.CurrentPlayerID() != playerID {
 		return nil, fmt.Errorf("not your turn")
 	}
+	if state.Phase != "action" {
+		return nil, fmt.Errorf("not in action phase")
+	}
 	if player.Role != "spy" {
 		return nil, fmt.Errorf("only spies can reveal")
 	}
@@ -444,7 +447,7 @@ func SendChat(state *GameState, playerID, message string) ([]Event, error) {
 		return nil, fmt.Errorf("game not in progress")
 	}
 	player := state.FindPlayer(playerID)
-	if player == nil {
+	if player == nil || player.IsDead {
 		return nil, fmt.Errorf("invalid player")
 	}
 	if state.CurrentPlayerID() != playerID {
@@ -643,6 +646,7 @@ func advanceTurn(state *GameState) ([]Event, error) {
 	})
 
 	// Move to next alive player
+	startIndex := state.CurrentTurnIndex
 	for {
 		state.CurrentTurnIndex = (state.CurrentTurnIndex + 1) % len(state.TurnOrder)
 
@@ -657,6 +661,13 @@ func advanceTurn(state *GameState) ([]Event, error) {
 		if nextPlayer != nil && !nextPlayer.IsDead {
 			state.TurnCount++
 			break
+		}
+
+		// Safety: full cycle with no alive player found — force end
+		if state.CurrentTurnIndex == startIndex {
+			endEvents := endGame(state, "draw")
+			events = append(events, endEvents...)
+			return events, nil
 		}
 	}
 
