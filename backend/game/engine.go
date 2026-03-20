@@ -405,6 +405,7 @@ func RevealIdentity(state *GameState, playerID string) ([]Event, error) {
 	}
 
 	player.IsRevealed = true
+	player.HasChatted = false // reset so spy can send 1 additional chat after reveal
 
 	var events []Event
 	events = append(events, Event{
@@ -495,6 +496,9 @@ func validateCardUse(_ *GameState, player *PlayerState, cardType string, target 
 	case CardAttack:
 		if player.IsJailed {
 			return fmt.Errorf("jailed players cannot attack")
+		}
+		if target.ID == player.ID {
+			return fmt.Errorf("cannot attack self")
 		}
 	case CardHeal:
 		// can heal self or others, no restrictions
