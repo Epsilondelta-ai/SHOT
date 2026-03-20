@@ -268,7 +268,7 @@ func GetReplayActions(c *fiber.Ctx) error {
 	}
 
 	var actions []models.GameAction
-	db.DB.Where("game_id = ?", gameID).Order("turn ASC, seq ASC").Find(&actions)
+	db.DB.Where("game_id = ?", gameID).Order("created_at ASC, seq ASC").Find(&actions)
 
 	result := make([]fiber.Map, len(actions))
 	for i, a := range actions {

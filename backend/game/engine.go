@@ -175,14 +175,14 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 		},
 	})
 
+	// Record actions (must happen before SaveState so ActionSeq is up-to-date in Redis)
+	for _, e := range events {
+		recordAction(state, e)
+	}
+
 	// Save state to Redis
 	if err := SaveState(db.RDB, state); err != nil {
 		return nil, nil, err
-	}
-
-	// Record actions
-	for _, e := range events {
-		recordAction(state, e)
 	}
 
 	return state, events, nil
@@ -317,11 +317,11 @@ func PlayCard(state *GameState, playerID, cardType, targetID string) ([]Event, e
 		events = append(events, endEvents...)
 	}
 
-	// Save and record
-	SaveState(db.RDB, state)
+	// Record and save (record first so ActionSeq is up-to-date in Redis)
 	for _, e := range events {
 		recordAction(state, e)
 	}
+	SaveState(db.RDB, state)
 
 	return events, nil
 }
@@ -429,10 +429,10 @@ func RevealIdentity(state *GameState, playerID string) ([]Event, error) {
 		},
 	})
 
-	SaveState(db.RDB, state)
 	for _, e := range events {
 		recordAction(state, e)
 	}
+	SaveState(db.RDB, state)
 
 	return events, nil
 }
@@ -465,8 +465,8 @@ func SendChat(state *GameState, playerID, message string) ([]Event, error) {
 		},
 	}
 
-	SaveState(db.RDB, state)
 	recordAction(state, event)
+	SaveState(db.RDB, state)
 
 	return []Event{event}, nil
 }
@@ -606,8 +606,8 @@ func endGame(state *GameState, result string) []Event {
 		},
 	}
 
-	SaveState(db.RDB, state)
 	recordAction(state, event)
+	SaveState(db.RDB, state)
 
 	return []Event{event}
 }
@@ -672,10 +672,10 @@ func advanceTurn(state *GameState) ([]Event, error) {
 		},
 	})
 
-	SaveState(db.RDB, state)
 	for _, e := range events {
 		recordAction(state, e)
 	}
+	SaveState(db.RDB, state)
 
 	return events, nil
 }
