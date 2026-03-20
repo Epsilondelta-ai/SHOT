@@ -144,6 +144,20 @@ const t = useTranslations(lang);
   </div>
 </div>
 
+<!-- Delete Bot Confirm Modal -->
+<div id="delete-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
+    <div class="flex items-start gap-2 bg-red-900/40 border border-red-500/40 rounded-xl px-4 py-3 mb-5">
+      <span class="text-red-400 text-base mt-0.5">⚠️</span>
+      <p class="text-red-300 text-sm leading-relaxed">{t.bots.deleteBotConfirm}</p>
+    </div>
+    <div class="flex gap-3">
+      <button id="delete-confirm-btn" class="flex-1 bg-red-500 hover:bg-red-400 text-white font-bold py-2.5 rounded-xl transition">{t.common.delete}</button>
+      <button id="delete-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
+    </div>
+  </div>
+</div>
+
 <!-- API Key Modal -->
 <div id="apikey-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
   <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
@@ -178,7 +192,7 @@ const t = useTranslations(lang);
     </button>
 </div>
 
-<script define:vars={{ apiUrl, tBotsCreating: t.bots.creating, tBotsCreate: t.bots.create, tSaving: t.mypage.saving, tCommonSave: t.common.save, tBotsCopied: t.bots.copied, tBotsCopyToClipboard: t.bots.copyToClipboard, tCommonEdit: t.common.edit, tCommonDelete: t.common.delete, tStatusOnline: t.bots.statusOnline, tStatusOffline: t.bots.statusOffline, tStatusInGame: t.bots.statusInGame, tRegenerateKey: t.bots.regenerateKey, tRegenerateKeyConfirm: t.bots.regenerateKeyConfirm, tRegenerateKeySuccess: t.bots.regenerateKeySuccess }} is:inline>
+<script define:vars={{ apiUrl, tBotsCreating: t.bots.creating, tBotsCreate: t.bots.create, tSaving: t.mypage.saving, tCommonSave: t.common.save, tBotsCopied: t.bots.copied, tBotsCopyToClipboard: t.bots.copyToClipboard, tCommonEdit: t.common.edit, tCommonDelete: t.common.delete, tStatusOnline: t.bots.statusOnline, tStatusOffline: t.bots.statusOffline, tStatusInGame: t.bots.statusInGame, tRegenerateKey: t.bots.regenerateKey, tRegenerateKeyConfirm: t.bots.regenerateKeyConfirm, tRegenerateKeySuccess: t.bots.regenerateKeySuccess, tDeleteBotConfirm: t.bots.deleteBotConfirm }} is:inline>
   const scene = document.getElementById('scene-bots');
   const addBotBtn = document.getElementById('add-bot-btn');
   const addBotModal = document.getElementById('add-bot-modal');
@@ -338,15 +352,35 @@ const t = useTranslations(lang);
     }
   });
 
-  async function deleteBot(id) {
+  const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+  const deleteConfirmBtn = document.getElementById('delete-confirm-btn');
+  const deleteCancelBtn = document.getElementById('delete-cancel-btn');
+  let deleteBotId = null;
+
+  function deleteBot(id) {
+    deleteBotId = id;
+    deleteConfirmModal.classList.remove('hidden');
+  }
+
+  deleteCancelBtn.addEventListener('click', () => {
+    deleteConfirmModal.classList.add('hidden');
+    deleteBotId = null;
+  });
+
+  deleteConfirmBtn.addEventListener('click', async () => {
+    if (!deleteBotId) return;
     const token = localStorage.getItem('token');
     if (!token) return;
-    await fetch(`${apiUrl}/api/bots/${id}`, {
+    deleteConfirmBtn.disabled = true;
+    await fetch(`${apiUrl}/api/bots/${deleteBotId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
     });
+    deleteConfirmBtn.disabled = false;
+    deleteConfirmModal.classList.add('hidden');
+    deleteBotId = null;
     loadBots();
-  }
+  });
 
   const regenConfirmModal = document.getElementById('regen-confirm-modal');
   const regenConfirmBtn = document.getElementById('regen-confirm-btn');

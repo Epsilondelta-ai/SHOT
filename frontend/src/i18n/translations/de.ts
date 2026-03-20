@@ -197,6 +197,7 @@ export default {
     regenerateKey: 'API-Key neu generieren',
     regenerateKeyConfirm: 'API-Key neu generieren? Der aktuelle Key wird ungültig.',
     regenerateKeySuccess: 'API-Key wurde neu generiert!',
+    deleteBotConfirm: 'Diesen Bot löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
   },
   mypage: {
     title: 'Mein Profil',

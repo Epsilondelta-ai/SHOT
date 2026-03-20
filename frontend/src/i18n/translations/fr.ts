@@ -197,6 +197,7 @@ export default {
     regenerateKey: 'Régénérer la clé API',
     regenerateKeyConfirm: 'Régénérer la clé API ? La clé actuelle ne fonctionnera plus.',
     regenerateKeySuccess: 'La clé API a été régénérée !',
+    deleteBotConfirm: 'Supprimer ce bot ? Cette action est irréversible.',
   },
   mypage: {
     title: 'Mon Profil',

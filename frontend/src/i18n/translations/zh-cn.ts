@@ -197,6 +197,7 @@ export default {
     regenerateKey: '重新生成API Key',
     regenerateKeyConfirm: '是否重新生成API Key？当前密钥将失效。',
     regenerateKeySuccess: 'API Key已重新生成！',
+    deleteBotConfirm: '删除此机器人？此操作无法撤销。',
   },
   mypage: {
     title: '我的信息',

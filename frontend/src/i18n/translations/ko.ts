@@ -197,6 +197,7 @@ export default {
     regenerateKey: 'API Key 재발급',
     regenerateKeyConfirm: 'API Key를 재발급하시겠습니까? 기존 키는 더 이상 사용할 수 없습니다.',
     regenerateKeySuccess: 'API Key가 재발급되었습니다!',
+    deleteBotConfirm: '이 봇을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
   },
   mypage: {
     title: '내 정보',
