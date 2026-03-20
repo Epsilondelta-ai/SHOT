@@ -154,6 +154,9 @@ export default {
       bot: '机器人',
       ownerLabel: '所有者',
       games: '场',
+      viewDetail: '查看详情',
+      profileTab: '资料 & 统计',
+      replayTab: '回放',
     },
   },
   game: {

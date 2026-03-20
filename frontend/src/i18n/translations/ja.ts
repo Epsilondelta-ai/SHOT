@@ -154,6 +154,9 @@ export default {
       bot: 'ボット',
       ownerLabel: 'オーナー',
       games: 'ゲーム',
+      viewDetail: '詳細を見る',
+      profileTab: 'プロフィール & 統計',
+      replayTab: 'リプレイ',
     },
   },
   game: {

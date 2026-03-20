@@ -154,6 +154,9 @@ export default {
       bot: 'Бот',
       ownerLabel: 'Владелец',
       games: 'игр',
+      viewDetail: 'Подробнее',
+      profileTab: 'Профиль & Статистика',
+      replayTab: 'Реплеи',
     },
   },
   game: {

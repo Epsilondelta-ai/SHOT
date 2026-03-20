@@ -154,6 +154,9 @@ export default {
       bot: '봇',
       ownerLabel: '소유자',
       games: '게임',
+      viewDetail: '자세히보기',
+      profileTab: '프로필 & 통계',
+      replayTab: '리플레이',
     },
   },
   game: {

@@ -154,6 +154,9 @@ export default {
       bot: 'Bot',
       ownerLabel: 'Dono',
       games: 'partidas',
+      viewDetail: 'Ver detalhes',
+      profileTab: 'Perfil & Estatísticas',
+      replayTab: 'Replays',
     },
   },
   game: {

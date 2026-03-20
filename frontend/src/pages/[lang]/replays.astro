@@ -131,66 +131,51 @@ const t = useTranslations(lang);
     </div>
   </div>
 
-  <!-- Player profile modal -->
-  <div id="player-modal" class="hidden fixed inset-0 z-[60] bg-black/80 flex items-start justify-center overflow-y-auto p-4">
-    <div class="w-full max-w-md bg-gray-950 border border-gray-800 rounded-2xl flex flex-col my-4">
+  <!-- Player mini popup -->
+  <div id="player-modal" class="hidden fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4" style="backdrop-filter:blur(2px)">
+    <div class="w-full max-w-xs bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl">
       <!-- Header -->
-      <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-800">
-        <img id="pm-avatar" src="" alt="" class="w-10 h-10 rounded-full object-cover border-2 border-white/20" />
+      <div class="flex items-center gap-3 px-4 pt-4 pb-3">
+        <img id="pm-avatar" src="" alt="" class="w-11 h-11 rounded-full object-cover border-2 border-white/20 shrink-0" />
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <h3 id="pm-username" class="text-white font-bold text-base truncate"></h3>
-            <span id="pm-type-badge" class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/50"></span>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span id="pm-username" class="text-white font-bold text-sm truncate"></span>
+            <span id="pm-type-badge" class="text-[9px] px-1 py-0.5 rounded bg-white/10 text-white/40 shrink-0"></span>
           </div>
-          <p id="pm-owner" class="text-white/30 text-xs mt-0.5 hidden"></p>
+          <p id="pm-owner" class="text-white/30 text-[11px] mt-0.5 hidden"></p>
         </div>
-        <div class="flex gap-2">
-          <button id="pm-filter-btn" class="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-3 py-1.5 rounded-lg transition"></button>
-          <button id="pm-close" class="text-white/40 hover:text-white text-xl leading-none transition px-1">✕</button>
+        <button id="pm-close" class="text-white/30 hover:text-white leading-none transition shrink-0 text-lg px-1">✕</button>
+      </div>
+      <!-- Quick stats -->
+      <div id="pm-loading" class="px-4 pb-3 text-white/30 text-xs text-center">...</div>
+      <div id="pm-content" class="hidden px-4 pb-3">
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <div class="bg-white/5 rounded-xl px-2 py-2 text-center">
+            <p id="pm-total" class="text-white font-bold text-base">0</p>
+            <p id="lbl-total-games" class="text-white/30 text-[9px]"></p>
+          </div>
+          <div class="bg-blue-500/10 rounded-xl px-2 py-2 text-center">
+            <p id="pm-agent-rate" class="text-blue-300 font-bold text-base">0%</p>
+            <p id="lbl-as-agent" class="text-white/30 text-[9px]"></p>
+          </div>
+          <div class="bg-red-500/10 rounded-xl px-2 py-2 text-center">
+            <p id="pm-spy-rate" class="text-red-300 font-bold text-base">0%</p>
+            <p id="lbl-as-spy" class="text-white/30 text-[9px]"></p>
+          </div>
+        </div>
+        <!-- Win rate bar -->
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-white/40 text-[10px]" id="pm-record"></span>
+          <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div id="pm-winbar" class="h-full bg-amber-500 rounded-full" style="width:0%"></div>
+          </div>
+          <span class="text-amber-400 text-xs font-bold" id="pm-winrate">0%</span>
         </div>
       </div>
-      <!-- Loading / content -->
-      <div id="pm-loading" class="py-10 text-center text-white/30 text-sm">...</div>
-      <div id="pm-content" class="hidden px-4 py-4 flex flex-col gap-5">
-        <!-- Overall stats -->
-        <div>
-          <div class="flex items-baseline gap-3 mb-2">
-            <span class="text-2xl font-bold text-white" id="pm-winrate">0%</span>
-            <span class="text-white/40 text-sm" id="pm-record"></span>
-          </div>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="bg-white/5 rounded-xl px-3 py-2 text-center">
-              <p class="text-white/40 text-[10px] mb-0.5" id="lbl-total-games"></p>
-              <p class="text-white font-bold text-lg" id="pm-total"></p>
-            </div>
-            <div class="bg-blue-500/10 rounded-xl px-3 py-2 text-center">
-              <p class="text-blue-300 text-[10px] mb-0.5" id="lbl-as-agent"></p>
-              <p class="text-white text-sm" id="pm-agent-record"></p>
-              <p class="text-blue-300 text-xs font-bold" id="pm-agent-rate"></p>
-            </div>
-            <div class="bg-red-500/10 rounded-xl px-3 py-2 text-center">
-              <p class="text-red-300 text-[10px] mb-0.5" id="lbl-as-spy"></p>
-              <p class="text-white text-sm" id="pm-spy-record"></p>
-              <p class="text-red-300 text-xs font-bold" id="pm-spy-rate"></p>
-            </div>
-          </div>
-        </div>
-        <!-- Kill + card usage -->
-        <div class="grid grid-cols-2 gap-2">
-          <div class="bg-white/5 rounded-xl px-3 py-2">
-            <p class="text-white/40 text-[10px] mb-1" id="lbl-kills"></p>
-            <p class="text-white font-bold text-xl" id="pm-kills">0</p>
-          </div>
-          <div class="bg-white/5 rounded-xl px-3 py-2">
-            <p class="text-white/40 text-[10px] mb-1" id="lbl-card-usage"></p>
-            <div id="pm-cards" class="flex flex-wrap gap-1 mt-1"></div>
-          </div>
-        </div>
-        <!-- Recent games -->
-        <div>
-          <p class="text-white/40 text-[10px] mb-2" id="lbl-recent-games"></p>
-          <div id="pm-recent" class="flex flex-col gap-1.5"></div>
-        </div>
+      <!-- Action buttons -->
+      <div class="flex gap-2 px-4 pb-4">
+        <button id="pm-filter-btn" class="flex-1 text-xs bg-white/5 hover:bg-white/10 text-white/60 hover:text-white px-3 py-2 rounded-xl transition"></button>
+        <button id="pm-detail-btn" class="flex-1 text-xs bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-3 py-2 rounded-xl transition"></button>
       </div>
     </div>
   </div>
@@ -254,6 +239,7 @@ const t = useTranslations(lang);
   tBot: t.docs.replay.bot,
   tOwnerLabel: t.docs.replay.ownerLabel,
   tGames: t.docs.replay.games,
+  tViewDetail: t.docs.replay.viewDetail,
 }} is:inline>
 
   // ── Replay list ────────────────────────────────────────────────────────────
@@ -436,52 +422,29 @@ const t = useTranslations(lang);
     }
   })();
 
-  // ── Player profile modal ───────────────────────────────────────────────────
+  // ── Player mini popup ─────────────────────────────────────────────────────
   const playerModal = document.getElementById('player-modal');
   const pmAvatar = document.getElementById('pm-avatar');
   const pmUsername = document.getElementById('pm-username');
   const pmTypeBadge = document.getElementById('pm-type-badge');
   const pmOwner = document.getElementById('pm-owner');
-  const pmFilterBtn = document.getElementById('pm-filter-btn');
   const pmClose = document.getElementById('pm-close');
   const pmLoading = document.getElementById('pm-loading');
   const pmContent = document.getElementById('pm-content');
-  const pmWinrate = document.getElementById('pm-winrate');
-  const pmRecord = document.getElementById('pm-record');
   const pmTotal = document.getElementById('pm-total');
-  const pmAgentRecord = document.getElementById('pm-agent-record');
   const pmAgentRate = document.getElementById('pm-agent-rate');
-  const pmSpyRecord = document.getElementById('pm-spy-record');
   const pmSpyRate = document.getElementById('pm-spy-rate');
-  const pmKills = document.getElementById('pm-kills');
-  const pmCards = document.getElementById('pm-cards');
-  const pmRecent = document.getElementById('pm-recent');
+  const pmRecord = document.getElementById('pm-record');
+  const pmWinrate = document.getElementById('pm-winrate');
+  const pmWinbar = document.getElementById('pm-winbar');
+  const pmFilterBtn = document.getElementById('pm-filter-btn');
+  const pmDetailBtn = document.getElementById('pm-detail-btn');
 
-  // Set label text
   document.getElementById('lbl-total-games').textContent = tTotalGames;
   document.getElementById('lbl-as-agent').textContent = tAsAgent;
   document.getElementById('lbl-as-spy').textContent = tAsSpy;
-  document.getElementById('lbl-kills').textContent = tKills;
-  document.getElementById('lbl-card-usage').textContent = tCardUsage;
-  document.getElementById('lbl-recent-games').textContent = tRecentGames;
   pmFilterBtn.textContent = tViewGames;
-
-  const resultLabelsProfile = { agent_win: tAgentWin, spy_win: tSpyWin, draw: tDraw };
-  const resultColorsProfile = { agent_win: 'text-blue-400', spy_win: 'text-red-400', draw: 'text-amber-400' };
-
-  const _TG = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects';
-  const _cardIcons = {
-    attack:  `<img src="${_TG}/Pistol.webp" class="w-3 h-3" alt="attack" />`,
-    heal:    `<img src="${_TG}/Bandage.webp" class="w-3 h-3" alt="heal" />`,
-    jail:    `<img src="${_TG}/Locked.webp" class="w-3 h-3" alt="jail" />`,
-    inspect: `<img src="${_TG}/Magnifying%20Glass%20Tilted%20Left.webp" class="w-3 h-3" alt="inspect" />`,
-  };
-  const _cardCls = {
-    attack: 'bg-red-500/20 text-red-300',
-    heal: 'bg-green-500/20 text-green-300',
-    jail: 'bg-purple-500/20 text-purple-300',
-    inspect: 'bg-yellow-500/20 text-yellow-300',
-  };
+  pmDetailBtn.textContent = tViewDetail;
 
   let currentProfileId = null;
   let currentProfileType = null;
@@ -499,95 +462,36 @@ const t = useTranslations(lang);
     playerModal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
 
-    const url = type === 'bot'
-      ? `${apiUrl}/api/bots/${id}/profile`
-      : `${apiUrl}/api/players/${id}`;
-
     try {
+      const url = type === 'bot'
+        ? `${apiUrl}/api/bots/${id}/profile`
+        : `${apiUrl}/api/players/${id}`;
       const res = await fetch(url);
       if (!res.ok) throw new Error();
       const data = await res.json();
-      renderPlayerProfile(data, type);
+
+      pmAvatar.src = data.avatarUrl || characterSrc;
+      pmUsername.textContent = data.username;
+      if (data.ownerUsername) {
+        pmOwner.textContent = `${tOwnerLabel}: ${data.ownerUsername}`;
+        pmOwner.classList.remove('hidden');
+      }
+      if (data.totalGames === 0) {
+        pmLoading.textContent = tNoStats;
+      } else {
+        pmTotal.textContent = data.totalGames;
+        pmAgentRate.textContent = `${data.agentWinRate}%`;
+        pmSpyRate.textContent = `${data.spyWinRate}%`;
+        pmRecord.textContent = `${data.wins}${tWins} ${data.draws}${tDraws} ${data.losses}${tLosses}`;
+        pmWinrate.textContent = `${data.winRate}%`;
+        pmWinbar.style.width = `${data.winRate}%`;
+        pmLoading.classList.add('hidden');
+        pmContent.classList.remove('hidden');
+      }
     } catch {
       pmLoading.textContent = tNotFound;
     }
   }
-
-  function renderPlayerProfile(data, type) {
-    pmAvatar.src = data.avatarUrl || characterSrc;
-    pmUsername.textContent = data.username;
-    pmTypeBadge.textContent = type === 'bot' ? tBot : tHuman;
-
-    if (data.ownerUsername) {
-      pmOwner.textContent = `${tOwnerLabel}: ${data.ownerUsername}`;
-      pmOwner.classList.remove('hidden');
-    }
-
-    if (data.totalGames === 0) {
-      pmLoading.textContent = tNoStats;
-      return;
-    }
-
-    pmWinrate.textContent = `${data.winRate}%`;
-    pmRecord.textContent = `${data.wins}${tWins} ${data.draws}${tDraws} ${data.losses}${tLosses}`;
-    pmTotal.textContent = data.totalGames;
-    pmAgentRecord.textContent = `${data.agentWins}/${data.agentGames}`;
-    pmAgentRate.textContent = `${data.agentWinRate}%`;
-    pmSpyRecord.textContent = `${data.spyWins}/${data.spyGames}`;
-    pmSpyRate.textContent = `${data.spyWinRate}%`;
-    pmKills.textContent = data.kills;
-
-    // Card usage
-    pmCards.innerHTML = '';
-    const cu = data.cardUsage || {};
-    ['attack', 'heal', 'jail', 'inspect'].forEach(ct => {
-      if (!cu[ct]) return;
-      pmCards.innerHTML += `<span class="inline-flex items-center gap-1 ${_cardCls[ct]} px-1.5 py-0.5 rounded text-[10px]">${_cardIcons[ct]}${cu[ct]}</span>`;
-    });
-    if (!pmCards.innerHTML) pmCards.innerHTML = `<span class="text-white/20 text-xs">—</span>`;
-
-    // Recent games
-    pmRecent.innerHTML = '';
-    (data.recentGames || []).forEach(g => {
-      const date = g.finishedAt ? new Date(g.finishedAt).toLocaleDateString() : '';
-      const resLabel = resultLabelsProfile[g.result] || g.result || tInProgress;
-      const resColor = resultColorsProfile[g.result] || 'text-white/40';
-      const roleColor = g.role === 'spy' ? 'text-red-400' : 'text-blue-400';
-      pmRecent.innerHTML += `
-        <button class="w-full text-left bg-white/5 hover:bg-white/10 rounded-lg px-3 py-2 transition flex items-center gap-2" data-game-id="${g.gameId}">
-          <span class="${roleColor} text-xs font-bold w-12 shrink-0">${g.role === 'spy' ? tAsSpy : tAsAgent}</span>
-          <span class="flex-1 text-white/70 text-xs truncate">${escapeHtml(g.title || 'Untitled')}</span>
-          <span class="${resColor} text-xs shrink-0">${resLabel}</span>
-          <span class="text-white/20 text-xs shrink-0">${date}</span>
-        </button>`;
-    });
-    if (!data.recentGames || data.recentGames.length === 0) {
-      pmRecent.innerHTML = `<p class="text-white/20 text-xs">${tNoStats}</p>`;
-    }
-
-    pmLoading.classList.add('hidden');
-    pmContent.classList.remove('hidden');
-  }
-
-  // Click on recent game → open replay modal
-  pmRecent.addEventListener('click', e => {
-    const btn = e.target.closest('[data-game-id]');
-    if (btn) {
-      closePlayerModal();
-      openReplayModal(btn.dataset.gameId);
-    }
-  });
-
-  // Filter button → close profile, apply filter
-  pmFilterBtn.addEventListener('click', () => {
-    if (!currentProfileId) return;
-    const type = currentProfileType;
-    const id = currentProfileId;
-    const name = pmUsername.textContent;
-    const avatar = pmAvatar.src;
-    closePlayerModal();
-    setFilter({ type, id, name, avatar });
-  });
 
   function closePlayerModal() {
     playerModal.classList.add('hidden');
@@ -598,8 +502,21 @@ const t = useTranslations(lang);
 
   pmClose.addEventListener('click', closePlayerModal);
   playerModal.addEventListener('click', e => { if (e.target === playerModal) closePlayerModal(); });
-  document.addEventListener('keydown', e => {
-    if (e.code === 'Escape' && !playerModal.classList.contains('hidden')) closePlayerModal();
+
+  pmFilterBtn.addEventListener('click', () => {
+    if (!currentProfileId) return;
+    const id = currentProfileId;
+    const type = currentProfileType;
+    const name = pmUsername.textContent;
+    const avatar = pmAvatar.src;
+    closePlayerModal();
+    setFilter({ type, id, name, avatar });
+  });
+
+  pmDetailBtn.addEventListener('click', () => {
+    if (!currentProfileId) return;
+    const param = currentProfileType === 'bot' ? `botId=${currentProfileId}` : `userId=${currentProfileId}`;
+    window.location.href = `/${lang}/profile?${param}`;
   });
 
   // ── Replay modal ───────────────────────────────────────────────────────────
@@ -979,4 +896,10 @@ const t = useTranslations(lang);
     favCountEl.textContent = String(parseInt(favCountEl.textContent) + (isFavorited ? 1 : -1));
     updateFavUI();
   });
+
+  // Auto-open replay from ?open=gameId
+  (function() {
+    const openId = new URLSearchParams(window.location.search).get('open');
+    if (openId) openReplayModal(openId);
+  })();
 </script>
