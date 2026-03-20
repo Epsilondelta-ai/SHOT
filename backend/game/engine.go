@@ -452,6 +452,9 @@ func SendChat(state *GameState, playerID, message string) ([]Event, error) {
 	if player.HasChatted {
 		return nil, fmt.Errorf("already chatted this turn")
 	}
+	if len([]rune(message)) > 100 {
+		message = string([]rune(message)[:100])
+	}
 
 	player.HasChatted = true
 

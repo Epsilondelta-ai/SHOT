@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/json"
+
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/game"
 	"github.com/epsilondelta/shot/hub"
@@ -331,6 +333,20 @@ func buildClientState(state *game.GameState, viewerID string) fiber.Map {
 		players[i] = pm
 	}
 
+	// 채팅 기록 조회
+	var chatActions []models.GameAction
+	db.DB.Where("game_id = ? AND action_type = ?", state.GameID, "game_chat").
+		Order("created_at ASC").Find(&chatActions)
+	chatLog := make([]fiber.Map, 0, len(chatActions))
+	for _, a := range chatActions {
+		var payload map[string]any
+		json.Unmarshal([]byte(a.Payload), &payload)
+		chatLog = append(chatLog, fiber.Map{
+			"actorId": a.ActorID,
+			"payload": payload,
+		})
+	}
+
 	return fiber.Map{
 		"gameId":           state.GameID,
 		"roomId":           state.RoomID,
@@ -347,5 +363,6 @@ func buildClientState(state *game.GameState, viewerID string) fiber.Map {
 		"deckCount":        len(state.Deck),
 		"discardCount":     len(state.Discard),
 		"banishedCount":    state.Banished,
+		"chatLog":          chatLog,
 	}
 }

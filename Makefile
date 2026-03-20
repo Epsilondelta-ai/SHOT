@@ -1,4 +1,4 @@
-.PHONY: dev dev-frontend dev-backend build build-frontend build-backend infra infra-down
+.PHONY: dev dev-frontend dev-backend build build-frontend build-backend infra infra-down cleanup-games
 
 infra:
 	docker compose up -d
@@ -23,3 +23,6 @@ build-frontend:
 
 build-backend:
 	cd backend && go build -o dist/server main.go
+
+cleanup-games:
+	cd backend && ./scripts/cleanup-games.sh

@@ -88,7 +88,7 @@ const t = useTranslations(lang);
     <div class="flex flex-col h-full max-w-6xl mx-auto w-full">
       <div id="gp-chat-messages" class="flex-1 overflow-y-auto p-3 flex flex-col gap-1 min-h-0"></div>
       <div class="flex gap-2 p-2 border-t border-white/10">
-        <input id="gp-chat-input" type="text" maxlength="300"
+        <input id="gp-chat-input" type="text" maxlength="100"
           placeholder={t.game.chat.placeholder}
           class="flex-1 bg-white/10 border border-white/20 rounded-xl px-3 py-1.5 text-white placeholder-white/30 text-xs focus:outline-none focus:ring-2 focus:ring-amber-400" />
         <button id="gp-chat-send" class="bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold px-3 py-1.5 rounded-xl text-xs transition">{t.rooms.chatSend}</button>
@@ -733,7 +733,7 @@ const t = useTranslations(lang);
       bLeft = playerCX; bTop = playerRect.top - containerRect.top - 8; bTransform = 'translate(-50%, -100%)';
     }
 
-    const displayMsg = message.length > 40 ? message.slice(0, 40) + '...' : message;
+    const displayMsg = message;
     const bubble = document.createElement('div');
     bubble.className = 'absolute pointer-events-none z-40';
     bubble.style.left = `${bLeft}px`;
@@ -873,6 +873,19 @@ const t = useTranslations(lang);
     }
   }
 
+  function restoreChatLog(state) {
+    if (!state?.chatLog?.length) return;
+    chatMessages.innerHTML = '';
+    for (const chat of state.chatLog) {
+      const payload = chat.payload || {};
+      const el = document.createElement('div');
+      el.className = 'text-xs';
+      el.innerHTML = `<span class="text-amber-400 font-bold">${payload.username || ''}</span>: <span class="text-white/80">${payload.message || ''}</span>`;
+      chatMessages.appendChild(el);
+    }
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
   async function loadGameState(gameId) {
     const token = getToken();
     const res = await fetch(`${apiUrl}/api/games/${gameId}/state`, {
@@ -911,6 +924,7 @@ const t = useTranslations(lang);
     scene.classList.add('flex');
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'gameplay' }));
 
+    restoreChatLog(state);
     updateUI();
     startTimerCountdown();
     // Notify game.astro that the scene is fully ready — hides loading screen
@@ -929,6 +943,7 @@ const t = useTranslations(lang);
       const state = await loadGameState(gameState.gameId);
       if (!state) return;
       gameState = state;
+      restoreChatLog(state);
       updateUI();
 
       if (state.status === 'finished') {
