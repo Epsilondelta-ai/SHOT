@@ -34,7 +34,7 @@ const t = useTranslations(lang);
         <h2 id="gameroom-name" class="text-white font-bold text-base truncate mb-1"></h2>
         <div class="flex items-center gap-2 flex-wrap">
           <span id="gameroom-status-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full"></span>
-          <span id="gameroom-private-badge" class="hidden text-xs text-amber-300"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Locked.png" alt="Locked" class="inline-block w-4 h-4" /> {t.rooms.privateRoom}</span>
+          <span id="gameroom-private-badge" class="hidden text-xs text-amber-300"><img src="/emoji/locked.png" alt="Locked" class="inline-block w-4 h-4" /> {t.rooms.privateRoom}</span>
         </div>
       </div>
 
@@ -47,7 +47,7 @@ const t = useTranslations(lang);
 
         <!-- Spectators -->
         <div id="gameroom-spectator-section" class="hidden mt-2 pt-2 border-t border-white/10">
-          <p class="text-white/40 text-xs font-semibold uppercase tracking-wider mb-2"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> {t.rooms.spectators}</p>
+          <p class="text-white/40 text-xs font-semibold uppercase tracking-wider mb-2"><img src="/emoji/eye.png" alt="Eye" class="inline-block w-4 h-4" /> {t.rooms.spectators}</p>
           <div id="gameroom-spectator-slots" class="flex flex-wrap gap-2"></div>
         </div>
       </div>
@@ -55,7 +55,7 @@ const t = useTranslations(lang);
       <!-- Bottom actions -->
       <div class="flex flex-col gap-2">
         <button id="spectate-btn" class="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">{t.rooms.spectate}</button>
-        <button id="invite-bot-btn" class="hidden w-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 py-2 rounded-xl text-sm transition"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Robot.png" alt="bot" class="inline-block w-4 h-4" /> {t.rooms.inviteBot}</button>
+        <button id="invite-bot-btn" class="hidden w-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 py-2 rounded-xl text-sm transition"><img src="/emoji/robot.png" alt="bot" class="inline-block w-4 h-4" /> {t.rooms.inviteBot}</button>
       </div>
     </div>
 
@@ -105,7 +105,7 @@ const t = useTranslations(lang);
     <div class="mb-4">
       <label class="flex items-center gap-2 cursor-pointer">
         <input id="edit-room-private" type="checkbox" class="w-4 h-4 accent-amber-400" />
-        <span class="text-sm font-semibold text-white/70"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Locked.png" alt="lock" class="inline-block w-4 h-4" /> {t.rooms.privateRoom}</span>
+        <span class="text-sm font-semibold text-white/70"><img src="/emoji/locked.png" alt="lock" class="inline-block w-4 h-4" /> {t.rooms.privateRoom}</span>
       </label>
     </div>
     <div id="edit-room-password-field" class="mb-5 hidden">
@@ -123,7 +123,7 @@ const t = useTranslations(lang);
 <!-- Invite bot modal -->
 <div id="invite-bot-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
   <div class="bg-gray-900 rounded-2xl p-7 w-full max-w-sm text-white shadow-2xl">
-    <h3 class="text-lg font-bold text-amber-400 mb-4"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Robot.png" alt="bot" class="inline-block w-5 h-5" /> {t.rooms.myBots}</h3>
+    <h3 class="text-lg font-bold text-amber-400 mb-4"><img src="/emoji/robot.png" alt="bot" class="inline-block w-5 h-5" /> {t.rooms.myBots}</h3>
     <div id="invite-bot-list" class="flex flex-col gap-2 mb-4 max-h-60 overflow-y-auto">
       <p id="invite-bot-empty" class="text-white/40 text-sm text-center py-4">{t.rooms.noBots}</p>
     </div>
@@ -271,7 +271,7 @@ const t = useTranslations(lang);
               onerror="this.src='${characterSrc}'" />
             ${isBot ? `<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-gray-900 ${member.isOnline ? 'bg-green-500' : 'bg-gray-500'}"></span>` : ''}
           </div>
-          <p class="text-white/70 text-xs truncate w-full text-center max-w-[64px]">${isMemberHost ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" alt="star" class="inline-block w-3 h-3" /> ' : ''}${member.username}</p>
+          <p class="text-white/70 text-xs truncate w-full text-center max-w-[64px]">${isMemberHost ? '<img src="/emoji/glowing-star.png" alt="star" class="inline-block w-3 h-3" /> ' : ''}${member.username}</p>
           ${isBot && member.ownerUsername ? `<p class="text-white/30 text-xs truncate w-full text-center max-w-[64px]">${member.ownerUsername}</p>` : ''}
           ${member.canInviteBots && !isBot ? '<p class="text-blue-300 text-xs">🔑</p>' : ''}
         `;
@@ -300,7 +300,7 @@ const t = useTranslations(lang);
           <img src="${s.avatarUrl || characterSrc}" alt="${s.username}"
             class="w-5 h-5 rounded-full object-cover bg-amber-800"
             onerror="this.src='${characterSrc}'" />
-          <span class="text-white/50 text-xs">${s.userId === roomState.hostId ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" alt="star" class="inline-block w-3 h-3" /> ' : ''}${s.username}</span>
+          <span class="text-white/50 text-xs">${s.userId === roomState.hostId ? '<img src="/emoji/glowing-star.png" alt="star" class="inline-block w-3 h-3" /> ' : ''}${s.username}</span>
         `;
         spectatorSlotsEl.appendChild(el);
       });

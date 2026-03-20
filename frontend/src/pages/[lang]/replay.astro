@@ -31,13 +31,13 @@ const t = useTranslations(lang);
         <div class="flex items-center gap-4">
           <div id="replay-meta" class="text-white/50 text-sm"></div>
           <div class="flex items-center gap-3 ml-auto">
-            <span id="replay-views" class="text-white/30 text-xs flex items-center gap-1"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> 0</span>
+            <span id="replay-views" class="text-white/30 text-xs flex items-center gap-1"><img src="/emoji/eye.png" alt="Eye" class="inline-block w-4 h-4" /> 0</span>
             <button id="replay-like-btn" class="flex items-center gap-1 text-white/40 hover:text-red-400 text-sm transition">
-              <span id="replay-like-icon"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/White%20Heart.png" alt="Heart" class="inline-block w-4 h-4" /></span>
+              <span id="replay-like-icon"><img src="/emoji/white-heart.png" alt="Heart" class="inline-block w-4 h-4" /></span>
               <span id="replay-like-count" class="text-xs">0</span>
             </button>
             <button id="replay-fav-btn" class="flex items-center gap-1 text-white/40 hover:text-amber-400 text-sm transition">
-              <span id="replay-fav-icon"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Star.png" alt="Star" class="inline-block w-4 h-4" /></span>
+              <span id="replay-fav-icon"><img src="/emoji/star.png" alt="Star" class="inline-block w-4 h-4" /></span>
               <span id="replay-fav-count" class="text-xs">0</span>
             </button>
           </div>
@@ -402,17 +402,17 @@ const t = useTranslations(lang);
   function getToken() { return localStorage.getItem('token'); }
 
   function updateLikeUI() {
-    likeIcon.innerHTML = isLiked ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" alt="Heart" class="inline-block w-4 h-4" />' : '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/White%20Heart.png" alt="Heart" class="inline-block w-4 h-4" />';
+    likeIcon.innerHTML = isLiked ? '<img src="/emoji/red-heart.png" alt="Heart" class="inline-block w-4 h-4" />' : '<img src="/emoji/white-heart.png" alt="Heart" class="inline-block w-4 h-4" />';
     likeBtn.className = `flex items-center gap-1 text-sm transition ${isLiked ? 'text-red-400' : 'text-white/40 hover:text-red-400'}`;
   }
 
   function updateFavUI() {
-    favIcon.innerHTML = isFavorited ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" alt="Star" class="inline-block w-4 h-4" />' : '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Star.png" alt="Star" class="inline-block w-4 h-4" />';
+    favIcon.innerHTML = isFavorited ? '<img src="/emoji/glowing-star.png" alt="Star" class="inline-block w-4 h-4" />' : '<img src="/emoji/star.png" alt="Star" class="inline-block w-4 h-4" />';
     favBtn.className = `flex items-center gap-1 text-sm transition ${isFavorited ? 'text-amber-400' : 'text-white/40 hover:text-amber-400'}`;
   }
 
   function updateCounts(data) {
-    viewsEl.innerHTML = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> ' + (data.viewCount || 0);
+    viewsEl.innerHTML = '<img src="/emoji/eye.png" alt="Eye" class="inline-block w-4 h-4" /> ' + (data.viewCount || 0);
     likeCountEl.textContent = String(data.likeCount || 0);
     favCountEl.textContent = String(data.favoriteCount || 0);
     isLiked = !!data.isLiked;

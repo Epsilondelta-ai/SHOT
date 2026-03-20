@@ -78,21 +78,21 @@ const t = useTranslations(lang);
           <p id="modal-meta" class="text-white/40 text-xs mt-0.5"></p>
           <div class="flex items-center gap-3 mt-1">
             <span id="modal-views" class="text-white/30 text-xs flex items-center gap-1">
-              <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> 0
+              <img src="/emoji/eye.png" alt="Eye" class="inline-block w-4 h-4" /> 0
             </span>
             <button id="modal-like-btn" class="flex items-center gap-1 text-white/40 hover:text-red-400 text-sm transition">
-              <span id="modal-like-icon"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/White%20Heart.png" alt="Heart" class="inline-block w-4 h-4" /></span>
+              <span id="modal-like-icon"><img src="/emoji/white-heart.png" alt="Heart" class="inline-block w-4 h-4" /></span>
               <span id="modal-like-count" class="text-xs">0</span>
             </button>
             <button id="modal-fav-btn" class="flex items-center gap-1 text-white/40 hover:text-amber-400 text-sm transition">
-              <span id="modal-fav-icon"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Star.png" alt="Star" class="inline-block w-4 h-4" /></span>
+              <span id="modal-fav-icon"><img src="/emoji/star.png" alt="Star" class="inline-block w-4 h-4" /></span>
               <span id="modal-fav-count" class="text-xs">0</span>
             </button>
           </div>
         </div>
         <div class="flex items-center gap-3 flex-shrink-0">
           <button id="modal-share" class="text-white/40 hover:text-amber-400 text-sm transition flex items-center gap-1" title="Share">
-            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Link.png" alt="Share" class="inline-block w-4 h-4" />
+            <img src="/emoji/link.png" alt="Share" class="inline-block w-4 h-4" />
           </button>
           <button id="modal-close" class="text-white/40 hover:text-white text-xl leading-none transition px-1">✕</button>
         </div>
@@ -321,9 +321,9 @@ const t = useTranslations(lang);
         <div class="text-right flex-shrink-0 flex flex-col items-end gap-1">
           <p class="text-white/30 text-xs">${date}</p>
           <div class="flex items-center gap-3 text-white/30 text-xs">
-            <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> ${replay.viewCount || 0}</span>
-            <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" alt="Heart" class="inline-block w-4 h-4" /> ${replay.likeCount || 0}</span>
-            <span><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" alt="Star" class="inline-block w-4 h-4" /> ${replay.favoriteCount || 0}</span>
+            <span><img src="/emoji/eye.png" alt="Eye" class="inline-block w-4 h-4" /> ${replay.viewCount || 0}</span>
+            <span><img src="/emoji/red-heart.png" alt="Heart" class="inline-block w-4 h-4" /> ${replay.likeCount || 0}</span>
+            <span><img src="/emoji/glowing-star.png" alt="Star" class="inline-block w-4 h-4" /> ${replay.favoriteCount || 0}</span>
           </div>
         </div>
       </div>
@@ -757,20 +757,20 @@ const t = useTranslations(lang);
 
   function updateLikeUI() {
     likeIcon.innerHTML = isLiked
-      ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" alt="Heart" class="inline-block w-4 h-4" />'
-      : '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/White%20Heart.png" alt="Heart" class="inline-block w-4 h-4" />';
+      ? '<img src="/emoji/red-heart.png" alt="Heart" class="inline-block w-4 h-4" />'
+      : '<img src="/emoji/white-heart.png" alt="Heart" class="inline-block w-4 h-4" />';
     likeBtn.className = `flex items-center gap-1 text-sm transition ${isLiked ? 'text-red-400' : 'text-white/40 hover:text-red-400'}`;
   }
 
   function updateFavUI() {
     favIcon.innerHTML = isFavorited
-      ? '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Glowing%20Star.png" alt="Star" class="inline-block w-4 h-4" />'
-      : '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Star.png" alt="Star" class="inline-block w-4 h-4" />';
+      ? '<img src="/emoji/glowing-star.png" alt="Star" class="inline-block w-4 h-4" />'
+      : '<img src="/emoji/star.png" alt="Star" class="inline-block w-4 h-4" />';
     favBtn.className = `flex items-center gap-1 text-sm transition ${isFavorited ? 'text-amber-400' : 'text-white/40 hover:text-amber-400'}`;
   }
 
   function updateCounts(data) {
-    viewsEl.innerHTML = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Eye.png" alt="Eye" class="inline-block w-4 h-4" /> ' + (data.viewCount || 0);
+    viewsEl.innerHTML = '<img src="/emoji/eye.png" alt="Eye" class="inline-block w-4 h-4" /> ' + (data.viewCount || 0);
     likeCountEl.textContent = String(data.likeCount || 0);
     favCountEl.textContent = String(data.favoriteCount || 0);
     isLiked = !!data.isLiked;
@@ -912,9 +912,9 @@ const t = useTranslations(lang);
     if (!currentGameId) return;
     const shareUrl = `${window.location.origin}/${lang}/replays?id=${currentGameId}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
-      shareBtn.innerHTML = `<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Check%20Mark.png" alt="Copied" class="inline-block w-4 h-4" /> <span class="text-xs">${tCopied}</span>`;
+      shareBtn.innerHTML = `<img src="/emoji/check-mark.png" alt="Copied" class="inline-block w-4 h-4" /> <span class="text-xs">${tCopied}</span>`;
       setTimeout(() => {
-        shareBtn.innerHTML = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Link.png" alt="Share" class="inline-block w-4 h-4" />';
+        shareBtn.innerHTML = '<img src="/emoji/link.png" alt="Share" class="inline-block w-4 h-4" />';
       }, 2000);
     });
   });

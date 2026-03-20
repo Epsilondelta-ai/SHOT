@@ -126,7 +126,7 @@ const t = useTranslations(lang);
           <p id="modal-meta" class="text-white/40 text-xs mt-0.5"></p>
         </div>
         <button id="modal-share" class="text-white/40 hover:text-amber-400 text-sm transition flex items-center gap-1" title="Share">
-          <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Link.png" alt="Share" class="inline-block w-4 h-4" />
+          <img src="/emoji/link.png" alt="Share" class="inline-block w-4 h-4" />
         </button>
         <button id="modal-close" class="text-white/40 hover:text-white text-xl leading-none transition px-1">✕</button>
       </div>
@@ -270,7 +270,7 @@ const t = useTranslations(lang);
         document.getElementById('ph-username').textContent = data.username;
         const badgeEl = document.getElementById('ph-type-badge');
         if (profileType === 'bot') {
-          badgeEl.innerHTML = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Robot.png" alt="Bot" class="inline-block w-5 h-5" />';
+          badgeEl.innerHTML = '<img src="/emoji/robot.png" alt="Bot" class="inline-block w-5 h-5" />';
         } else {
           badgeEl.classList.add('hidden');
         }
@@ -677,9 +677,9 @@ const t = useTranslations(lang);
     if (!currentGameId) return;
     const shareUrl = `${window.location.origin}/${lang}/replays?id=${currentGameId}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
-      shareBtn.innerHTML = `<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Symbols/Check%20Mark.png" alt="Copied" class="inline-block w-4 h-4" /> <span class="text-xs">${tCopied}</span>`;
+      shareBtn.innerHTML = `<img src="/emoji/check-mark.png" alt="Copied" class="inline-block w-4 h-4" /> <span class="text-xs">${tCopied}</span>`;
       setTimeout(() => {
-        shareBtn.innerHTML = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Link.png" alt="Share" class="inline-block w-4 h-4" />';
+        shareBtn.innerHTML = '<img src="/emoji/link.png" alt="Share" class="inline-block w-4 h-4" />';
       }, 2000);
     });
   });
