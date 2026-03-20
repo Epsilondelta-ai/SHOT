@@ -230,6 +230,8 @@ export default {
     editRoom: 'Edit Room',
     myBots: 'My Bots',
     noBots: 'No bots available.',
+    botBusy: 'This bot is currently in a game.',
+    botOffline: 'This bot is offline.',
     invite: 'Invite',
     chat: 'Chat',
     chatPlaceholder: 'Type a message...',

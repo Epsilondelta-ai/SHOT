@@ -148,6 +148,7 @@ const t = useTranslations(lang);
   tRevokeBotInvite: t.rooms.revokeBotInvite,
   tInvite: t.rooms.invite,
   tBotBusy: t.rooms.botBusy,
+  tBotOffline: t.rooms.botOffline,
   tKick: t.rooms.kick,
   tSystemKicked: t.rooms.systemKicked,
   tDuplicateConnection: t.rooms.duplicateConnection,
@@ -452,9 +453,13 @@ const t = useTranslations(lang);
             }).catch(() => null);
             if (r?.ok) {
               closeModal(inviteBotModal);
-            } else if (r?.status === 409) {
+            } else if (r && !r.ok) {
+              const data = await r.json().catch(() => ({}));
+              const msg = data.error === 'bot is offline' ? tBotOffline
+                        : data.error === 'bot is in an active game' ? tBotBusy
+                        : data.error || 'Error';
               const orig = btn.textContent;
-              btn.textContent = tBotBusy;
+              btn.textContent = msg;
               btn.disabled = true;
               btn.className = 'bg-red-500/30 text-red-300 text-xs px-3 py-1 rounded-lg cursor-not-allowed';
               setTimeout(() => {

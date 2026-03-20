@@ -238,6 +238,11 @@ func InviteBot(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"ok": true})
 	}
 
+	// Check if bot is online
+	if !IsBotOnline(body.BotID) {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "bot is offline"})
+	}
+
 	// Check if bot is busy in an active game in another room.
 	// Join rooms so stale RoomMember rows from finished/waiting rooms don't block re-invitation.
 	var busyMember models.RoomMember
