@@ -274,7 +274,10 @@ func (h *Hub) DisconnectBot(botID string) {
 		if c.RoomID != "" {
 			h.Unregister(c)
 		}
-		close(c.Ch)
+		func() {
+			defer func() { recover() }()
+			close(c.Ch)
+		}()
 	}
 }
 

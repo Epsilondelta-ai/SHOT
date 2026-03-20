@@ -99,7 +99,10 @@ func BotSSE(c *fiber.Ctx) error {
 		if oldClient.RoomID != "" {
 			hub.H.Unregister(oldClient)
 		}
-		close(oldClient.Ch)
+		func() {
+			defer func() { recover() }()
+			close(oldClient.Ch)
+		}()
 	}
 
 	// If bot is already in an active room, register to that room's hub.
