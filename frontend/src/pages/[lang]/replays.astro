@@ -89,6 +89,9 @@ const t = useTranslations(lang);
             <span id="modal-fav-icon"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Star.png" alt="Star" class="inline-block w-4 h-4" /></span>
             <span id="modal-fav-count" class="text-xs">0</span>
           </button>
+          <button id="modal-share" class="text-white/40 hover:text-amber-400 text-sm transition flex items-center gap-1" title="Share">
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Link.png" alt="Share" class="inline-block w-4 h-4" />
+          </button>
           <button id="modal-close" class="text-white/40 hover:text-white text-xl leading-none transition px-1">✕</button>
         </div>
       </div>
@@ -232,6 +235,7 @@ const t = useTranslations(lang);
   tOwnerLabel: t.docs.replay.ownerLabel,
   tGames: t.docs.replay.games,
   tViewDetail: t.docs.replay.viewDetail,
+  tCopied: t.docs.replay.copied,
 }} is:inline>
 
   // ── Replay list ────────────────────────────────────────────────────────────
@@ -889,9 +893,23 @@ const t = useTranslations(lang);
     updateFavUI();
   });
 
-  // Auto-open replay from ?open=gameId
+  // Share button
+  const shareBtn = document.getElementById('modal-share');
+  shareBtn.addEventListener('click', () => {
+    if (!currentGameId) return;
+    const shareUrl = `${window.location.origin}/${lang}/replays?id=${currentGameId}`;
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      shareBtn.innerHTML = `<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Check%20Mark.png" alt="Copied" class="inline-block w-4 h-4" /> <span class="text-xs">${tCopied}</span>`;
+      setTimeout(() => {
+        shareBtn.innerHTML = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Link.png" alt="Share" class="inline-block w-4 h-4" />';
+      }, 2000);
+    });
+  });
+
+  // Auto-open replay from ?open= or ?id=
   (function() {
-    const openId = new URLSearchParams(window.location.search).get('open');
+    const params = new URLSearchParams(window.location.search);
+    const openId = params.get('id') || params.get('open');
     if (openId) openReplayModal(openId);
   })();
 </script>
