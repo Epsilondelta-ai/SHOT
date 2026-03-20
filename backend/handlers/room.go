@@ -460,7 +460,11 @@ func LeaveRoom(c *fiber.Ctx) error {
 	// Also delete directly from DB in case the SSE connection is already gone
 	// and the defer cleanup won't run.
 	db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Delete(&models.RoomMember{})
-	if !hub.H.HasClients(roomID) {
+	// Use DB human-count instead of hub clients — bots may still hold SSE connections
+	// and would keep HasClients true even when no humans remain.
+	var remainingHumans int64
+	db.DB.Model(&models.RoomMember{}).Where("room_id = ? AND bot_id = ''", roomID).Count(&remainingHumans)
+	if remainingHumans == 0 {
 		hub.H.BroadcastRoomClosed(roomID)
 		db.DB.Where("room_id = ?", roomID).Delete(&models.RoomMember{})
 		db.DB.Delete(&models.Room{}, "id = ?", roomID)

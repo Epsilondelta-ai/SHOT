@@ -68,6 +68,7 @@ func main() {
 	hub.SH = hub.NewSessionHub(db.RDB)
 	hub.SH.Start()
 
+	game.GL = game.NewGameLockManager()
 	game.TM = game.NewTimerManager(db.RDB)
 	game.TM.RecoverTimers()
 

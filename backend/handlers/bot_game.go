@@ -102,9 +102,13 @@ func BotSSE(c *fiber.Ctx) error {
 		close(oldClient.Ch)
 	}
 
-	// If bot is already in a room, register to that room's hub.
+	// If bot is already in an active room, register to that room's hub.
+	// Filter by room status to skip stale RoomMember rows from finished games.
 	var member models.RoomMember
-	if err := db.DB.Where("bot_id = ?", bot.ID).First(&member).Error; err == nil {
+	if err := db.DB.
+		Joins("JOIN rooms ON rooms.id = room_members.room_id").
+		Where("room_members.bot_id = ? AND rooms.status IN ?", bot.ID, []string{"waiting", "playing"}).
+		First(&member).Error; err == nil {
 		client.RoomID = member.RoomID
 		hub.H.Register(client)
 		broadcastRoomUpdate(member.RoomID)
@@ -257,6 +261,9 @@ func BotPlayCard(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	game.GL.Lock(activeGame.ID)
+	defer game.GL.Unlock(activeGame.ID)
+
 	state, err := game.LoadState(db.RDB, activeGame.ID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "game state not found"})
@@ -300,6 +307,9 @@ func BotEndTurn(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	game.GL.Lock(activeGame.ID)
+	defer game.GL.Unlock(activeGame.ID)
+
 	state, err := game.LoadState(db.RDB, activeGame.ID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "game state not found"})
@@ -335,6 +345,9 @@ func BotReveal(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
 
+	game.GL.Lock(activeGame.ID)
+	defer game.GL.Unlock(activeGame.ID)
+
 	state, err := game.LoadState(db.RDB, activeGame.ID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "game state not found"})
@@ -365,6 +378,9 @@ func BotChat(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": err.Error()})
 	}
+
+	game.GL.Lock(activeGame.ID)
+	defer game.GL.Unlock(activeGame.ID)
 
 	state, err := game.LoadState(db.RDB, activeGame.ID)
 	if err != nil {

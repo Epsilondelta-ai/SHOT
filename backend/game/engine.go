@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/epsilondelta/shot/db"
+	"github.com/epsilondelta/shot/hub"
 	"github.com/epsilondelta/shot/models"
 	"github.com/google/uuid"
 )
@@ -189,6 +190,9 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 
 // PlayCard handles a player using a card on a target.
 func PlayCard(state *GameState, playerID, cardType, targetID string) ([]Event, error) {
+	if state.Status != "playing" {
+		return nil, fmt.Errorf("game not in progress")
+	}
 	player := state.FindPlayer(playerID)
 	if player == nil || player.IsDead {
 		return nil, fmt.Errorf("invalid player")
@@ -324,6 +328,9 @@ func PlayCard(state *GameState, playerID, cardType, targetID string) ([]Event, e
 
 // EndTurn handles a player ending their turn.
 func EndTurn(state *GameState, playerID string) ([]Event, error) {
+	if state.Status != "playing" {
+		return nil, fmt.Errorf("game not in progress")
+	}
 	player := state.FindPlayer(playerID)
 	if player == nil || state.CurrentPlayerID() != playerID {
 		return nil, fmt.Errorf("not your turn")
@@ -380,6 +387,9 @@ func HandleTimeout(state *GameState) ([]Event, error) {
 
 // RevealIdentity handles a spy voluntarily revealing their identity.
 func RevealIdentity(state *GameState, playerID string) ([]Event, error) {
+	if state.Status != "playing" {
+		return nil, fmt.Errorf("game not in progress")
+	}
 	player := state.FindPlayer(playerID)
 	if player == nil || player.IsDead {
 		return nil, fmt.Errorf("invalid player")
@@ -429,6 +439,9 @@ func RevealIdentity(state *GameState, playerID string) ([]Event, error) {
 
 // SendChat handles in-game chat (1 per turn).
 func SendChat(state *GameState, playerID, message string) ([]Event, error) {
+	if state.Status != "playing" {
+		return nil, fmt.Errorf("game not in progress")
+	}
 	player := state.FindPlayer(playerID)
 	if player == nil {
 		return nil, fmt.Errorf("invalid player")
@@ -560,6 +573,30 @@ func endGame(state *GameState, result string) []Event {
 
 	// Reset room back to waiting so another game can start in the same room.
 	db.DB.Model(&models.Room{}).Where("id = ?", state.RoomID).Update("status", "waiting")
+
+	// Collect bot IDs before deleting, so we can notify them to leave.
+	var botIDs []string
+	db.DB.Model(&models.RoomMember{}).
+		Where("room_id = ? AND bot_id != ''", state.RoomID).
+		Pluck("bot_id", &botIDs)
+
+	// Remove bot members — bots must be re-invited for the next game.
+	// Human members are preserved so they can view the post-game screen and leave gracefully.
+	if len(botIDs) > 0 {
+		db.DB.Where("room_id = ? AND bot_id != ''", state.RoomID).Delete(&models.RoomMember{})
+		// Notify each bot's SSE so it unregisters from the room hub.
+		for _, botID := range botIDs {
+			hub.H.PublishBotEvent(botID, map[string]any{
+				"type":   "kicked_from_room",
+				"roomId": state.RoomID,
+			})
+		}
+	}
+
+	// Stop the turn timer (idempotent — safe to call even if already stopped).
+	if TM != nil {
+		TM.StopTimer(state.GameID)
+	}
 
 	event := Event{
 		Type: "game_end",

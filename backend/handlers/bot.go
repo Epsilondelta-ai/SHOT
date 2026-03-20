@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 
 	"github.com/epsilondelta/shot/db"
+	"github.com/epsilondelta/shot/hub"
 	"github.com/epsilondelta/shot/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
@@ -50,11 +51,23 @@ func ListBots(c *fiber.Ctx) error {
 
 	result := make([]fiber.Map, len(bots))
 	for i, bot := range bots {
+		isInGame := false
+		roomName := ""
+		var room models.Room
+		err := db.DB.Joins("JOIN room_members ON room_members.room_id = rooms.id").
+			Where("room_members.bot_id = ? AND rooms.status = ?", bot.ID, "playing").
+			First(&room).Error
+		if err == nil {
+			isInGame = true
+			roomName = room.Name
+		}
 		result[i] = fiber.Map{
 			"id":        bot.ID,
 			"name":      bot.Name,
 			"avatarUrl": bot.AvatarURL,
 			"isOnline":  IsBotOnline(bot.ID),
+			"isInGame":  isInGame,
+			"roomName":  roomName,
 			"createdAt": bot.CreatedAt,
 		}
 	}
@@ -151,9 +164,25 @@ func DeleteBot(c *fiber.Ctx) error {
 	}
 
 	botID := c.Params("id")
+
+	// Find affected rooms before deleting so we can update their member counts.
+	var members []models.RoomMember
+	db.DB.Where("bot_id = ?", botID).Find(&members)
+
 	result := db.DB.Where("id = ? AND user_id = ?", botID, userID).Delete(&models.Bot{})
 	if result.RowsAffected == 0 {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "bot not found"})
 	}
+
+	// Clean up all room memberships for the deleted bot.
+	db.DB.Where("bot_id = ?", botID).Delete(&models.RoomMember{})
+
+	// Notify the bot's SSE connection so it unregisters from the room hub,
+	// and broadcast updated member lists to any affected rooms.
+	hub.H.PublishBotEvent(botID, map[string]any{"type": "kicked_from_room"})
+	for _, m := range members {
+		broadcastRoomUpdate(m.RoomID)
+	}
+
 	return c.SendStatus(fiber.StatusNoContent)
 }

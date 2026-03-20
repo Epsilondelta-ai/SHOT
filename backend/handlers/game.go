@@ -34,12 +34,14 @@ func StartGame(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "need at least 5 players"})
 	}
 
-	// Update room status
+	// Update room status before starting — prevents concurrent start attempts.
 	db.DB.Model(&models.Room{}).Where("id = ?", roomID).Update("status", "playing")
 
 	// Start game
 	state, events, err := game.StartGame(roomID)
 	if err != nil {
+		// Rollback room status so the host can try again.
+		db.DB.Model(&models.Room{}).Where("id = ?", roomID).Update("status", "waiting")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to start game"})
 	}
 
@@ -68,6 +70,10 @@ func GamePlayCard(c *fiber.Ctx) error {
 	}
 
 	gameID := c.Params("id")
+
+	game.GL.Lock(gameID)
+	defer game.GL.Unlock(gameID)
+
 	state, err := game.LoadState(db.RDB, gameID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "game not found"})
@@ -115,6 +121,10 @@ func GameEndTurn(c *fiber.Ctx) error {
 	}
 
 	gameID := c.Params("id")
+
+	game.GL.Lock(gameID)
+	defer game.GL.Unlock(gameID)
+
 	state, err := game.LoadState(db.RDB, gameID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "game not found"})
@@ -151,6 +161,10 @@ func GameReveal(c *fiber.Ctx) error {
 	}
 
 	gameID := c.Params("id")
+
+	game.GL.Lock(gameID)
+	defer game.GL.Unlock(gameID)
+
 	state, err := game.LoadState(db.RDB, gameID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "game not found"})
@@ -183,6 +197,10 @@ func GameChat(c *fiber.Ctx) error {
 	}
 
 	gameID := c.Params("id")
+
+	game.GL.Lock(gameID)
+	defer game.GL.Unlock(gameID)
+
 	state, err := game.LoadState(db.RDB, gameID)
 	if err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "game not found"})

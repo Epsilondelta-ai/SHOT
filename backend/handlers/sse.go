@@ -217,8 +217,11 @@ func RoomSSE(c *fiber.Ctx) error {
 				Username: user.Username,
 			})
 			db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).Delete(&models.RoomMember{})
-			empty := !hub.H.HasClients(roomID)
-			if empty {
+			// Check remaining human members (not hub clients) — bots may still have SSE
+			// connections and would keep HasClients true even with no humans left.
+			var remainingHumans int64
+			db.DB.Model(&models.RoomMember{}).Where("room_id = ? AND bot_id = ''", roomID).Count(&remainingHumans)
+			if remainingHumans == 0 {
 				hub.H.BroadcastRoomClosed(roomID)
 				db.DB.Where("room_id = ?", roomID).Delete(&models.RoomMember{})
 				db.DB.Delete(&models.Room{}, "id = ?", roomID)

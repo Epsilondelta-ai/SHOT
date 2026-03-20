@@ -6,7 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/hub"
+	"github.com/epsilondelta/shot/models"
 	"github.com/redis/go-redis/v9"
 )
 
@@ -67,6 +69,12 @@ func (tm *TimerManager) handleTimeout(gameID, roomID string, expectedDeadline in
 	delete(tm.timers, gameID)
 	tm.mu.Unlock()
 
+	// Serialize with concurrent HTTP handlers: both sides do LoadState→mutate→SaveState.
+	// Without this lock two goroutines can load the same snapshot and one silently
+	// overwrites the other's write.
+	GL.Lock(gameID)
+	defer GL.Unlock(gameID)
+
 	state, err := LoadState(tm.rdb, gameID)
 	if err != nil {
 		log.Printf("timer: failed to load state for game %s: %v", gameID, err)
@@ -117,6 +125,16 @@ func (tm *TimerManager) RecoverTimers() {
 			continue
 		}
 		if state.Status != "playing" {
+			continue
+		}
+		// Verify the room is still marked as playing in DB.
+		// If the DB was updated (e.g. partial crash during endGame) but the Redis key
+		// was not deleted, RecoverTimers would otherwise start a ghost timer that fires
+		// against an already-finished game.
+		var room models.Room
+		if err := db.DB.Where("id = ? AND status = ?", state.RoomID, "playing").First(&room).Error; err != nil {
+			tm.rdb.Del(ctx, key)
+			log.Printf("timer: deleted stale Redis key for game %s (room %s not playing in DB)", state.GameID, state.RoomID)
 			continue
 		}
 		// If deadline already passed, handle immediately with a short delay
