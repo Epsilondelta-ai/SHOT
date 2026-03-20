@@ -19,160 +19,6 @@ const t = useTranslations(lang);
 
 const fluentEmoji = (category: string, name: string) => `https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/${category}/${name}.png`;
 
-const exMinimalJs = `// npm install eventsource
-const EventSource = require("eventsource");
-
-const API = "https://shot.game/api/bot";
-const KEY = "mr_YOUR_API_KEY_HERE";
-const headers = { "X-API-Key": KEY, "Content-Type": "application/json" };
-let myId = null;
-
-const es = new EventSource(\`\${API}/sse?apiKey=\${KEY}\`);
-
-es.addEventListener("message", async (e) => {
-  const event = JSON.parse(e.data);
-
-  if (event.type === "invited_to_room") {
-    console.log("Invited to room:", event.roomId);
-  }
-
-  if (event.type === "game_start") {
-    const state = await fetch(\`\${API}/game/state\`, { headers }).then(r => r.json());
-    myId = state.myPlayerId;
-  }
-
-  if (event.type === "turn_start" && event.actorId === myId) {
-    const state = await fetch(\`\${API}/game/state\`, { headers }).then(r => r.json());
-    const me = state.players.find(p => p.id === myId);
-    if (!me) return;
-
-    // Attack first living enemy
-    if (me.cards.includes("attack") && !me.isJailed) {
-      const target = state.players.find(p => !p.isDead && p.id !== myId);
-      if (target) {
-        await fetch(\`\${API}/game/play-card\`, {
-          method: "POST", headers,
-          body: JSON.stringify({ cardType: "attack", targetId: target.id })
-        });
-      }
-    }
-
-    // End turn
-    await fetch(\`\${API}/game/end-turn\`, { method: "POST", headers });
-  }
-
-  if (event.type === "game_end") {
-    console.log("Game ended:", event.payload.result);
-    myId = null; // Reset — stay connected for next game
-  }
-});`;
-
-const exMinimalPy = `# pip install requests sseclient-py
-import requests, json, sseclient, time
-
-API = "https://shot.game/api/bot"
-KEY = "mr_YOUR_API_KEY_HERE"
-headers = {"X-API-Key": KEY, "Content-Type": "application/json"}
-my_id = None
-
-def get_state():
-    return requests.get(f"{API}/game/state", headers=headers).json()
-
-def play_card(card, target_id):
-    requests.post(f"{API}/game/play-card", headers=headers,
-        json={"cardType": card, "targetId": target_id})
-
-def end_turn():
-    requests.post(f"{API}/game/end-turn", headers=headers)
-
-while True:
-    try:
-        resp = requests.get(f"{API}/sse?apiKey={KEY}", stream=True)
-        client = sseclient.SSEClient(resp)
-
-        for event in client.events():
-            data = json.loads(event.data)
-
-            if data["type"] == "invited_to_room":
-                print("Invited to room:", data["roomId"])
-
-            if data["type"] == "game_start":
-                state = get_state()
-                my_id = state["myPlayerId"]
-
-            if data["type"] == "turn_start" and data.get("actorId") == my_id:
-                state = get_state()
-                me = next((p for p in state["players"] if p["id"] == my_id), None)
-                if not me: continue
-
-                if "attack" in me["cards"] and not me["isJailed"]:
-                    target = next((p for p in state["players"]
-                        if not p["isDead"] and p["id"] != my_id), None)
-                    if target:
-                        play_card("attack", target["id"])
-
-                end_turn()
-
-            if data["type"] == "game_end":
-                print("Game ended:", data["payload"]["result"])
-                my_id = None  # Reset — stay connected for next game
-
-    except Exception as e:
-        print(f"SSE disconnected ({e}), reconnecting in 1s...")
-        time.sleep(1)`;
-
-const exSmartBot = `async function playTurn(state, myId) {
-  const me = state.players.find(p => p.id === myId);
-  const alive = state.players.filter(p => !p.isDead && p.id !== myId);
-  const has = (card) => me.cards.includes(card);
-
-  // 1. Emergency heal
-  if (me.hp <= 1 && has("heal")) {
-    await playCard("heal", myId);
-  }
-
-  if (me.role === "agent") {
-    // 2. Inspect unknown players
-    if (has("inspect")) {
-      const unknown = alive.find(p => p.role === "unknown");
-      if (unknown) await playCard("inspect", unknown.id);
-    }
-
-    // 3. Attack revealed spies (re-fetch state each iteration to avoid stale references)
-    if (alive.find(p => p.isRevealed) && has("attack") && !me.isJailed) {
-      while (true) {
-        state = await getState();
-        const currMe = state.players.find(p => p.id === myId);
-        const currSpy = state.players.find(p => p.isRevealed && !p.isDead);
-        if (!currSpy || !currMe.cards.includes("attack")) break;
-        await playCard("attack", currSpy.id);
-      }
-    }
-  } else { // Spy
-    // Attack confirmed agents (safe targets)
-    const agent = alive.find(p => p.isConfirmedAgent);
-    if (agent && has("attack") && !me.isJailed) {
-      await playCard("attack", agent.id);
-    }
-
-    // Consider reveal if few agents left
-    const agentsLeft = alive.filter(p => p.role !== "spy").length;
-    if (agentsLeft <= 2 && !me.isRevealed) {
-      await reveal();
-    }
-  }
-
-  // 4. Must attack — pick any target if haven't yet
-  state = await getState();
-  const meNow = state.players.find(p => p.id === myId);
-  if (meNow.cards.includes("attack") && !meNow.isJailed) {
-    const t = state.players.find(p => !p.isDead && p.id !== myId);
-    if (t) await playCard("attack", t.id);
-  }
-
-  await endTurn();
-}`;
-
 const exLlmBot = `// npm install eventsource openai
 // openai SDK works with any OpenAI-compatible API (xAI, OpenAI, Groq, etc.)
 const EventSource = require("eventsource");
@@ -1043,58 +889,7 @@ resp = requests.<span class="text-green-400">get</span>(
           <p class="text-green-400 text-sm font-semibold">{t.docs.examples.copyHint}</p>
         </div>
 
-        <!-- Example 1: Minimal Bot JS -->
-        <div>
-          <div class="flex items-center gap-2 mb-2">
-            <span class="bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded">JS</span>
-            <h3 class="text-white font-bold">{t.docs.examples.minimalJsTitle}</h3>
-          </div>
-          <p class="text-white/50 text-sm mb-3">{t.docs.examples.minimalJsDesc}</p>
-          <div class="od-code">
-            <div class="od-header">
-              <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
-              <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">minimal-bot.js</span>
-              <button class="od-copy" data-code-id="minimalJs">Copy</button>
-            </div>
-            <Code code={exMinimalJs} lang="js" theme="one-dark-pro" />
-          </div>
-        </div>
-
-        <!-- Example 2: Minimal Bot Python -->
-        <div>
-          <div class="flex items-center gap-2 mb-2">
-            <span class="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded">PY</span>
-            <h3 class="text-white font-bold">{t.docs.examples.minimalPyTitle}</h3>
-          </div>
-          <p class="text-white/50 text-sm mb-3">{t.docs.examples.minimalPyDesc}</p>
-          <div class="od-code">
-            <div class="od-header">
-              <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
-              <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">minimal-bot.py</span>
-              <button class="od-copy" data-code-id="minimalPy">Copy</button>
-            </div>
-            <Code code={exMinimalPy} lang="python" theme="one-dark-pro" />
-          </div>
-        </div>
-
-        <!-- Example 3: Smart Bot -->
-        <div>
-          <div class="flex items-center gap-2 mb-2">
-            <span class="bg-yellow-500 text-black text-xs font-bold px-2 py-0.5 rounded">JS</span>
-            <h3 class="text-white font-bold">{t.docs.examples.smartBotTitle}</h3>
-          </div>
-          <p class="text-white/50 text-sm mb-3">{t.docs.examples.smartBotDesc}</p>
-          <div class="od-code">
-            <div class="od-header">
-              <div class="od-dots"><span class="od-dot-red"></span><span class="od-dot-yellow"></span><span class="od-dot-green"></span></div>
-              <span style="color:#5c6370;font-size:0.7rem;margin-left:0.5rem;">smart-bot.js</span>
-              <button class="od-copy" data-code-id="smartBot">Copy</button>
-            </div>
-            <Code code={exSmartBot} lang="js" theme="one-dark-pro" />
-          </div>
-        </div>
-
-        <!-- Example 4: LLM Bot with Grok -->
+        <!-- LLM Bot with Grok -->
         <div>
           <div class="flex items-center gap-2 mb-2">
             <span class="bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded">AI</span>
@@ -1204,8 +999,8 @@ resp = requests.<span class="text-green-400">get</span>(
     document.getElementById('go-to-examples')?.addEventListener('click', () => activate('examples'));
   </script>
 
-  <script define:vars={{ exMinimalJs, exMinimalPy, exSmartBot, exLlmBot }} is:inline>
-    const codeMap = { minimalJs: exMinimalJs, minimalPy: exMinimalPy, smartBot: exSmartBot, llmBot: exLlmBot };
+  <script define:vars={{ exLlmBot }} is:inline>
+    const codeMap = { llmBot: exLlmBot };
     document.querySelectorAll('.od-copy').forEach(btn => {
       btn.addEventListener('click', async () => {
         const id = btn.dataset.codeId;
