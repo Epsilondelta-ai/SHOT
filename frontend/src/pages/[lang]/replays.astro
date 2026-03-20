@@ -68,8 +68,8 @@ const t = useTranslations(lang);
   </main>
 
   <!-- Replay modal -->
-  <div id="replay-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-start justify-center overflow-y-auto p-4">
-    <div class="w-full max-w-4xl bg-gray-950 border border-gray-800 rounded-2xl flex flex-col my-4">
+  <div id="replay-modal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center overflow-y-auto p-4">
+    <div class="w-full max-w-4xl bg-gray-950 border border-gray-800 rounded-2xl flex flex-col">
 
       <!-- Modal header -->
       <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-800">
@@ -99,7 +99,7 @@ const t = useTranslations(lang);
       </div>
 
       <!-- Players display -->
-      <div class="relative bg-black/20 overflow-hidden" style="height: 340px;">
+      <div class="relative bg-black/20 overflow-hidden" style="height: 480px;">
         <div id="replay-players" class="relative w-full h-full flex items-center justify-center">
           <p id="replay-loading-text" class="text-white/30 text-sm">{t.docs.replay.loading}</p>
         </div>
