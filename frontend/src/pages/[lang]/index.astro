@@ -6,6 +6,7 @@ import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
 import { version } from '../../../package.json';
 import loadingImg from '../../assets/loading.webp';
+import character from '../../assets/character.webp';
 
 const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -77,7 +78,7 @@ const descLines = t.hero.description.split('\n');
 
         <!-- User Profile (shown when logged in) -->
         <div id="user-profile" class="hidden items-center gap-3 mb-3 max-w-md bg-black/40 rounded-xl px-4 py-2">
-          <img id="user-avatar" src="" alt="" class="w-10 h-10 rounded-full object-cover bg-gray-700" />
+          <img id="user-avatar" src={character.src} alt="" class="w-10 h-10 rounded-full object-cover bg-gray-700" />
           <span id="user-name" class="text-white font-semibold text-sm"></span>
         </div>
 
@@ -127,10 +128,8 @@ const descLines = t.hero.description.split('\n');
         const name = document.getElementById('user-name');
         if (user.avatarUrl) {
           avatar.src = user.avatarUrl;
-          avatar.alt = user.username;
-        } else {
-          avatar.remove();
         }
+        avatar.alt = user.username;
         name.textContent = user.username;
         profile.classList.remove('hidden');
         profile.classList.add('flex');

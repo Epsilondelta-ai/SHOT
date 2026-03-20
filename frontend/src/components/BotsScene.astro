@@ -2,6 +2,7 @@
 import { type Locale } from '../i18n/locales';
 import { useTranslations } from '../i18n';
 import { version } from '../../package.json';
+import character from '../assets/character.webp';
 
 interface Props {
   apiUrl: string;
@@ -192,7 +193,7 @@ const t = useTranslations(lang);
     </button>
 </div>
 
-<script define:vars={{ apiUrl, tBotsCreating: t.bots.creating, tBotsCreate: t.bots.create, tSaving: t.mypage.saving, tCommonSave: t.common.save, tBotsCopied: t.bots.copied, tBotsCopyToClipboard: t.bots.copyToClipboard, tCommonEdit: t.common.edit, tCommonDelete: t.common.delete, tStatusOnline: t.bots.statusOnline, tStatusOffline: t.bots.statusOffline, tStatusInGame: t.bots.statusInGame, tRegenerateKey: t.bots.regenerateKey, tRegenerateKeyConfirm: t.bots.regenerateKeyConfirm, tRegenerateKeySuccess: t.bots.regenerateKeySuccess, tDeleteBotConfirm: t.bots.deleteBotConfirm }} is:inline>
+<script define:vars={{ apiUrl, characterSrc: character.src, tBotsCreating: t.bots.creating, tBotsCreate: t.bots.create, tSaving: t.mypage.saving, tCommonSave: t.common.save, tBotsCopied: t.bots.copied, tBotsCopyToClipboard: t.bots.copyToClipboard, tCommonEdit: t.common.edit, tCommonDelete: t.common.delete, tStatusOnline: t.bots.statusOnline, tStatusOffline: t.bots.statusOffline, tStatusInGame: t.bots.statusInGame, tRegenerateKey: t.bots.regenerateKey, tRegenerateKeyConfirm: t.bots.regenerateKeyConfirm, tRegenerateKeySuccess: t.bots.regenerateKeySuccess, tDeleteBotConfirm: t.bots.deleteBotConfirm }} is:inline>
   const scene = document.getElementById('scene-bots');
   const addBotBtn = document.getElementById('add-bot-btn');
   const addBotModal = document.getElementById('add-bot-modal');
@@ -261,9 +262,9 @@ const t = useTranslations(lang);
       const createdAt = bot.createdAt ? new Date(bot.createdAt).toLocaleDateString() : '';
       card.innerHTML = `
         <div class="relative flex-shrink-0">
-          <img src="${bot.avatarUrl || ''}" alt="${bot.name}"
+          <img src="${bot.avatarUrl || characterSrc}" alt="${bot.name}"
             class="w-10 h-10 rounded-full object-cover bg-amber-800"
-            onerror="this.src=''"
+            onerror="this.src='${characterSrc}'"
           />
           <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-gray-900 ${bot.isOnline ? 'bg-green-500' : 'bg-gray-500'}"></span>
         </div>
@@ -294,7 +295,7 @@ const t = useTranslations(lang);
     editPendingAvatarBase64 = null;
     editBotNameInput.value = name;
     editBotNameError.classList.add('hidden');
-    editBotAvatarPreview.src = avatarUrl || '';
+    editBotAvatarPreview.src = avatarUrl || characterSrc;
     editBotModal.classList.remove('hidden');
     editBotModal.classList.add('flex');
   }
