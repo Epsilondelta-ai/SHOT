@@ -194,6 +194,9 @@ export default {
     statusOnline: 'オンライン',
     statusOffline: 'オフライン',
     statusInGame: 'ゲーム中',
+    regenerateKey: 'APIキー再発行',
+    regenerateKeyConfirm: 'APIキーを再発行しますか？現在のキーは使用できなくなります。',
+    regenerateKeySuccess: 'APIキーが再発行されました！',
   },
   mypage: {
     title: 'マイページ',

@@ -194,6 +194,9 @@ export default {
     statusOnline: '온라인',
     statusOffline: '오프라인',
     statusInGame: '게임 중',
+    regenerateKey: 'API Key 재발급',
+    regenerateKeyConfirm: 'API Key를 재발급하시겠습니까? 기존 키는 더 이상 사용할 수 없습니다.',
+    regenerateKeySuccess: 'API Key가 재발급되었습니다!',
   },
   mypage: {
     title: '내 정보',

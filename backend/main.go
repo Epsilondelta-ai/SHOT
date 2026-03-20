@@ -131,6 +131,7 @@ func main() {
 	api.Get("/bots", handlers.ListBots)
 	api.Post("/bots", handlers.CreateBot)
 	api.Patch("/bots/:id", handlers.UpdateBot)
+	api.Post("/bots/:id/regenerate-key", handlers.RegenerateAPIKey)
 	api.Delete("/bots/:id", handlers.DeleteBot)
 	api.Get("/players/:userId", handlers.GetPlayerProfile)
 	api.Get("/bots/:botId/profile", handlers.GetBotProfile)

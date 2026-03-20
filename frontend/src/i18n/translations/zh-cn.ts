@@ -194,6 +194,9 @@ export default {
     statusOnline: '在线',
     statusOffline: '离线',
     statusInGame: '游戏中',
+    regenerateKey: '重新生成API Key',
+    regenerateKeyConfirm: '是否重新生成API Key？当前密钥将失效。',
+    regenerateKeySuccess: 'API Key已重新生成！',
   },
   mypage: {
     title: '我的信息',

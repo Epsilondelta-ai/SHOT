@@ -130,6 +130,20 @@ const t = useTranslations(lang);
   </div>
 </div>
 
+<!-- Regenerate Key Confirm Modal -->
+<div id="regen-confirm-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
+    <div class="flex items-start gap-2 bg-red-900/40 border border-red-500/40 rounded-xl px-4 py-3 mb-5">
+      <span class="text-red-400 text-base mt-0.5">⚠️</span>
+      <p class="text-red-300 text-sm leading-relaxed">{t.bots.regenerateKeyConfirm}</p>
+    </div>
+    <div class="flex gap-3">
+      <button id="regen-confirm-btn" class="flex-1 bg-red-500 hover:bg-red-400 text-white font-bold py-2.5 rounded-xl transition">{t.bots.regenerateKey}</button>
+      <button id="regen-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
+    </div>
+  </div>
+</div>
+
 <!-- API Key Modal -->
 <div id="apikey-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
   <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
@@ -164,7 +178,7 @@ const t = useTranslations(lang);
   </div>
 </div>
 
-<script define:vars={{ apiUrl, tBotsCreating: t.bots.creating, tBotsCreate: t.bots.create, tSaving: t.mypage.saving, tCommonSave: t.common.save, tBotsCopied: t.bots.copied, tBotsCopyToClipboard: t.bots.copyToClipboard, tCommonEdit: t.common.edit, tCommonDelete: t.common.delete, tStatusOnline: t.bots.statusOnline, tStatusOffline: t.bots.statusOffline, tStatusInGame: t.bots.statusInGame }} is:inline>
+<script define:vars={{ apiUrl, tBotsCreating: t.bots.creating, tBotsCreate: t.bots.create, tSaving: t.mypage.saving, tCommonSave: t.common.save, tBotsCopied: t.bots.copied, tBotsCopyToClipboard: t.bots.copyToClipboard, tCommonEdit: t.common.edit, tCommonDelete: t.common.delete, tStatusOnline: t.bots.statusOnline, tStatusOffline: t.bots.statusOffline, tStatusInGame: t.bots.statusInGame, tRegenerateKey: t.bots.regenerateKey, tRegenerateKeyConfirm: t.bots.regenerateKeyConfirm, tRegenerateKeySuccess: t.bots.regenerateKeySuccess }} is:inline>
   const scene = document.getElementById('scene-bots');
   const addBotBtn = document.getElementById('add-bot-btn');
   const addBotModal = document.getElementById('add-bot-modal');
@@ -243,8 +257,9 @@ const t = useTranslations(lang);
           <p class="text-white font-semibold truncate">${bot.name}</p>
           <p class="text-xs">${bot.isInGame ? `<span class="text-amber-400">${tStatusInGame} · ${bot.roomName}</span>` : bot.isOnline ? `<span class="text-green-400">${tStatusOnline}</span>` : `<span class="text-white/40">${tStatusOffline}</span>`}</p>
         </div>
-        <button data-id="${bot.id}" data-name="${bot.name}" data-avatar="${bot.avatarUrl || ''}" class="edit-bot-btn text-white/40 hover:text-amber-400 transition text-sm mr-2">${tCommonEdit}</button>
-        <button data-id="${bot.id}" class="delete-bot-btn text-white/40 hover:text-red-400 transition text-sm">${tCommonDelete}</button>
+        <button data-id="${bot.id}" class="regen-key-btn text-green-400 hover:text-green-300 transition text-xs font-semibold mr-2">🔑 ${tRegenerateKey}</button>
+        <button data-id="${bot.id}" data-name="${bot.name}" data-avatar="${bot.avatarUrl || ''}" class="edit-bot-btn text-amber-400 hover:text-amber-300 transition text-sm font-semibold mr-2">${tCommonEdit}</button>
+        <button data-id="${bot.id}" class="delete-bot-btn text-red-400 hover:text-red-300 transition text-sm font-semibold">${tCommonDelete}</button>
       `;
       botList.appendChild(card);
     });
@@ -254,6 +269,9 @@ const t = useTranslations(lang);
     });
     botList.querySelectorAll('.delete-bot-btn').forEach(btn => {
       btn.addEventListener('click', () => deleteBot(btn.dataset.id));
+    });
+    botList.querySelectorAll('.regen-key-btn').forEach(btn => {
+      btn.addEventListener('click', () => regenerateKey(btn.dataset.id));
     });
   }
 
@@ -329,6 +347,38 @@ const t = useTranslations(lang);
     });
     loadBots();
   }
+
+  const regenConfirmModal = document.getElementById('regen-confirm-modal');
+  const regenConfirmBtn = document.getElementById('regen-confirm-btn');
+  const regenCancelBtn = document.getElementById('regen-cancel-btn');
+  let regenBotId = null;
+
+  function regenerateKey(id) {
+    regenBotId = id;
+    regenConfirmModal.classList.remove('hidden');
+  }
+
+  regenCancelBtn.addEventListener('click', () => {
+    regenConfirmModal.classList.add('hidden');
+    regenBotId = null;
+  });
+
+  regenConfirmBtn.addEventListener('click', async () => {
+    if (!regenBotId) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    regenConfirmBtn.disabled = true;
+    const res = await fetch(`${apiUrl}/api/bots/${regenBotId}/regenerate-key`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    regenConfirmBtn.disabled = false;
+    regenConfirmModal.classList.add('hidden');
+    if (!res?.ok) return;
+    const data = await res.json();
+    regenBotId = null;
+    showApiKey(data.apiKey);
+  });
 
   refreshBotsBtn.addEventListener('click', loadBots);
 

@@ -194,6 +194,9 @@ export default {
     statusOnline: 'Online',
     statusOffline: 'Offline',
     statusInGame: 'Em jogo',
+    regenerateKey: 'Regenerar API Key',
+    regenerateKeyConfirm: 'Regenerar API Key? A chave atual deixará de funcionar.',
+    regenerateKeySuccess: 'API Key regenerada!',
   },
   mypage: {
     title: 'Meu Perfil',

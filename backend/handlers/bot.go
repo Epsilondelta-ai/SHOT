@@ -156,6 +156,35 @@ func UpdateBot(c *fiber.Ctx) error {
 	})
 }
 
+// RegenerateAPIKey POST /api/bots/:id/regenerate-key
+func RegenerateAPIKey(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	botID := c.Params("id")
+	var bot models.Bot
+	if result := db.DB.Where("id = ? AND user_id = ?", botID, userID).First(&bot); result.Error != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "bot not found"})
+	}
+
+	newKey, err := generateAPIKey()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate api key"})
+	}
+
+	db.DB.Model(&bot).Update("api_key", newKey)
+
+	// 기존 API Key로 연결된 SSE를 강제 종료
+	hub.H.DisconnectBot(botID)
+
+	return c.JSON(fiber.Map{
+		"id":     bot.ID,
+		"apiKey": newKey,
+	})
+}
+
 // DeleteBot DELETE /api/bots/:id
 func DeleteBot(c *fiber.Ctx) error {
 	userID, err := getUserIDFromToken(c)

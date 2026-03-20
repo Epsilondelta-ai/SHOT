@@ -263,6 +263,21 @@ func (h *Hub) UnregisterBot(botID string, c *Client) {
 	h.botsMu.Unlock()
 }
 
+// DisconnectBot forcibly disconnects a bot's SSE connection.
+// Used when API key is regenerated to invalidate the old connection.
+func (h *Hub) DisconnectBot(botID string) {
+	h.botsMu.Lock()
+	c := h.bots[botID]
+	delete(h.bots, botID)
+	h.botsMu.Unlock()
+	if c != nil {
+		if c.RoomID != "" {
+			h.Unregister(c)
+		}
+		close(c.Ch)
+	}
+}
+
 func (h *Hub) sendToBotClient(botID string, data []byte) {
 	h.botsMu.RLock()
 	c := h.bots[botID]
