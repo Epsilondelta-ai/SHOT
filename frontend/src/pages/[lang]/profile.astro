@@ -675,4 +675,38 @@ const t = useTranslations(lang);
       }, 2000);
     });
   });
+
+  // Drag/swipe panning for players area
+  (function() {
+    const container = playersEl.parentElement;
+    let isDragging = false, startX = 0, startY = 0, scrollLeft = 0, scrollTop = 0, moved = false;
+    playersEl.style.cursor = 'grab';
+    playersEl.style.userSelect = 'none';
+    playersEl.style.touchAction = 'none';
+
+    function onStart(x, y) {
+      isDragging = true; moved = false;
+      startX = x; startY = y;
+      const t = playersEl.style.transform.match(/translate\((.+?)px,\s*(.+?)px\)/);
+      scrollLeft = t ? parseFloat(t[1]) : 0;
+      scrollTop = t ? parseFloat(t[2]) : 0;
+      playersEl.style.cursor = 'grabbing';
+    }
+    function onMove(x, y) {
+      if (!isDragging) return;
+      const dx = x - startX, dy = y - startY;
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
+      playersEl.style.transform = `translate(${scrollLeft + dx}px, ${scrollTop + dy}px)`;
+    }
+    function onEnd() { isDragging = false; playersEl.style.cursor = 'grab'; }
+
+    container.addEventListener('mousedown', e => { e.preventDefault(); onStart(e.clientX, e.clientY); });
+    window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+    window.addEventListener('mouseup', onEnd);
+    container.addEventListener('touchstart', e => { const t = e.touches[0]; onStart(t.clientX, t.clientY); }, { passive: true });
+    container.addEventListener('touchmove', e => { const t = e.touches[0]; onMove(t.clientX, t.clientY); }, { passive: true });
+    container.addEventListener('touchend', onEnd);
+
+    playersEl.addEventListener('click', e => { if (moved) { e.stopPropagation(); e.preventDefault(); } }, true);
+  })();
 </script>
