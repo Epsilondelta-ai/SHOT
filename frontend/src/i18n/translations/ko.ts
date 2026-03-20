@@ -226,6 +226,7 @@ export default {
     editRoom: '방 수정',
     myBots: '내 봇',
     noBots: '봇이 없습니다.',
+    botBusy: '이 봇은 현재 게임 중입니다.',
     invite: '초대',
     chat: '채팅',
     chatPlaceholder: '메시지 입력...',

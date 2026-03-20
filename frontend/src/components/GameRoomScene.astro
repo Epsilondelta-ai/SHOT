@@ -147,6 +147,7 @@ const t = useTranslations(lang);
   tGrantBotInvite: t.rooms.grantBotInvite,
   tRevokeBotInvite: t.rooms.revokeBotInvite,
   tInvite: t.rooms.invite,
+  tBotBusy: t.rooms.botBusy,
   tKick: t.rooms.kick,
   tSystemKicked: t.rooms.systemKicked,
   tDuplicateConnection: t.rooms.duplicateConnection,
@@ -442,13 +443,26 @@ const t = useTranslations(lang);
             <span class="text-white text-sm font-semibold flex-1">${bot.name}</span>
             <button class="bg-blue-500 hover:bg-blue-400 text-white text-xs px-3 py-1 rounded-lg">${tInvite}</button>
           `;
-          el.querySelector('button').addEventListener('click', async () => {
+          el.querySelector('button').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
             const r = await fetch(`${apiUrl}/api/rooms/${currentRoom.id}/invite-bot`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
               body: JSON.stringify({ botId: bot.id }),
             }).catch(() => null);
-            if (r?.ok) closeModal(inviteBotModal);
+            if (r?.ok) {
+              closeModal(inviteBotModal);
+            } else if (r?.status === 409) {
+              const orig = btn.textContent;
+              btn.textContent = tBotBusy;
+              btn.disabled = true;
+              btn.className = 'bg-red-500/30 text-red-300 text-xs px-3 py-1 rounded-lg cursor-not-allowed';
+              setTimeout(() => {
+                btn.textContent = orig;
+                btn.disabled = false;
+                btn.className = 'bg-blue-500 hover:bg-blue-400 text-white text-xs px-3 py-1 rounded-lg';
+              }, 2500);
+            }
           });
           inviteBotList.appendChild(el);
         });
