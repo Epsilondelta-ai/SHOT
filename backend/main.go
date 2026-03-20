@@ -100,6 +100,8 @@ func main() {
 	api.Post("/bots", handlers.CreateBot)
 	api.Patch("/bots/:id", handlers.UpdateBot)
 	api.Delete("/bots/:id", handlers.DeleteBot)
+	api.Get("/players/:userId", handlers.GetPlayerProfile)
+	api.Get("/bots/:botId/profile", handlers.GetBotProfile)
 	auth := api.Group("/auth")
 	auth.Post("/signup", handlers.Signup)
 	auth.Post("/login", handlers.Login)

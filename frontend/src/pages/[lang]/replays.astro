@@ -33,6 +33,14 @@ const t = useTranslations(lang);
         <p class="text-gray-400">{t.game.result.watchReplay}</p>
       </div>
 
+      <!-- Filter banner -->
+      <div id="filter-banner" class="hidden mb-4 flex items-center gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-2.5">
+        <img id="filter-avatar" src="" alt="" class="w-7 h-7 rounded-full object-cover border border-white/20" />
+        <span id="filter-name" class="text-amber-300 text-sm font-semibold truncate flex-1"></span>
+        <span id="filter-label" class="text-white/40 text-xs"></span>
+        <button id="filter-clear" class="text-white/40 hover:text-white text-sm transition ml-2">✕</button>
+      </div>
+
       <!-- Tabs (shown only for logged-in users) -->
       <div id="replays-tabs" class="hidden flex gap-1 mb-6 bg-white/5 rounded-xl p-1 w-fit">
         <button id="tab-all" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-gray-800 text-white">{t.docs.replay.tabAll}</button>
@@ -122,6 +130,70 @@ const t = useTranslations(lang);
 
     </div>
   </div>
+
+  <!-- Player profile modal -->
+  <div id="player-modal" class="hidden fixed inset-0 z-[60] bg-black/80 flex items-start justify-center overflow-y-auto p-4">
+    <div class="w-full max-w-md bg-gray-950 border border-gray-800 rounded-2xl flex flex-col my-4">
+      <!-- Header -->
+      <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-800">
+        <img id="pm-avatar" src="" alt="" class="w-10 h-10 rounded-full object-cover border-2 border-white/20" />
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2">
+            <h3 id="pm-username" class="text-white font-bold text-base truncate"></h3>
+            <span id="pm-type-badge" class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/50"></span>
+          </div>
+          <p id="pm-owner" class="text-white/30 text-xs mt-0.5 hidden"></p>
+        </div>
+        <div class="flex gap-2">
+          <button id="pm-filter-btn" class="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 px-3 py-1.5 rounded-lg transition"></button>
+          <button id="pm-close" class="text-white/40 hover:text-white text-xl leading-none transition px-1">✕</button>
+        </div>
+      </div>
+      <!-- Loading / content -->
+      <div id="pm-loading" class="py-10 text-center text-white/30 text-sm">...</div>
+      <div id="pm-content" class="hidden px-4 py-4 flex flex-col gap-5">
+        <!-- Overall stats -->
+        <div>
+          <div class="flex items-baseline gap-3 mb-2">
+            <span class="text-2xl font-bold text-white" id="pm-winrate">0%</span>
+            <span class="text-white/40 text-sm" id="pm-record"></span>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-white/5 rounded-xl px-3 py-2 text-center">
+              <p class="text-white/40 text-[10px] mb-0.5" id="lbl-total-games"></p>
+              <p class="text-white font-bold text-lg" id="pm-total"></p>
+            </div>
+            <div class="bg-blue-500/10 rounded-xl px-3 py-2 text-center">
+              <p class="text-blue-300 text-[10px] mb-0.5" id="lbl-as-agent"></p>
+              <p class="text-white text-sm" id="pm-agent-record"></p>
+              <p class="text-blue-300 text-xs font-bold" id="pm-agent-rate"></p>
+            </div>
+            <div class="bg-red-500/10 rounded-xl px-3 py-2 text-center">
+              <p class="text-red-300 text-[10px] mb-0.5" id="lbl-as-spy"></p>
+              <p class="text-white text-sm" id="pm-spy-record"></p>
+              <p class="text-red-300 text-xs font-bold" id="pm-spy-rate"></p>
+            </div>
+          </div>
+        </div>
+        <!-- Kill + card usage -->
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-white/5 rounded-xl px-3 py-2">
+            <p class="text-white/40 text-[10px] mb-1" id="lbl-kills"></p>
+            <p class="text-white font-bold text-xl" id="pm-kills">0</p>
+          </div>
+          <div class="bg-white/5 rounded-xl px-3 py-2">
+            <p class="text-white/40 text-[10px] mb-1" id="lbl-card-usage"></p>
+            <div id="pm-cards" class="flex flex-wrap gap-1 mt-1"></div>
+          </div>
+        </div>
+        <!-- Recent games -->
+        <div>
+          <p class="text-white/40 text-[10px] mb-2" id="lbl-recent-games"></p>
+          <div id="pm-recent" class="flex flex-col gap-1.5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </BaseLayout>
 
 <PlayerRenderUtils />
@@ -163,6 +235,25 @@ const t = useTranslations(lang);
   tGameOver: t.docs.replay.gameOver,
   tChatMessage: t.docs.replay.chatMessage,
   tOverflowDiscard: t.docs.replay.overflowDiscard,
+  tFilterActive: t.docs.replay.filterActive,
+  tClearFilter: t.docs.replay.clearFilter,
+  tViewGames: t.docs.replay.viewGames,
+  tProfile: t.docs.replay.profile,
+  tTotalGames: t.docs.replay.totalGames,
+  tWins: t.docs.replay.wins,
+  tDraws: t.docs.replay.draws,
+  tLosses: t.docs.replay.losses,
+  tWinRate: t.docs.replay.winRate,
+  tAsAgent: t.docs.replay.asAgent,
+  tAsSpy: t.docs.replay.asSpy,
+  tKills: t.docs.replay.kills,
+  tCardUsage: t.docs.replay.cardUsage,
+  tRecentGames: t.docs.replay.recentGames,
+  tNoStats: t.docs.replay.noStats,
+  tHuman: t.docs.replay.human,
+  tBot: t.docs.replay.bot,
+  tOwnerLabel: t.docs.replay.ownerLabel,
+  tGames: t.docs.replay.games,
 }} is:inline>
 
   // ── Replay list ────────────────────────────────────────────────────────────
@@ -179,17 +270,55 @@ const t = useTranslations(lang);
   const tabAllBtn = document.getElementById('tab-all');
   const tabFavBtn = document.getElementById('tab-favorites');
 
+  // ── Filter state ───────────────────────────────────────────────────────────
+  let activeFilter = null; // { type: 'user'|'bot', id, name, avatar }
+
+  const filterBanner = document.getElementById('filter-banner');
+  const filterAvatar = document.getElementById('filter-avatar');
+  const filterName = document.getElementById('filter-name');
+  const filterLabel = document.getElementById('filter-label');
+  const filterClear = document.getElementById('filter-clear');
+
+  function setFilter(filter) {
+    activeFilter = filter;
+    if (filter) {
+      filterAvatar.src = filter.avatar || characterSrc;
+      filterName.textContent = filter.name;
+      filterLabel.textContent = tFilterActive;
+      filterBanner.classList.remove('hidden');
+      const params = new URLSearchParams(window.location.search);
+      params.set(filter.type === 'bot' ? 'botId' : 'userId', filter.id);
+      params.delete(filter.type === 'bot' ? 'userId' : 'botId');
+      history.replaceState(null, '', `?${params.toString()}`);
+    } else {
+      filterBanner.classList.add('hidden');
+      history.replaceState(null, '', window.location.pathname);
+    }
+    // Reset and reload replays
+    listEl.innerHTML = '';
+    listEl.classList.add('hidden');
+    loadingEl.classList.remove('hidden');
+    emptyEl.classList.add('hidden');
+    favLoaded = false;
+    loadReplays();
+  }
+
+  filterClear.addEventListener('click', () => setFilter(null));
+
   const resultLabels = { agent_win: tAgentWin, spy_win: tSpyWin, draw: tDraw };
   const resultColors = { agent_win: 'text-blue-400', spy_win: 'text-red-400', draw: 'text-amber-400' };
 
   function makeReplayCard(replay, targetList) {
     const result = replay.result || 'draw';
     const date = replay.finishedAt ? new Date(replay.finishedAt).toLocaleString() : '';
-    const avatars = (replay.players || []).slice(0, 8).map(p =>
-      `<img src="${p.avatarUrl || characterSrc}" alt="${p.username}"
-        class="w-7 h-7 rounded-full object-cover border-2 ${p.role === 'spy' ? 'border-red-500' : 'border-blue-400'} -ml-2 first:ml-0"
-        onerror="this.src='${characterSrc}'" title="${p.username} (${p.role})" />`
-    ).join('');
+    const avatars = (replay.players || []).slice(0, 8).map(p => {
+      const pid = p.botId || p.userId || '';
+      const ptype = p.botId ? 'bot' : 'user';
+      return `<img src="${p.avatarUrl || characterSrc}" alt="${escapeHtml(p.username)}"
+        class="w-7 h-7 rounded-full object-cover border-2 ${p.role === 'spy' ? 'border-red-500' : 'border-blue-400'} -ml-2 first:ml-0 ${pid ? 'cursor-pointer hover:ring-2 hover:ring-amber-400' : ''} transition"
+        data-pid="${pid}" data-ptype="${ptype}" data-pname="${escapeHtml(p.username)}" data-pavatar="${p.avatarUrl || ''}"
+        onerror="this.src='${characterSrc}'" title="${escapeHtml(p.username)} (${p.role})" />`;
+    }).join('');
 
     const card = document.createElement('button');
     card.type = 'button';
@@ -217,11 +346,23 @@ const t = useTranslations(lang);
     `;
     card.addEventListener('click', () => openReplayModal(replay.id));
     targetList.appendChild(card);
+
+    card.querySelectorAll('img[data-pid]').forEach(img => {
+      if (!img.dataset.pid) return;
+      img.addEventListener('click', e => {
+        e.stopPropagation();
+        openPlayerModal(img.dataset.ptype, img.dataset.pid, img.dataset.pname, img.dataset.pavatar);
+      });
+    });
   }
 
   async function loadReplays() {
     try {
-      const res = await fetch(`${apiUrl}/api/replays`);
+      let url = `${apiUrl}/api/replays`;
+      if (activeFilter) {
+        url += activeFilter.type === 'bot' ? `?botId=${activeFilter.id}` : `?userId=${activeFilter.id}`;
+      }
+      const res = await fetch(url);
       if (!res.ok) throw new Error();
       const replays = await res.json();
       loadingEl.classList.add('hidden');
@@ -278,6 +419,189 @@ const t = useTranslations(lang);
 
   loadReplays();
 
+  // Read filter from URL on load
+  (function initFilter() {
+    const params = new URLSearchParams(window.location.search);
+    const userId = params.get('userId');
+    const botId = params.get('botId');
+    if (userId || botId) {
+      const type = botId ? 'bot' : 'user';
+      const id = botId || userId;
+      fetch(`${apiUrl}/api/${type === 'bot' ? 'bots/' + id + '/profile' : 'players/' + id}`)
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) setFilter({ type, id, name: data.username, avatar: data.avatarUrl });
+        })
+        .catch(() => {});
+    }
+  })();
+
+  // ── Player profile modal ───────────────────────────────────────────────────
+  const playerModal = document.getElementById('player-modal');
+  const pmAvatar = document.getElementById('pm-avatar');
+  const pmUsername = document.getElementById('pm-username');
+  const pmTypeBadge = document.getElementById('pm-type-badge');
+  const pmOwner = document.getElementById('pm-owner');
+  const pmFilterBtn = document.getElementById('pm-filter-btn');
+  const pmClose = document.getElementById('pm-close');
+  const pmLoading = document.getElementById('pm-loading');
+  const pmContent = document.getElementById('pm-content');
+  const pmWinrate = document.getElementById('pm-winrate');
+  const pmRecord = document.getElementById('pm-record');
+  const pmTotal = document.getElementById('pm-total');
+  const pmAgentRecord = document.getElementById('pm-agent-record');
+  const pmAgentRate = document.getElementById('pm-agent-rate');
+  const pmSpyRecord = document.getElementById('pm-spy-record');
+  const pmSpyRate = document.getElementById('pm-spy-rate');
+  const pmKills = document.getElementById('pm-kills');
+  const pmCards = document.getElementById('pm-cards');
+  const pmRecent = document.getElementById('pm-recent');
+
+  // Set label text
+  document.getElementById('lbl-total-games').textContent = tTotalGames;
+  document.getElementById('lbl-as-agent').textContent = tAsAgent;
+  document.getElementById('lbl-as-spy').textContent = tAsSpy;
+  document.getElementById('lbl-kills').textContent = tKills;
+  document.getElementById('lbl-card-usage').textContent = tCardUsage;
+  document.getElementById('lbl-recent-games').textContent = tRecentGames;
+  pmFilterBtn.textContent = tViewGames;
+
+  const resultLabelsProfile = { agent_win: tAgentWin, spy_win: tSpyWin, draw: tDraw };
+  const resultColorsProfile = { agent_win: 'text-blue-400', spy_win: 'text-red-400', draw: 'text-amber-400' };
+
+  const _TG = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects';
+  const _cardIcons = {
+    attack:  `<img src="${_TG}/Pistol.webp" class="w-3 h-3" alt="attack" />`,
+    heal:    `<img src="${_TG}/Bandage.webp" class="w-3 h-3" alt="heal" />`,
+    jail:    `<img src="${_TG}/Locked.webp" class="w-3 h-3" alt="jail" />`,
+    inspect: `<img src="${_TG}/Magnifying%20Glass%20Tilted%20Left.webp" class="w-3 h-3" alt="inspect" />`,
+  };
+  const _cardCls = {
+    attack: 'bg-red-500/20 text-red-300',
+    heal: 'bg-green-500/20 text-green-300',
+    jail: 'bg-purple-500/20 text-purple-300',
+    inspect: 'bg-yellow-500/20 text-yellow-300',
+  };
+
+  let currentProfileId = null;
+  let currentProfileType = null;
+
+  async function openPlayerModal(type, id, name, avatar) {
+    currentProfileId = id;
+    currentProfileType = type;
+    pmAvatar.src = avatar || characterSrc;
+    pmAvatar.onerror = () => { pmAvatar.src = characterSrc; };
+    pmUsername.textContent = name || '...';
+    pmTypeBadge.textContent = type === 'bot' ? tBot : tHuman;
+    pmOwner.classList.add('hidden');
+    pmLoading.classList.remove('hidden');
+    pmContent.classList.add('hidden');
+    playerModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    const url = type === 'bot'
+      ? `${apiUrl}/api/bots/${id}/profile`
+      : `${apiUrl}/api/players/${id}`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      renderPlayerProfile(data, type);
+    } catch {
+      pmLoading.textContent = tNotFound;
+    }
+  }
+
+  function renderPlayerProfile(data, type) {
+    pmAvatar.src = data.avatarUrl || characterSrc;
+    pmUsername.textContent = data.username;
+    pmTypeBadge.textContent = type === 'bot' ? tBot : tHuman;
+
+    if (data.ownerUsername) {
+      pmOwner.textContent = `${tOwnerLabel}: ${data.ownerUsername}`;
+      pmOwner.classList.remove('hidden');
+    }
+
+    if (data.totalGames === 0) {
+      pmLoading.textContent = tNoStats;
+      return;
+    }
+
+    pmWinrate.textContent = `${data.winRate}%`;
+    pmRecord.textContent = `${data.wins}${tWins} ${data.draws}${tDraws} ${data.losses}${tLosses}`;
+    pmTotal.textContent = data.totalGames;
+    pmAgentRecord.textContent = `${data.agentWins}/${data.agentGames}`;
+    pmAgentRate.textContent = `${data.agentWinRate}%`;
+    pmSpyRecord.textContent = `${data.spyWins}/${data.spyGames}`;
+    pmSpyRate.textContent = `${data.spyWinRate}%`;
+    pmKills.textContent = data.kills;
+
+    // Card usage
+    pmCards.innerHTML = '';
+    const cu = data.cardUsage || {};
+    ['attack', 'heal', 'jail', 'inspect'].forEach(ct => {
+      if (!cu[ct]) return;
+      pmCards.innerHTML += `<span class="inline-flex items-center gap-1 ${_cardCls[ct]} px-1.5 py-0.5 rounded text-[10px]">${_cardIcons[ct]}${cu[ct]}</span>`;
+    });
+    if (!pmCards.innerHTML) pmCards.innerHTML = `<span class="text-white/20 text-xs">—</span>`;
+
+    // Recent games
+    pmRecent.innerHTML = '';
+    (data.recentGames || []).forEach(g => {
+      const date = g.finishedAt ? new Date(g.finishedAt).toLocaleDateString() : '';
+      const resLabel = resultLabelsProfile[g.result] || g.result || tInProgress;
+      const resColor = resultColorsProfile[g.result] || 'text-white/40';
+      const roleColor = g.role === 'spy' ? 'text-red-400' : 'text-blue-400';
+      pmRecent.innerHTML += `
+        <button class="w-full text-left bg-white/5 hover:bg-white/10 rounded-lg px-3 py-2 transition flex items-center gap-2" data-game-id="${g.gameId}">
+          <span class="${roleColor} text-xs font-bold w-12 shrink-0">${g.role === 'spy' ? tAsSpy : tAsAgent}</span>
+          <span class="flex-1 text-white/70 text-xs truncate">${escapeHtml(g.title || 'Untitled')}</span>
+          <span class="${resColor} text-xs shrink-0">${resLabel}</span>
+          <span class="text-white/20 text-xs shrink-0">${date}</span>
+        </button>`;
+    });
+    if (!data.recentGames || data.recentGames.length === 0) {
+      pmRecent.innerHTML = `<p class="text-white/20 text-xs">${tNoStats}</p>`;
+    }
+
+    pmLoading.classList.add('hidden');
+    pmContent.classList.remove('hidden');
+  }
+
+  // Click on recent game → open replay modal
+  pmRecent.addEventListener('click', e => {
+    const btn = e.target.closest('[data-game-id]');
+    if (btn) {
+      closePlayerModal();
+      openReplayModal(btn.dataset.gameId);
+    }
+  });
+
+  // Filter button → close profile, apply filter
+  pmFilterBtn.addEventListener('click', () => {
+    if (!currentProfileId) return;
+    const type = currentProfileType;
+    const id = currentProfileId;
+    const name = pmUsername.textContent;
+    const avatar = pmAvatar.src;
+    closePlayerModal();
+    setFilter({ type, id, name, avatar });
+  });
+
+  function closePlayerModal() {
+    playerModal.classList.add('hidden');
+    document.body.style.overflow = '';
+    currentProfileId = null;
+    currentProfileType = null;
+  }
+
+  pmClose.addEventListener('click', closePlayerModal);
+  playerModal.addEventListener('click', e => { if (e.target === playerModal) closePlayerModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Escape' && !playerModal.classList.contains('hidden')) closePlayerModal();
+  });
+
   // ── Replay modal ───────────────────────────────────────────────────────────
 
   const modal = document.getElementById('replay-modal');
@@ -324,6 +648,8 @@ const t = useTranslations(lang);
     if (!replayData) return null;
     const players = replayData.players.map(p => ({
       id: p.botId || p.userId,
+      userId: p.userId || '',
+      botId: p.botId || '',
       username: p.username,
       avatarUrl: p.avatarUrl,
       role: p.role,
@@ -424,6 +750,15 @@ const t = useTranslations(lang);
         <p class="text-xs ${p.role === 'spy' ? 'text-red-400' : 'text-blue-400'}">${p.role === 'spy' ? 'Spy' : 'Agent'}</p>
       `;
       playersEl.appendChild(el);
+
+      // Make player circle clickable for profile
+      el.style.cursor = 'pointer';
+      el.title = p.username;
+      el.addEventListener('click', () => {
+        const type = p.botId ? 'bot' : 'user';
+        const pid = p.botId || p.userId;
+        if (pid) openPlayerModal(type, pid, p.username, p.avatarUrl);
+      });
 
       // Speech bubble for chat
       if (p.id === chatActorId && chatPayload?.message) {

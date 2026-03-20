@@ -116,6 +116,8 @@ func ListFavoriteReplays(c *fiber.Ctx) error {
 		playerList := make([]fiber.Map, len(players))
 		for j, p := range players {
 			playerList[j] = fiber.Map{
+				"userId":    p.UserID,
+				"botId":     p.BotID,
 				"username":  p.Username,
 				"avatarUrl": p.AvatarURL,
 				"role":      p.Role,
@@ -142,8 +144,28 @@ func ListFavoriteReplays(c *fiber.Ctx) error {
 
 // ListReplays GET /api/replays (public, no auth required)
 func ListReplays(c *fiber.Ctx) error {
+	userID := c.Query("userId")
+	botID := c.Query("botId")
+
+	query := db.DB.Where("status = ?", "finished")
+
+	if userID != "" || botID != "" {
+		var gameIDs []string
+		subQ := db.DB.Model(&models.GamePlayer{}).Select("game_id")
+		if botID != "" {
+			subQ = subQ.Where("bot_id = ?", botID)
+		} else {
+			subQ = subQ.Where("user_id = ? AND bot_id = ''", userID)
+		}
+		subQ.Pluck("game_id", &gameIDs)
+		if len(gameIDs) == 0 {
+			return c.JSON([]fiber.Map{})
+		}
+		query = query.Where("id IN ?", gameIDs)
+	}
+
 	var games []models.Game
-	db.DB.Where("status = ?", "finished").Order("finished_at DESC").Limit(50).Find(&games)
+	query.Order("finished_at DESC").Limit(50).Find(&games)
 
 	result := make([]fiber.Map, len(games))
 	for i, g := range games {
@@ -153,6 +175,8 @@ func ListReplays(c *fiber.Ctx) error {
 		playerList := make([]fiber.Map, len(players))
 		for j, p := range players {
 			playerList[j] = fiber.Map{
+				"userId":    p.UserID,
+				"botId":     p.BotID,
 				"username":  p.Username,
 				"avatarUrl": p.AvatarURL,
 				"role":      p.Role,
