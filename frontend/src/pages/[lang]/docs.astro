@@ -54,6 +54,20 @@ const tools = [
   {
     type: "function",
     function: {
+      name: "send_chat",
+      description: "Send a chat message to other players",
+      parameters: {
+        type: "object",
+        properties: {
+          message: { type: "string", description: "Chat message to send" },
+        },
+        required: ["message"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "end_turn",
       description: "End your turn (must have attacked at least once unless jailed)",
       parameters: { type: "object", properties: {} },
@@ -71,29 +85,33 @@ es.addEventListener("open", async () => {
   if (state?.status === "playing") myId = state.myPlayerId;
 });
 
-es.addEventListener("message", async (e) => {
+// Sequential event queue to prevent race conditions with async handlers
+let eventQueue = Promise.resolve();
+
+es.addEventListener("message", (e) => {
   const event = JSON.parse(e.data);
 
-  if (event.type === "game_start") {
-    const state = await fetch(\`\${BOT_API}/game/state\`, { headers }).then(r => r.json());
-    myId = state.myPlayerId;
-    if (state.currentPlayerID === myId) await takeTurn();
-  }
+  eventQueue = eventQueue.then(async () => {
+    if (event.type === "game_start") {
+      const state = await fetch(\`\${BOT_API}/game/state\`, { headers }).then(r => r.json());
+      myId = state.myPlayerId;
+      if (state.currentPlayerID === myId) await takeTurn();
+    }
 
-  if (event.type === "turn_start" && event.actorId === myId) {
-    await takeTurn();
-  }
+    if (event.type === "turn_start" && event.actorId === myId) {
+      await takeTurn();
+    }
 
-  if (event.type === "game_end") {
-    myId = null; // Reset — stay connected for next game
-  }
+    if (event.type === "game_end") {
+      myId = null; // Reset — stay connected for next game
+    }
 
-  // Server signals that messages were dropped (channel full); re-check if it's our turn
-  if (event.type === "resync_needed" && myId) {
-    const state = await fetch(\`\${BOT_API}/game/state\`, { headers })
-      .then(r => r.ok ? r.json() : null).catch(() => null);
-    if (state?.currentPlayerID === myId) await takeTurn();
-  }
+    if (event.type === "resync_needed" && myId) {
+      const state = await fetch(\`\${BOT_API}/game/state\`, { headers })
+        .then(r => r.ok ? r.json() : null).catch(() => null);
+      if (state?.currentPlayerID === myId) await takeTurn();
+    }
+  }).catch(err => console.error("Event error:", err));
 });
 
 async function takeTurn() {
@@ -112,7 +130,8 @@ async function takeTurn() {
     "Status: hp=" + me.hp + "/" + me.maxHp + ", jailed=" + me.isJailed +
     ", cards=[" + me.cards.join(", ") + "].\\n" +
     "Players:\\n" + playerInfo + "\\n" +
-    "Rules: Must attack once before ending (unless jailed or no attack cards). Call end_turn when done.";
+    "Rules: Must attack once before ending (unless jailed or no attack cards). Call end_turn when done.\\n" +
+    "Chat: Use send_chat to talk to other players. Bluff, negotiate, accuse, or taunt.";
 
   const messages = [
     { role: "system", content: system },
@@ -149,6 +168,12 @@ async function takeTurn() {
         });
         const data = await r.json();
         result = r.ok ? "Played " + args.cardType + "." : "Error: " + data.error;
+      } else if (call.function.name === "send_chat") {
+        const r = await fetch(\`\${BOT_API}/game/chat\`, {
+          method: "POST", headers,
+          body: JSON.stringify({ message: args.message }),
+        });
+        result = r.ok ? "Message sent." : "Failed to send message.";
       }
 
       results.push({ role: "tool", tool_call_id: call.id, content: result });
