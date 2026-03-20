@@ -1,9 +1,5 @@
 ---
 import PlayerRenderUtils from './PlayerRenderUtils.astro';
-import bulletImg from '../assets/bullet.webp';
-import healImg from '../assets/heal.webp';
-import handcuffImg from '../assets/handcuff.webp';
-import findImg from '../assets/find.webp';
 import hittedImg from '../assets/hitted.webp';
 import healedImg from '../assets/healed.webp';
 import jailImg from '../assets/jail.webp';
@@ -309,10 +305,6 @@ const t = useTranslations(lang);
   apiUrl,
   lang,
   characterSrc: character.src,
-  bulletSrc: bulletImg.src,
-  healSrc: healImg.src,
-  handcuffSrc: handcuffImg.src,
-  findSrc: findImg.src,
   hittedSrc: hittedImg.src,
   healedSrc: healedImg.src,
   jailSrc: jailImg.src,
@@ -366,7 +358,8 @@ const t = useTranslations(lang);
   const resultReplay = document.getElementById('gp-result-replay');
   const resultLobby = document.getElementById('gp-result-lobby');
 
-  const cardImages = { attack: bulletSrc, heal: healSrc, jail: handcuffSrc, inspect: findSrc };
+  const _FLUENT = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis';
+  const cardImages = { attack: `${_FLUENT}/Objects/Water%20Pistol.png`, heal: `${_FLUENT}/Smilies/Mending%20Heart.png`, jail: `${_FLUENT}/Objects/Locked.png`, inspect: `${_FLUENT}/Objects/Magnifying%20Glass%20Tilted%20Left.png` };
   const effectImages = { attack: hittedSrc, heal: healedSrc, jail: jailSrc };
 
   let gameState = null;

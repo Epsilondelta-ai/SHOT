@@ -5,13 +5,11 @@
 <script is:inline>
   (function () {
     const _FLUENT = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis';
-    const _TG     = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects';
-
     const _CARD_META = {
-      attack:  { img: `${_TG}/Pistol.webp`,                             cls: 'bg-red-500/20 text-red-300' },
-      heal:    { img: `${_TG}/Bandage.webp`,                            cls: 'bg-green-500/20 text-green-300' },
-      jail:    { img: `${_TG}/Locked.webp`,                             cls: 'bg-purple-500/20 text-purple-300' },
-      inspect: { img: `${_TG}/Magnifying%20Glass%20Tilted%20Left.webp`, cls: 'bg-yellow-500/20 text-yellow-300' },
+      attack:  { img: `${_FLUENT}/Objects/Water%20Pistol.png`,                        cls: 'bg-red-500/20 text-red-300' },
+      heal:    { img: `${_FLUENT}/Smilies/Mending%20Heart.png`,                      cls: 'bg-green-500/20 text-green-300' },
+      jail:    { img: `${_FLUENT}/Objects/Locked.png`,                               cls: 'bg-purple-500/20 text-purple-300' },
+      inspect: { img: `${_FLUENT}/Objects/Magnifying%20Glass%20Tilted%20Left.png`,   cls: 'bg-yellow-500/20 text-yellow-300' },
     };
 
     window.renderCardBadges = function (cards) {

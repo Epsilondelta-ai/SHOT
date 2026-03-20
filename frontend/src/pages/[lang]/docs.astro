@@ -2,10 +2,11 @@
 import { Code } from 'astro:components';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
-import bulletImg from '../../assets/bullet.webp';
-import healImg from '../../assets/heal.webp';
-import handcuffImg from '../../assets/handcuff.webp';
-import findImg from '../../assets/find.webp';
+const _FLUENT = 'https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis';
+const bulletImgSrc = `${_FLUENT}/Objects/Water%20Pistol.png`;
+const healImgSrc = `${_FLUENT}/Smilies/Mending%20Heart.png`;
+const handcuffImgSrc = `${_FLUENT}/Objects/Locked.png`;
+const findImgSrc = `${_FLUENT}/Objects/Magnifying%20Glass%20Tilted%20Left.png`;
 import { locales, type Locale } from '../../i18n/locales';
 import { useTranslations } from '../../i18n';
 
@@ -629,19 +630,19 @@ resp = requests.<span class="text-green-400">get</span>(
                 <p class="text-white/40 text-xs mb-1">cardType:</p>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <div class="bg-white/5 rounded-lg p-2 text-center">
-                    <img src={bulletImg.src} alt="attack" class="w-8 h-8 mx-auto mb-1 object-contain" />
+                    <img src={bulletImgSrc} alt="attack" class="w-8 h-8 mx-auto mb-1 object-contain" />
                     <p class="font-mono text-xs text-white/70">attack</p>
                   </div>
                   <div class="bg-white/5 rounded-lg p-2 text-center">
-                    <img src={healImg.src} alt="heal" class="w-8 h-8 mx-auto mb-1 object-contain" />
+                    <img src={healImgSrc} alt="heal" class="w-8 h-8 mx-auto mb-1 object-contain" />
                     <p class="font-mono text-xs text-white/70">heal</p>
                   </div>
                   <div class="bg-white/5 rounded-lg p-2 text-center">
-                    <img src={handcuffImg.src} alt="jail" class="w-8 h-8 mx-auto mb-1 object-contain" />
+                    <img src={handcuffImgSrc} alt="jail" class="w-8 h-8 mx-auto mb-1 object-contain" />
                     <p class="font-mono text-xs text-white/70">jail</p>
                   </div>
                   <div class="bg-white/5 rounded-lg p-2 text-center">
-                    <img src={findImg.src} alt="inspect" class="w-8 h-8 mx-auto mb-1 object-contain" />
+                    <img src={findImgSrc} alt="inspect" class="w-8 h-8 mx-auto mb-1 object-contain" />
                     <p class="font-mono text-xs text-white/70">inspect</p>
                   </div>
                 </div>
@@ -948,10 +949,10 @@ resp = requests.<span class="text-green-400">get</span>(
           <h3 class="text-amber-400 font-bold text-lg mb-4">{t.docs.rules.cardsTitle}</h3>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { name: t.game.card.attack, img: bulletImg.src, limit: '6', fate: t.docs.rules.recycled, fateColor: 'text-green-400', desc: '1 DMG', qty: '×5' },
-              { name: t.game.card.heal, img: healImg.src, limit: '2', fate: t.docs.rules.recycled, fateColor: 'text-green-400', desc: '+1 HP', qty: '×2' },
-              { name: t.game.card.jail, img: handcuffImg.src, limit: '1', fate: t.docs.rules.banished, fateColor: 'text-red-400', desc: '1T seal', qty: '×1' },
-              { name: t.game.card.inspect, img: findImg.src, limit: t.docs.rules.unlimited, fate: t.docs.rules.banished, fateColor: 'text-red-400', desc: 'ID check', qty: '×2/spy' },
+              { name: t.game.card.attack, img: bulletImgSrc, limit: '6', fate: t.docs.rules.recycled, fateColor: 'text-green-400', desc: '1 DMG', qty: '×5' },
+              { name: t.game.card.heal, img: healImgSrc, limit: '2', fate: t.docs.rules.recycled, fateColor: 'text-green-400', desc: '+1 HP', qty: '×2' },
+              { name: t.game.card.jail, img: handcuffImgSrc, limit: '1', fate: t.docs.rules.banished, fateColor: 'text-red-400', desc: '1T seal', qty: '×1' },
+              { name: t.game.card.inspect, img: findImgSrc, limit: t.docs.rules.unlimited, fate: t.docs.rules.banished, fateColor: 'text-red-400', desc: 'ID check', qty: '×2/spy' },
             ].map(c => (
               <div class="bg-black/40 rounded-xl p-3 flex flex-col items-center gap-2 border border-white/10">
                 <img src={c.img} alt={c.name} class="w-12 h-12 object-contain" />

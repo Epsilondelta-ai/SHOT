@@ -2,10 +2,6 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import SiteHeader from '../../components/SiteHeader.astro';
 import character from '../../assets/character.webp';
-import bulletImg from '../../assets/bullet.webp';
-import healImg from '../../assets/heal.webp';
-import handcuffImg from '../../assets/handcuff.webp';
-import findImg from '../../assets/find.webp';
 import hittedImg from '../../assets/hitted.webp';
 import healedImg from '../../assets/healed.webp';
 import jailImg from '../../assets/jail.webp';
@@ -185,10 +181,6 @@ const t = useTranslations(lang);
 <script define:vars={{
   apiUrl, lang,
   characterSrc: character.src,
-  bulletSrc: bulletImg.src,
-  healSrc: healImg.src,
-  handcuffSrc: handcuffImg.src,
-  findSrc: findImg.src,
   hittedSrc: hittedImg.src,
   healedSrc: healedImg.src,
   jailSrc: jailImg.src,
