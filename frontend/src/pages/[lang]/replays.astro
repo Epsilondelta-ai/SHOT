@@ -364,6 +364,11 @@ const t = useTranslations(lang);
     if (favLoaded) return;
     favLoaded = true;
     const token = getToken();
+    // Reset UI state
+    favListEl.innerHTML = '';
+    favListEl.classList.add('hidden');
+    favEmptyEl.classList.add('hidden');
+    favLoadingEl.classList.remove('hidden');
     try {
       const res = await fetch(`${apiUrl}/api/replays/favorites`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -798,8 +803,10 @@ const t = useTranslations(lang);
     // Track view
     fetch(`${apiUrl}/api/replays/${gameId}/view`, { method: 'POST' }).catch(() => null);
 
+    const token = getToken();
+    const authHeaders = token ? { Authorization: `Bearer ${token}` } : {};
     const [metaRes, actionsRes] = await Promise.all([
-      fetch(`${apiUrl}/api/replays/${gameId}`),
+      fetch(`${apiUrl}/api/replays/${gameId}`, { headers: authHeaders }),
       fetch(`${apiUrl}/api/replays/${gameId}/actions`),
     ]);
 
