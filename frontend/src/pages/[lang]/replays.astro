@@ -829,7 +829,9 @@ const t = useTranslations(lang);
     updateCounts(replayData);
 
     if (actions.length > 0) {
-      goToFrame(0);
+      // Start at first turn_start so initial draws are pre-applied
+      const firstTurnStart = actions.findIndex(a => a.actionType === 'turn_start');
+      goToFrame(firstTurnStart >= 0 ? firstTurnStart : 0);
     } else {
       playersEl.innerHTML = `<p class="text-white/30 text-sm">${tInProgress}</p>`;
     }

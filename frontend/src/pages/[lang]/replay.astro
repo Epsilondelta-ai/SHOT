@@ -333,7 +333,8 @@ const t = useTranslations(lang);
     metaEl.textContent = `${replayData.title || 'Untitled'} · ${replayData.playerCount} ${tPlayers} · ${replayData.turnCount} ${tTurns} · ${replayData.result || tInProgress}`;
 
     if (actions.length > 0) {
-      goToFrame(0);
+      const firstTurnStart = actions.findIndex(a => a.actionType === 'turn_start');
+      goToFrame(firstTurnStart >= 0 ? firstTurnStart : 0);
     }
   }
 

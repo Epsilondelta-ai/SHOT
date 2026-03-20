@@ -615,7 +615,8 @@ const t = useTranslations(lang);
     modalMeta.textContent = `${replayData.playerCount} ${tPlayers} · ${replayData.turnCount} ${tTurns}`;
 
     if (actions.length > 0) {
-      goToFrame(0);
+      const firstTurnStart = actions.findIndex(a => a.actionType === 'turn_start');
+      goToFrame(firstTurnStart >= 0 ? firstTurnStart : 0);
     } else {
       playersEl.innerHTML = `<p class="text-white/30 text-sm">${tInProgress}</p>`;
     }
