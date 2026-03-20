@@ -3,11 +3,13 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/game"
 	"github.com/epsilondelta/shot/handlers"
 	"github.com/epsilondelta/shot/hub"
+	"github.com/epsilondelta/shot/models"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -31,6 +33,35 @@ func main() {
 	// and their state is recovered from Redis by the TimerManager.
 	db.DB.Exec("DELETE FROM room_members WHERE room_id IN (SELECT id FROM rooms WHERE status != 'playing')")
 	db.DB.Exec("DELETE FROM rooms WHERE status != 'playing'")
+
+	// For rooms still marked "playing", check whether the game state survived in Redis.
+	// If Redis was also wiped (e.g. full server + cache restart), the game cannot be
+	// recovered. Mark it finished (draw) and reset the room to "waiting" so that
+	// players and bots can leave normally instead of being stuck forever.
+	var orphanRooms []models.Room
+	db.DB.Where("status = ?", "playing").Find(&orphanRooms)
+	for _, room := range orphanRooms {
+		var g models.Game
+		if err := db.DB.Where("room_id = ? AND status = ?", room.ID, "playing").First(&g).Error; err != nil {
+			// Playing room with no matching game row — reset the room.
+			db.DB.Model(&models.Room{}).Where("id = ?", room.ID).Update("status", "waiting")
+			log.Printf("startup: reset room %s (no active game in DB)", room.ID)
+			continue
+		}
+		if _, err := game.LoadState(db.RDB, g.ID); err != nil {
+			// Game exists in DB but state is gone from Redis — close it as a draw.
+			now := time.Now()
+			draw := "draw"
+			db.DB.Model(&models.Game{}).Where("id = ?", g.ID).Updates(map[string]any{
+				"status":      "finished",
+				"result":      draw,
+				"finished_at": now,
+			})
+			db.DB.Model(&models.Room{}).Where("id = ?", room.ID).Update("status", "waiting")
+			log.Printf("startup: closed orphan game %s (Redis state missing), room %s reset to waiting", g.ID, room.ID)
+		}
+		// Redis state exists — RecoverTimers() will restore the timer below.
+	}
 
 	hub.H = hub.NewHub(db.RDB)
 	hub.H.Start()
