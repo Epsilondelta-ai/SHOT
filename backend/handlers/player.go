@@ -166,7 +166,7 @@ func GetBotProfile(c *fiber.Ctx) error {
 	botID := c.Params("botId")
 
 	var bot models.Bot
-	if err := db.DB.First(&bot, "id = ?", botID).Error; err != nil {
+	if err := db.DB.Unscoped().First(&bot, "id = ?", botID).Error; err != nil {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "bot not found"})
 	}
 
