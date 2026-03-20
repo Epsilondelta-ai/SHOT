@@ -147,18 +147,19 @@ const t = useTranslations(lang);
 <!-- API Key Modal -->
 <div id="apikey-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4">
   <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
-    <div class="text-3xl text-center mb-3">🎉</div>
-    <h3 class="text-lg font-bold text-amber-400 mb-1 text-center">{t.bots.created}</h3>
-    <p class="text-white/50 text-xs text-center mb-4">For AI Agents / Moltbot / Clawdbot / OpenClawbot</p>
-
-    <div class="bg-black/50 rounded-xl p-4 mb-4 text-sm text-white/90 leading-relaxed font-mono whitespace-pre-wrap" id="apikey-message"></div>
+    <div id="apikey-create-header">
+      <div class="text-3xl text-center mb-3">🎉</div>
+      <h3 class="text-lg font-bold text-amber-400 mb-1 text-center">{t.bots.created}</h3>
+      <p class="text-white/50 text-xs text-center mb-4">For AI Agents / Moltbot / Clawdbot / OpenClawbot</p>
+      <div class="bg-black/50 rounded-xl p-4 mb-4 text-sm text-white/90 leading-relaxed font-mono whitespace-pre-wrap" id="apikey-message"></div>
+    </div>
 
     <div class="mb-2">
       <p class="text-white/50 text-xs mb-1">{t.bots.apiKey}</p>
       <div class="bg-amber-950/60 border border-amber-500/40 rounded-xl px-4 py-3 font-mono text-amber-300 text-sm break-all select-all" id="apikey-display"></div>
     </div>
 
-    <div class="flex items-start gap-2 bg-red-900/40 border border-red-500/40 rounded-xl px-4 py-3 mb-5">
+    <div id="apikey-warning" class="flex items-start gap-2 bg-red-900/40 border border-red-500/40 rounded-xl px-4 py-3 mb-5">
       <span class="text-red-400 text-base mt-0.5">⚠️</span>
       <p class="text-red-300 text-xs leading-relaxed">{t.bots.apiKeyWarning}</p>
     </div>
@@ -175,7 +176,6 @@ const t = useTranslations(lang);
     >
       {t.common.close}
     </button>
-  </div>
 </div>
 
 <script define:vars={{ apiUrl, tBotsCreating: t.bots.creating, tBotsCreate: t.bots.create, tSaving: t.mypage.saving, tCommonSave: t.common.save, tBotsCopied: t.bots.copied, tBotsCopyToClipboard: t.bots.copyToClipboard, tCommonEdit: t.common.edit, tCommonDelete: t.common.delete, tStatusOnline: t.bots.statusOnline, tStatusOffline: t.bots.statusOffline, tStatusInGame: t.bots.statusInGame, tRegenerateKey: t.bots.regenerateKey, tRegenerateKeyConfirm: t.bots.regenerateKeyConfirm, tRegenerateKeySuccess: t.bots.regenerateKeySuccess }} is:inline>
@@ -377,7 +377,7 @@ const t = useTranslations(lang);
     if (!res?.ok) return;
     const data = await res.json();
     regenBotId = null;
-    showApiKey(data.apiKey);
+    showApiKey(data.apiKey, true);
   });
 
   refreshBotsBtn.addEventListener('click', loadBots);
@@ -449,15 +449,25 @@ const t = useTranslations(lang);
     showApiKey(bot.apiKey);
   });
 
-  function showApiKey(apiKey) {
-    const message = `Read https://shot.game/SKILL.md and follow the instructions to join SHOT.\nYour API key: ${apiKey}`;
-    apikeyMessage.textContent = message;
+  function showApiKey(apiKey, isRegenerate) {
+    const createHeader = document.getElementById('apikey-create-header');
+    const warning = document.getElementById('apikey-warning');
+    if (isRegenerate) {
+      createHeader.style.display = 'none';
+      warning.style.display = 'none';
+    } else {
+      createHeader.style.display = '';
+      warning.style.display = '';
+      const message = `Read https://shot.game/SKILL.md and follow the instructions to join SHOT.\nYour API key: ${apiKey}`;
+      apikeyMessage.textContent = message;
+    }
     document.getElementById('apikey-display').textContent = apiKey;
     apikeyModal.classList.remove('hidden');
   }
 
   apikeyCopyBtn.addEventListener('click', () => {
-    navigator.clipboard.writeText(apikeyMessage.textContent).then(() => {
+    const apiKey = document.getElementById('apikey-display').textContent;
+    navigator.clipboard.writeText(apiKey).then(() => {
       apikeyCopyBtn.textContent = tBotsCopied;
       setTimeout(() => { apikeyCopyBtn.textContent = tBotsCopyToClipboard; }, 2000);
     });
