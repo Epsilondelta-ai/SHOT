@@ -41,7 +41,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
     <!-- Desktop right area -->
     <div class="hidden sm:flex ml-auto items-center gap-2">
       <a href={`/${lang}`} class="flex items-center gap-1.5 text-amber-100 hover:text-white transition font-semibold text-sm px-3 py-2 rounded-lg hover:bg-black/20">
-        <img src="/emoji/door.png" alt="" class="w-4 h-4" />{t.game.exitGame}
+        🏠{t.game.exitGame}
       </a>
       <span id="sse-dot-desktop" class="hidden w-2.5 h-2.5 rounded-full"></span>
       <!-- Desktop language selector -->
@@ -101,7 +101,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
         </button>
         <hr class="my-1 border-gray-100" />
         <a href={`/${lang}`} class="w-full text-left flex items-center gap-1.5 px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold">
-          <img src="/emoji/door.png" alt="" class="w-5 h-5" />{t.game.exitGame}
+          🏠{t.game.exitGame}
         </a>
         <hr id="mobile-lang-divider" class="my-1 border-gray-100" />
         <div id="mobile-lang-wrapper" class="px-4 py-2">
