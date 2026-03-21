@@ -439,11 +439,11 @@ const t = useTranslations(lang);
           class="absolute inset-0 w-full h-full object-cover rounded-lg transition group-hover:scale-105"
           onerror="this.src='${characterSrc}'" />
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-lg"></div>
-        <div class="absolute bottom-0 left-0 right-0 p-2.5 flex flex-col gap-0.5">
-          <span class="text-white text-xs font-bold truncate drop-shadow">${escapeHtml(p.username)}</span>
-          <div class="flex items-center gap-1">
-            <img src="/emoji/glowing-star.png" alt="star" class="w-3.5 h-3.5" />
-            <span class="text-amber-400 text-[10px] font-semibold">${p.favoriteCount || 0}</span>
+        <div class="absolute bottom-0 left-0 right-0 p-3 flex flex-col items-center gap-1.5">
+          <span class="text-white text-sm font-bold truncate max-w-full drop-shadow text-center">${escapeHtml(p.username)}</span>
+          <div class="flex items-center gap-1.5">
+            <img src="/emoji/glowing-star.png" alt="star" class="w-4 h-4" />
+            <span class="text-amber-400 text-xs font-semibold">${p.favoriteCount || 0}</span>
           </div>
         </div>
       `;
