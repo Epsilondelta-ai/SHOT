@@ -291,13 +291,13 @@ func GoogleCallback(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate token"})
 	}
 
-	// Issue a one-time code so the JWT is never exposed in the URL
+	// Issue a one-time auth code so the JWT is never exposed in the URL
 	b := make([]byte, 16)
 	if _, err := rand.Read(b); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate auth code"})
 	}
-	code := hex.EncodeToString(b)
-	if err := db.RDB.Set(context.Background(), "oauth:code:"+code, jwtToken, time.Minute).Err(); err != nil {
+	authCode := hex.EncodeToString(b)
+	if err := db.RDB.Set(context.Background(), "oauth:code:"+authCode, jwtToken, time.Minute).Err(); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to store auth code"})
 	}
 
@@ -306,7 +306,7 @@ func GoogleCallback(c *fiber.Ctx) error {
 		frontendURL = "http://localhost:4321"
 	}
 
-	return c.Redirect(frontendURL + "/en/login?code=" + code)
+	return c.Redirect(frontendURL + "/en/login?code=" + authCode)
 }
 
 // ExchangeOAuthCode POST /api/auth/exchange
