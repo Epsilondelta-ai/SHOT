@@ -64,9 +64,18 @@ services:
       - ./nginx/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./data/certbot/conf:/etc/letsencrypt:ro
       - ./data/certbot/www:/var/www/certbot:ro
+    # Background loop reloads nginx every 12h so renewed certs are picked up
+    # without restarting the container (certbot also renews every 12h)
+    command: >
+      /bin/sh -c "
+        while :; do sleep 12h & wait $${!}; nginx -s reload; done &
+        nginx -g 'daemon off;'
+      "
     depends_on:
-      - frontend
-      - backend
+      frontend:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
   certbot:
