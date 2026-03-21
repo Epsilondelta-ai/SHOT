@@ -4,9 +4,10 @@ import (
 	"time"
 
 	"github.com/epsilondelta/shot/db"
-	"github.com/epsilondelta/shot/models"
 	"github.com/epsilondelta/shot/hub"
+	"github.com/epsilondelta/shot/models"
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -91,12 +92,21 @@ func CreateRoom(c *fiber.Ctx) error {
 		body.MaxPlayers = 8
 	}
 
+	passwordHash := ""
+	if body.IsPrivate {
+		hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to hash password"})
+		}
+		passwordHash = string(hash)
+	}
+
 	room := models.Room{
 		Name:       body.Name,
 		HostID:     userID,
 		MaxPlayers: body.MaxPlayers,
 		IsPrivate:  body.IsPrivate,
-		Password:   body.Password,
+		Password:   passwordHash,
 	}
 	if result := db.DB.Create(&room); result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create room"})
@@ -144,7 +154,10 @@ func JoinRoom(c *fiber.Ctx) error {
 		var body struct {
 			Password string `json:"password"`
 		}
-		if err := c.BodyParser(&body); err != nil || body.Password != room.Password {
+		if err := c.BodyParser(&body); err != nil {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "invalid password"})
+		}
+		if err := bcrypt.CompareHashAndPassword([]byte(room.Password), []byte(body.Password)); err != nil {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "invalid password"})
 		}
 	}
@@ -371,7 +384,13 @@ func UpdateRoom(c *fiber.Ctx) error {
 		body.MaxPlayers = room.MaxPlayers
 	}
 	if body.IsPrivate && body.Password == "" {
-		body.Password = room.Password // keep existing password if not changed
+		body.Password = room.Password // keep existing hash unchanged
+	} else if body.IsPrivate && body.Password != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to hash password"})
+		}
+		body.Password = string(hash)
 	}
 
 	updates := map[string]any{
