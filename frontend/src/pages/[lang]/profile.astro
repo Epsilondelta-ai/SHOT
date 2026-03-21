@@ -43,6 +43,10 @@ const t = useTranslations(lang);
             </div>
             <p id="ph-owner" class="text-white/30 text-sm mt-0.5 hidden"></p>
           </div>
+          <button id="ph-fav-btn" class="hidden flex flex-col items-center gap-0.5 text-white/40 hover:text-amber-400 transition" title="">
+            <img id="ph-fav-icon" src="/emoji/star.png" alt="star" class="w-6 h-6" />
+            <span id="ph-fav-count" class="text-xs">0</span>
+          </button>
         </div>
       </div>
 
@@ -177,6 +181,9 @@ const t = useTranslations(lang);
   tOwnerLabel: t.docs.replay.ownerLabel,
   tNoStats: t.docs.replay.noStats,
   tNotFound: t.docs.replay.notFound,
+  tAddFavorite: t.docs.replay.addFavorite,
+  tRemoveFavorite: t.docs.replay.removeFavorite,
+  tFavoriteCount: t.docs.replay.favoriteCount,
   tInProgress: t.docs.replay.inProgress,
   tAsAgent: t.docs.replay.asAgent,
   tAsSpy: t.docs.replay.asSpy,
@@ -204,6 +211,8 @@ const t = useTranslations(lang);
   const botId = params.get('botId');
   const profileType = botId ? 'bot' : 'user';
   const profileId = botId || userId;
+
+  const token = localStorage.getItem('token');
 
   const profileLoading = document.getElementById('profile-loading');
   const profileError = document.getElementById('profile-error');
@@ -281,6 +290,75 @@ const t = useTranslations(lang);
         }
         profileHeader.classList.remove('hidden');
         profileTabs.classList.remove('hidden');
+
+        // Favorite button
+        const favBtn = document.getElementById('ph-fav-btn');
+        const favIcon = document.getElementById('ph-fav-icon');
+        const favCount = document.getElementById('ph-fav-count');
+
+        favCount.textContent = data.favoriteCount || 0;
+
+        // Only show for logged-in users viewing another profile
+        if (token) {
+          const myToken = token;
+          let myUserId = null;
+          try {
+            const payload = JSON.parse(atob(myToken.split('.')[1]));
+            myUserId = payload.sub;
+          } catch {}
+
+          const isSelf = !botId && myUserId === profileId;
+          if (!isSelf) {
+            favBtn.classList.remove('hidden');
+            favBtn.title = tAddFavorite;
+
+            // Check initial favorite status
+            const checkUrl = profileType === 'bot'
+              ? `${apiUrl}/api/favorites/check?botId=${profileId}`
+              : `${apiUrl}/api/favorites/check?userId=${profileId}`;
+            fetch(checkUrl, { headers: { Authorization: `Bearer ${myToken}` } })
+              .then(r => r.ok ? r.json() : {})
+              .then(d => {
+                if (d.isFavorited) {
+                  favIcon.src = '/emoji/glowing-star.png';
+                  favBtn.title = tRemoveFavorite;
+                  favBtn.dataset.favorited = 'true';
+                }
+              })
+              .catch(() => {});
+
+            let busy = false;
+            favBtn.addEventListener('click', async () => {
+              if (busy) return;
+              busy = true;
+              const isFav = favBtn.dataset.favorited === 'true';
+              const baseUrl = profileType === 'bot'
+                ? `${apiUrl}/api/favorites/bots/${profileId}`
+                : `${apiUrl}/api/favorites/users/${profileId}`;
+              try {
+                const res = await fetch(baseUrl, {
+                  method: isFav ? 'DELETE' : 'POST',
+                  headers: { Authorization: `Bearer ${myToken}` },
+                });
+                if (res.ok) {
+                  const currentCount = parseInt(favCount.textContent) || 0;
+                  if (isFav) {
+                    favBtn.dataset.favorited = '';
+                    favIcon.src = '/emoji/star.png';
+                    favBtn.title = tAddFavorite;
+                    favCount.textContent = Math.max(0, currentCount - 1);
+                  } else {
+                    favBtn.dataset.favorited = 'true';
+                    favIcon.src = '/emoji/glowing-star.png';
+                    favBtn.title = tRemoveFavorite;
+                    favCount.textContent = currentCount + 1;
+                  }
+                }
+              } catch {}
+              busy = false;
+            });
+          }
+        }
 
         // Stats
         if (data.totalGames === 0) {

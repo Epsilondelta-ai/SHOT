@@ -1,0 +1,165 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import SiteHeader from '../../components/SiteHeader.astro';
+import character from '../../assets/character.webp';
+import { locales, type Locale } from '../../i18n/locales';
+import { useTranslations } from '../../i18n';
+
+export function getStaticPaths() {
+  return locales.map(lang => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params as { lang: Locale };
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
+const t = useTranslations(lang);
+---
+
+<BaseLayout title={`SHOT! - ${t.docs.replay.favoritesPageTitle}`} bodyClass="min-h-screen flex flex-col bg-gray-950">
+  <SiteHeader lang={lang} path="/favorites" />
+
+  <main class="flex-1">
+    <div class="max-w-2xl mx-auto px-5 py-10">
+
+      <!-- Page header -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-white mb-1">{t.docs.replay.favoritesPageTitle}</h1>
+        <p id="fav-count-label" class="text-white/30 text-sm"></p>
+      </div>
+
+      <!-- Loading state -->
+      <div id="fav-loading" class="text-center py-20">
+        <p class="text-white/30 text-sm">{t.docs.replay.loading}</p>
+      </div>
+
+      <!-- Empty state -->
+      <div id="fav-empty" class="hidden text-center py-20">
+        <p class="text-white/40 text-sm">{t.docs.replay.emptyFavoritePlayers}</p>
+      </div>
+
+      <!-- Favorites grid -->
+      <div id="fav-list" class="hidden flex flex-col gap-3"></div>
+
+    </div>
+  </main>
+</BaseLayout>
+
+<script define:vars={{
+  apiUrl, lang,
+  characterSrc: character.src,
+  tFavoritesPageTitle: t.docs.replay.favoritesPageTitle,
+  tEmptyFavoritePlayers: t.docs.replay.emptyFavoritePlayers,
+  tLoading: t.docs.replay.loading,
+  tRemoveFavorite: t.docs.replay.removeFavorite,
+  tBot: t.docs.replay.bot,
+  tHuman: t.docs.replay.human,
+  tWinRate: t.docs.replay.winRate,
+  tGames: t.docs.replay.games,
+  tLogin: t.login.submit,
+}} is:inline>
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  const token = localStorage.getItem('token');
+
+  // Redirect to login if not authenticated
+  if (!token) {
+    window.location.href = `/${lang}/login`;
+  }
+
+  const loadingEl = document.getElementById('fav-loading');
+  const emptyEl = document.getElementById('fav-empty');
+  const listEl = document.getElementById('fav-list');
+  const countLabel = document.getElementById('fav-count-label');
+
+  async function loadFavorites() {
+    try {
+      const res = await fetch(`${apiUrl}/api/favorites`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      const players = await res.json();
+
+      loadingEl.classList.add('hidden');
+
+      if (!players || players.length === 0) {
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+
+      listEl.classList.remove('hidden');
+      players.forEach(p => {
+        const profileUrl = p.targetType === 'bot'
+          ? `/${lang}/profile?botId=${p.targetId}`
+          : `/${lang}/profile?userId=${p.targetId}`;
+
+        const card = document.createElement('div');
+        card.id = `fav-card-${p.targetId}`;
+        card.className = 'bg-gray-900 border border-gray-800 rounded-2xl p-4 flex items-center gap-4 hover:border-gray-700 transition';
+        card.innerHTML = `
+          <a href="${profileUrl}" class="shrink-0">
+            <img src="${p.avatarUrl || characterSrc}" alt="${escapeHtml(p.username)}"
+              class="w-12 h-12 rounded-full object-cover border-2 border-white/20 hover:border-amber-400 transition"
+              onerror="this.src='${characterSrc}'" />
+          </a>
+          <a href="${profileUrl}" class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-white font-bold truncate">${escapeHtml(p.username)}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/10 text-white/40">${p.targetType === 'bot' ? tBot : tHuman}</span>
+            </div>
+            <p class="text-white/30 text-xs mt-0.5">${p.totalGames} ${tGames} · ${p.winRate}% ${tWinRate}</p>
+          </a>
+          <button class="unfav-btn shrink-0 text-amber-400 hover:text-white/40 transition p-1" data-id="${p.targetId}" data-type="${p.targetType}" title="${tRemoveFavorite}">
+            <img src="/emoji/glowing-star.png" alt="star" class="w-5 h-5" />
+          </button>
+        `;
+        listEl.appendChild(card);
+      });
+
+      countLabel.textContent = `${players.length}`;
+
+      // Unfavorite handlers
+      listEl.querySelectorAll('.unfav-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const id = btn.dataset.id;
+          const type = btn.dataset.type;
+          const url = type === 'bot'
+            ? `${apiUrl}/api/favorites/bots/${id}`
+            : `${apiUrl}/api/favorites/users/${id}`;
+          try {
+            const res = await fetch(url, {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+              const cardEl = document.getElementById(`fav-card-${id}`);
+              if (cardEl) {
+                cardEl.style.transition = 'opacity 0.3s';
+                cardEl.style.opacity = '0';
+                setTimeout(() => {
+                  cardEl.remove();
+                  const remaining = listEl.querySelectorAll('[id^="fav-card-"]').length;
+                  countLabel.textContent = `${remaining}`;
+                  if (remaining === 0) {
+                    listEl.classList.add('hidden');
+                    emptyEl.classList.remove('hidden');
+                  }
+                }, 300);
+              }
+            }
+          } catch {}
+        });
+      });
+
+    } catch {
+      loadingEl.classList.add('hidden');
+      emptyEl.classList.remove('hidden');
+    }
+  }
+
+  if (token) {
+    loadFavorites();
+  }
+</script>

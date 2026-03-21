@@ -57,6 +57,17 @@ const t = useTranslations(lang);
 
       <!-- Favorites section -->
       <div id="fav-section" class="hidden">
+        <!-- Favorited players carousel -->
+        <div id="fav-players-section" class="hidden mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 id="fav-players-title" class="text-white/60 text-sm font-semibold"></h3>
+            <a id="fav-see-all" href="" class="text-amber-400 text-xs hover:underline"></a>
+          </div>
+          <div class="relative overflow-hidden">
+            <div id="fav-carousel-track" class="flex gap-4 py-1"></div>
+          </div>
+        </div>
+
         <div id="fav-loading" class="text-center py-10">
           <p class="text-white/40 text-sm">{t.docs.replay.loading}</p>
         </div>
@@ -183,6 +194,20 @@ const t = useTranslations(lang);
   </div>
 </BaseLayout>
 
+<style>
+@keyframes carousel-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+#fav-carousel-track.scrolling {
+  animation: carousel-scroll 20s linear infinite;
+  width: max-content;
+}
+#fav-carousel-track.scrolling:hover {
+  animation-play-state: paused;
+}
+</style>
+
 <PlayerRenderUtils />
 <script define:vars={{
   apiUrl, lang,
@@ -239,6 +264,8 @@ const t = useTranslations(lang);
   tGames: t.docs.replay.games,
   tViewDetail: t.docs.replay.viewDetail,
   tCopied: t.docs.replay.copied,
+  tFavoritePlayers: t.docs.replay.favoritePlayers,
+  tSeeAll: t.docs.replay.seeAll,
 }} is:inline>
 
   // ── Replay list ────────────────────────────────────────────────────────────
@@ -360,10 +387,62 @@ const t = useTranslations(lang);
     }
   }
 
+  async function loadFavoritePlayers() {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const res = await fetch(`${apiUrl}/api/favorites`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const players = await res.json();
+      if (!players || players.length === 0) return;
+
+      const section = document.getElementById('fav-players-section');
+      const track = document.getElementById('fav-carousel-track');
+      const titleEl = document.getElementById('fav-players-title');
+      const seeAllEl = document.getElementById('fav-see-all');
+
+      titleEl.textContent = tFavoritePlayers;
+      seeAllEl.textContent = tSeeAll;
+      seeAllEl.href = `/${lang}/favorites`;
+      track.innerHTML = '';
+
+      const SCROLL_THRESHOLD = 5;
+      const displayPlayers = players;
+
+      displayPlayers.forEach(p => {
+        const profileUrl = p.targetType === 'bot'
+          ? `/${lang}/profile?botId=${p.targetId}`
+          : `/${lang}/profile?userId=${p.targetId}`;
+        const el = document.createElement('a');
+        el.href = profileUrl;
+        el.className = 'flex-shrink-0 flex flex-col items-center gap-1.5 group w-16';
+        el.innerHTML = `
+          <img src="${p.avatarUrl || characterSrc}" alt="${escapeHtml(p.username)}"
+            class="w-12 h-12 rounded-full object-cover border-2 border-white/20 group-hover:border-amber-400 transition"
+            onerror="this.src='${characterSrc}'" />
+          <span class="text-white/60 text-[10px] truncate w-full text-center group-hover:text-white transition">${escapeHtml(p.username)}</span>
+          ${p.targetType === 'bot' ? '<span class="text-white/20 text-[8px]">Bot</span>' : ''}
+        `;
+        track.appendChild(el);
+      });
+
+      if (displayPlayers.length >= SCROLL_THRESHOLD) {
+        const clone = track.innerHTML;
+        track.innerHTML += clone;
+        track.classList.add('scrolling');
+      }
+
+      section.classList.remove('hidden');
+    } catch {}
+  }
+
   let favLoaded = false;
   async function loadFavorites() {
     if (favLoaded) return;
     favLoaded = true;
+    loadFavoritePlayers();
     const token = getToken();
     // Reset UI state
     favListEl.innerHTML = '';
