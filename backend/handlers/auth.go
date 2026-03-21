@@ -206,12 +206,31 @@ func GoogleRedirect(c *fiber.Ctx) error {
 	if os.Getenv("GOOGLE_CLIENT_ID") == "" {
 		return c.Status(fiber.StatusNotImplemented).JSON(fiber.Map{"error": "Google OAuth not configured"})
 	}
+
+	// Read locale from ?lang=, validate (only lowercase alpha, max 5 chars)
+	lang := c.Query("lang")
+	if lang == "" || len(lang) > 5 {
+		lang = "en"
+	}
+	for _, ch := range lang {
+		if ch < 'a' || ch > 'z' {
+			lang = "en"
+			break
+		}
+	}
+
+	frontendURL := strings.TrimRight(os.Getenv("FRONTEND_URL"), "/")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:4321"
+	}
+
 	state, err := generateOAuthState()
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate state"})
+		return c.Redirect(frontendURL + "/" + lang + "/login?error=oauth_failed")
 	}
-	if err := db.RDB.Set(context.Background(), "oauth:state:"+state, "1", 5*time.Minute).Err(); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to store state"})
+	// Store locale as the Redis value so GoogleCallback can restore it
+	if err := db.RDB.Set(context.Background(), "oauth:state:"+state, lang, 5*time.Minute).Err(); err != nil {
+		return c.Redirect(frontendURL + "/" + lang + "/login?error=oauth_failed")
 	}
 	cfg := googleOAuthConfig()
 	url := cfg.AuthCodeURL(state, oauth2.AccessTypeOnline)
@@ -220,38 +239,50 @@ func GoogleRedirect(c *fiber.Ctx) error {
 
 // GoogleCallback GET /api/auth/google/callback
 func GoogleCallback(c *fiber.Ctx) error {
-	// Validate CSRF state token (atomic get+delete prevents replay attacks)
-	state := c.Query("state")
-	val, err := db.RDB.GetDel(context.Background(), "oauth:state:"+state).Result()
-	if err != nil || val != "1" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid or expired oauth state"})
+	frontendURL := strings.TrimRight(os.Getenv("FRONTEND_URL"), "/")
+	if frontendURL == "" {
+		frontendURL = "http://localhost:4321"
 	}
 
-	code := c.Query("code")
-	if code == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "missing code"})
+	// Validate CSRF state; retrieve stored locale (atomic get+delete prevents replay)
+	state := c.Query("state")
+	lang, err := db.RDB.GetDel(context.Background(), "oauth:state:"+state).Result()
+	if err != nil || lang == "" {
+		return c.Redirect(frontendURL + "/en/login?error=oauth_failed")
+	}
+	for _, ch := range lang {
+		if ch < 'a' || ch > 'z' {
+			lang = "en"
+			break
+		}
+	}
+	loginURL := frontendURL + "/" + lang + "/login"
+
+	googleCode := c.Query("code")
+	if googleCode == "" {
+		return c.Redirect(loginURL + "?error=oauth_failed")
 	}
 
 	cfg := googleOAuthConfig()
-	oauthToken, err := cfg.Exchange(context.Background(), code)
+	oauthToken, err := cfg.Exchange(context.Background(), googleCode)
 	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "failed to exchange code"})
+		return c.Redirect(loginURL + "?error=oauth_failed")
 	}
 
 	client := cfg.Client(context.Background(), oauthToken)
 	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to get user info"})
+		return c.Redirect(loginURL + "?error=oauth_failed")
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "google userinfo request failed"})
+		return c.Redirect(loginURL + "?error=oauth_failed")
 	}
 
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to read user info"})
+		return c.Redirect(loginURL + "?error=oauth_failed")
 	}
 
 	var googleUser struct {
@@ -261,11 +292,10 @@ func GoogleCallback(c *fiber.Ctx) error {
 		Picture string `json:"picture"`
 	}
 	if err := json.Unmarshal(data, &googleUser); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to parse user info"})
+		return c.Redirect(loginURL + "?error=oauth_failed")
 	}
 
 	var user models.User
-	// Try find by GoogleID first, then by email
 	result := db.DB.Where("google_id = ?", googleUser.ID).First(&user)
 	if result.Error != nil {
 		result = db.DB.Where("email = ?", googleUser.Email).First(&user)
@@ -278,7 +308,7 @@ func GoogleCallback(c *fiber.Ctx) error {
 				AvatarURL: googleUser.Picture,
 			}
 			if err := db.DB.Create(&user).Error; err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create user"})
+				return c.Redirect(loginURL + "?error=oauth_failed")
 			}
 		} else {
 			// Link Google ID to existing account
@@ -288,25 +318,20 @@ func GoogleCallback(c *fiber.Ctx) error {
 
 	jwtToken, err := generateToken(user.ID)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate token"})
+		return c.Redirect(loginURL + "?error=oauth_failed")
 	}
 
-	// Issue a one-time auth code so the JWT is never exposed in the URL
+	// Issue a one-time code so the JWT is never exposed in the URL
 	b := make([]byte, 16)
 	if _, err := rand.Read(b); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate auth code"})
+		return c.Redirect(loginURL + "?error=oauth_failed")
 	}
-	authCode := hex.EncodeToString(b)
-	if err := db.RDB.Set(context.Background(), "oauth:code:"+authCode, jwtToken, time.Minute).Err(); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to store auth code"})
-	}
-
-	frontendURL := strings.TrimRight(os.Getenv("FRONTEND_URL"), "/")
-	if frontendURL == "" {
-		frontendURL = "http://localhost:4321"
+	oneTimeCode := hex.EncodeToString(b)
+	if err := db.RDB.Set(context.Background(), "oauth:code:"+oneTimeCode, jwtToken, time.Minute).Err(); err != nil {
+		return c.Redirect(loginURL + "?error=oauth_failed")
 	}
 
-	return c.Redirect(frontendURL + "/en/login?code=" + authCode)
+	return c.Redirect(loginURL + "?code=" + oneTimeCode)
 }
 
 // ExchangeOAuthCode POST /api/auth/exchange
