@@ -291,10 +291,36 @@ func GoogleCallback(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate token"})
 	}
 
-	frontendURL := os.Getenv("FRONTEND_URL")
+	// Issue a one-time code so the JWT is never exposed in the URL
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate auth code"})
+	}
+	code := hex.EncodeToString(b)
+	if err := db.RDB.Set(context.Background(), "oauth:code:"+code, jwtToken, time.Minute).Err(); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to store auth code"})
+	}
+
+	frontendURL := strings.TrimRight(os.Getenv("FRONTEND_URL"), "/")
 	if frontendURL == "" {
 		frontendURL = "http://localhost:4321"
 	}
 
-	return c.Redirect(frontendURL + "/en/game?token=" + jwtToken)
+	return c.Redirect(frontendURL + "/en/login?code=" + code)
+}
+
+// ExchangeOAuthCode POST /api/auth/exchange
+// Exchanges a one-time OAuth code (stored in Redis) for a JWT.
+func ExchangeOAuthCode(c *fiber.Ctx) error {
+	var body struct {
+		Code string `json:"code"`
+	}
+	if err := c.BodyParser(&body); err != nil || body.Code == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request"})
+	}
+	token, err := db.RDB.GetDel(context.Background(), "oauth:code:"+body.Code).Result()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid or expired code"})
+	}
+	return c.JSON(fiber.Map{"token": token})
 }

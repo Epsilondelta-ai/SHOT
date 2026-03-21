@@ -142,6 +142,7 @@ func main() {
 	auth := api.Group("/auth")
 	auth.Post("/signup", handlers.Signup)
 	auth.Post("/login", handlers.Login)
+	auth.Post("/exchange", handlers.ExchangeOAuthCode)
 	auth.Get("/google", handlers.GoogleRedirect)
 	auth.Get("/google/callback", handlers.GoogleCallback)
 

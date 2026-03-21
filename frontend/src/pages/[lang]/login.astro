@@ -102,12 +102,23 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
       window.location.replace('/' + lang);
     }
 
-    // Handle token from Google OAuth callback
-    const params = new URLSearchParams(window.location.search);
-    const tokenFromQuery = params.get('token');
-    if (tokenFromQuery) {
-      localStorage.setItem('token', tokenFromQuery);
-      window.location.replace('/' + lang);
+    // Handle one-time code from Google OAuth callback
+    const oauthCode = new URLSearchParams(window.location.search).get('code');
+    if (oauthCode) {
+      (async () => {
+        try {
+          const res = await fetch(apiUrl + '/api/auth/exchange', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code: oauthCode }),
+          });
+          if (res.ok) {
+            const json = await res.json();
+            localStorage.setItem('token', json.token);
+          }
+        } catch {}
+        window.location.replace('/' + lang);
+      })();
     }
 
     const errorEl = document.getElementById('login-error');
