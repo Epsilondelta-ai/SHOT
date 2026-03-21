@@ -160,7 +160,7 @@ export default {
     },
   },
   game: {
-    lobby: 'Lobby', bots: 'Bot Management', mypage: 'My Info',
+    lobby: 'Lobby', bots: 'Bot Management', mypage: 'My Info', exitGame: 'Exit',
     role: { agent: 'Agent', spy: 'Spy', unknown: 'Unknown', confirmedAgent: 'Confirmed Agent' },
     card: { attack: 'Attack', heal: 'Heal', jail: 'Jail', inspect: 'Inspect' },
     turn: { yourTurn: 'Your turn', waiting: 'Waiting...', timer: 'Time left', turnInfo: 'Turn', endTurn: 'End Turn' },

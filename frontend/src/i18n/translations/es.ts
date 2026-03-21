@@ -160,7 +160,7 @@ export default {
     },
   },
   game: {
-    lobby: 'Lobby', bots: 'Gestión de Bots', mypage: 'Mi Perfil',
+    lobby: 'Lobby', bots: 'Gestión de Bots', mypage: 'Mi Perfil', exitGame: 'Salir',
     role: { agent: 'Agente', spy: 'Espía', unknown: 'Desconocido', confirmedAgent: 'Agente Confirmado' },
     card: { attack: 'Atacar', heal: 'Curar', jail: 'Encarcelar', inspect: 'Inspeccionar' },
     turn: { yourTurn: 'Tu turno', waiting: 'Esperando...', timer: 'Tiempo restante', turnInfo: 'Turno', endTurn: 'Terminar turno' },

@@ -160,7 +160,7 @@ export default {
     },
   },
   game: {
-    lobby: 'Лобби', bots: 'Управление ботами', mypage: 'Мой профиль',
+    lobby: 'Лобби', bots: 'Управление ботами', mypage: 'Мой профиль', exitGame: 'Выход',
     role: { agent: 'Агент', spy: 'Шпион', unknown: 'Неизвестно', confirmedAgent: 'Подтверждённый агент' },
     card: { attack: 'Атака', heal: 'Лечение', jail: 'Тюрьма', inspect: 'Проверка' },
     turn: { yourTurn: 'Ваш ход', waiting: 'Ожидание...', timer: 'Оставшееся время', turnInfo: 'Ход', endTurn: 'Завершить ход' },

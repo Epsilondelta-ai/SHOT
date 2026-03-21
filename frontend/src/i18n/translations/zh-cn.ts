@@ -160,7 +160,7 @@ export default {
     },
   },
   game: {
-    lobby: '大厅', bots: '机器人管理', mypage: '我的信息',
+    lobby: '大厅', bots: '机器人管理', mypage: '我的信息', exitGame: '退出',
     role: { agent: '特工', spy: '间谍', unknown: '未知', confirmedAgent: '确认特工' },
     card: { attack: '攻击', heal: '治愈', jail: '监禁', inspect: '检查' },
     turn: { yourTurn: '你的回合', waiting: '等待中...', timer: '剩余时间', turnInfo: '回合', endTurn: '结束回合' },

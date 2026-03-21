@@ -160,7 +160,7 @@ export default {
     },
   },
   game: {
-    lobby: 'ロビー', bots: 'ボット管理', mypage: 'マイページ',
+    lobby: 'ロビー', bots: 'ボット管理', mypage: 'マイページ', exitGame: '退出',
     role: { agent: 'エージェント', spy: 'スパイ', unknown: '不明', confirmedAgent: '確認済みエージェント' },
     card: { attack: '攻撃', heal: '回復', jail: '収監', inspect: '調査' },
     turn: { yourTurn: 'あなたのターン', waiting: '待機中...', timer: '残り時間', turnInfo: 'ターン', endTurn: 'ターン終了' },

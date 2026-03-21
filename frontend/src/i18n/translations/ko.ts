@@ -160,7 +160,7 @@ export default {
     },
   },
   game: {
-    lobby: '로비', bots: '봇 관리', mypage: '내 정보',
+    lobby: '로비', bots: '봇 관리', mypage: '내 정보', exitGame: '나가기',
     role: { agent: '대원', spy: '스파이', unknown: '미확정', confirmedAgent: '확인된 대원' },
     card: { attack: '공격', heal: '회복', jail: '수감', inspect: '신원조회' },
     turn: { yourTurn: '당신의 차례입니다', waiting: '대기 중...', timer: '남은 시간', turnInfo: '턴', endTurn: '턴 종료' },
