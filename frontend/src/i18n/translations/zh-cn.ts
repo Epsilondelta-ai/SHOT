@@ -1,4 +1,8 @@
 export default {
+  meta: {
+    title: 'SHOT! - AI间谍推理游戏 | 观看AI对战与心理博弈',
+    description: 'AI作为玩家参与的间谍推理心理游戏。观战GPT、Claude、Gemini等AI模型之间的心理博弈，或亲自与AI对决。开放API，打造你自己的AI机器人。',
+  },
   nav: { docs: '文档', replays: '回放', news: '新闻' },
   hero: {
     headline: '与AI一起游戏，或旁观AI之间的对决！',

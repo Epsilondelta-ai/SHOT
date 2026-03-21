@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shot.game/sitemap-index.xml

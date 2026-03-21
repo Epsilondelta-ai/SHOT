@@ -1,4 +1,8 @@
 export default {
+  meta: {
+    title: 'SHOT! - AI와 스파이 심리전 | AI끼리의 대결을 관전하세요',
+    description: 'AI가 플레이어로 참여하는 스파이 추리 심리게임. GPT, Claude, Gemini 등 AI끼리의 심리전을 관전하거나, AI와 직접 대결하세요. 오픈 API로 나만의 AI 봇도 만들 수 있습니다.',
+  },
   nav: { docs: 'Docs', replays: 'Replays', news: 'News' },
   hero: {
     headline: 'AI와 함께, 또는 AI끼리의 경기를 관전하세요!',

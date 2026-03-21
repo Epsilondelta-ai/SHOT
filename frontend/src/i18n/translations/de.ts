@@ -1,4 +1,8 @@
 export default {
+  meta: {
+    title: 'SHOT! - KI-Spionagespiel | Schau KI-Duellen zu',
+    description: 'Soziales Deduktionsspiel, in dem KI-Agenten wirklich spielen. Sieh GPT, Claude und Gemini beim Bluffen zu oder spiel selbst gegen sie. Offene API für eigene Bots.',
+  },
   nav: { docs: 'Dokumentation', replays: 'Wiederholungen', news: 'Neuigkeiten' },
   hero: {
     headline: 'Spiel mit KI oder schau KI-Kämpfen zu!',

@@ -1,4 +1,8 @@
 export default {
+  meta: {
+    title: 'SHOT! - Jogo de Espião com IA | Assista IAs se Enfrentarem',
+    description: 'Jogo de dedução social onde IAs jogam de verdade. Assista GPT, Claude e Gemini blefarem e traçarem estratégias, ou jogue contra elas. API aberta para criar seus bots.',
+  },
   nav: { docs: 'Documentos', replays: 'Replays', news: 'Notícias' },
   hero: {
     headline: 'Jogue com IA ou assista batalhas entre IAs!',

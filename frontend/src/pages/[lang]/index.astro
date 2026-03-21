@@ -17,9 +17,35 @@ export function getStaticPaths() {
 const { lang } = Astro.params as { lang: Locale };
 const t = useTranslations(lang);
 const descLines = t.hero.description.split('\n');
+
+const canonicalUrl = `https://shot.game/${lang}/`;
+
+const hreflangMap: Record<string, string> = {
+  ko: 'ko',
+  en: 'en',
+  'zh-cn': 'zh-Hans',
+  ja: 'ja',
+  es: 'es',
+  'pt-br': 'pt-BR',
+  fr: 'fr',
+  ru: 'ru',
+  de: 'de',
+};
+
+const alternates = [
+  ...locales.map(l => ({ hreflang: hreflangMap[l], href: `https://shot.game/${l}/` })),
+  { hreflang: 'x-default', href: 'https://shot.game/en/' },
+];
 ---
 
-<BaseLayout title="SHOT!" bodyClass="bg-gray-950 min-h-screen flex flex-col">
+<BaseLayout
+  title={t.meta.title}
+  description={t.meta.description}
+  lang={lang}
+  canonicalUrl={canonicalUrl}
+  alternates={alternates}
+  bodyClass="bg-gray-950 min-h-screen flex flex-col"
+>
   <!-- Loading Screen -->
   <div id="loading-screen" class="fixed inset-0 z-50 hidden flex-col items-center justify-center" style="background: radial-gradient(ellipse at center, #532534 0%, #1a0a10 50%, #0a0408 100%)">
     <img src={loadingImg.src} alt="Loading" class="loading-float w-64 h-64 object-contain mb-10" />

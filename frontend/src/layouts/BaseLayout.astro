@@ -4,21 +4,59 @@ import '../styles/global.css';
 interface Props {
   title: string;
   bodyClass?: string;
+  lang?: string;
+  description?: string;
+  canonicalUrl?: string;
+  alternates?: { hreflang: string; href: string }[];
 }
 
-const { title, bodyClass } = Astro.props;
+const { title, bodyClass, lang = 'en', description, canonicalUrl, alternates } = Astro.props;
+
+const ogLocaleMap: Record<string, string> = {
+  ko: 'ko_KR',
+  en: 'en_US',
+  'zh-cn': 'zh_CN',
+  ja: 'ja_JP',
+  es: 'es_ES',
+  'pt-br': 'pt_BR',
+  fr: 'fr_FR',
+  ru: 'ru_RU',
+  de: 'de_DE',
+};
+const ogLocale = ogLocaleMap[lang] ?? 'en_US';
+const ogUrl = canonicalUrl ?? 'https://shot.game/';
 ---
 <!doctype html>
-<html lang="ko">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    {alternates && alternates.map(alt => (
+      <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+    ))}
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={ogUrl} />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:image" content="https://shot.game/og-image.webp" />
+    <meta property="og:image:width" content="1536" />
+    <meta property="og:image:height" content="1024" />
+    <meta property="og:locale" content={ogLocale} />
+    <meta property="og:site_name" content="SHOT!" />
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content="https://shot.game/og-image.webp" />
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
     <slot name="head" />
   </head>
