@@ -1,9 +1,75 @@
 ---
-// Redirect to browser language or default
+import logo from '../assets/logo.webp';
+import loadingImg from '../assets/loading.webp';
+import background from '../assets/background.webp';
+import background2 from '../assets/background2.webp';
+import character from '../assets/character.webp';
 ---
-<script>
-  const supported = ['ko', 'en', 'zh-cn', 'ja', 'es', 'pt-br', 'fr', 'ru', 'de'];
-  const lang = navigator.language.toLowerCase();
-  const matched = supported.find(l => lang.startsWith(l.replace('-', '_')) || lang.startsWith(l.split('-')[0]));
-  window.location.replace('/' + (matched ?? 'en') + '/');
-</script>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SHOT!</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+
+  <!-- Preload font -->
+  <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+  <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+
+  <!-- Preload key images used on landing/game pages -->
+  <link rel="preload" as="image" href={logo.src} />
+  <link rel="preload" as="image" href={loadingImg.src} />
+  <link rel="preload" as="image" href={background.src} />
+  <link rel="preload" as="image" href={background2.src} />
+  <link rel="preload" as="image" href={character.src} />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      background: radial-gradient(ellipse at center, #532534 0%, #1a0a10 50%, #0a0408 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+    .logo {
+      width: 140px;
+      animation: float 2s ease-in-out infinite;
+    }
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid rgba(251, 191, 36, 0.2);
+      border-top-color: #fbbf24;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-12px); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <img class="logo" src={logo.src} alt="SHOT!" />
+    <div class="spinner"></div>
+  </div>
+  <script>
+    const supported = ['ko', 'en', 'zh-cn', 'ja', 'es', 'pt-br', 'fr', 'ru', 'de'];
+    const lang = navigator.language.toLowerCase();
+    const matched = supported.find(l => lang.startsWith(l.replace('-', '_')) || lang.startsWith(l.split('-')[0]));
+    window.location.replace('/' + (matched ?? 'en') + '/');
+  </script>
+</body>
+</html>
