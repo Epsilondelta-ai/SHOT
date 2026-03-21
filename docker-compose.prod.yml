@@ -43,8 +43,12 @@ services:
     build:
       context: ./frontend
       args:
-        # Leave empty — frontend is same-domain, nginx proxies /api internally
+        # Leave empty — frontend is same-domain, nginx-proxy handles /api routing
         PUBLIC_API_URL: ""
+    volumes:
+      # Override the dev nginx.conf (which proxies to backend) with a
+      # static-only config — nginx-proxy handles all API routing in prod
+      - ./nginx/frontend-prod.conf:/etc/nginx/conf.d/default.conf:ro
     expose:
       - "80"
     depends_on:
