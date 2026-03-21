@@ -12,7 +12,7 @@ server {
     }
 }
 
-# HTTPS: SSL termination, SSE proxy, API proxy, static frontend
+# HTTPS: SSL termination, security headers, rate limiting, SSE proxy, API proxy
 server {
     listen 443 ssl;
     server_name ${DOMAIN};
@@ -22,23 +22,77 @@ server {
     include             /etc/letsencrypt/options-ssl-nginx.conf;
     ssl_dhparam         /etc/letsencrypt/ssl-dhparams.pem;
 
-    # SSE endpoints — disable all buffering
-    location ~ ^/api/.*/sse {
+    # Hide nginx version from response headers and error pages
+    server_tokens off;
+
+    # Game API only handles small JSON payloads; no file uploads exist
+    client_max_body_size 64k;
+
+    # Strip ?token= query params from access logs (JWT leak prevention)
+    access_log /var/log/nginx/access.log main_masked;
+
+    # Security headers (applied to all responses including error pages via 'always')
+    add_header Strict-Transport-Security "max-age=15552000; includeSubDomains" always;
+    add_header X-Frame-Options           "DENY" always;
+    add_header X-Content-Type-Options    "nosniff" always;
+    add_header X-XSS-Protection          "1; mode=block" always;
+    add_header Referrer-Policy           "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy        "camera=(), microphone=(), geolocation=(), payment=()" always;
+
+    # Health endpoint — internal networks only
+    # Docker healthchecks run container-local so they are unaffected by this restriction
+    location = /health {
+        allow 172.16.0.0/12;
+        allow 10.0.0.0/8;
+        allow 127.0.0.1;
+        deny all;
+
         proxy_pass         http://backend:3000;
         proxy_http_version 1.1;
-        proxy_set_header   Connection '';
-        proxy_buffering    off;
-        proxy_cache        off;
-        proxy_read_timeout 24h;
+        proxy_set_header   Host $host;
+    }
+
+    # Auth endpoints — strict rate limit to block brute force
+    # 20r/m + burst 10: OAuth 3-step flow + login retries handled without blocking legit users
+    location ~ ^/api/auth {
+        limit_req        zone=auth_zone burst=10 nodelay;
+        limit_req_status 429;
+
+        proxy_pass         http://backend:3000;
+        proxy_http_version 1.1;
         proxy_set_header   Host              $host;
         proxy_set_header   X-Real-IP         $remote_addr;
         proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
         proxy_set_header   X-Forwarded-Proto $scheme;
     }
 
-    # API + health endpoints
-    location ~ ^/(api|health) {
+    # SSE endpoints — buffering disabled, connection-limited per IP
+    # limit_conn 60: 50 bots (1 SSE each) + player's own 2 SSE connections + headroom
+    # proxy_send_timeout: prevents silent drop when client TCP window stalls
+    location ~ ^/api/.*/sse {
+        limit_conn       sse_zone 60;
+
         proxy_pass         http://backend:3000;
+        proxy_http_version 1.1;
+        proxy_set_header   Connection '';
+        proxy_buffering    off;
+        proxy_cache        off;
+        proxy_read_timeout 24h;
+        proxy_send_timeout 24h;
+        proxy_set_header   Host              $host;
+        proxy_set_header   X-Real-IP         $remote_addr;
+        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+    }
+
+    # General API — generous rate limit for bot developers
+    # 10r/s + burst 100: absorbs 50 bots firing simultaneously + normal page-load spikes
+    location /api {
+        limit_req        zone=api_zone burst=100 nodelay;
+        limit_req_status 429;
+
+        proxy_pass         http://backend:3000;
+        proxy_http_version 1.1;
         proxy_set_header   Host              $host;
         proxy_set_header   X-Real-IP         $remote_addr;
         proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
