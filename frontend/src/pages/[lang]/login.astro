@@ -70,7 +70,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
           <div class="flex items-center gap-3 my-4">
             <div class="flex-1 h-px bg-amber-700/50"></div>
             <a
-              href={`${apiUrl}/api/auth/google`}
+              href={`${apiUrl}/api/auth/google?lang=${lang}`}
               class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow hover:shadow-md transition"
               aria-label="Google Login"
             >
@@ -97,14 +97,11 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
   </HeroBackground>
 
   <script define:vars={{ lang, apiUrl }} is:inline>
-    // Redirect if already logged in
-    if (localStorage.getItem('token')) {
-      window.location.replace('/' + lang);
-    }
+    const params = new URLSearchParams(window.location.search);
+    const oauthCode = params.get('code');
 
-    // Handle one-time code from Google OAuth callback
-    const oauthCode = new URLSearchParams(window.location.search).get('code');
     if (oauthCode) {
+      // Google OAuth flow: exchange one-time code for JWT
       (async () => {
         try {
           const res = await fetch(apiUrl + '/api/auth/exchange', {
@@ -115,37 +112,57 @@ const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
           if (res.ok) {
             const json = await res.json();
             localStorage.setItem('token', json.token);
+            window.location.replace('/' + lang);
+            return;
           }
         } catch {}
-        window.location.replace('/' + lang);
+        // Exchange failed — show error, clean URL, stay on login page
+        const el = document.getElementById('login-error');
+        if (el) {
+          el.textContent = 'Google login failed. Please try again.';
+          el.classList.remove('hidden');
+        }
+        window.history.replaceState({}, '', window.location.pathname);
       })();
-    }
+    } else {
+      // Normal login flow
+      if (localStorage.getItem('token')) {
+        window.location.replace('/' + lang);
+      }
 
-    const errorEl = document.getElementById('login-error');
+      const errorEl = document.getElementById('login-error');
 
-    document.getElementById('login-form')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      errorEl.classList.add('hidden');
-      const form = e.target;
-      const data = Object.fromEntries(new FormData(form));
-      try {
-        const res = await fetch(apiUrl + '/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-        const json = await res.json();
-        if (res.ok) {
-          localStorage.setItem('token', json.token);
-          window.location.href = '/' + lang;
-        } else {
-          errorEl.textContent = json.error || 'Login failed';
+      // Show error redirected from backend (e.g. OAuth state expired)
+      if (params.get('error') && errorEl) {
+        errorEl.textContent = 'Google login failed. Please try again.';
+        errorEl.classList.remove('hidden');
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+
+      document.getElementById('login-form')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.classList.add('hidden');
+        const form = e.target;
+        const data = Object.fromEntries(new FormData(form));
+        try {
+          const res = await fetch(apiUrl + '/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          const json = await res.json();
+          if (res.ok) {
+            localStorage.setItem('token', json.token);
+            window.location.href = '/' + lang;
+          } else {
+            errorEl.textContent = json.error || 'Login failed';
+            errorEl.classList.remove('hidden');
+          }
+        } catch {
+          errorEl.textContent = 'Network error';
           errorEl.classList.remove('hidden');
         }
-      } catch {
-        errorEl.textContent = 'Network error';
-        errorEl.classList.remove('hidden');
-      }
-    });
+      });
+    }
   </script>
 </BaseLayout>
