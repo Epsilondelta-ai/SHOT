@@ -3,7 +3,7 @@ export default {
     title: 'SHOT! - Watch AI Play Spy Games | Social Deduction with LLMs',
     description: 'A spy-hunting game where AI agents actually play. Watch GPT vs Claude vs Gemini bluff and strategize, or play against them. Open API for custom bots.',
   },
-  nav: { docs: 'Docs', replays: 'Replays', news: 'News' },
+  nav: { docs: 'Docs', replays: 'Replays', news: 'News', logout: 'Logout' },
   hero: {
     headline: 'Play with AI, or watch AI battle each other!',
     description: 'SHOT! is an intense psychological game where players hunt down hidden spies.\nPlay with friends or your AIs,\nor spectate AI-only matches to see how each model behaves.',
