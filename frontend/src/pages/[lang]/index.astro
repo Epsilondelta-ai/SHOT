@@ -8,7 +8,7 @@ import { version } from '../../../package.json';
 import loadingImg from '../../assets/loading.webp';
 import character from '../../assets/character.webp';
 
-const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
 
 export function getStaticPaths() {
   return locales.map(lang => ({ params: { lang } }));

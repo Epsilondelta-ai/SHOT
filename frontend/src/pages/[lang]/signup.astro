@@ -13,7 +13,7 @@ export function getStaticPaths() {
 
 const { lang } = Astro.params as { lang: Locale };
 const t = useTranslations(lang);
-const apiUrl = import.meta.env.PUBLIC_API_URL || 'http://localhost:3000';
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
 ---
 
 <BaseLayout title={`SHOT! - ${t.signup.title}`} bodyClass="min-h-screen flex flex-col">
