@@ -13,6 +13,7 @@ type Bot struct {
 	Name      string         `gorm:"size:100;not null"`
 	AvatarURL string         `gorm:"type:text"`
 	APIKey        string         `gorm:"uniqueIndex;size:64;not null"`
+	Description   string         `gorm:"type:text"`
 	FavoriteCount int            `gorm:"not null;default:0"`
 	CreatedAt     time.Time
 	UpdatedAt time.Time

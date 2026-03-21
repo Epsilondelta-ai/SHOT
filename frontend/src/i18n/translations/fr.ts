@@ -210,6 +210,8 @@ export default {
     regenerateKeyConfirm: 'Régénérer la clé API ? La clé actuelle ne fonctionnera plus.',
     regenerateKeySuccess: 'La clé API a été régénérée !',
     deleteBotConfirm: 'Supprimer ce bot ? Cette action est irréversible.',
+    botDescription: 'Description',
+    botDescriptionPlaceholder: 'Entrez une description pour votre bot. (optionnel)',
   },
   mypage: {
     title: 'Mon Profil',

@@ -75,7 +75,7 @@ const t = useTranslations(lang);
       <p class="text-white/40 text-xs mt-2">{t.bots.avatarOptional}</p>
     </div>
 
-    <div class="mb-6">
+    <div class="mb-4">
       <label class="block text-sm font-semibold text-white/70 mb-1">{t.bots.botName} <span class="text-red-400">*</span></label>
       <input
         id="bot-name-input"
@@ -85,6 +85,17 @@ const t = useTranslations(lang);
         placeholder={t.bots.botName}
       />
       <p id="bot-name-error" class="text-red-400 text-xs mt-1 hidden">{t.bots.botNameRequired}</p>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.bots.botDescription}</label>
+      <textarea
+        id="bot-description-input"
+        maxlength="300"
+        rows="3"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+        placeholder={t.bots.botDescriptionPlaceholder}
+      ></textarea>
     </div>
 
     <div class="flex gap-3">
@@ -112,7 +123,7 @@ const t = useTranslations(lang);
       <p class="text-white/40 text-xs mt-2">{t.bots.clickToChange}</p>
     </div>
 
-    <div class="mb-6">
+    <div class="mb-4">
       <label class="block text-sm font-semibold text-white/70 mb-1">{t.bots.botName} <span class="text-red-400">*</span></label>
       <input
         id="edit-bot-name-input"
@@ -122,6 +133,17 @@ const t = useTranslations(lang);
         placeholder={t.bots.botName}
       />
       <p id="edit-bot-name-error" class="text-red-400 text-xs mt-1 hidden">{t.bots.botNameRequired}</p>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.bots.botDescription}</label>
+      <textarea
+        id="edit-bot-description-input"
+        maxlength="300"
+        rows="3"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
+        placeholder={t.bots.botDescriptionPlaceholder}
+      ></textarea>
     </div>
 
     <div class="flex gap-3">
@@ -221,6 +243,9 @@ const t = useTranslations(lang);
   const editBotSaveBtn = document.getElementById('edit-bot-save-btn');
   const editBotCancelBtn = document.getElementById('edit-bot-cancel-btn');
 
+  const botDescriptionInput = document.getElementById('bot-description-input');
+  const editBotDescriptionInput = document.getElementById('edit-bot-description-input');
+
   let pendingAvatarBase64 = null;
   let editPendingAvatarBase64 = null;
   let editingBotId = null;
@@ -271,16 +296,17 @@ const t = useTranslations(lang);
         <div class="flex-1 min-w-0">
           <p class="text-white font-semibold truncate">${bot.name}</p>
           <p class="text-xs">${bot.isInGame ? `<span class="text-amber-400">${tStatusInGame} · ${bot.roomName}</span>` : bot.isOnline ? `<span class="text-green-400">${tStatusOnline}</span>` : `<span class="text-white/40">${tStatusOffline}</span>`}</p>
+          ${bot.description ? `<p class="text-white/40 text-xs truncate mt-0.5">${bot.description}</p>` : ''}
         </div>
         <button data-id="${bot.id}" class="regen-key-btn text-green-400 hover:text-green-300 transition text-xs font-semibold mr-2">🔑 ${tRegenerateKey}</button>
-        <button data-id="${bot.id}" data-name="${bot.name}" data-avatar="${bot.avatarUrl || ''}" class="edit-bot-btn text-amber-400 hover:text-amber-300 transition text-sm font-semibold mr-2">${tCommonEdit}</button>
+        <button data-id="${bot.id}" data-name="${bot.name}" data-avatar="${bot.avatarUrl || ''}" data-description="${bot.description || ''}" class="edit-bot-btn text-amber-400 hover:text-amber-300 transition text-sm font-semibold mr-2">${tCommonEdit}</button>
         <button data-id="${bot.id}" class="delete-bot-btn text-red-400 hover:text-red-300 transition text-sm font-semibold">${tCommonDelete}</button>
       `;
       botList.appendChild(card);
     });
 
     botList.querySelectorAll('.edit-bot-btn').forEach(btn => {
-      btn.addEventListener('click', () => openEditModal(btn.dataset.id, btn.dataset.name, btn.dataset.avatar));
+      btn.addEventListener('click', () => openEditModal(btn.dataset.id, btn.dataset.name, btn.dataset.avatar, btn.dataset.description));
     });
     botList.querySelectorAll('.delete-bot-btn').forEach(btn => {
       btn.addEventListener('click', () => deleteBot(btn.dataset.id));
@@ -290,10 +316,11 @@ const t = useTranslations(lang);
     });
   }
 
-  function openEditModal(id, name, avatarUrl) {
+  function openEditModal(id, name, avatarUrl, description) {
     editingBotId = id;
     editPendingAvatarBase64 = null;
     editBotNameInput.value = name;
+    editBotDescriptionInput.value = description || '';
     editBotNameError.classList.add('hidden');
     editBotAvatarPreview.src = avatarUrl || characterSrc;
     editBotModal.classList.remove('hidden');
@@ -331,7 +358,7 @@ const t = useTranslations(lang);
     editBotSaveBtn.disabled = true;
     editBotSaveBtn.textContent = tSaving;
 
-    const body = { name };
+    const body = { name, description: editBotDescriptionInput.value.trim() };
     if (editPendingAvatarBase64) body.avatarUrl = editPendingAvatarBase64;
 
     const res = await fetch(`${apiUrl}/api/bots/${editingBotId}`, {
@@ -419,6 +446,7 @@ const t = useTranslations(lang);
 
   addBotBtn.addEventListener('click', () => {
     botNameInput.value = '';
+    botDescriptionInput.value = '';
     botNameError.classList.add('hidden');
     botAvatarPreview.style.display = 'none';
     botAvatarPlaceholder.style.display = 'flex';
@@ -460,7 +488,7 @@ const t = useTranslations(lang);
     botCreateBtn.disabled = true;
     botCreateBtn.textContent = tBotsCreating;
 
-    const body = { name };
+    const body = { name, description: botDescriptionInput.value.trim() };
     if (pendingAvatarBase64) body.avatarUrl = pendingAvatarBase64;
 
     const res = await fetch(`${apiUrl}/api/bots`, {

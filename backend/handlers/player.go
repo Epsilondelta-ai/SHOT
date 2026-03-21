@@ -188,6 +188,7 @@ func GetBotProfile(c *fiber.Ctx) error {
 		"id":            bot.ID,
 		"username":      bot.Name,
 		"avatarUrl":     bot.AvatarURL,
+		"description":   bot.Description,
 		"isBot":         true,
 		"ownerUsername": ownerUsername,
 		"favoriteCount": bot.FavoriteCount,
