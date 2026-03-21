@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -191,18 +193,40 @@ func GetMyRoom(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
+func generateOAuthState() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}
+
 // GoogleRedirect GET /api/auth/google
 func GoogleRedirect(c *fiber.Ctx) error {
 	if os.Getenv("GOOGLE_CLIENT_ID") == "" {
 		return c.Status(fiber.StatusNotImplemented).JSON(fiber.Map{"error": "Google OAuth not configured"})
 	}
+	state, err := generateOAuthState()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to generate state"})
+	}
+	if err := db.RDB.Set(context.Background(), "oauth:state:"+state, "1", 5*time.Minute).Err(); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to store state"})
+	}
 	cfg := googleOAuthConfig()
-	url := cfg.AuthCodeURL("state", oauth2.AccessTypeOnline)
+	url := cfg.AuthCodeURL(state, oauth2.AccessTypeOnline)
 	return c.Redirect(url)
 }
 
 // GoogleCallback GET /api/auth/google/callback
 func GoogleCallback(c *fiber.Ctx) error {
+	// Validate CSRF state token (atomic get+delete prevents replay attacks)
+	state := c.Query("state")
+	val, err := db.RDB.GetDel(context.Background(), "oauth:state:"+state).Result()
+	if err != nil || val != "1" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid or expired oauth state"})
+	}
+
 	code := c.Query("code")
 	if code == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "missing code"})
