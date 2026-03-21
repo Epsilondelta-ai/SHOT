@@ -57,6 +57,27 @@ const t = useTranslations(lang);
 
       <!-- Favorites section -->
       <div id="fav-section" class="hidden">
+        <!-- Favorited players carousel -->
+        <div id="fav-players-section" class="hidden mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 id="fav-players-title" class="text-white/60 text-sm font-semibold"></h3>
+            <a id="fav-see-all" href="" class="text-amber-400 text-xs hover:underline"></a>
+          </div>
+          <div class="fav-carousel-wrapper">
+            <div id="fav-carousel-track" class="fav-carousel-track flex gap-4 py-1"></div>
+          </div>
+        </div>
+
+        <!-- Favorited bots carousel -->
+        <div id="fav-bots-section" class="hidden mb-6">
+          <div class="flex items-center justify-between mb-3">
+            <h3 id="fav-bots-title" class="text-white/60 text-sm font-semibold"></h3>
+          </div>
+          <div class="fav-carousel-wrapper">
+            <div id="fav-bots-carousel-track" class="fav-carousel-track flex gap-4 py-1"></div>
+          </div>
+        </div>
+
         <div id="fav-loading" class="text-center py-10">
           <p class="text-white/40 text-sm">{t.docs.replay.loading}</p>
         </div>
@@ -183,6 +204,46 @@ const t = useTranslations(lang);
   </div>
 </BaseLayout>
 
+<style is:global>
+@keyframes carousel-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-1 * var(--scroll-width, 50%))); }
+}
+.fav-carousel-wrapper {
+  overflow-x: clip;
+  overflow-y: visible;
+}
+.fav-carousel-track.scrolling {
+  display: flex;
+  gap: 1rem;
+  animation: carousel-scroll var(--scroll-duration, 20s) linear infinite;
+  width: max-content;
+}
+.fav-carousel-track.scrolling:hover {
+  animation-play-state: paused;
+}
+.fav-card {
+  position: relative;
+  flex-shrink: 0;
+  width: 140px;
+  height: 180px;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  transition: border-color 0.2s, transform 0.2s;
+}
+.fav-card:hover {
+  border-color: rgb(251, 191, 36);
+  transform: translateY(-2px);
+}
+@media (min-width: 768px) {
+  .fav-card {
+    width: 160px;
+    height: 200px;
+  }
+}
+</style>
+
 <PlayerRenderUtils />
 <script define:vars={{
   apiUrl, lang,
@@ -239,6 +300,9 @@ const t = useTranslations(lang);
   tGames: t.docs.replay.games,
   tViewDetail: t.docs.replay.viewDetail,
   tCopied: t.docs.replay.copied,
+  tFavoritePlayers: t.docs.replay.favoritePlayers,
+  tFavoriteBots: t.docs.replay.favoriteBots,
+  tSeeAll: t.docs.replay.seeAll,
 }} is:inline>
 
   // ── Replay list ────────────────────────────────────────────────────────────
@@ -360,10 +424,86 @@ const t = useTranslations(lang);
     }
   }
 
+  function renderCarousel(items, track, isBot) {
+    const SCROLL_THRESHOLD = window.innerWidth < 768 ? 3 : 5;
+    track.innerHTML = '';
+    items.forEach(p => {
+      const profileUrl = isBot
+        ? `/${lang}/profile?botId=${p.targetId}`
+        : `/${lang}/profile?userId=${p.targetId}`;
+      const el = document.createElement('a');
+      el.href = profileUrl;
+      el.className = 'fav-card group';
+      el.innerHTML = `
+        <img src="${p.avatarUrl || characterSrc}" alt="${escapeHtml(p.username)}"
+          class="absolute inset-0 w-full h-full object-cover rounded-lg transition group-hover:scale-105"
+          onerror="this.src='${characterSrc}'" />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-lg"></div>
+        <div class="absolute bottom-0 left-0 right-0 p-3 flex flex-col items-center gap-1.5">
+          <span class="text-white text-sm font-bold truncate max-w-full drop-shadow text-center">${escapeHtml(p.username)}</span>
+          <div class="flex items-center gap-1.5">
+            <img src="/emoji/glowing-star.png" alt="star" class="w-4 h-4" />
+            <span class="text-amber-400 text-xs font-semibold">${p.favoriteCount || 0}</span>
+          </div>
+        </div>
+      `;
+      track.appendChild(el);
+    });
+    if (items.length >= SCROLL_THRESHOLD) {
+      const clone = track.innerHTML;
+      track.innerHTML += clone;
+      track.classList.add('scrolling');
+      requestAnimationFrame(() => {
+        const scrollWidth = track.scrollWidth / 2;
+        track.style.setProperty('--scroll-width', scrollWidth + 'px');
+        const duration = Math.max(10, items.length * 4);
+        track.style.setProperty('--scroll-duration', duration + 's');
+      });
+    }
+  }
+
+  async function loadFavoritePlayers() {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const res = await fetch(`${apiUrl}/api/favorites`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const all = await res.json();
+      if (!all || all.length === 0) return;
+
+      const players = all.filter(p => p.targetType === 'user');
+      const bots = all.filter(p => p.targetType === 'bot');
+
+      if (players.length > 0) {
+        const section = document.getElementById('fav-players-section');
+        const track = document.getElementById('fav-carousel-track');
+        const titleEl = document.getElementById('fav-players-title');
+        const seeAllEl = document.getElementById('fav-see-all');
+        titleEl.textContent = tFavoritePlayers;
+        seeAllEl.textContent = tSeeAll;
+        seeAllEl.href = `/${lang}/favorites`;
+        renderCarousel(players, track, false);
+        section.classList.remove('hidden');
+      }
+
+      if (bots.length > 0) {
+        const section = document.getElementById('fav-bots-section');
+        const track = document.getElementById('fav-bots-carousel-track');
+        const titleEl = document.getElementById('fav-bots-title');
+        titleEl.textContent = tFavoriteBots;
+        renderCarousel(bots, track, true);
+        section.classList.remove('hidden');
+      }
+    } catch {}
+  }
+
   let favLoaded = false;
   async function loadFavorites() {
     if (favLoaded) return;
     favLoaded = true;
+    loadFavoritePlayers();
     const token = getToken();
     // Reset UI state
     favListEl.innerHTML = '';

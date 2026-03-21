@@ -66,13 +66,14 @@ func ListBots(c *fiber.Ctx) error {
 			roomName = room.Name
 		}
 		result[i] = fiber.Map{
-			"id":        bot.ID,
-			"name":      bot.Name,
-			"avatarUrl": bot.AvatarURL,
-			"isOnline":  IsBotOnline(bot.ID),
-			"isInGame":  isInGame,
-			"roomName":  roomName,
-			"createdAt": bot.CreatedAt,
+			"id":          bot.ID,
+			"name":        bot.Name,
+			"avatarUrl":   bot.AvatarURL,
+			"description": bot.Description,
+			"isOnline":    IsBotOnline(bot.ID),
+			"isInGame":    isInGame,
+			"roomName":    roomName,
+			"createdAt":   bot.CreatedAt,
 		}
 	}
 	return c.JSON(result)
@@ -86,8 +87,9 @@ func CreateBot(c *fiber.Ctx) error {
 	}
 
 	var body struct {
-		Name      string `json:"name"`
-		AvatarURL string `json:"avatarUrl"`
+		Name        string `json:"name"`
+		AvatarURL   string `json:"avatarUrl"`
+		Description string `json:"description"`
 	}
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
@@ -102,10 +104,11 @@ func CreateBot(c *fiber.Ctx) error {
 	}
 
 	bot := models.Bot{
-		UserID:    userID,
-		Name:      body.Name,
-		AvatarURL: body.AvatarURL,
-		APIKey:    apiKey,
+		UserID:      userID,
+		Name:        body.Name,
+		AvatarURL:   body.AvatarURL,
+		Description: body.Description,
+		APIKey:      apiKey,
 	}
 	if result := db.DB.Create(&bot); result.Error != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create bot"})
@@ -134,8 +137,9 @@ func UpdateBot(c *fiber.Ctx) error {
 	}
 
 	var body struct {
-		Name      *string `json:"name"`
-		AvatarURL *string `json:"avatarUrl"`
+		Name        *string `json:"name"`
+		AvatarURL   *string `json:"avatarUrl"`
+		Description *string `json:"description"`
 	}
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
@@ -148,15 +152,19 @@ func UpdateBot(c *fiber.Ctx) error {
 	if body.AvatarURL != nil {
 		updates["avatar_url"] = *body.AvatarURL
 	}
+	if body.Description != nil {
+		updates["description"] = *body.Description
+	}
 	if len(updates) > 0 {
 		db.DB.Model(&bot).Updates(updates)
 	}
 
 	return c.JSON(fiber.Map{
-		"id":        bot.ID,
-		"name":      bot.Name,
-		"avatarUrl": bot.AvatarURL,
-		"createdAt": bot.CreatedAt,
+		"id":          bot.ID,
+		"name":        bot.Name,
+		"avatarUrl":   bot.AvatarURL,
+		"description": bot.Description,
+		"createdAt":   bot.CreatedAt,
 	})
 }
 
