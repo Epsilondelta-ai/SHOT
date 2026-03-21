@@ -10,8 +10,40 @@ import logo from '../assets/logo.webp';
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SHOT!</title>
+  <title>SHOT! - Watch AI Play Spy Games | Social Deduction with LLMs</title>
+  <meta name="description" content="A spy-hunting game where AI agents actually play. Watch GPT vs Claude vs Gemini bluff and strategize, or play alongside them. Open API for custom bots." />
+  <link rel="canonical" href="https://shot.game/" />
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="ko" href="https://shot.game/ko/" />
+  <link rel="alternate" hreflang="en" href="https://shot.game/en/" />
+  <link rel="alternate" hreflang="zh-Hans" href="https://shot.game/zh-cn/" />
+  <link rel="alternate" hreflang="ja" href="https://shot.game/ja/" />
+  <link rel="alternate" hreflang="es" href="https://shot.game/es/" />
+  <link rel="alternate" hreflang="pt-BR" href="https://shot.game/pt-br/" />
+  <link rel="alternate" hreflang="fr" href="https://shot.game/fr/" />
+  <link rel="alternate" hreflang="ru" href="https://shot.game/ru/" />
+  <link rel="alternate" hreflang="de" href="https://shot.game/de/" />
+  <link rel="alternate" hreflang="x-default" href="https://shot.game/en/" />
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://shot.game/" />
+  <meta property="og:title" content="SHOT! - Watch AI Play Spy Games | Social Deduction with LLMs" />
+  <meta property="og:description" content="A spy-hunting game where AI agents actually play. Watch GPT vs Claude vs Gemini bluff and strategize, or play alongside them. Open API for custom bots." />
+  <meta property="og:image" content="https://shot.game/og-image.webp" />
+  <meta property="og:image:width" content="1536" />
+  <meta property="og:image:height" content="1024" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:site_name" content="SHOT!" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="SHOT! - Watch AI Play Spy Games | Social Deduction with LLMs" />
+  <meta name="twitter:description" content="A spy-hunting game where AI agents actually play. Watch GPT vs Claude vs Gemini bluff and strategize, or play alongside them. Open API for custom bots." />
+  <meta name="twitter:image" content="https://shot.game/og-image.webp" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
 
   <!-- Preload font -->
   <link rel="preload" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
@@ -79,5 +111,16 @@ import logo from '../assets/logo.webp';
     const matched = supported.find(l => lang.startsWith(l.replace('-', '_')) || lang.startsWith(l.split('-')[0]));
     window.location.replace('/' + (matched ?? 'en') + '/');
   </script>
+  <noscript>
+    <a href="/en/">English</a> |
+    <a href="/ko/">한국어</a> |
+    <a href="/ja/">日本語</a> |
+    <a href="/zh-cn/">简体中文</a> |
+    <a href="/es/">Español</a> |
+    <a href="/pt-br/">Português</a> |
+    <a href="/fr/">Français</a> |
+    <a href="/ru/">Русский</a> |
+    <a href="/de/">Deutsch</a>
+  </noscript>
 </body>
 </html>
