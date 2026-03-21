@@ -162,6 +162,7 @@ export default {
       profileTab: 'Profile & Stats',
       replayTab: 'Replays',
       favoritePlayers: 'Favorited Players',
+      favoriteBots: 'Favorited Bots',
       seeAll: 'See All',
       favoritesPageTitle: 'My Favorites',
       emptyFavoritePlayers: 'No favorited players yet.',

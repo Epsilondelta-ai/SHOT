@@ -162,6 +162,7 @@ export default {
       profileTab: 'プロフィール & 統計',
       replayTab: 'リプレイ',
       favoritePlayers: 'お気に入りプレイヤー',
+      favoriteBots: 'お気に入りボット',
       seeAll: 'すべて見る',
       favoritesPageTitle: 'マイお気に入り',
       emptyFavoritePlayers: 'お気に入りのプレイヤーはまだいません。',

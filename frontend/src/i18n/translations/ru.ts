@@ -162,6 +162,7 @@ export default {
       profileTab: 'Профиль & Статистика',
       replayTab: 'Реплеи',
       favoritePlayers: 'Избранные игроки',
+      favoriteBots: 'Избранные боты',
       seeAll: 'Смотреть все',
       favoritesPageTitle: 'Мои избранные',
       emptyFavoritePlayers: 'Пока нет избранных игроков.',

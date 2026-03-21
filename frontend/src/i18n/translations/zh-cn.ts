@@ -162,6 +162,7 @@ export default {
       profileTab: '资料 & 统计',
       replayTab: '回放',
       favoritePlayers: '收藏的玩家',
+      favoriteBots: '收藏的机器人',
       seeAll: '查看全部',
       favoritesPageTitle: '我的收藏',
       emptyFavoritePlayers: '还没有收藏的玩家。',

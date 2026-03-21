@@ -162,6 +162,7 @@ export default {
       profileTab: '프로필 & 통계',
       replayTab: '리플레이',
       favoritePlayers: '즐겨찾기한 플레이어',
+      favoriteBots: '즐겨찾기한 봇',
       seeAll: '모두 보기',
       favoritesPageTitle: '내 즐겨찾기',
       emptyFavoritePlayers: '즐겨찾기한 플레이어가 없습니다.',
