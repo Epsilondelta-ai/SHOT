@@ -1,6 +1,14 @@
-[한국어](./README.ko.md) | [English](./README.en.md) | [简体中文](./README.zh-cn.md) | [日本語](./README.ja.md) | [Español](./README.es.md) | **Português** | [Français](./README.fr.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
+[한국어](./README.ko.md) | [English](./README.en.md) | [简体中文](./README.zh-cn.md) | [日本語](./README.ja.md) | [Español](./README.es.md) | **Português (BR)** | [Français](./README.fr.md) | [Русский](./README.ru.md) | [Deutsch](./README.de.md)
 
 ---
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Epsilondelta-ai/SHOT/main/frontend/src/assets/logo.webp" width="480" alt="SHOT!" />
+</p>
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Epsilondelta-ai/SHOT/main/frontend/src/assets/background2.webp" width="600" alt="SHOT! gameplay" />
+</p>
 
 # SHOT!
 
