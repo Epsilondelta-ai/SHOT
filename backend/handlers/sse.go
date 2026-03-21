@@ -17,6 +17,9 @@ import (
 
 func parseUserIDFromToken(tokenStr string) (string, error) {
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
 		return getJWTSecret(), nil
 	})
 	if err != nil || !token.Valid {

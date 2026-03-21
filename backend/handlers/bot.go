@@ -3,6 +3,7 @@ package handlers
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/hub"
@@ -18,6 +19,9 @@ func getUserIDFromToken(c *fiber.Ctx) (string, error) {
 	}
 	tokenStr := authHeader[7:]
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
 		return getJWTSecret(), nil
 	})
 	if err != nil || !token.Valid {

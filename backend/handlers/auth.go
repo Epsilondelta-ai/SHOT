@@ -3,9 +3,11 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/epsilondelta/shot/db"
@@ -35,7 +37,7 @@ func generateToken(userID string) (string, error) {
 }
 
 func googleOAuthConfig() *oauth2.Config {
-	backendURL := os.Getenv("BACKEND_URL")
+	backendURL := strings.TrimRight(os.Getenv("BACKEND_URL"), "/")
 	if backendURL == "" {
 		backendURL = "http://localhost:3000"
 	}
@@ -120,6 +122,9 @@ func Me(c *fiber.Ctx) error {
 	tokenStr := authHeader[7:]
 
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
 		return getJWTSecret(), nil
 	})
 	if err != nil || !token.Valid {

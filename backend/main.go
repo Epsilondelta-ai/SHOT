@@ -21,6 +21,10 @@ func main() {
 		log.Println("No .env file found")
 	}
 
+	if os.Getenv("JWT_SECRET") == "" {
+		log.Fatal("JWT_SECRET environment variable is required (generate with: openssl rand -hex 32)")
+	}
+
 	if err := db.Connect(); err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}

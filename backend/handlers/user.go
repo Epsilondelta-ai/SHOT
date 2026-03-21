@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/models"
 	"github.com/gofiber/fiber/v2"
@@ -16,6 +18,9 @@ func UpdateMe(c *fiber.Ctx) error {
 	tokenStr := authHeader[7:]
 
 	token, err := jwt.Parse(tokenStr, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
 		return getJWTSecret(), nil
 	})
 	if err != nil || !token.Valid {
