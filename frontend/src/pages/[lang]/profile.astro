@@ -43,10 +43,10 @@ const t = useTranslations(lang);
             </div>
             <p id="ph-owner" class="text-white/30 text-sm mt-0.5 hidden"></p>
           </div>
-          <button id="ph-fav-btn" class="hidden flex flex-col items-center gap-0.5 text-white/40 hover:text-amber-400 transition" title="">
+          <div id="ph-fav-area" class="flex flex-col items-center gap-0.5 text-white/40">
             <img id="ph-fav-icon" src="/emoji/star.png" alt="star" class="w-6 h-6" />
             <span id="ph-fav-count" class="text-xs">0</span>
-          </button>
+          </div>
         </div>
       </div>
 
@@ -291,14 +291,14 @@ const t = useTranslations(lang);
         profileHeader.classList.remove('hidden');
         profileTabs.classList.remove('hidden');
 
-        // Favorite button
-        const favBtn = document.getElementById('ph-fav-btn');
+        // Favorite area
+        const favArea = document.getElementById('ph-fav-area');
         const favIcon = document.getElementById('ph-fav-icon');
         const favCount = document.getElementById('ph-fav-count');
 
         favCount.textContent = data.favoriteCount || 0;
 
-        // Only show for logged-in users viewing another profile
+        // Interactive favorite button for logged-in users viewing another profile
         if (token) {
           const myToken = token;
           let myUserId = null;
@@ -309,8 +309,8 @@ const t = useTranslations(lang);
 
           const isSelf = !botId && myUserId === profileId;
           if (!isSelf) {
-            favBtn.classList.remove('hidden');
-            favBtn.title = tAddFavorite;
+            favArea.classList.add('cursor-pointer', 'hover:text-amber-400', 'transition');
+            favArea.title = tAddFavorite;
 
             // Check initial favorite status
             const checkUrl = profileType === 'bot'
@@ -321,17 +321,17 @@ const t = useTranslations(lang);
               .then(d => {
                 if (d.isFavorited) {
                   favIcon.src = '/emoji/glowing-star.png';
-                  favBtn.title = tRemoveFavorite;
-                  favBtn.dataset.favorited = 'true';
+                  favArea.title = tRemoveFavorite;
+                  favArea.dataset.favorited = 'true';
                 }
               })
               .catch(() => {});
 
             let busy = false;
-            favBtn.addEventListener('click', async () => {
+            favArea.addEventListener('click', async () => {
               if (busy) return;
               busy = true;
-              const isFav = favBtn.dataset.favorited === 'true';
+              const isFav = favArea.dataset.favorited === 'true';
               const baseUrl = profileType === 'bot'
                 ? `${apiUrl}/api/favorites/bots/${profileId}`
                 : `${apiUrl}/api/favorites/users/${profileId}`;
@@ -343,14 +343,14 @@ const t = useTranslations(lang);
                 if (res.ok) {
                   const currentCount = parseInt(favCount.textContent) || 0;
                   if (isFav) {
-                    favBtn.dataset.favorited = '';
+                    favArea.dataset.favorited = '';
                     favIcon.src = '/emoji/star.png';
-                    favBtn.title = tAddFavorite;
+                    favArea.title = tAddFavorite;
                     favCount.textContent = Math.max(0, currentCount - 1);
                   } else {
-                    favBtn.dataset.favorited = 'true';
+                    favArea.dataset.favorited = 'true';
                     favIcon.src = '/emoji/glowing-star.png';
-                    favBtn.title = tRemoveFavorite;
+                    favArea.title = tRemoveFavorite;
                     favCount.textContent = currentCount + 1;
                   }
                 }
