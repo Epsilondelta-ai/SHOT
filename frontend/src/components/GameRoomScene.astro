@@ -532,6 +532,7 @@ const t = useTranslations(lang);
   let lastEventTime = Date.now();
   let sseWatchdog = null;
   let hiddenSince = 0;
+  let gameplayActive = false; // 게임 플레이 중이면 watchdog 주기 단축
 
   // 탭 가시성 변경 감지 — 백그라운드 복귀 시 상태 새로고침
   document.addEventListener('visibilitychange', () => {
@@ -546,9 +547,10 @@ const t = useTranslations(lang);
   function startSseWatchdog() {
     if (sseWatchdog) clearInterval(sseWatchdog);
     sseWatchdog = setInterval(() => {
-      // 20초간 이벤트 없으면 연결 끊김으로 판단 — 재연결
-      if (Date.now() - lastEventTime > 20000 && currentRoom) {
-        console.warn('[SSE] 20초간 이벤트 없음 — 재연결 시도');
+      // 게임 중 10초, 로비 20초간 이벤트 없으면 연결 끊김으로 판단 — 재연결
+      const threshold = gameplayActive ? 10000 : 20000;
+      if (Date.now() - lastEventTime > threshold && currentRoom) {
+        console.warn(`[SSE] ${threshold/1000}초간 이벤트 없음 — 재연결 시도`);
         if (es) { es.close(); es = null; }
         connectSSE(currentRoom);
       }
@@ -680,6 +682,7 @@ const t = useTranslations(lang);
   });
 
   document.addEventListener('game:scene', (e) => {
+    gameplayActive = (e.detail === 'gameplay');
     if (e.detail !== 'gameroom') {
       // Keep SSE alive during gameplay (game uses the same room SSE channel)
       if (e.detail !== 'gameplay') {
