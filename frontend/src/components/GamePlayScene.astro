@@ -368,6 +368,7 @@ const t = useTranslations(lang);
   let selectedCard = null;
   let timerInterval = null;
   let timerGraceTimeout = null; // 타이머 만료 후 이벤트 미수신 시 상태 새로고침용
+  let statePollingInterval = null; // 게임 중 30초 주기 상태 폴링 (방어적 안전망)
 
   function getToken() { return localStorage.getItem('token'); }
 
@@ -707,6 +708,8 @@ const t = useTranslations(lang);
     myPlayerID = null;
     selectedCard = null;
     if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    if (timerGraceTimeout) { clearTimeout(timerGraceTimeout); timerGraceTimeout = null; }
+    if (statePollingInterval) { clearInterval(statePollingInterval); statePollingInterval = null; }
     scene.classList.add('hidden');
     scene.classList.remove('flex');
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
@@ -942,6 +945,14 @@ const t = useTranslations(lang);
     document.dispatchEvent(new CustomEvent('game:ready'));
     // 초기 이벤트(draw, turn_start 등)가 gameState 설정 전에 도착해 무시될 수 있으므로 상태 재동기화
     scheduleStateReload();
+
+    // 30초 주기 상태 폴링 — SSE 이벤트 유실에 대한 방어적 안전망
+    if (statePollingInterval) clearInterval(statePollingInterval);
+    statePollingInterval = setInterval(() => {
+      if (gameState && gameState.status === 'playing') {
+        scheduleStateReload();
+      }
+    }, 30000);
   });
 
   // Debounced state reload — batch rapid SSE events into one API call
