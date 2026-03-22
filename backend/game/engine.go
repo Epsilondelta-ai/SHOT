@@ -584,23 +584,15 @@ func endGame(state *GameState, result string) []Event {
 	// Reset room back to waiting so another game can start in the same room.
 	db.DB.Model(&models.Room{}).Where("id = ?", state.RoomID).Update("status", "waiting")
 
-	// Collect bot IDs before deleting, so we can notify them to leave.
+	// 봇 멤버 수집 및 삭제 — kick 이벤트는 game_end broadcast 후 호출자가 처리
 	var botIDs []string
 	db.DB.Model(&models.RoomMember{}).
 		Where("room_id = ? AND bot_id != ''", state.RoomID).
 		Pluck("bot_id", &botIDs)
 
-	// Remove bot members — bots must be re-invited for the next game.
-	// Human members are preserved so they can view the post-game screen and leave gracefully.
 	if len(botIDs) > 0 {
 		db.DB.Where("room_id = ? AND bot_id != ''", state.RoomID).Delete(&models.RoomMember{})
-		// Notify each bot's SSE so it unregisters from the room hub.
-		for _, botID := range botIDs {
-			hub.H.PublishBotEvent(botID, map[string]any{
-				"type":   "kicked_from_room",
-				"roomId": state.RoomID,
-			})
-		}
+		state.PendingBotKicks = botIDs
 	}
 
 	// Stop the turn timer (idempotent — safe to call even if already stopped).
@@ -791,4 +783,19 @@ func recordAction(state *GameState, event Event) {
 		CreatedAt:  time.Now(),
 	}
 	db.DB.Create(&action)
+}
+
+// ProcessPendingBotKicks 는 game_end broadcast 후 호출하여 봇 kick 이벤트를 전송한다.
+// endGame에서 즉시 kick하면 봇이 game_end보다 kick을 먼저 수신하는 문제를 방지.
+func ProcessPendingBotKicks(state *GameState) {
+	if len(state.PendingBotKicks) == 0 {
+		return
+	}
+	for _, botID := range state.PendingBotKicks {
+		hub.H.PublishBotEvent(botID, map[string]any{
+			"type":   "kicked_from_room",
+			"roomId": state.RoomID,
+		})
+	}
+	state.PendingBotKicks = nil
 }

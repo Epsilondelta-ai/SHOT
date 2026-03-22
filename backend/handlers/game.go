@@ -105,6 +105,9 @@ func GamePlayCard(c *fiber.Ctx) error {
 		hub.H.BroadcastJSON(state.RoomID, e)
 	}
 
+	// game_end broadcast 후 봇 kick 처리
+	game.ProcessPendingBotKicks(state)
+
 	// Reset timer
 	if state.Status == "playing" {
 		game.TM.ResetTimer(gameID, state.RoomID, state.TurnDeadline)
@@ -145,6 +148,9 @@ func GameEndTurn(c *fiber.Ctx) error {
 	for _, e := range events {
 		hub.H.BroadcastJSON(state.RoomID, e)
 	}
+
+	// game_end broadcast 후 봇 kick 처리
+	game.ProcessPendingBotKicks(state)
 
 	if state.Status == "playing" {
 		game.TM.StartTimer(gameID, state.RoomID, state.TurnDeadline)
