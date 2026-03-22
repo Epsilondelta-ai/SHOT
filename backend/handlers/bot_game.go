@@ -159,11 +159,7 @@ func BotSSE(c *fiber.Ctx) error {
 				if json.Unmarshal(data, &envelope) == nil {
 					switch envelope.Type {
 					case "invited_to_room":
-						if client.RoomID != "" {
-							hub.H.Unregister(client)
-						}
-						client.RoomID = envelope.RoomID
-						hub.H.Register(client)
+						hub.H.SwapRoom(client, envelope.RoomID)
 						broadcastRoomUpdate(envelope.RoomID)
 					case "kicked_from_room", "room_closed":
 						if client.RoomID != "" {

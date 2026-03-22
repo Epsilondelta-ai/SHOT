@@ -266,6 +266,26 @@ func (h *Hub) UnregisterBot(botID string, c *Client) {
 	h.botsMu.Unlock()
 }
 
+// SwapRoom 은 클라이언트를 기존 room에서 제거하고 새 room에 등록하는 것을
+// 단일 Lock 내에서 atomic하게 수행한다. room 이동 중 이벤트 유실 방지.
+func (h *Hub) SwapRoom(client *Client, newRoomID string) {
+	h.mu.Lock()
+	// 기존 room에서 제거
+	if client.RoomID != "" && client.RoomID != newRoomID {
+		delete(h.rooms[client.RoomID], client)
+		if len(h.rooms[client.RoomID]) == 0 {
+			delete(h.rooms, client.RoomID)
+		}
+	}
+	// 새 room에 등록
+	client.RoomID = newRoomID
+	if h.rooms[newRoomID] == nil {
+		h.rooms[newRoomID] = make(map[*Client]bool)
+	}
+	h.rooms[newRoomID][client] = true
+	h.mu.Unlock()
+}
+
 // RegisterBotToRoom 은 봇 초대 시 HTTP 핸들러에서 직접 호출하여
 // 봇 클라이언트를 room hub에 동기적으로 등록한다.
 // SSE 이벤트 처리를 기다리지 않으므로 초대 직후 게임 시작해도 이벤트 수신 가능.
@@ -276,22 +296,7 @@ func (h *Hub) RegisterBotToRoom(botID, roomID string) {
 	if c == nil {
 		return
 	}
-
-	h.mu.Lock()
-	// 기존 room에서 제거
-	if c.RoomID != "" && c.RoomID != roomID {
-		delete(h.rooms[c.RoomID], c)
-		if len(h.rooms[c.RoomID]) == 0 {
-			delete(h.rooms, c.RoomID)
-		}
-	}
-	// 새 room에 등록
-	c.RoomID = roomID
-	if h.rooms[roomID] == nil {
-		h.rooms[roomID] = make(map[*Client]bool)
-	}
-	h.rooms[roomID][c] = true
-	h.mu.Unlock()
+	h.SwapRoom(c, roomID)
 }
 
 // DisconnectBot forcibly disconnects a bot's SSE connection.
