@@ -229,6 +229,23 @@ func PlayCard(state *GameState, playerID, cardType, targetID string) ([]Event, e
 	// Remove card from hand
 	player.Cards = append(player.Cards[:cardIdx], player.Cards[cardIdx+1:]...)
 
+	events := applyCardEffect(state, player, cardType, target)
+
+	// Record and save (record first so ActionSeq is up-to-date in Redis)
+	for _, e := range events {
+		recordAction(state, e)
+	}
+	SaveState(db.RDB, state)
+
+	return events, nil
+}
+
+// applyCardEffect 는 카드 효과를 적용하고 이벤트를 반환한다.
+// recordAction/SaveState를 호출하지 않으므로 HandleTimeout에서도 안전하게 사용 가능.
+func applyCardEffect(state *GameState, player *PlayerState, cardType string, target *PlayerState) []Event {
+	playerID := player.ID
+	targetID := target.ID
+
 	// Card disposal: banish inspect/jail on use, discard attack/heal
 	if BanishOnUse(cardType) {
 		state.Banished++
@@ -238,7 +255,6 @@ func PlayCard(state *GameState, playerID, cardType, targetID string) ([]Event, e
 
 	var events []Event
 
-	// Apply card effect
 	switch cardType {
 	case CardAttack:
 		player.HasAttackedThisTurn = true
@@ -317,13 +333,7 @@ func PlayCard(state *GameState, playerID, cardType, targetID string) ([]Event, e
 		events = append(events, endEvents...)
 	}
 
-	// Record and save (record first so ActionSeq is up-to-date in Redis)
-	for _, e := range events {
-		recordAction(state, e)
-	}
-	SaveState(db.RDB, state)
-
-	return events, nil
+	return events
 }
 
 // EndTurn handles a player ending their turn.
@@ -356,16 +366,31 @@ func HandleTimeout(state *GameState) ([]Event, error) {
 
 	var events []Event
 
-	// If hasn't attacked and can attack, do random attack
+	// 타임아웃 시 공격 카드가 있으면 랜덤 대상에게 자동 공격
+	// applyCardEffect를 사용하여 중복 recordAction/SaveState 방지
 	if !player.HasAttackedThisTurn && !player.IsJailed && hasCard(player, CardAttack) {
 		target := randomAttackTarget(state, player)
 		if target != nil {
-			attackEvents, _ := PlayCard(state, player.ID, CardAttack, target.ID)
-			events = append(events, attackEvents...)
+			// 카드를 수동으로 제거 (PlayCard의 검증 로직 생략)
+			cardIdx := -1
+			for i, c := range player.Cards {
+				if c == CardAttack {
+					cardIdx = i
+					break
+				}
+			}
+			if cardIdx >= 0 {
+				player.Cards = append(player.Cards[:cardIdx], player.Cards[cardIdx+1:]...)
+				attackEvents := applyCardEffect(state, player, CardAttack, target)
+				events = append(events, attackEvents...)
 
-			// Check if game ended after the attack
-			if state.Status == "finished" {
-				return events, nil
+				// 공격으로 게임이 끝났으면 모든 이벤트를 한 번에 기록 후 반환
+				if state.Status == "finished" {
+					for _, e := range events {
+						recordAction(state, e)
+					}
+					return events, nil
+				}
 			}
 		}
 	}
@@ -374,7 +399,11 @@ func HandleTimeout(state *GameState) ([]Event, error) {
 		Type:    "timeout",
 		ActorID: player.ID,
 	})
-	recordAction(state, Event{Type: "timeout", ActorID: player.ID})
+
+	// advanceTurn 호출 전에 공격/타임아웃 이벤트를 기록
+	for _, e := range events {
+		recordAction(state, e)
+	}
 
 	turnEvents, err := advanceTurn(state)
 	if err != nil {
