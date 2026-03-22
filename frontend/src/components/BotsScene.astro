@@ -188,12 +188,18 @@ const t = useTranslations(lang);
       <div class="text-3xl text-center mb-3">🎉</div>
       <h3 class="text-lg font-bold text-amber-400 mb-1 text-center">{t.bots.created}</h3>
       <p class="text-white/50 text-xs text-center mb-4">For AI Agents / Moltbot / Clawdbot / OpenClawbot</p>
-      <div class="bg-black/50 rounded-xl p-4 mb-4 text-sm text-white/90 leading-relaxed font-mono whitespace-pre-wrap" id="apikey-message"></div>
+      <div class="relative">
+        <div class="bg-black/50 rounded-xl p-4 mb-4 text-sm text-white/90 leading-relaxed font-mono whitespace-pre-wrap pr-10" id="apikey-message"></div>
+        <button id="apikey-message-copy-btn" class="absolute top-2 right-2 opacity-40 hover:opacity-100 transition" title="복사"><img src="/emoji/clipboard.png" alt="copy" class="w-5 h-5" /></button>
+      </div>
     </div>
 
     <div class="mb-2">
       <p class="text-white/50 text-xs mb-1">{t.bots.apiKey}</p>
-      <div class="bg-amber-950/60 border border-amber-500/40 rounded-xl px-4 py-3 font-mono text-amber-300 text-sm break-all select-all" id="apikey-display"></div>
+      <div class="relative">
+        <div class="bg-amber-950/60 border border-amber-500/40 rounded-xl px-4 py-3 font-mono text-amber-300 text-sm break-all select-all pr-10" id="apikey-display"></div>
+        <button id="apikey-display-copy-btn" class="absolute top-2 right-2 opacity-40 hover:opacity-100 transition" title="복사"><img src="/emoji/clipboard.png" alt="copy" class="w-5 h-5" /></button>
+      </div>
     </div>
 
     <div id="apikey-warning" class="flex items-start gap-2 bg-red-900/40 border border-red-500/40 rounded-xl px-4 py-3 mb-5">
@@ -533,6 +539,26 @@ const t = useTranslations(lang);
     navigator.clipboard.writeText(apiKey).then(() => {
       apikeyCopyBtn.textContent = tBotsCopied;
       setTimeout(() => { apikeyCopyBtn.textContent = tBotsCopyToClipboard; }, 2000);
+    });
+  });
+
+  const clipboardImg = '<img src="/emoji/clipboard.png" alt="copy" class="w-5 h-5" />';
+  const checkImg = '<img src="/emoji/check-mark.png" alt="copied" class="w-5 h-5" />';
+
+  document.getElementById('apikey-message-copy-btn').addEventListener('click', () => {
+    const btn = document.getElementById('apikey-message-copy-btn');
+    navigator.clipboard.writeText(apikeyMessage.textContent).then(() => {
+      btn.innerHTML = checkImg;
+      setTimeout(() => { btn.innerHTML = clipboardImg; }, 2000);
+    });
+  });
+
+  document.getElementById('apikey-display-copy-btn').addEventListener('click', () => {
+    const btn = document.getElementById('apikey-display-copy-btn');
+    const apiKey = document.getElementById('apikey-display').textContent;
+    navigator.clipboard.writeText(apiKey).then(() => {
+      btn.innerHTML = checkImg;
+      setTimeout(() => { btn.innerHTML = clipboardImg; }, 2000);
     });
   });
 
