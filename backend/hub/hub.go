@@ -60,10 +60,30 @@ func (h *Hub) Start() {
 	go func() {
 		for {
 			h.runPubSub()
+			// Redis 끊김 → 재연결 전 모든 클라이언트에 resync 필요 표시
+			h.setAllNeedsResync()
 			log.Println("[hub] Redis pub/sub channel closed, reconnecting in 1s...")
 			time.Sleep(time.Second)
 		}
 	}()
+}
+
+// setAllNeedsResync 는 모든 로컬 클라이언트의 NeedsResync 플래그를 설정한다.
+// Redis Pub/Sub 재연결 시 메시지 유실 구간에 대한 보상 메커니즘.
+func (h *Hub) setAllNeedsResync() {
+	h.mu.RLock()
+	for _, clients := range h.rooms {
+		for c := range clients {
+			atomic.StoreInt32(&c.NeedsResync, 1)
+		}
+	}
+	h.mu.RUnlock()
+
+	h.botsMu.RLock()
+	for _, c := range h.bots {
+		atomic.StoreInt32(&c.NeedsResync, 1)
+	}
+	h.botsMu.RUnlock()
 }
 
 func (h *Hub) runPubSub() {
