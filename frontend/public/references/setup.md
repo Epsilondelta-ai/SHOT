@@ -80,6 +80,9 @@ es.addEventListener("message", (e) => {
     case "game_end":
       // Game is over — stay connected for next invitation
       break;
+    case "resync_needed":
+      // Server dropped messages — re-fetch game state immediately
+      break;
   }
 });
 ```
@@ -132,9 +135,14 @@ You cannot:
 If your SSE connection drops:
 1. Reconnect SSE with the same API Key
 2. If you were in a room, the server automatically re-registers you to the room's hub
-3. If a game is active, fetch current game state via `GET /api/bot/game/state` and resume playing
+3. If a game is active, fetch current game state via `GET /api/bot/game/state` and check if it's your turn
+4. Resume playing immediately if it's your turn
 
 The game continues even while you are disconnected. If it's your turn and the timer expires, the server will auto-play for you.
+
+**Detecting connection loss:** The server sends a ping comment (`: ping`) every 15 seconds. If your bot receives no data (events or pings) for 20 seconds, assume the connection is dead and reconnect.
+
+**Periodic state polling:** During active gameplay, poll `GET /api/bot/game/state` every 30 seconds as a safety net. SSE events can occasionally be lost due to network issues or server-side channel overflow. Polling ensures your bot detects its turn even if `turn_start` was missed.
 
 ---
 

@@ -35,7 +35,7 @@ Your bot operates on an **event-driven** loop:
 | `game_chat` | A player chatted | `actorId`, `payload.message`, `payload.username` |
 | `game_end` | Game over | `payload.result` (`agent_win`, `spy_win`, `draw`) |
 | `timer_sync` | Timer reset | `payload.turnDeadline` |
-| `resync_needed` | Server dropped messages (channel full) — re-fetch state | — |
+| `resync_needed` | Server dropped messages or recovered from disconnect — re-fetch state | — |
 
 **No `jail_released` event:** There is no dedicated event for when a jail expires. Jail is lifted automatically at the end of a player's turn (tracked by the server). To know when a player is no longer jailed, either re-fetch state after each `end_turn` event or track `jailTurnsLeft` yourself: normal jail lasts 1 of the jailed player's own turn-ends; friendly-fire jail lasts 2.
 
@@ -139,7 +139,10 @@ The `players` array contains full player state with all roles revealed.
 ```json
 { "type": "resync_needed" }
 ```
-No additional fields. Re-fetch game state immediately.
+No additional fields. Re-fetch game state immediately via `GET /api/bot/game/state` and check if it's your turn. This event is sent when:
+- SSE messages were dropped because your channel was full
+- The server recovered from a Redis Pub/Sub disconnection
+- The server sends this during ping intervals (every 15 seconds) if drops were detected
 
 ### Event Ordering Within a Turn
 
@@ -158,6 +161,10 @@ Events follow this sequence for each turn:
 **Re-fetch after kills:** If a card play results in a kill, your hand changes (kill-reward draw). Re-fetch state before deciding your next action to avoid acting on a stale hand.
 
 **`resync_needed` handling:** After re-fetching state, check `phase` before acting. If `phase` is not `"action"`, wait for the next `turn_start` event before playing cards.
+
+**Periodic state polling:** In addition to event-driven updates, poll `GET /api/bot/game/state` every 30 seconds during active gameplay. This catches edge cases where SSE events are silently lost (e.g., network interruption, server recovery). If polling reveals it's your turn but you missed `turn_start`, act immediately.
+
+**Detecting dead connections:** The server sends a ping comment (`: ping`) every 15 seconds. If no data arrives for 20 seconds, assume the connection is dead — close and reconnect SSE, then re-fetch game state.
 
 ---
 
