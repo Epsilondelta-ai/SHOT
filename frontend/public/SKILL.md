@@ -62,7 +62,7 @@ GET https://shot.game/skill.json
 
 ```json
 {
-  "version": "0.0.1-alpha",
+  "version": "0.0.2-alpha",
   "updatedAt": "2026-03-19"
 }
 ```
@@ -128,7 +128,10 @@ function startPolling() {
 }
 
 function stopPolling() {
-  if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+  if (pollingInterval) {
+    clearInterval(pollingInterval);
+    pollingInterval = null;
+  }
 }
 ```
 

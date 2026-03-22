@@ -43,25 +43,25 @@ Chaque joueur commence avec 3 points de vie et 2 cartes. Jouez des cartes Attack
 
 ### Composition des équipes
 
-| Joueurs | Espions | Agents | Notes |
-|---------|---------|--------|-------|
+| Joueurs | Espions | Agents | Notes              |
+| ------- | ------- | ------ | ------------------ |
 | 5       | 1       | 4      | Désavantage Espion |
-| 6       | 2       | 4      | |
-| 7       | 2       | 5      | |
-| 8       | 3       | 5      | |
-| 9       | 3       | 6      | Recommandé |
-| 10      | 3       | 7      | |
-| 11      | 4       | 7      | |
-| 12      | 4       | 8      | |
+| 6       | 2       | 4      |                    |
+| 7       | 2       | 5      |                    |
+| 8       | 3       | 5      |                    |
+| 9       | 3       | 6      | Recommandé         |
+| 10      | 3       | 7      |                    |
+| 11      | 4       | 7      |                    |
+| 12      | 4       | 8      |                    |
 
 ### Types de cartes
 
-| Carte    | Effet                                            | Limite de possession |
-|----------|--------------------------------------------------|----------------------|
-| **Attack** | Inflige 1 dégât à la cible                      | 6 cartes max |
-| **Heal**   | Restaure 1 PV à la cible (ne dépasse pas le max) | 2 cartes max |
-| **Jail**   | Neutralise l'attaque de la cible pendant 1 tour  | 1 carte max |
-| **Inspect** | Révèle le rôle secret de la cible               | Illimité |
+| Carte       | Effet                                            | Limite de possession |
+| ----------- | ------------------------------------------------ | -------------------- |
+| **Attack**  | Inflige 1 dégât à la cible                       | 6 cartes max         |
+| **Heal**    | Restaure 1 PV à la cible (ne dépasse pas le max) | 2 cartes max         |
+| **Jail**    | Neutralise l'attaque de la cible pendant 1 tour  | 1 carte max          |
+| **Inspect** | Révèle le rôle secret de la cible                | Illimité             |
 
 ### Conditions de victoire
 
@@ -81,34 +81,34 @@ Chaque joueur commence avec 3 points de vie et 2 cartes. Jouez des cartes Attack
 
 ### Frontend
 
-| Composant | Technologie |
-|-----------|-------------|
-| Framework | Astro 5.0 |
-| Langage | TypeScript 5.0 |
-| Styles | Tailwind CSS 3.4 |
-| Gestionnaire de paquets | Bun |
-| i18n | Paraglide (inlang) |
-| Serveur web | Nginx (fichiers statiques) |
+| Composant               | Technologie                |
+| ----------------------- | -------------------------- |
+| Framework               | Astro 5.0                  |
+| Langage                 | TypeScript 5.0             |
+| Styles                  | Tailwind CSS 3.4           |
+| Gestionnaire de paquets | Bun                        |
+| i18n                    | Paraglide (inlang)         |
+| Serveur web             | Nginx (fichiers statiques) |
 
 ### Backend
 
-| Composant | Technologie |
-|-----------|-------------|
-| Langage | Go 1.25 |
-| Framework web | Fiber v2 |
-| Base de données | PostgreSQL 17 |
-| Cache/Pub-Sub | Redis 7 |
+| Composant        | Technologie            |
+| ---------------- | ---------------------- |
+| Langage          | Go 1.25                |
+| Framework web    | Fiber v2               |
+| Base de données  | PostgreSQL 17          |
+| Cache/Pub-Sub    | Redis 7                |
 | Authentification | JWT + Google OAuth 2.0 |
-| ORM | GORM |
+| ORM              | GORM                   |
 
 ### Infrastructure
 
-| Composant | Technologie |
-|-----------|-------------|
-| Conteneurisation | Docker Compose |
-| Reverse Proxy | Nginx |
-| SSL/TLS | Let's Encrypt + Certbot |
-| Outils de build | Makefile |
+| Composant                | Technologie              |
+| ------------------------ | ------------------------ |
+| Conteneurisation         | Docker Compose           |
+| Reverse Proxy            | Nginx                    |
+| SSL/TLS                  | Let's Encrypt + Certbot  |
+| Outils de build          | Makefile                 |
 | Communication temps réel | SSE (Server-Sent Events) |
 
 ---
@@ -145,6 +145,7 @@ docker-compose up -d
 ```
 
 Cela lance :
+
 - PostgreSQL sur le port 5432
 - Redis sur le port 6379
 - Backend Go sur le port 3000
@@ -259,6 +260,7 @@ SHOT! supporte l'intégration de bots IA via une API RESTful. Les bots peuvent :
 - Être développés dans n'importe quel langage de programmation
 
 **Fournisseurs supportés :**
+
 - Claude (Anthropic)
 - GPT (OpenAI)
 - DeepSeek
@@ -384,5 +386,5 @@ Avez-vous des questions ou besoin d'aide ? :
 
 ---
 
-**Version** : 0.0.1-alpha
+**Version** : 0.0.2-alpha
 **Dernière mise à jour** : 21 mars 2026

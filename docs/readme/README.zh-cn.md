@@ -54,19 +54,19 @@ SHOT! 是一款创新的多人在线轮制卡牌策略游戏，玩家被秘密�
 
 ### 角色与 HP
 
-| 角色 | HP | 特殊能力 |
-|------|----|---------|
-| 特工 | 3 | 无法看到其他玩家的身份 |
-| 间谍 | 3 | 可以看到其他间谍的身份 |
+| 角色 | HP  | 特殊能力               |
+| ---- | --- | ---------------------- |
+| 特工 | 3   | 无法看到其他玩家的身份 |
+| 间谍 | 3   | 可以看到其他间谍的身份 |
 
 ### 卡牌类型
 
-| 卡牌 | 效果 | 每回合限制 |
-|------|------|--------|
-| 攻击 | 对目标造成 1 点伤害 | 无限制 |
-| 治疗 | 恢复目标 1 点 HP（不超过最大值） | 无限制 |
-| 监禁 | 禁止目标在该回合使用攻击卡 | 无限制 |
-| 侦察 | 查看目标的角色身份 | 无限制 |
+| 卡牌 | 效果                             | 每回合限制 |
+| ---- | -------------------------------- | ---------- |
+| 攻击 | 对目标造成 1 点伤害              | 无限制     |
+| 治疗 | 恢复目标 1 点 HP（不超过最大值） | 无限制     |
+| 监禁 | 禁止目标在该回合使用攻击卡       | 无限制     |
+| 侦察 | 查看目标的角色身份               | 无限制     |
 
 ### 回合流程
 
@@ -75,21 +75,23 @@ SHOT! 是一款创新的多人在线轮制卡牌策略游戏，玩家被秘密�
 3. **结束阶段**: 回合轮转
 
 **特殊规则**:
+
 - 被监禁的玩家无法使用攻击卡，但可使用其他卡牌
 - 监禁状态在下一个回合结束自动解除
 - 每回合最多发送 1 条聊天消息
 
 ### 胜利条件
 
-| 条件 | 获胜方 |
-|------|--------|
-| 所有间谍被消灭 | 特工团队 |
-| 所有特工被消灭 | 间谍团队 |
-| 回合数超过 玩家数×3 | 平局 |
+| 条件                | 获胜方   |
+| ------------------- | -------- |
+| 所有间谍被消灭      | 特工团队 |
+| 所有特工被消灭      | 间谍团队 |
+| 回合数超过 玩家数×3 | 平局     |
 
 ### 击杀奖励
 
 击杀其他玩家时获得：
+
 - 恢复 1 点 HP
 - 额外抽取 1 张卡牌
 
@@ -99,34 +101,34 @@ SHOT! 是一款创新的多人在线轮制卡牌策略游戏，玩家被秘密�
 
 ### 后端
 
-| 组件 | 技术栈 |
-|------|--------|
-| 语言 | Go 1.25 |
-| 框架 | Fiber v2 |
-| 数据库 | PostgreSQL 17 |
-| 缓存/消息队列 | Redis 7 |
-| 认证 | JWT + Google OAuth 2.0 |
-| 数据映射 | GORM |
+| 组件          | 技术栈                 |
+| ------------- | ---------------------- |
+| 语言          | Go 1.25                |
+| 框架          | Fiber v2               |
+| 数据库        | PostgreSQL 17          |
+| 缓存/消息队列 | Redis 7                |
+| 认证          | JWT + Google OAuth 2.0 |
+| 数据映射      | GORM                   |
 
 ### 前端
 
-| 组件 | 技术栈 |
-|------|--------|
-| 框架 | Astro 5.0 (静态站点生成) |
-| 语言 | TypeScript 5.0 |
-| 样式 | Tailwind CSS 3.4 |
-| 包管理 | Bun |
-| 国际化 | Paraglide (inlang) |
-| 部署 | Nginx (Alpine) |
+| 组件   | 技术栈                   |
+| ------ | ------------------------ |
+| 框架   | Astro 5.0 (静态站点生成) |
+| 语言   | TypeScript 5.0           |
+| 样式   | Tailwind CSS 3.4         |
+| 包管理 | Bun                      |
+| 国际化 | Paraglide (inlang)       |
+| 部署   | Nginx (Alpine)           |
 
 ### 基础设施
 
-| 组件 | 技术 |
-|------|-----|
-| 容器化 | Docker Compose |
-| 反向代理 | Nginx (SSL/TLS 终止) |
+| 组件     | 技术                               |
+| -------- | ---------------------------------- |
+| 容器化   | Docker Compose                     |
+| 反向代理 | Nginx (SSL/TLS 终止)               |
 | SSL 证书 | Let's Encrypt + Certbot (自动续期) |
-| 实时通信 | Server-Sent Events (SSE) |
+| 实时通信 | Server-Sent Events (SSE)           |
 
 ---
 
@@ -213,32 +215,32 @@ go run main.go
 
 ### 核心变量
 
-| 变量 | 描述 | 示例 |
-|------|------|------|
-| `DB_USER` | PostgreSQL 用户名 | `shot` |
-| `DB_PASSWORD` | PostgreSQL 密码 | `change_me` |
-| `DB_NAME` | 数据库名称 | `shot` |
-| `JWT_SECRET` | JWT 签名密钥（使用 `openssl rand -hex 32` 生成） | `abc123...` |
-| `FRONTEND_URL` | 前端公网地址（生产环境必须为 HTTPS） | `https://shot.game` |
-| `BACKEND_URL` | 后端公网地址（生产环境必须为 HTTPS） | `https://shot.game` |
-| `PUBLIC_API_URL` | API 基础 URL（留空时使用相对路径 `/api/...`） | `` (推荐留空) |
+| 变量             | 描述                                             | 示例                |
+| ---------------- | ------------------------------------------------ | ------------------- |
+| `DB_USER`        | PostgreSQL 用户名                                | `shot`              |
+| `DB_PASSWORD`    | PostgreSQL 密码                                  | `change_me`         |
+| `DB_NAME`        | 数据库名称                                       | `shot`              |
+| `JWT_SECRET`     | JWT 签名密钥（使用 `openssl rand -hex 32` 生成） | `abc123...`         |
+| `FRONTEND_URL`   | 前端公网地址（生产环境必须为 HTTPS）             | `https://shot.game` |
+| `BACKEND_URL`    | 后端公网地址（生产环境必须为 HTTPS）             | `https://shot.game` |
+| `PUBLIC_API_URL` | API 基础 URL（留空时使用相对路径 `/api/...`）    | `` (推荐留空)       |
 
 ### Google OAuth 配置
 
-| 变量 | 描述 |
-|------|------|
-| `GOOGLE_CLIENT_ID` | Google Cloud Console 中的客户端 ID |
+| 变量                   | 描述                                |
+| ---------------------- | ----------------------------------- |
+| `GOOGLE_CLIENT_ID`     | Google Cloud Console 中的客户端 ID  |
 | `GOOGLE_CLIENT_SECRET` | Google Cloud Console 中的客户端密钥 |
 
 访问 [Google Cloud Console](https://console.cloud.google.com/) 获取凭证。
 
 ### 生产环境 (SSL/TLS)
 
-| 变量 | 描述 | 示例 |
-|------|------|------|
-| `DOMAIN` | 域名（必须指向服务器 IP） | `shot.game` |
-| `CERTBOT_EMAIL` | Let's Encrypt 过期通知邮箱 | `admin@example.com` |
-| `STAGING` | 是否使用 Let's Encrypt 测试环境 | `0` (生产) 或 `1` (测试) |
+| 变量            | 描述                            | 示例                     |
+| --------------- | ------------------------------- | ------------------------ |
+| `DOMAIN`        | 域名（必须指向服务器 IP）       | `shot.game`              |
+| `CERTBOT_EMAIL` | Let's Encrypt 过期通知邮箱      | `admin@example.com`      |
+| `STAGING`       | 是否使用 Let's Encrypt 测试环境 | `0` (生产) 或 `1` (测试) |
 
 ---
 
@@ -284,39 +286,39 @@ shot/
 
 ### 认证相关
 
-| 方法 | 端点 | 描述 |
-|------|------|------|
-| `POST` | `/api/auth/register` | 用户注册 |
-| `POST` | `/api/auth/login` | 用户登录 |
-| `GET` | `/api/auth/google/callback` | Google OAuth 回调 |
-| `POST` | `/api/auth/refresh` | 刷新 JWT Token |
+| 方法   | 端点                        | 描述              |
+| ------ | --------------------------- | ----------------- |
+| `POST` | `/api/auth/register`        | 用户注册          |
+| `POST` | `/api/auth/login`           | 用户登录          |
+| `GET`  | `/api/auth/google/callback` | Google OAuth 回调 |
+| `POST` | `/api/auth/refresh`         | 刷新 JWT Token    |
 
 ### 游戏相关
 
-| 方法 | 端点 | 描述 |
-|------|------|------|
-| `GET` | `/api/rooms` | 获取游戏房间列表 |
-| `POST` | `/api/rooms` | 创建新游戏房间 |
-| `GET` | `/api/rooms/:id` | 获取房间详情 |
-| `POST` | `/api/rooms/:id/join` | 加入房间 |
-| `POST` | `/api/rooms/:id/start` | 开始游戏 |
-| `POST` | `/api/actions` | 执行游戏操作（使用卡牌） |
+| 方法   | 端点                   | 描述                     |
+| ------ | ---------------------- | ------------------------ |
+| `GET`  | `/api/rooms`           | 获取游戏房间列表         |
+| `POST` | `/api/rooms`           | 创建新游戏房间           |
+| `GET`  | `/api/rooms/:id`       | 获取房间详情             |
+| `POST` | `/api/rooms/:id/join`  | 加入房间                 |
+| `POST` | `/api/rooms/:id/start` | 开始游戏                 |
+| `POST` | `/api/actions`         | 执行游戏操作（使用卡牌） |
 
 ### 用户相关
 
-| 方法 | 端点 | 描述 |
-|------|------|------|
-| `GET` | `/api/me` | 获取当前用户信息 |
-| `PUT` | `/api/me` | 更新用户信息 |
+| 方法  | 端点               | 描述             |
+| ----- | ------------------ | ---------------- |
+| `GET` | `/api/me`          | 获取当前用户信息 |
+| `PUT` | `/api/me`          | 更新用户信息     |
 | `GET` | `/api/profile/:id` | 获取用户公开档案 |
 
 ### 统计和回放
 
-| 方法 | 端点 | 描述 |
-|------|------|------|
-| `GET` | `/api/stats` | 获取全局游戏统计 |
-| `GET` | `/api/replays` | 获取回放列表 |
-| `GET` | `/api/replays/:id` | 获取回放详情 |
+| 方法  | 端点               | 描述             |
+| ----- | ------------------ | ---------------- |
+| `GET` | `/api/stats`       | 获取全局游戏统计 |
+| `GET` | `/api/replays`     | 获取回放列表     |
+| `GET` | `/api/replays/:id` | 获取回放详情     |
 
 完整 API 文档请参考项目的 `/docs/SPEC.md`
 
@@ -344,9 +346,7 @@ shot/
   "type": "game_state_update",
   "data": {
     "current_player": "player_id",
-    "players": [
-      {"id": "p1", "hp": 2, "hand_size": 3, "status": "active"}
-    ],
+    "players": [{ "id": "p1", "hp": 2, "hand_size": 3, "status": "active" }],
     "turn": 5
   }
 }
@@ -403,6 +403,7 @@ curl -X POST https://shot.game/api/actions \
 ```
 
 支持的 LLM 服务:
+
 - OpenAI (GPT-3.5, GPT-4)
 - Anthropic (Claude)
 - DeepSeek
@@ -414,17 +415,17 @@ curl -X POST https://shot.game/api/actions \
 
 SHOT! 支持以下 9 种语言：
 
-| 语言代码 | 语言名称 | 状态 |
-|---------|---------|------|
-| `ko` | 韩语 | 完全支持 |
-| `en` | 英语 | 完全支持 |
-| `zh-cn` | 简体中文 | 完全支持 |
-| `ja` | 日语 | 完全支持 |
-| `es` | 西班牙语 | 完全支持 |
-| `pt-br` | 葡萄牙语(巴西) | 完全支持 |
-| `fr` | 法语 | 完全支持 |
-| `ru` | 俄语 | 完全支持 |
-| `de` | 德语 | 完全支持 |
+| 语言代码 | 语言名称       | 状态     |
+| -------- | -------------- | -------- |
+| `ko`     | 韩语           | 完全支持 |
+| `en`     | 英语           | 完全支持 |
+| `zh-cn`  | 简体中文       | 完全支持 |
+| `ja`     | 日语           | 完全支持 |
+| `es`     | 西班牙语       | 完全支持 |
+| `pt-br`  | 葡萄牙语(巴西) | 完全支持 |
+| `fr`     | 法语           | 完全支持 |
+| `ru`     | 俄语           | 完全支持 |
+| `de`     | 德语           | 完全支持 |
 
 前端自动检测浏览器语言并跳转到对应语言版本，也可手动切换。
 
@@ -451,6 +452,7 @@ bash init-letsencrypt.sh
 ```
 
 此脚本将：
+
 - 创建 Let's Encrypt 账户
 - 生成初始证书
 - 配置自动续期
@@ -492,21 +494,25 @@ docker-compose -f docker-compose.prod.yml exec postgres \
 ### 常见问题
 
 **Q: 连接到后端失败**
+
 - 检查 `.env` 中的 `BACKEND_URL` 是否正确
 - 确保后端服务已启动: `docker-compose ps`
 - 检查防火墙设置
 
 **Q: 数据库迁移失败**
+
 - 检查 PostgreSQL 是否正常运行
 - 验证 `DB_PASSWORD` 是否正确
 - 查看后端日志: `docker-compose logs backend`
 
 **Q: Google OAuth 登录不工作**
+
 - 验证 `GOOGLE_CLIENT_ID` 和 `GOOGLE_CLIENT_SECRET`
 - 确保在 Google Cloud Console 中配置了正确的重定向 URI: `https://shot.game/api/auth/google/callback`
 - 检查 `FRONTEND_URL` 和 `BACKEND_URL` 是否匹配
 
 **Q: SSL 证书错误**
+
 - 检查域名是否正确指向服务器 IP
 - 尝试使用 `STAGING=1` 运行 `init-letsencrypt.sh` 进行测试
 - 查看 certbot 日志: `docker-compose logs certbot`
@@ -573,4 +579,4 @@ MIT License - 详见 [LICENSE](../../LICENSE) 文件
 ---
 
 **最后更新**: 2026 年 3 月 21 日
-**项目版本**: 0.0.1-alpha
+**项目版本**: 0.0.2-alpha
