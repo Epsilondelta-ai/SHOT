@@ -367,6 +367,7 @@ const t = useTranslations(lang);
   let myPlayerID = null;
   let selectedCard = null;
   let timerInterval = null;
+  let timerGraceTimeout = null; // 타이머 만료 후 이벤트 미수신 시 상태 새로고침용
 
   function getToken() { return localStorage.getItem('token'); }
 
@@ -378,6 +379,7 @@ const t = useTranslations(lang);
 
   function startTimerCountdown() {
     if (timerInterval) clearInterval(timerInterval);
+    if (timerGraceTimeout) { clearTimeout(timerGraceTimeout); timerGraceTimeout = null; }
     timerInterval = setInterval(() => {
       if (!gameState) return;
       const remaining = Math.max(0, gameState.turnDeadline - Math.floor(Date.now() / 1000));
@@ -388,6 +390,14 @@ const t = useTranslations(lang);
       } else {
         timerEl.classList.add('text-amber-400');
         timerEl.classList.remove('text-red-400');
+      }
+      // 타이머 만료 후 10초간 이벤트 없으면 상태 강제 새로고침
+      if (remaining === 0 && !timerGraceTimeout) {
+        timerGraceTimeout = setTimeout(() => {
+          timerGraceTimeout = null;
+          console.warn('[GamePlay] 타이머 만료 후 10초간 이벤트 없음 — 상태 새로고침');
+          scheduleStateReload();
+        }, 10000);
       }
     }, 250);
   }
@@ -962,6 +972,9 @@ const t = useTranslations(lang);
   document.addEventListener('game:event', (e) => {
     const event = e.detail;
     if (!gameState) return;
+
+    // 이벤트 수신 시 타이머 만료 grace timer 취소
+    if (timerGraceTimeout) { clearTimeout(timerGraceTimeout); timerGraceTimeout = null; }
 
     handleGameEvent(event);
 

@@ -48,6 +48,7 @@ type GameState struct {
 	TurnDeadline     int64         `json:"turnDeadline"` // unix timestamp
 	Phase            string        `json:"phase"`        // "draw" | "action" | "end"
 	ActionSeq        int           `json:"actionSeq"`    // sequence counter for actions within a turn
+	PendingBotKicks  []string      `json:"pendingBotKicks,omitempty"` // game_end broadcast 후 kick할 봇 ID 목록
 }
 
 // CurrentPlayerID returns the ID of the player whose turn it is.

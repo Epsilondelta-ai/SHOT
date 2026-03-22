@@ -529,12 +529,45 @@ const t = useTranslations(lang);
     updateUI(room, members);
   }
 
+  let lastEventTime = Date.now();
+  let sseWatchdog = null;
+  let hiddenSince = 0;
+
+  // 탭 가시성 변경 감지 — 백그라운드 복귀 시 상태 새로고침
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      hiddenSince = Date.now();
+    } else if (hiddenSince && Date.now() - hiddenSince > 5000 && currentRoom) {
+      reloadRoomState().catch(() => null);
+      document.dispatchEvent(new CustomEvent('room:sse', { detail: 'connected' }));
+    }
+  });
+
+  function startSseWatchdog() {
+    if (sseWatchdog) clearInterval(sseWatchdog);
+    sseWatchdog = setInterval(() => {
+      // 20초간 이벤트 없으면 연결 끊김으로 판단 — 재연결
+      if (Date.now() - lastEventTime > 20000 && currentRoom) {
+        console.warn('[SSE] 20초간 이벤트 없음 — 재연결 시도');
+        if (es) { es.close(); es = null; }
+        connectSSE(currentRoom);
+      }
+    }, 5000);
+  }
+
+  function stopSseWatchdog() {
+    if (sseWatchdog) { clearInterval(sseWatchdog); sseWatchdog = null; }
+  }
+
   function connectSSE(room) {
     const token = getToken();
     if (!token) return;
     es = new EventSource(`${apiUrl}/api/rooms/${room.id}/sse?token=${token}`);
+    lastEventTime = Date.now();
+    startSseWatchdog();
 
     es.addEventListener('open', () => {
+      lastEventTime = Date.now();
       if (sseConnected && currentRoom) {
         reloadRoomState().catch(() => null);
       }
@@ -543,6 +576,7 @@ const t = useTranslations(lang);
     });
 
     es.addEventListener('message', (e) => {
+      lastEventTime = Date.now();
       try {
         const msg = JSON.parse(e.data);
         if (msg.type === 'chat') {
@@ -572,7 +606,7 @@ const t = useTranslations(lang);
           reloadRoomState().catch(() => null);
           document.dispatchEvent(new CustomEvent('room:sse:game', { detail: msg }));
         }
-      } catch {}
+      } catch (err) { console.error('[SSE] 메시지 처리 오류:', err); }
     });
 
     es.addEventListener('error', () => {
@@ -602,6 +636,7 @@ const t = useTranslations(lang);
       }).catch(() => null);
     }
     if (es) { es.close(); es = null; }
+    stopSseWatchdog();
     sseConnected = false;
     document.dispatchEvent(new CustomEvent('room:sse', { detail: 'disconnected' }));
     currentRoom = null;

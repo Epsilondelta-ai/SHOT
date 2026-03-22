@@ -159,11 +159,7 @@ func BotSSE(c *fiber.Ctx) error {
 				if json.Unmarshal(data, &envelope) == nil {
 					switch envelope.Type {
 					case "invited_to_room":
-						if client.RoomID != "" {
-							hub.H.Unregister(client)
-						}
-						client.RoomID = envelope.RoomID
-						hub.H.Register(client)
+						hub.H.SwapRoom(client, envelope.RoomID)
 						broadcastRoomUpdate(envelope.RoomID)
 					case "kicked_from_room", "room_closed":
 						if client.RoomID != "" {
@@ -186,6 +182,12 @@ func BotSSE(c *fiber.Ctx) error {
 				fmt.Fprintf(w, ": ping\n\n")
 				if err := w.Flush(); err != nil {
 					return
+				}
+				// ping 시에도 드롭된 메시지가 있으면 resync_needed 즉시 전달
+				if atomic.CompareAndSwapInt32(&client.NeedsResync, 1, 0) {
+					resync, _ := json.Marshal(map[string]string{"type": "resync_needed"})
+					fmt.Fprintf(w, "data: %s\n\n", resync)
+					w.Flush() //nolint:errcheck
 				}
 			case <-heartbeat.C:
 				SetBotOnline(bot.ID)
@@ -292,6 +294,9 @@ func BotPlayCard(c *fiber.Ctx) error {
 		hub.H.BroadcastJSON(state.RoomID, e)
 	}
 
+	// game_end broadcast 후 봇 kick 처리
+	game.ProcessPendingBotKicks(state)
+
 	if state.Status == "playing" {
 		game.TM.ResetTimer(activeGame.ID, state.RoomID, state.TurnDeadline)
 	} else {
@@ -329,6 +334,9 @@ func BotEndTurn(c *fiber.Ctx) error {
 	for _, e := range events {
 		hub.H.BroadcastJSON(state.RoomID, e)
 	}
+
+	// game_end broadcast 후 봇 kick 처리
+	game.ProcessPendingBotKicks(state)
 
 	if state.Status == "playing" {
 		game.TM.StartTimer(activeGame.ID, state.RoomID, state.TurnDeadline)

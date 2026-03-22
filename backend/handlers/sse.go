@@ -261,6 +261,12 @@ func RoomSSE(c *fiber.Ctx) error {
 				if err := w.Flush(); err != nil {
 					return
 				}
+				// ping 시에도 드롭된 메시지가 있으면 resync_needed 즉시 전달
+				if atomic.CompareAndSwapInt32(&client.NeedsResync, 1, 0) {
+					resync, _ := json.Marshal(map[string]string{"type": "resync_needed"})
+					fmt.Fprintf(w, "data: %s\n\n", resync)
+					w.Flush() //nolint:errcheck
+				}
 			}
 		}
 	})

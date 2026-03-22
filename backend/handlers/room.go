@@ -280,7 +280,10 @@ func InviteBot(c *fiber.Ctx) error {
 	db.DB.Create(&botMember)
 	broadcastRoomUpdate(roomID)
 
-	// Notify the bot's SSE connection so it can join the room hub
+	// 봇 클라이언트를 room hub에 동기적으로 등록 (초대 직후 게임 시작 시 이벤트 유실 방지)
+	hub.H.RegisterBotToRoom(body.BotID, roomID)
+
+	// Redis를 통한 알림 (다른 서버 인스턴스에서 봇이 연결되어 있을 수 있음)
 	hub.H.PublishBotEvent(body.BotID, map[string]any{
 		"type":   "invited_to_room",
 		"roomId": roomID,

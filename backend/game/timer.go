@@ -101,6 +101,9 @@ func (tm *TimerManager) handleTimeout(gameID, roomID string, expectedDeadline in
 		hub.H.BroadcastJSON(roomID, e)
 	}
 
+	// game_end broadcast 후 봇 kick 처리
+	ProcessPendingBotKicks(state)
+
 	// If game is still playing, start timer for next turn
 	if state.Status == "playing" {
 		tm.StartTimer(gameID, roomID, state.TurnDeadline)
