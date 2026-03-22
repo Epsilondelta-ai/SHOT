@@ -29,16 +29,16 @@ Jogo de estratégia com cartas online baseado em turnos. Agentes vs Espiões. De
 
 ### Características Principais
 
-| Aspecto | Descrição |
-|---------|-----------|
-| Jogadores por partida | 5-12 (humanos + bots de IA podem jogar juntos) |
-| Duração média | 15-25 minutos por partida |
-| Sincronização em tempo real | SSE (Server-Sent Events) + Redis Pub/Sub |
-| Bots de IA | Claude, GPT-4, DeepSeek (API externa para bots) |
-| Idiomas suportados | 9 idiomas (coreano, inglês, chinês, japonês, espanhol, português, francês, russo, alemão) |
-| Sistema de Replays | Registra todas as ações; permite curtir e favoritar |
-| Autenticação | Google OAuth 2.0 + JWT |
-| PWA | Funciona offline; instalável em dispositivos móveis |
+| Aspecto                     | Descrição                                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| Jogadores por partida       | 5-12 (humanos + bots de IA podem jogar juntos)                                            |
+| Duração média               | 15-25 minutos por partida                                                                 |
+| Sincronização em tempo real | SSE (Server-Sent Events) + Redis Pub/Sub                                                  |
+| Bots de IA                  | Claude, GPT-4, DeepSeek (API externa para bots)                                           |
+| Idiomas suportados          | 9 idiomas (coreano, inglês, chinês, japonês, espanhol, português, francês, russo, alemão) |
+| Sistema de Replays          | Registra todas as ações; permite curtir e favoritar                                       |
+| Autenticação                | Google OAuth 2.0 + JWT                                                                    |
+| PWA                         | Funciona offline; instalável em dispositivos móveis                                       |
 
 ---
 
@@ -60,12 +60,12 @@ Jogo de estratégia com cartas online baseado em turnos. Agentes vs Espiões. De
 
 ### Cartas
 
-| Carta | Efeito | Quantidade | Limite de Mão | Notas |
-|-------|--------|-----------|---------------|-------|
-| Ataque | Causa 1 dano ao alvo | 5× Jogadores | 6 | Qualquer um pode ser alvo |
-| Cura | Restaura 1 PV do alvo (máx. PV) | 2× Jogadores | 2 | Pode usar em si mesmo ou outros |
-| Prisão | Bloqueia ataque do alvo por 1 turno | 1× Jogadores | 1 | Sem duplicatas; levantada no final do turno |
-| Inspeção | Verifica identidade do alvo | 2× Espiões | Ilimitado | Não pode ser usada em identidades confirmadas |
+| Carta    | Efeito                              | Quantidade   | Limite de Mão | Notas                                         |
+| -------- | ----------------------------------- | ------------ | ------------- | --------------------------------------------- |
+| Ataque   | Causa 1 dano ao alvo                | 5× Jogadores | 6             | Qualquer um pode ser alvo                     |
+| Cura     | Restaura 1 PV do alvo (máx. PV)     | 2× Jogadores | 2             | Pode usar em si mesmo ou outros               |
+| Prisão   | Bloqueia ataque do alvo por 1 turno | 1× Jogadores | 1             | Sem duplicatas; levantada no final do turno   |
+| Inspeção | Verifica identidade do alvo         | 2× Espiões   | Ilimitado     | Não pode ser usada em identidades confirmadas |
 
 Todas as cartas na mão são reveladas para todos.
 
@@ -77,16 +77,16 @@ Todas as cartas na mão são reveladas para todos.
 
 ### Composição de Papéis por Número de Jogadores
 
-| Jogadores | Espiões | Agentes | Nota |
-|-----------|---------|---------|------|
-| 5 | 1 | 4 | Desvantagem para espiões |
-| 6 | 2 | 4 | |
-| 7 | 2 | 5 | |
-| 8 | 3 | 5 | |
-| 9 | 3 | 6 | Recomendado |
-| 10 | 3 | 7 | |
-| 11 | 4 | 7 | |
-| 12 | 4 | 8 | |
+| Jogadores | Espiões | Agentes | Nota                     |
+| --------- | ------- | ------- | ------------------------ |
+| 5         | 1       | 4       | Desvantagem para espiões |
+| 6         | 2       | 4       |                          |
+| 7         | 2       | 5       |                          |
+| 8         | 3       | 5       |                          |
+| 9         | 3       | 6       | Recomendado              |
+| 10        | 3       | 7       |                          |
+| 11        | 4       | 7       |                          |
+| 12        | 4       | 8       |                          |
 
 ---
 
@@ -94,38 +94,38 @@ Todas as cartas na mão são reveladas para todos.
 
 ### Backend
 
-| Componente | Tecnologia |
-|-----------|-----------|
-| Linguagem | Go 1.25 |
-| Framework Web | Fiber v2 |
-| Banco de Dados | PostgreSQL 17 |
-| Cache/Pub-Sub | Redis 7 |
-| Autenticação | JWT (golang-jwt/jwt v5) |
-| OAuth | Google OAuth 2.0 |
-| ORM | GORM |
-| Criptografia | bcrypt (golang.org/x/crypto) |
+| Componente     | Tecnologia                   |
+| -------------- | ---------------------------- |
+| Linguagem      | Go 1.25                      |
+| Framework Web  | Fiber v2                     |
+| Banco de Dados | PostgreSQL 17                |
+| Cache/Pub-Sub  | Redis 7                      |
+| Autenticação   | JWT (golang-jwt/jwt v5)      |
+| OAuth          | Google OAuth 2.0             |
+| ORM            | GORM                         |
+| Criptografia   | bcrypt (golang.org/x/crypto) |
 
 ### Frontend
 
-| Componente | Tecnologia |
-|-----------|-----------|
-| Framework | Astro 5.0 (geração estática) |
-| Linguagem | TypeScript 5.0 |
-| Estilização | Tailwind CSS 3.4 |
-| Gerenciador de Pacotes | Bun |
-| i18n Runtime | Paraglide (inlang) |
-| Sitemap | @astrojs/sitemap |
-| Servidor | Nginx |
+| Componente             | Tecnologia                   |
+| ---------------------- | ---------------------------- |
+| Framework              | Astro 5.0 (geração estática) |
+| Linguagem              | TypeScript 5.0               |
+| Estilização            | Tailwind CSS 3.4             |
+| Gerenciador de Pacotes | Bun                          |
+| i18n Runtime           | Paraglide (inlang)           |
+| Sitemap                | @astrojs/sitemap             |
+| Servidor               | Nginx                        |
 
 ### Infraestrutura
 
-| Componente | Tecnologia |
-|-----------|-----------|
-| Contêinerização | Docker Compose |
-| Proxy Reverso | Nginx (Alpine) |
-| SSL/TLS | Let's Encrypt + Certbot (renovação automática) |
-| Build | Makefile |
-| Rede | Docker Compose (desenvolvimento); nginx-proxy (produção) |
+| Componente      | Tecnologia                                               |
+| --------------- | -------------------------------------------------------- |
+| Contêinerização | Docker Compose                                           |
+| Proxy Reverso   | Nginx (Alpine)                                           |
+| SSL/TLS         | Let's Encrypt + Certbot (renovação automática)           |
+| Build           | Makefile                                                 |
+| Rede            | Docker Compose (desenvolvimento); nginx-proxy (produção) |
 
 ---
 
@@ -142,23 +142,27 @@ Todas as cartas na mão são reveladas para todos.
 ### Instalação Rápida
 
 1. Clone o repositório:
+
 ```bash
 git clone https://github.com/epsilondelta/shot.git
 cd shot
 ```
 
 2. Configure as variáveis de ambiente:
+
 ```bash
 cp .env.example .env
 # Edite .env conforme necessário (altere JWT_SECRET, URLs, credenciais OAuth, etc.)
 ```
 
 3. Inicie a infraestrutura (PostgreSQL + Redis):
+
 ```bash
 make infra
 ```
 
 4. Em terminais separados, inicie o frontend e backend em desenvolvimento:
+
 ```bash
 # Terminal 1: Frontend
 make dev-frontend
@@ -194,6 +198,7 @@ make build
 Para deployar com Let's Encrypt SSL:
 
 1. Configure seu domínio em `.env`:
+
 ```bash
 DOMAIN=seu-dominio.com
 CERTBOT_EMAIL=seu-email@exemplo.com
@@ -201,11 +206,13 @@ STAGING=0  # Use 1 para testar sem limites de rate limiting
 ```
 
 2. Execute o script de inicialização Let's Encrypt:
+
 ```bash
 ./init-letsencrypt.sh
 ```
 
 3. Inicie os contêineres de produção:
+
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 ```
@@ -279,13 +286,13 @@ Internet
 
 ### Armazenamento de Estado
 
-| Dados | Armazenamento | TTL |
-|-------|---------------|-----|
-| Estado do jogo | Redis (`game:{gameId}`) | 24 horas |
-| Ações do jogo | PostgreSQL (`game_actions`) | Permanente |
-| Metadados de usuário/sala/jogo | PostgreSQL | Permanente |
-| Canais SSE | Redis Pub/Sub | Duração da conexão |
-| Estado de sessão | Redis Pub/Sub | Duração da conexão |
+| Dados                          | Armazenamento               | TTL                |
+| ------------------------------ | --------------------------- | ------------------ |
+| Estado do jogo                 | Redis (`game:{gameId}`)     | 24 horas           |
+| Ações do jogo                  | PostgreSQL (`game_actions`) | Permanente         |
+| Metadados de usuário/sala/jogo | PostgreSQL                  | Permanente         |
+| Canais SSE                     | Redis Pub/Sub               | Duração da conexão |
+| Estado de sessão               | Redis Pub/Sub               | Duração da conexão |
 
 ---
 
@@ -504,6 +511,6 @@ MIT. Veja [LICENSE](../../LICENSE) para detalhes.
 
 ---
 
-**Versão**: 0.0.1-alpha
+**Versão**: 0.0.2-alpha
 **Última Atualização**: 21 de março de 2026
 **Status**: Em Desenvolvimento Ativo
