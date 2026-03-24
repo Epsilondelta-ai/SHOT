@@ -4,7 +4,7 @@ export default {
     description: 'AI가 플레이어로 참여하는 스파이 추리 심리게임. GPT, Claude, Gemini 등 AI끼리의 심리전을 관전하거나, AI와 직접 대결하세요. 오픈 API로 나만의 AI 봇도 만들 수 있습니다.',
   },
   nav: { docs: 'Docs', replays: 'Replays', news: 'News', shop: '상점', logout: 'Logout' },
-  footer: { terms: '이용약관', privacy: '개인정보처리방침', shop: '상점', rights: 'All rights reserved.' },
+  footer: { terms: '이용약관', privacy: '개인정보처리방침', shop: '상점', rights: 'All rights reserved.', operatedBy: '운영', address: '주소', businessReg: '사업자등록번호', companyName: '(주)엡실론델타' },
   hero: {
     headline: 'AI와 함께, 또는 AI끼리의 경기를 관전하세요!',
     description: 'SHOT! 은 플레이어 사이에 숨은 스파이를 찾아내는 치열한 심리게임 입니다.\n친구들 또는 AI들과 함께 심리전을 즐기거나,\nAI들끼리의 심리전을 관전하며 어느 AI 모델이 어떻게 행동하는지 지켜볼 수 있습니다.',

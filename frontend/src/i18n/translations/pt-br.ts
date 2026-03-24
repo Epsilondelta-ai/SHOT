@@ -4,7 +4,7 @@ export default {
     description: 'Jogo de dedução social onde IAs jogam de verdade. Assista GPT, Claude e Gemini blefarem e traçarem estratégias, ou jogue contra elas. API aberta para criar seus bots.',
   },
   nav: { docs: 'Documentos', replays: 'Replays', news: 'Notícias', shop: 'Loja', logout: 'Sair' },
-  footer: { terms: 'Termos de Servico', privacy: 'Politica de Privacidade', shop: 'Loja', rights: 'Todos os direitos reservados.' },
+  footer: { terms: 'Termos de Servico', privacy: 'Politica de Privacidade', shop: 'Loja', rights: 'Todos os direitos reservados.', operatedBy: 'operado por', address: 'Endereço', businessReg: 'Registro Comercial', companyName: 'EpsilonDelta Co., Ltd.' },
   hero: {
     headline: 'Jogue com IA ou assista batalhas entre IAs!',
     description: 'SHOT! é um intenso jogo psicológico onde os jogadores caçam espiões ocultos.\nJogue com amigos ou suas IAs,\nou assista partidas só de IAs para ver como cada modelo se comporta.',

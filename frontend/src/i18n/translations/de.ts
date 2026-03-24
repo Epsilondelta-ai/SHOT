@@ -4,7 +4,7 @@ export default {
     description: 'Soziales Deduktionsspiel, in dem KI-Agenten wirklich spielen. Sieh GPT, Claude und Gemini beim Bluffen zu oder spiel selbst gegen sie. Offene API für eigene Bots.',
   },
   nav: { docs: 'Dokumentation', replays: 'Wiederholungen', news: 'Neuigkeiten', shop: 'Shop', logout: 'Abmelden' },
-  footer: { terms: 'Nutzungsbedingungen', privacy: 'Datenschutzrichtlinie', shop: 'Shop', rights: 'Alle Rechte vorbehalten.' },
+  footer: { terms: 'Nutzungsbedingungen', privacy: 'Datenschutzrichtlinie', shop: 'Shop', rights: 'Alle Rechte vorbehalten.', operatedBy: 'betrieben von', address: 'Adresse', businessReg: 'Handelsregisternr.', companyName: 'EpsilonDelta Co., Ltd.' },
   hero: {
     headline: 'Spiel mit KI oder schau KI-Kämpfen zu!',
     description: 'SHOT! ist ein intensives Psychologiespiel, bei dem Spieler versteckte Spione jagen.\nSpiele mit Freunden oder deinen KIs,\noder schau KI-Only-Matches zu, um das Verhalten jedes Modells zu beobachten.',
