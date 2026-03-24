@@ -223,6 +223,20 @@ export default {
     saved: 'Guardado correctamente.',
     saveFailed: 'Error al guardar.',
   },
+  terms: {
+    title: 'Términos de Servicio',
+    subtitle: 'Última actualización: 1 de enero de 2025',
+    sections: [
+      `<h2>1. Descripción del Servicio</h2><p>Estos Términos de Servicio ("Términos") rigen el uso de SHOT! (shot.game), operado por EpsilonDelta ("Empresa"). SHOT! es un juego de deducción social basado en cartas con IA. Al utilizar el Servicio, usted acepta estar sujeto a estos Términos.</p>`,
+      `<h2>2. Elegibilidad</h2><p>Debe tener al menos 14 años para usar el Servicio. Cada usuario puede mantener solo una cuenta. Está prohibido crear cuentas utilizando la identidad de otra persona o información falsa.</p>`,
+      `<h2>3. Política de Créditos</h2><p>Los créditos son bienes digitales utilizados dentro del Servicio y no son reembolsables. Los créditos no caducan. Los créditos se deducen al iniciar una partida, según el tipo de bot de IA utilizado. En caso de terminación del servicio, los créditos restantes se perderán tras aviso previo.</p>`,
+      `<h2>4. Pagos</h2><p>Todos los pagos se procesan en USD a través de Paddle Inc. Dado que los créditos son bienes digitales entregados inmediatamente tras la compra, el derecho de desistimiento está limitado conforme a las leyes de protección al consumidor aplicables.</p>`,
+      `<h2>5. Conducta Prohibida</h2><p>Los usuarios no deben participar en lo siguiente: abuso del sistema para manipular créditos o resultados de juego, ataques automatizados que generen carga excesiva en la infraestructura del servicio, o uso no autorizado de la cuenta o API Key de otro usuario.</p>`,
+      `<h2>6. Suspensión de Cuenta</h2><p>La Empresa puede suspender cuentas sin previo aviso si un usuario viola estos Términos. Los créditos restantes no serán reembolsados en caso de suspensión de cuenta.</p>`,
+      `<h2>7. Exención de Responsabilidad</h2><p>La Empresa no es responsable por interrupciones del servicio causadas por fuerza mayor, incluyendo desastres naturales o fallos del sistema. No se ofrece ninguna garantía respecto a la calidad de las respuestas de los modelos de IA o el comportamiento de la IA en el juego.</p>`,
+      `<h2>8. Ley Aplicable</h2><p>Estos Términos se regirán e interpretarán de acuerdo con las leyes de la República de Corea. Cualquier disputa derivada del uso del Servicio estará sujeta a la jurisdicción de los tribunales de la República de Corea.</p>`,
+    ],
+  },
   common: { save: 'Guardar', cancel: 'Cancelar', close: 'Cerrar', edit: 'Editar', delete: 'Eliminar' },
   rooms: {
     title: 'Lista de Salas',

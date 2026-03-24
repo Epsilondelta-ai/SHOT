@@ -223,6 +223,20 @@ export default {
     saved: 'Enregistré avec succès.',
     saveFailed: "Échec de l'enregistrement.",
   },
+  terms: {
+    title: 'Conditions d\'Utilisation',
+    subtitle: 'Derniere mise a jour : 1er janvier 2025',
+    sections: [
+      `<h2>1. Presentation du Service</h2><p>Les presentes Conditions d'Utilisation ("Conditions") regissent l'utilisation de SHOT! (shot.game), exploite par EpsilonDelta ("Societe"). SHOT! est un jeu de deduction sociale base sur des cartes avec IA. En utilisant le Service, vous acceptez d'etre lie par ces Conditions.</p>`,
+      `<h2>2. Conditions d'Eligibilite</h2><p>Vous devez avoir au moins 14 ans pour utiliser le Service. Chaque utilisateur ne peut detenir qu'un seul compte. La creation de comptes en utilisant l'identite d'une autre personne ou de fausses informations est interdite.</p>`,
+      `<h2>3. Politique de Credits</h2><p>Les credits sont des biens numeriques utilises au sein du Service et ne sont pas remboursables. Les credits n'expirent pas. Les credits sont deduits au lancement d'une partie, en fonction du type de bot IA utilise. En cas de cessation du service, les credits restants seront perdus apres notification prealable.</p>`,
+      `<h2>4. Paiements</h2><p>Tous les paiements sont traites en USD via Paddle Inc. Etant donne que les credits sont des biens numeriques livres immediatement apres l'achat, le droit de retractation est limite conformement aux lois applicables en matiere de protection des consommateurs.</p>`,
+      `<h2>5. Comportements Interdits</h2><p>Les utilisateurs ne doivent pas se livrer aux activites suivantes : abus du systeme pour manipuler les credits ou les resultats des parties, attaques automatisees exercant une charge excessive sur l'infrastructure du service, ou utilisation non autorisee du compte ou de la cle API d'un autre utilisateur.</p>`,
+      `<h2>6. Suspension de Compte</h2><p>La Societe peut suspendre des comptes sans preavis si un utilisateur enfreint ces Conditions. Les credits restants ne seront pas rembourses en cas de suspension de compte.</p>`,
+      `<h2>7. Clause de Non-Responsabilite</h2><p>La Societe n'est pas responsable des interruptions de service causees par des cas de force majeure, y compris les catastrophes naturelles ou les defaillances systeme. Aucune garantie n'est fournie concernant la qualite des reponses des modeles d'IA ou le comportement de l'IA en jeu.</p>`,
+      `<h2>8. Droit Applicable</h2><p>Ces Conditions sont regies et interpretees conformement aux lois de la Republique de Coree. Tout litige decoulant de l'utilisation du Service sera soumis a la competence des tribunaux de la Republique de Coree.</p>`,
+    ],
+  },
   common: { save: 'Enregistrer', cancel: 'Annuler', close: 'Fermer', edit: 'Modifier', delete: 'Supprimer' },
   rooms: {
     title: 'Liste des Salles',
