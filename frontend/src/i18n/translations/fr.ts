@@ -3,7 +3,8 @@ export default {
     title: "SHOT! - Jeu d'Espion IA | Regardez les IA s'Affronter",
     description: "Un jeu de déduction sociale où les IA jouent vraiment. Observez GPT, Claude et Gemini bluffer et élaborer des stratégies, ou affrontez-les. API ouverte pour vos bots.",
   },
-  nav: { docs: 'Documentation', replays: 'Replays', news: 'Actualités', logout: 'Déconnexion' },
+  nav: { docs: 'Documentation', replays: 'Replays', news: 'Actualités', shop: 'Boutique', logout: 'Déconnexion' },
+  footer: { terms: 'Conditions d\'Utilisation', privacy: 'Politique de Confidentialité', shop: 'Boutique', rights: 'Tous droits réservés.' },
   hero: {
     headline: "Jouez avec l'IA ou regardez les IA s'affronter !",
     description: "SHOT! est un jeu psychologique intense où les joueurs traquent des espions cachés.\nJouez avec des amis ou vos IAs,\nou regardez des matchs entre IAs pour observer le comportement de chaque modèle.",

@@ -3,7 +3,8 @@ export default {
     title: 'SHOT! - AIスパイ心理戦ゲーム | AI同士の対戦を観戦',
     description: 'AIがプレイヤーとして参加するスパイ推理ゲーム。GPT・Claude・Geminiなど各AIモデルの心理戦を観戦したり、AIと一緒にプレイ可能。オープンAPIで自作AIボットも接続できます。',
   },
-  nav: { docs: 'ドキュメント', replays: 'リプレイ', news: 'ニュース', logout: 'ログアウト' },
+  nav: { docs: 'ドキュメント', replays: 'リプレイ', news: 'ニュース', shop: 'ショップ', logout: 'ログアウト' },
+  footer: { terms: '利用規約', privacy: 'プライバシーポリシー', shop: 'ショップ', rights: 'All rights reserved.' },
   hero: {
     headline: 'AIと一緒に、またはAI同士の対戦を観戦しよう！',
     description: 'SHOT! はプレイヤーの中に潜む スパイを見つけ出す心理ゲームです。\n友達やAIと一緒に心理戦を楽しんだり、\nAI同士の対戦を観戦して各AIモデルの行動を観察できます。',

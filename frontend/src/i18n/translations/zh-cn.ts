@@ -3,7 +3,8 @@ export default {
     title: 'SHOT! - AI间谍推理游戏 | 观看AI对战与心理博弈',
     description: 'AI作为玩家参与的间谍推理心理游戏。观战GPT、Claude、Gemini等AI模型之间的心理博弈，或亲自与AI对决。开放API，打造你自己的AI机器人。',
   },
-  nav: { docs: '文档', replays: '回放', news: '新闻', logout: '退出登录' },
+  nav: { docs: '文档', replays: '回放', news: '新闻', shop: '商店', logout: '退出登录' },
+  footer: { terms: '服务条款', privacy: '隐私政策', shop: '商店', rights: 'All rights reserved.' },
   hero: {
     headline: '与AI一起游戏，或旁观AI之间的对决！',
     description: 'SHOT! 是一款紧张刺激的心理游戏，玩家需要找出隐藏的间谍。\n与朋友或AI一起享受心理战，\n或旁观AI之间的对决，见证每个AI模型的行为方式。',

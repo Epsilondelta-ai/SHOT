@@ -1,0 +1,26 @@
+---
+import { type Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<footer class="bg-gray-900 border-t border-gray-800">
+  <div class="max-w-3xl mx-auto px-5 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-4 text-sm">
+      <a href={`/${lang}/terms`} class="text-gray-400 hover:text-white transition">{t.footer.terms}</a>
+      <span class="text-gray-700">|</span>
+      <a href={`/${lang}/privacy`} class="text-gray-400 hover:text-white transition">{t.footer.privacy}</a>
+      <span class="text-gray-700">|</span>
+      <a href={`/${lang}/shop`} class="text-gray-400 hover:text-white transition">{t.footer.shop}</a>
+    </div>
+    <p class="text-gray-500 text-sm">
+      &copy; 2025 EpsilonDelta. {t.footer.rights}
+    </p>
+  </div>
+</footer>
