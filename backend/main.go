@@ -32,6 +32,8 @@ func main() {
 		log.Fatal("Failed to connect to Redis:", err)
 	}
 
+	db.SeedData()
+
 	// Clean up rooms left over from previous server session.
 	// Only delete rooms that are NOT playing — active games are preserved
 	// and their state is recovered from Redis by the TimerManager.
