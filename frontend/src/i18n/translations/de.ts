@@ -223,6 +223,20 @@ export default {
     saved: 'Erfolgreich gespeichert.',
     saveFailed: 'Speichern fehlgeschlagen.',
   },
+  privacy: {
+    title: 'Datenschutzrichtlinie',
+    subtitle: 'Letzte Aktualisierung: 1. Januar 2025',
+    sections: [
+      `<h2>1. Erhobene Informationen</h2><p>Wir erheben folgende personenbezogene Daten zur Bereitstellung des Dienstes: E-Mail-Adresse, Spitzname und Spieldaten (Spielverlauf, Siege/Niederlagen, verwendete Karten usw.). Zahlungsinformationen werden direkt von Paddle Inc. verarbeitet; wir speichern keine Zahlungskartendaten.</p>`,
+      `<h2>2. Zweck der Erhebung</h2><p>Die erhobenen personenbezogenen Daten werden fuer folgende Zwecke verwendet: Bereitstellung und Betrieb des Dienstes, Kontoverwaltung und Identitaetspruefung sowie Zahlungsabwicklung und Credit-Verwaltung.</p>`,
+      `<h2>3. Aufbewahrungsdauer</h2><p>Personenbezogene Daten werden bis zur Kontoloeschung aufbewahrt. Soweit eine Aufbewahrung gesetzlich vorgeschrieben ist, werden die Daten fuer den gesetzlich vorgeschriebenen Zeitraum gespeichert (z.B. 5 Jahre fuer Transaktionsaufzeichnungen gemaess E-Commerce-Vorschriften).</p>`,
+      `<h2>4. Weitergabe an Dritte</h2><p>Wir geben personenbezogene Daten an folgende Dritte weiter: Paddle Inc. (Zahlungsabwicklung) und Google (OAuth-Social-Login). Jeder Dritte verwendet die Informationen ausschliesslich fuer den vorgesehenen Servicezweck. Weitere Einzelheiten entnehmen Sie bitte der Datenschutzrichtlinie des jeweiligen Dienstes.</p>`,
+      `<h2>5. Datenschutzbeauftragter</h2><p>Bei Fragen zum Datenschutz kontaktieren Sie uns bitte unter:<br/>E-Mail: privacy@shot.game</p>`,
+      `<h2>6. Ihre Rechte</h2><p>Sie koennen jederzeit Auskunft ueber Ihre personenbezogenen Daten verlangen sowie deren Berichtigung oder Loeschung beantragen. Um Ihr Konto zu loeschen, kontaktieren Sie bitte privacy@shot.game.</p>`,
+      `<h2>7. DSGVO</h2><p>Wenn Sie in der EU ansaessig sind, haben Sie zusaetzliche Rechte gemaess der Datenschutz-Grundverordnung (DSGVO): Recht auf Datenuebertragbarkeit, Recht auf Einschraenkung der Verarbeitung, Recht auf Loeschung (Recht auf Vergessenwerden) und Recht auf Widerspruch gegen automatisierte Entscheidungsfindung. Um diese Rechte auszuueben, kontaktieren Sie bitte privacy@shot.game.</p>`,
+      `<h2>8. Cookies</h2><p>Der Dienst verwendet Cookies ausschliesslich zur Speicherung von Login-Tokens. Wir verwenden keine Cookies zu Marketing- oder Tracking-Zwecken.</p>`,
+    ],
+  },
   terms: {
     title: 'Nutzungsbedingungen',
     subtitle: 'Letzte Aktualisierung: 1. Januar 2025',

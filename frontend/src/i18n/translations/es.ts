@@ -223,6 +223,20 @@ export default {
     saved: 'Guardado correctamente.',
     saveFailed: 'Error al guardar.',
   },
+  privacy: {
+    title: 'Politica de Privacidad',
+    subtitle: 'Ultima actualizacion: 1 de enero de 2025',
+    sections: [
+      `<h2>1. Informacion que Recopilamos</h2><p>Recopilamos la siguiente informacion personal para proporcionar el Servicio: direccion de correo electronico, apodo y datos de juego (historial de partidas, victorias/derrotas, cartas utilizadas, etc.). La informacion de pago es procesada directamente por Paddle Inc.; no almacenamos datos de tarjetas de pago.</p>`,
+      `<h2>2. Proposito de la Recopilacion</h2><p>La informacion personal recopilada se utiliza para los siguientes propositos: provision y operacion del Servicio, gestion de cuentas y verificacion de identidad, y procesamiento de pagos y gestion de creditos.</p>`,
+      `<h2>3. Periodo de Retencion</h2><p>La informacion personal se conserva hasta la eliminacion de la cuenta. Sin embargo, cuando la retencion sea requerida por las leyes aplicables, los datos se almacenaran durante el periodo legalmente establecido (por ejemplo, 5 anos para registros de transacciones segun la normativa de comercio electronico).</p>`,
+      `<h2>4. Comparticion con Terceros</h2><p>Compartimos informacion personal con los siguientes terceros: Paddle Inc. (procesamiento de pagos) y Google (inicio de sesion social OAuth). Cada tercero utiliza la informacion unicamente para el proposito de su servicio designado. Consulte la politica de privacidad de cada servicio para mas detalles.</p>`,
+      `<h2>5. Responsable de Proteccion de Datos</h2><p>Para consultas sobre informacion personal, contactenos en:<br/>Correo: privacy@shot.game</p>`,
+      `<h2>6. Sus Derechos</h2><p>Puede solicitar el acceso, la correccion o la eliminacion de su informacion personal en cualquier momento. Para eliminar su cuenta, contacte a privacy@shot.game.</p>`,
+      `<h2>7. GDPR</h2><p>Si usted es residente de la UE, tiene derechos adicionales bajo el Reglamento General de Proteccion de Datos (GDPR): derecho a la portabilidad de datos, derecho a solicitar la limitacion del tratamiento, derecho de supresion (derecho al olvido) y derecho a oponerse a las decisiones automatizadas. Para ejercer estos derechos, contacte a privacy@shot.game.</p>`,
+      `<h2>8. Cookies</h2><p>El Servicio utiliza cookies unicamente para almacenar tokens de inicio de sesion. No utilizamos cookies con fines de marketing o seguimiento.</p>`,
+    ],
+  },
   terms: {
     title: 'Términos de Servicio',
     subtitle: 'Última actualización: 1 de enero de 2025',

@@ -223,6 +223,20 @@ export default {
     saved: 'Saved successfully.',
     saveFailed: 'Failed to save.',
   },
+  privacy: {
+    title: 'Privacy Policy',
+    subtitle: 'Last updated: January 1, 2025',
+    sections: [
+      `<h2>1. Information We Collect</h2><p>We collect the following personal information to provide the Service: email address, nickname, and gameplay data (game history, wins/losses, cards used, etc.). Payment information is processed directly by Paddle Inc.; we do not store payment card details.</p>`,
+      `<h2>2. Purpose of Collection</h2><p>The collected personal information is used for the following purposes: providing and operating the Service, account management and identity verification, and payment processing and credit management.</p>`,
+      `<h2>3. Retention Period</h2><p>Personal information is retained until account deletion. However, where retention is required by applicable laws, data will be stored for the legally mandated period (e.g., 5 years for transaction records under e-commerce regulations).</p>`,
+      `<h2>4. Third-Party Sharing</h2><p>We share personal information with the following third parties: Paddle Inc. (payment processing) and Google (OAuth social login). Each third party uses the information solely for its designated service purpose. Please refer to each service's privacy policy for details.</p>`,
+      `<h2>5. Data Protection Officer</h2><p>For inquiries regarding personal information, please contact us at:<br/>Email: privacy@shot.game</p>`,
+      `<h2>6. Your Rights</h2><p>You may request access to, correction of, or deletion of your personal information at any time. To delete your account, please contact privacy@shot.game.</p>`,
+      `<h2>7. GDPR</h2><p>If you are a resident of the EU, you have additional rights under the General Data Protection Regulation (GDPR): the right to data portability, the right to request restriction of processing, the right to erasure (right to be forgotten), and the right to object to automated decision-making. To exercise these rights, please contact privacy@shot.game.</p>`,
+      `<h2>8. Cookies</h2><p>The Service uses cookies solely for the purpose of storing login tokens. We do not use cookies for marketing or tracking purposes.</p>`,
+    ],
+  },
   terms: {
     title: 'Terms of Service',
     subtitle: 'Last updated: January 1, 2025',

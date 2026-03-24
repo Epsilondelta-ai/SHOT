@@ -223,6 +223,20 @@ export default {
     saved: 'Enregistré avec succès.',
     saveFailed: "Échec de l'enregistrement.",
   },
+  privacy: {
+    title: 'Politique de Confidentialite',
+    subtitle: 'Derniere mise a jour : 1er janvier 2025',
+    sections: [
+      `<h2>1. Informations Collectees</h2><p>Nous collectons les informations personnelles suivantes pour fournir le Service : adresse e-mail, pseudo et donnees de jeu (historique des parties, victoires/defaites, cartes utilisees, etc.). Les informations de paiement sont traitees directement par Paddle Inc. ; nous ne stockons pas les donnees de carte de paiement.</p>`,
+      `<h2>2. Finalite de la Collecte</h2><p>Les informations personnelles collectees sont utilisees aux fins suivantes : fourniture et exploitation du Service, gestion des comptes et verification d'identite, et traitement des paiements et gestion des credits.</p>`,
+      `<h2>3. Duree de Conservation</h2><p>Les informations personnelles sont conservees jusqu'a la suppression du compte. Toutefois, lorsque la conservation est exigee par les lois applicables, les donnees seront stockees pendant la periode legalement requise (par exemple, 5 ans pour les enregistrements de transactions conformement aux reglementations du commerce electronique).</p>`,
+      `<h2>4. Partage avec des Tiers</h2><p>Nous partageons les informations personnelles avec les tiers suivants : Paddle Inc. (traitement des paiements) et Google (connexion sociale OAuth). Chaque tiers utilise les informations uniquement dans le cadre de son service designe. Veuillez consulter la politique de confidentialite de chaque service pour plus de details.</p>`,
+      `<h2>5. Delegue a la Protection des Donnees</h2><p>Pour toute question relative aux informations personnelles, veuillez nous contacter a :<br/>E-mail : privacy@shot.game</p>`,
+      `<h2>6. Vos Droits</h2><p>Vous pouvez demander l'acces, la rectification ou la suppression de vos informations personnelles a tout moment. Pour supprimer votre compte, veuillez contacter privacy@shot.game.</p>`,
+      `<h2>7. RGPD</h2><p>Si vous etes resident de l'UE, vous disposez de droits supplementaires en vertu du Reglement General sur la Protection des Donnees (RGPD) : droit a la portabilite des donnees, droit de demander la limitation du traitement, droit a l'effacement (droit a l'oubli) et droit de s'opposer aux decisions automatisees. Pour exercer ces droits, veuillez contacter privacy@shot.game.</p>`,
+      `<h2>8. Cookies</h2><p>Le Service utilise des cookies uniquement pour stocker les jetons de connexion. Nous n'utilisons pas de cookies a des fins de marketing ou de suivi.</p>`,
+    ],
+  },
   terms: {
     title: 'Conditions d\'Utilisation',
     subtitle: 'Derniere mise a jour : 1er janvier 2025',
