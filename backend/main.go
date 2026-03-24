@@ -32,6 +32,8 @@ func main() {
 		log.Fatal("Failed to connect to Redis:", err)
 	}
 
+	db.SeedData()
+
 	// Clean up rooms left over from previous server session.
 	// Only delete rooms that are NOT playing — active games are preserved
 	// and their state is recovered from Redis by the TimerManager.
@@ -151,6 +153,16 @@ func main() {
 	auth.Post("/exchange", handlers.ExchangeOAuthCode)
 	auth.Get("/google", handlers.GoogleRedirect)
 	auth.Get("/google/callback", handlers.GoogleCallback)
+
+	// Shop & Credits
+	api.Get("/shop/packs", handlers.ListCreditPacks)
+	api.Get("/official-bots", handlers.ListOfficialBots)
+	api.Get("/credits", handlers.GetMyCredits)
+	api.Get("/credits/history", handlers.GetCreditHistory)
+	api.Post("/shop/checkout", handlers.CreateCheckout)
+
+	// Paddle webhook (JWT 없이 Paddle에서 직접 호출)
+	app.Post("/api/paddle/webhook", handlers.HandleWebhook)
 
 	port := os.Getenv("PORT")
 	if port == "" {

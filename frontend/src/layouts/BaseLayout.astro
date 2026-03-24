@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import SiteFooter from '../components/SiteFooter.astro';
+import type { Locale } from '../i18n/locales';
 
 interface Props {
   title: string;
@@ -62,5 +64,6 @@ const ogUrl = canonicalUrl ?? 'https://shot.game/';
   </head>
   <body class={bodyClass}>
     <slot />
+    <SiteFooter lang={lang as Locale} />
   </body>
 </html>

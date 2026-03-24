@@ -1,0 +1,29 @@
+---
+import { type Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<footer class="bg-gray-900 border-t border-gray-800">
+  <div class="max-w-3xl mx-auto px-5 py-6 space-y-3">
+    <!-- Links -->
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+      <a href={`/${lang}/terms`} class="text-gray-400 hover:text-white transition">{t.footer.terms}</a>
+      <span class="text-gray-700">|</span>
+      <a href={`/${lang}/privacy`} class="text-gray-400 hover:text-white transition">{t.footer.privacy}</a>
+    </div>
+
+    <!-- Business Info -->
+    <div class="space-y-1 text-xs text-gray-500">
+      <p>© 2026 SHOT! {t.footer.operatedBy} {t.footer.companyName}. {t.footer.rights}</p>
+      <p>{t.footer.address}: 대구광역시 중구 국채보상로 558-1, 2층 D526호(종로1가)</p>
+      <p>{t.footer.businessReg}: 290-88-02138 &nbsp;|&nbsp; Email: <a href="mailto:contact@epsilondelta.ai" class="hover:text-gray-300 transition">contact@epsilondelta.ai</a></p>
+    </div>
+  </div>
+</footer>

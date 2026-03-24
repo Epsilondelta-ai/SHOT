@@ -13,8 +13,10 @@ type User struct {
 	Username     string    `gorm:"size:50;not null"`
 	PasswordHash string    `gorm:"size:255"`
 	GoogleID     *string   `gorm:"uniqueIndex;size:255"`
-	AvatarURL     string    `gorm:"type:text"`
-	FavoriteCount int       `gorm:"not null;default:0"`
+	AvatarURL        string `gorm:"type:text"`
+	FavoriteCount    int    `gorm:"not null;default:0"`
+	Credits          int    `gorm:"default:0"`
+	PaddleCustomerID string
 	CreatedAt     time.Time
 	UpdatedAt    time.Time
 }
