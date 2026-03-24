@@ -152,6 +152,16 @@ func main() {
 	auth.Get("/google", handlers.GoogleRedirect)
 	auth.Get("/google/callback", handlers.GoogleCallback)
 
+	// Shop & Credits
+	api.Get("/shop/packs", handlers.ListCreditPacks)
+	api.Get("/official-bots", handlers.ListOfficialBots)
+	api.Get("/credits", handlers.GetMyCredits)
+	api.Get("/credits/history", handlers.GetCreditHistory)
+	api.Post("/shop/checkout", handlers.CreateCheckout)
+
+	// Paddle webhook (JWT 없이 Paddle에서 직접 호출)
+	app.Post("/api/paddle/webhook", handlers.HandleWebhook)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
