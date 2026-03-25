@@ -351,8 +351,10 @@ func buildClientState(state *game.GameState, viewerID string) fiber.Map {
 			pm["isOnline"] = true
 		}
 
-		// Role visibility
-		if p.ID == viewerID {
+		// Role visibility — reveal all roles when game is finished
+		if state.Status == "finished" {
+			pm["role"] = p.Role
+		} else if p.ID == viewerID {
 			pm["role"] = p.Role
 		} else if p.IsRevealed || p.IsConfirmedAgent || p.IsDead {
 			pm["role"] = p.Role

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log"
 	"math/rand"
 	"time"
 
@@ -216,16 +217,24 @@ func ScheduleRuleBotTurn(state *GameState, roomID string, delay time.Duration) {
 		defer GL.Unlock(gameID)
 
 		st, err := LoadState(db.RDB, gameID)
-		if err != nil || st.Status != "playing" {
+		if err != nil {
+			log.Printf("[rulebot] failed to load state for game %s: %v", gameID, err)
+			return
+		}
+		if st.Status != "playing" {
+			log.Printf("[rulebot] game %s not playing (status=%s), skipping", gameID, st.Status)
 			return
 		}
 
 		player := st.FindPlayer(st.CurrentPlayerID())
 		if player == nil || !player.IsRuleBot || player.IsDead {
+			log.Printf("[rulebot] game %s: current player not a rulebot or dead, skipping", gameID)
 			return
 		}
 
+		log.Printf("[rulebot] game %s: running turn for %s (%s)", gameID, player.Username, player.ID)
 		events := RunRuleBotTurn(st)
+		log.Printf("[rulebot] game %s: broadcasting %d events to room %s", gameID, len(events), roomID)
 		for _, e := range events {
 			hub.H.BroadcastJSON(roomID, e)
 		}
@@ -237,10 +246,14 @@ func ScheduleRuleBotTurn(state *GameState, roomID string, delay time.Duration) {
 		if st.Status == "playing" {
 			next := st.FindPlayer(st.CurrentPlayerID())
 			if next != nil && next.IsRuleBot && !next.IsDead {
+				log.Printf("[rulebot] game %s: next player %s is rulebot, scheduling", gameID, next.Username)
 				ScheduleRuleBotTurn(st, roomID, 1500*time.Millisecond)
-			} else {
+			} else if next != nil {
+				log.Printf("[rulebot] game %s: next player %s is human, starting timer", gameID, next.Username)
 				TM.StartTimer(gameID, roomID, st.TurnDeadline)
 			}
+		} else {
+			log.Printf("[rulebot] game %s: game finished (status=%s)", gameID, st.Status)
 		}
 	}()
 }

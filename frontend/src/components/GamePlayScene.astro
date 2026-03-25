@@ -365,6 +365,7 @@ const t = useTranslations(lang);
 
   let gameState = null;
   let myPlayerID = null;
+  let pendingEvents = []; // Buffer events arriving before gameState is set
   let selectedCard = null;
   let timerInterval = null;
   let timerGraceTimeout = null; // 타이머 만료 후 이벤트 미수신 시 상태 새로고침용
@@ -943,6 +944,15 @@ const t = useTranslations(lang);
     startTimerCountdown();
     // Notify game.astro that the scene is fully ready — hides loading screen
     document.dispatchEvent(new CustomEvent('game:ready'));
+
+    // Process any events that arrived before gameState was set
+    if (pendingEvents.length > 0) {
+      for (const event of pendingEvents) {
+        handleGameEvent(event);
+        if (event.type === 'game_end') pendingGameEnd = event;
+      }
+      pendingEvents = [];
+    }
     // 초기 이벤트(draw, turn_start 등)가 gameState 설정 전에 도착해 무시될 수 있으므로 상태 재동기화
     scheduleStateReload();
 
@@ -982,7 +992,10 @@ const t = useTranslations(lang);
   // Listen for game events from SSE
   document.addEventListener('game:event', (e) => {
     const event = e.detail;
-    if (!gameState) return;
+    if (!gameState) {
+      pendingEvents.push(event);
+      return;
+    }
 
     // 이벤트 수신 시 타이머 만료 grace timer 취소
     if (timerGraceTimeout) { clearTimeout(timerGraceTimeout); timerGraceTimeout = null; }
