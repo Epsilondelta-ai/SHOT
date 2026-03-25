@@ -82,6 +82,64 @@ const t = useTranslations(lang);
   </div>
 </div>
 
+<!-- AI Match Modal -->
+<div id="ai-match-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-7 w-full max-w-md text-white shadow-2xl max-h-[90vh] overflow-y-auto">
+    <h3 class="text-lg font-bold text-amber-400 mb-5">🤖 {t.game.aiMatch}</h3>
+
+    <!-- Room name -->
+    <div class="mb-4">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.roomName}</label>
+      <input id="ai-room-name" type="text" maxlength="100"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        placeholder={t.rooms.roomName} />
+      <p class="text-gray-400 text-xs mt-1">{t.rooms.roomNameHint}</p>
+    </div>
+
+    <!-- Bot selection -->
+    <div class="mb-4">
+      <label class="block text-sm font-semibold text-white/70 mb-2">{t.game.selectBots}</label>
+
+      <!-- Rule-based bot -->
+      <label class="flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2.5 mb-2 cursor-pointer hover:bg-green-500/20 transition">
+        <input type="checkbox" class="ai-bot-check w-4 h-4 accent-green-500" data-type="rulebot" checked />
+        <span class="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center text-white text-sm font-bold shrink-0">R</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-sm font-semibold">{t.rooms.ruleBotName}</p>
+          <p class="text-green-400 text-xs">{t.game.alwaysAvailable}</p>
+        </div>
+      </label>
+
+      <!-- User bots (dynamically populated) -->
+      <div id="ai-bot-list" class="flex flex-col gap-2">
+        <p id="ai-bot-empty" class="text-white/30 text-xs text-center py-2">{t.game.loadingBots}</p>
+      </div>
+    </div>
+
+    <!-- Participation mode -->
+    <div class="mb-5">
+      <label class="block text-sm font-semibold text-white/70 mb-2">{t.game.participationMode}</label>
+      <div class="flex gap-3">
+        <label class="flex-1 flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 cursor-pointer transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-500/10">
+          <input type="radio" name="ai-participation" value="play" class="accent-amber-500" checked />
+          <span class="text-sm text-white">{t.game.joinAsPlayer}</span>
+        </label>
+        <label class="flex-1 flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 cursor-pointer transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-500/10">
+          <input type="radio" name="ai-participation" value="spectate" class="accent-blue-500" />
+          <span class="text-sm text-white">{t.game.spectate}</span>
+        </label>
+      </div>
+    </div>
+
+    <p id="ai-match-error" class="text-red-400 text-xs mb-3 hidden"></p>
+
+    <div class="flex gap-3">
+      <button id="ai-match-start" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.game.startMatch}</button>
+      <button id="ai-match-cancel" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
+    </div>
+  </div>
+</div>
+
 <!-- Create Room Modal -->
 <div id="create-room-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
   <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
@@ -135,6 +193,13 @@ const t = useTranslations(lang);
   tRoomsCreate: t.rooms.create,
   tPasswordRequired: t.rooms.passwordRequired,
   tInvalidPassword: t.rooms.invalidPassword,
+  tStartMatch: t.game.startMatch,
+  tStarting: t.game.starting,
+  tNoBots: t.rooms.noBots,
+  tInvite: t.rooms.invite,
+  tSelectAtLeastOneBot: t.game.selectAtLeastOneBot,
+  tOnline: t.game.online,
+  tOffline: t.game.offline,
 }} is:inline>
   const scene = document.getElementById('scene-lobby');
 
@@ -188,8 +253,124 @@ const t = useTranslations(lang);
     }
   });
 
-  // AI Match — directly create a room
-  document.getElementById('lobby-ai-match')?.addEventListener('click', openCreateRoomModal);
+  // AI Match modal
+  const aiMatchModal = document.getElementById('ai-match-modal');
+  const aiRoomName = document.getElementById('ai-room-name');
+  const aiBotList = document.getElementById('ai-bot-list');
+  const aiBotEmpty = document.getElementById('ai-bot-empty');
+  const aiMatchStart = document.getElementById('ai-match-start');
+  const aiMatchError = document.getElementById('ai-match-error');
+
+  async function openAiMatchModal() {
+    aiRoomName.value = '';
+    aiMatchError.classList.add('hidden');
+    aiMatchStart.disabled = false;
+    aiMatchStart.textContent = tStartMatch;
+    openModal(aiMatchModal);
+
+    // Fetch user's bots
+    const token = localStorage.getItem('token');
+    aiBotList.innerHTML = '';
+    aiBotEmpty.textContent = '...';
+    aiBotEmpty.classList.remove('hidden');
+
+    const res = await fetch(`${apiUrl}/api/bots`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+
+    if (!res?.ok) {
+      aiBotEmpty.textContent = tNoBots;
+      return;
+    }
+    const bots = await res.json();
+    if (!bots || bots.length === 0) {
+      aiBotEmpty.textContent = tNoBots;
+      return;
+    }
+
+    aiBotEmpty.classList.add('hidden');
+    for (const bot of bots) {
+      const isOnline = bot.isOnline;
+      const label = document.createElement('label');
+      label.className = `flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5 cursor-pointer hover:bg-white/10 transition ${!isOnline ? 'opacity-50' : ''}`;
+      label.innerHTML = `
+        <input type="checkbox" class="ai-bot-check w-4 h-4 accent-blue-500" data-type="userbot" data-bot-id="${bot.id}" ${!isOnline ? 'disabled' : ''} />
+        <img src="${bot.avatarUrl || '/images/character.png'}" alt="${bot.name}" class="w-8 h-8 rounded-full object-cover bg-amber-800 shrink-0" onerror="this.src='/images/character.png'" />
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-sm font-semibold truncate">${bot.name}</p>
+          <p class="text-xs ${isOnline ? 'text-green-400' : 'text-gray-500'}">${isOnline ? tOnline : tOffline}</p>
+        </div>
+      `;
+      aiBotList.appendChild(label);
+    }
+  }
+
+  document.getElementById('lobby-ai-match')?.addEventListener('click', openAiMatchModal);
+  document.getElementById('ai-match-cancel')?.addEventListener('click', () => closeModal(aiMatchModal));
+  aiMatchModal?.addEventListener('click', (e) => { if (e.target === aiMatchModal) closeModal(aiMatchModal); });
+
+  // AI Match start
+  aiMatchStart?.addEventListener('click', async () => {
+    const checks = document.querySelectorAll('.ai-bot-check:checked');
+    if (checks.length === 0) {
+      aiMatchError.textContent = tSelectAtLeastOneBot;
+      aiMatchError.classList.remove('hidden');
+      return;
+    }
+    aiMatchError.classList.add('hidden');
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    aiMatchStart.disabled = true;
+    aiMatchStart.textContent = tStarting;
+
+    const name = aiRoomName.value.trim() || `Room ${Math.floor(Math.random() * 9000) + 1000}`;
+    const participation = document.querySelector('input[name="ai-participation"]:checked')?.value || 'play';
+
+    // 1. Create room
+    const createRes = await fetch(`${apiUrl}/api/rooms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name, maxPlayers: 12 }),
+    }).catch(() => null);
+
+    if (!createRes?.ok) {
+      aiMatchStart.disabled = false;
+      aiMatchStart.textContent = tStartMatch;
+      return;
+    }
+    const room = await createRes.json();
+
+    // 2. Set spectator mode if needed
+    if (participation === 'spectate') {
+      await fetch(`${apiUrl}/api/rooms/${room.id}/spectate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ spectate: true }),
+      }).catch(() => null);
+    }
+
+    // 3. Invite selected bots
+    for (const check of checks) {
+      const type = check.dataset.type;
+      if (type === 'rulebot') {
+        await fetch(`${apiUrl}/api/rooms/${room.id}/invite-rulebot`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        }).catch(() => null);
+      } else if (type === 'userbot') {
+        await fetch(`${apiUrl}/api/rooms/${room.id}/invite-bot`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ botId: check.dataset.botId }),
+        }).catch(() => null);
+      }
+    }
+
+    closeModal(aiMatchModal);
+    document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+  });
 
   // Bots
   document.getElementById('lobby-bots')?.addEventListener('click', () => {
