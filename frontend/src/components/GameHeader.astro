@@ -236,7 +236,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
 
   // Scene change events
   document.getElementById('nav-rooms')?.addEventListener('click', () => {
-    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'lobby' }));
   });
   document.getElementById('nav-lobby')?.addEventListener('click', () => {
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'lobby' }));
