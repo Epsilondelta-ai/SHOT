@@ -26,7 +26,6 @@ const t = useTranslations(lang);
       {[
         { href: '/docs', label: t.nav.docs },
         { href: '/replays', label: t.nav.replays },
-        { href: '/shop', label: t.nav.shop },
       ].map(item => (
         <a
           href={`/${lang}${item.href}`}
@@ -39,6 +38,12 @@ const t = useTranslations(lang);
           {item.label}
         </a>
       ))}
+      <button
+        data-shop-trigger
+        class="px-5 py-2 rounded-lg border border-transparent hover:text-white transition"
+      >
+        {t.nav.shop}
+      </button>
     </nav>
 
     <!-- Desktop right: logout + language selector -->
@@ -91,7 +96,6 @@ const t = useTranslations(lang);
         {[
           { href: '/docs', label: t.nav.docs },
           { href: '/replays', label: t.nav.replays },
-          { href: '/shop', label: t.nav.shop },
         ].map(item => (
           <a
             href={`/${lang}${item.href}`}
@@ -104,6 +108,12 @@ const t = useTranslations(lang);
             {item.label}
           </a>
         ))}
+        <button
+          data-shop-trigger
+          class="block w-full text-left px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-amber-50 transition"
+        >
+          {t.nav.shop}
+        </button>
         <hr class="my-1 border-gray-100" />
         <button id="mobile-logout-btn" class="hidden w-full text-left px-4 py-2 text-sm font-semibold text-red-500 hover:bg-red-50 transition">
           {t.nav.logout}
