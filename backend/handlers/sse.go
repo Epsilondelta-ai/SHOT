@@ -263,7 +263,7 @@ func RoomSSE(c *fiber.Ctx) error {
 					w.Flush() //nolint:errcheck
 				}
 			case <-ticker.C:
-				fmt.Fprintf(w, ": ping\n\n")
+				fmt.Fprintf(w, "data: {\"type\":\"ping\"}\n\n")
 				if err := w.Flush(); err != nil {
 					return
 				}
