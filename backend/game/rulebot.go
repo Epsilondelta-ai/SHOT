@@ -245,7 +245,20 @@ func runRuleBotLoop(gameID, _ string, initialDelay time.Duration) {
 			// 카드 선택
 			card, targetID := chooseBotAction(st, player)
 			if card == "" {
-				// 카드 없음 → 턴 종료
+				// 카드 없음 → 턴 종료 (마지막 액션 애니메이션 대기)
+				GL.Unlock(gameID)
+				time.Sleep(2 * time.Second)
+				GL.Lock(gameID)
+				// 딜레이 후 상태 재확인
+				st, err = LoadState(db.RDB, gameID)
+				if err != nil || st.Status != "playing" {
+					return true
+				}
+				player = st.FindPlayer(st.CurrentPlayerID())
+				if player == nil || !player.IsRuleBot || player.IsDead {
+					return true
+				}
+				rid = st.RoomID
 				turnEvents, err := EndTurn(st, player.ID)
 				if err == nil {
 					for _, e := range turnEvents {
