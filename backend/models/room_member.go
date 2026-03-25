@@ -12,6 +12,7 @@ type RoomMember struct {
 	RoomID        string    `gorm:"type:varchar(36);not null;index"`
 	UserID        string    `gorm:"type:varchar(36);not null"` // for bots, this is the bot owner's ID
 	BotID         string    `gorm:"type:varchar(36);default:''"`   // non-empty if bot
+	RuleBotName   string    `gorm:"type:varchar(100);default:''"` // display name for rule-based bots
 	IsSpectator   bool      `gorm:"not null;default:false"`
 	CanInviteBots bool      `gorm:"not null;default:false"`
 	JoinedAt      time.Time

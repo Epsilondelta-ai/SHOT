@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/epsilondelta/shot/db"
+	"github.com/epsilondelta/shot/game"
 	"github.com/epsilondelta/shot/hub"
 	"github.com/epsilondelta/shot/models"
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -438,11 +441,13 @@ func KickFromRoom(c *fiber.Ctx) error {
 		}
 		db.DB.Where("room_id = ? AND bot_id = ?", roomID, body.BotID).Delete(&models.RoomMember{})
 
-		// Notify the bot's SSE connection so it can leave the room hub
-		hub.H.PublishBotEvent(body.BotID, map[string]any{
-			"type":   "kicked_from_room",
-			"roomId": roomID,
-		})
+		// 룰봇은 SSE 연결이 없으므로 kick 이벤트 불필요
+		if !game.IsRuleBotID(body.BotID) {
+			hub.H.PublishBotEvent(body.BotID, map[string]any{
+				"type":   "kicked_from_room",
+				"roomId": roomID,
+			})
+		}
 	} else if body.TargetUserID != "" && body.TargetUserID != userID {
 		if room.HostID != userID {
 			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "host only"})
@@ -537,4 +542,52 @@ func SendChat(c *fiber.Ctx) error {
 		"message":   body.Message,
 	})
 	return c.JSON(fiber.Map{"ok": true})
+}
+
+// InviteRuleBot POST /api/rooms/:id/invite-rulebot
+func InviteRuleBot(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	roomID := c.Params("id")
+
+	// Check if user has permission (host or canInviteBots)
+	var member models.RoomMember
+	if err := db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).First(&member).Error; err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "not a member"})
+	}
+	var room models.Room
+	db.DB.First(&room, "id = ?", roomID)
+	if room.HostID != userID && !member.CanInviteBots {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "no permission"})
+	}
+
+	// Check room capacity
+	if room.PlayerCount >= room.MaxPlayers {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "room is full"})
+	}
+
+	// Count existing rule bots for naming
+	var ruleBotCount int64
+	db.DB.Model(&models.RoomMember{}).
+		Where("room_id = ? AND bot_id LIKE 'rulebot_%'", roomID).
+		Count(&ruleBotCount)
+
+	botID := fmt.Sprintf("rulebot_%s", uuid.New().String())
+	botName := fmt.Sprintf("Bot %d", ruleBotCount+1)
+
+	botMember := models.RoomMember{
+		RoomID:      roomID,
+		UserID:      userID,
+		BotID:       botID,
+		RuleBotName: botName,
+		JoinedAt:    time.Now(),
+	}
+	db.DB.Create(&botMember)
+
+	// 룰봇은 hub 등록 불필요 (SSE 연결 없음)
+	broadcastRoomUpdate(roomID)
+
+	return c.JSON(fiber.Map{"ok": true, "botId": botID, "botName": botName})
 }

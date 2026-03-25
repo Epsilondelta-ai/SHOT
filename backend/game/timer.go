@@ -104,9 +104,14 @@ func (tm *TimerManager) handleTimeout(gameID, roomID string, expectedDeadline in
 	// game_end broadcast 후 봇 kick 처리
 	ProcessPendingBotKicks(state)
 
-	// If game is still playing, start timer for next turn
+	// If game is still playing, start timer for next turn or schedule rule-bot
 	if state.Status == "playing" {
-		tm.StartTimer(gameID, roomID, state.TurnDeadline)
+		next := state.FindPlayer(state.CurrentPlayerID())
+		if next != nil && next.IsRuleBot && !next.IsDead {
+			ScheduleRuleBotTurn(state, roomID, 1500*time.Millisecond)
+		} else {
+			tm.StartTimer(gameID, roomID, state.TurnDeadline)
+		}
 	}
 }
 

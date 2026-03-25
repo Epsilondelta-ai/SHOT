@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/game"
@@ -58,8 +59,13 @@ func StartGame(c *fiber.Ctx) error {
 		hub.H.BroadcastJSON(roomID, e)
 	}
 
-	// Start turn timer
-	game.TM.StartTimer(state.GameID, roomID, state.TurnDeadline)
+	// Start turn timer or auto-play if first player is a rule-based bot
+	firstPlayer := state.FindPlayer(state.CurrentPlayerID())
+	if firstPlayer != nil && firstPlayer.IsRuleBot {
+		game.ScheduleRuleBotTurn(state, roomID, 1500*time.Millisecond)
+	} else {
+		game.TM.StartTimer(state.GameID, roomID, state.TurnDeadline)
+	}
 
 	return c.JSON(fiber.Map{"gameId": state.GameID})
 }
@@ -108,9 +114,14 @@ func GamePlayCard(c *fiber.Ctx) error {
 	// game_end broadcast 후 봇 kick 처리
 	game.ProcessPendingBotKicks(state)
 
-	// Reset timer
+	// Reset timer or schedule rule-bot
 	if state.Status == "playing" {
-		game.TM.ResetTimer(gameID, state.RoomID, state.TurnDeadline)
+		next := state.FindPlayer(state.CurrentPlayerID())
+		if next != nil && next.IsRuleBot {
+			game.ScheduleRuleBotTurn(state, state.RoomID, 1500*time.Millisecond)
+		} else {
+			game.TM.ResetTimer(gameID, state.RoomID, state.TurnDeadline)
+		}
 	} else {
 		game.TM.StopTimer(gameID)
 	}
@@ -153,7 +164,12 @@ func GameEndTurn(c *fiber.Ctx) error {
 	game.ProcessPendingBotKicks(state)
 
 	if state.Status == "playing" {
-		game.TM.StartTimer(gameID, state.RoomID, state.TurnDeadline)
+		next := state.FindPlayer(state.CurrentPlayerID())
+		if next != nil && next.IsRuleBot {
+			game.ScheduleRuleBotTurn(state, state.RoomID, 1500*time.Millisecond)
+		} else {
+			game.TM.StartTimer(gameID, state.RoomID, state.TurnDeadline)
+		}
 	} else {
 		game.TM.StopTimer(gameID)
 	}
@@ -321,8 +337,12 @@ func buildClientState(state *game.GameState, viewerID string) fiber.Map {
 			"hasChatted":       p.HasChatted,
 			"botId":            p.BotID,
 		}
-		if p.BotID != "" {
+		if p.BotID != "" && !game.IsRuleBotID(p.BotID) {
 			pm["isOnline"] = IsBotOnline(p.BotID)
+		}
+		if p.IsRuleBot {
+			pm["isRuleBot"] = true
+			pm["isOnline"] = true
 		}
 
 		// Role visibility

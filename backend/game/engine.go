@@ -67,8 +67,14 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 	for i, m := range members {
 		var playerID string
 		var username, avatarURL string
+		var isRuleBot bool
 
-		if m.BotID != "" {
+		if m.BotID != "" && IsRuleBotID(m.BotID) {
+			playerID = m.BotID
+			username = m.RuleBotName
+			avatarURL = ""
+			isRuleBot = true
+		} else if m.BotID != "" {
 			playerID = m.BotID
 			var bot models.Bot
 			if err := db.DB.First(&bot, "id = ?", m.BotID).Error; err == nil {
@@ -92,6 +98,7 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 			HP:        3,
 			MaxHP:     3,
 			Cards:     []string{},
+			IsRuleBot: isRuleBot,
 			Username:  username,
 			AvatarURL: avatarURL,
 		}
@@ -621,7 +628,12 @@ func endGame(state *GameState, result string) []Event {
 
 	if len(botIDs) > 0 {
 		db.DB.Where("room_id = ? AND bot_id != ''", state.RoomID).Delete(&models.RoomMember{})
-		state.PendingBotKicks = botIDs
+		// 룰봇은 SSE 연결이 없으므로 kick 이벤트 불필요 — 외부 봇만 수집
+		for _, id := range botIDs {
+			if !IsRuleBotID(id) {
+				state.PendingBotKicks = append(state.PendingBotKicks, id)
+			}
+		}
 	}
 
 	// Stop the turn timer (idempotent — safe to call even if already stopped).

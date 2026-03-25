@@ -27,6 +27,7 @@ type PlayerState struct {
 	IsDead             bool     `json:"isDead"`
 	HasAttackedThisTurn bool    `json:"hasAttackedThisTurn"`
 	HasChatted         bool     `json:"hasChatted"`
+	IsRuleBot          bool     `json:"isRuleBot,omitempty"`
 	Username           string   `json:"username"`
 	AvatarURL          string   `json:"avatarUrl"`
 }

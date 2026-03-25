@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/epsilondelta/shot/db"
+	"github.com/epsilondelta/shot/game"
 	"github.com/epsilondelta/shot/hub"
 	"github.com/epsilondelta/shot/models"
 	"github.com/golang-jwt/jwt/v5"
@@ -45,6 +46,7 @@ type MemberInfo struct {
 	IsSpectator   bool      `json:"isSpectator"`
 	CanInviteBots bool      `json:"canInviteBots"`
 	IsOnline      bool      `json:"isOnline,omitempty"`
+	IsRuleBot     bool      `json:"isRuleBot,omitempty"`
 	JoinedAt      time.Time `json:"joinedAt"`
 }
 
@@ -70,10 +72,14 @@ func buildMemberInfoList(roomID string) []MemberInfo {
 			CanInviteBots: m.CanInviteBots,
 			JoinedAt:      m.JoinedAt,
 		}
-		if m.BotID != "" {
+		if m.BotID != "" && !game.IsRuleBotID(m.BotID) {
 			info.IsOnline = IsBotOnline(m.BotID)
 		}
-		if m.BotID != "" {
+		if m.BotID != "" && game.IsRuleBotID(m.BotID) {
+			info.Username = m.RuleBotName
+			info.IsRuleBot = true
+			info.IsOnline = true // 서버 내장 봇이므로 항상 온라인
+		} else if m.BotID != "" {
 			var bot models.Bot
 			if err := db.DB.First(&bot, "id = ?", m.BotID).Error; err == nil {
 				info.Username = bot.Name

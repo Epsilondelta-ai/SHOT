@@ -103,6 +103,7 @@ func main() {
 	api.Get("/rooms/:id/members", handlers.GetRoomMembers)
 	api.Post("/rooms/:id/spectate", handlers.SpectateRoom)
 	api.Post("/rooms/:id/invite-bot", handlers.InviteBot)
+	api.Post("/rooms/:id/invite-rulebot", handlers.InviteRuleBot)
 	api.Patch("/rooms/:id/members/:userId/permissions", handlers.SetMemberPermission)
 	api.Post("/rooms/:id/transfer-host", handlers.TransferHost)
 	api.Post("/rooms/:id/kick", handlers.KickFromRoom)
