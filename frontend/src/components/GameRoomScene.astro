@@ -685,7 +685,7 @@ const t = useTranslations(lang);
     closeModal(inviteBotModal);
     scene.classList.add('hidden');
     scene.classList.remove('flex');
-    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'lobby' }));
   }
 
   document.addEventListener('room:join', async (e) => {
@@ -710,7 +710,7 @@ const t = useTranslations(lang);
       currentRoom = null;
       scene.classList.add('hidden');
       scene.classList.remove('flex');
-      document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+      document.dispatchEvent(new CustomEvent('game:scene', { detail: 'lobby' }));
       document.dispatchEvent(new CustomEvent('room:join:error', { detail: { room, hadPassword: !!room.password } }));
       return;
     }

@@ -712,7 +712,7 @@ const t = useTranslations(lang);
     if (statePollingInterval) { clearInterval(statePollingInterval); statePollingInterval = null; }
     scene.classList.add('hidden');
     scene.classList.remove('flex');
-    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'lobby' }));
   }
 
   function showChatBubble(actorId, message) {
