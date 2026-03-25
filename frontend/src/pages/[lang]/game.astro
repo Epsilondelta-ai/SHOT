@@ -50,7 +50,7 @@ const t = useTranslations(lang);
   <GameHeader lang={lang} path="/game" />
 
   <HeroBackground class="flex-1 flex-col justify-center min-h-0">
-    <LobbyMenuScene lang={lang} />
+    <LobbyMenuScene lang={lang} apiUrl={apiUrl} />
     <RoomListScene apiUrl={apiUrl} lang={lang} />
     <GameRoomScene apiUrl={apiUrl} lang={lang} />
     <GamePlayScene apiUrl={apiUrl} lang={lang} />

@@ -4,9 +4,10 @@ import { useTranslations } from '../i18n';
 
 interface Props {
   lang: Locale;
+  apiUrl: string;
 }
 
-const { lang } = Astro.props;
+const { lang, apiUrl } = Astro.props;
 const t = useTranslations(lang);
 ---
 
@@ -81,7 +82,7 @@ const t = useTranslations(lang);
   </div>
 </div>
 
-<script define:vars={{ apiUrl: import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000', tRoomNotFound: t.game.roomNotFound, tJoining: t.game.joining, tJoin: t.game.join }} is:inline>
+<script define:vars={{ apiUrl, tRoomNotFound: t.game.roomNotFound, tJoining: t.game.joining, tJoin: t.game.join }} is:inline>
   const scene = document.getElementById('scene-lobby');
   const customModal = document.getElementById('custom-game-modal');
   const joinByIdSection = document.getElementById('join-by-id-section');
