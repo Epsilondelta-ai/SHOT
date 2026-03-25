@@ -249,7 +249,7 @@ func runRuleBotLoop(gameID, _ string, initialDelay time.Duration) {
 				turnEvents, err := EndTurn(st, player.ID)
 				if err == nil {
 					for _, e := range turnEvents {
-						hub.H.BroadcastJSON(rid, e)
+						hub.H.BroadcastJSONToAll(rid, e)
 					}
 				}
 				ProcessPendingBotKicks(st)
@@ -274,7 +274,7 @@ func runRuleBotLoop(gameID, _ string, initialDelay time.Duration) {
 				return true
 			}
 			for _, e := range events {
-				hub.H.BroadcastJSON(rid, e)
+				hub.H.BroadcastJSONToAll(rid, e)
 			}
 			ProcessPendingBotKicks(st)
 

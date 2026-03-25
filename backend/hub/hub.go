@@ -267,6 +267,35 @@ func (h *Hub) BroadcastJSONLocal(roomID string, v any) {
 	h.sendToLocalClients(roomID, data)
 }
 
+// BroadcastJSONToAll sends to ALL local SSE clients regardless of room.
+// Used for rulebot events where the room mapping is unreliable.
+func (h *Hub) BroadcastJSONToAll(roomID string, v any) {
+	data, _ := json.Marshal(v)
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	// Try exact room first
+	if clients := h.rooms[roomID]; len(clients) > 0 {
+		for c := range clients {
+			select {
+			case c.Ch <- data:
+			default:
+				atomic.StoreInt32(&c.NeedsResync, 1)
+			}
+		}
+		return
+	}
+	// Fallback: send to ALL rooms (rulebot games have unreliable room mapping)
+	for _, clients := range h.rooms {
+		for c := range clients {
+			select {
+			case c.Ch <- data:
+			default:
+				atomic.StoreInt32(&c.NeedsResync, 1)
+			}
+		}
+	}
+}
+
 func (h *Hub) BroadcastRoomClosed(roomID string) {
 	data, _ := json.Marshal(Message{Type: "room_closed"})
 	h.rdb.Publish(ctx, "room:msg:"+roomID, data)
@@ -318,6 +347,7 @@ func (h *Hub) UnregisterBot(botID string, c *Client) {
 // 단일 Lock 내에서 atomic하게 수행한다. room 이동 중 이벤트 유실 방지.
 func (h *Hub) SwapRoom(client *Client, newRoomID string) {
 	h.mu.Lock()
+	log.Printf("[hub] SwapRoom: user=%s from=%s to=%s", client.UserID, client.RoomID, newRoomID)
 	// 기존 room에서 제거
 	if client.RoomID != "" && client.RoomID != newRoomID {
 		delete(h.rooms[client.RoomID], client)
