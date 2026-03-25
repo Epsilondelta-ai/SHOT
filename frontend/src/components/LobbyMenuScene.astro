@@ -101,15 +101,19 @@ const t = useTranslations(lang);
     <div class="mb-4">
       <label class="block text-sm font-semibold text-white/70 mb-2">{t.game.selectBots}</label>
 
-      <!-- Rule-based bot -->
-      <label class="flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2.5 mb-2 cursor-pointer hover:bg-green-500/20 transition">
-        <input type="checkbox" class="ai-bot-check w-4 h-4 accent-green-500" data-type="rulebot" checked />
+      <!-- Rule-based bot with count selector -->
+      <div class="flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2.5 mb-2">
         <span class="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center text-white text-sm font-bold shrink-0">R</span>
         <div class="flex-1 min-w-0">
           <p class="text-white text-sm font-semibold">{t.rooms.ruleBotName}</p>
           <p class="text-green-400 text-xs">{t.game.alwaysAvailable}</p>
         </div>
-      </label>
+        <div class="flex items-center gap-1.5">
+          <button id="rulebot-minus" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">-</button>
+          <span id="rulebot-count" class="text-white text-sm font-bold w-6 text-center">5</span>
+          <button id="rulebot-plus" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">+</button>
+        </div>
+      </div>
 
       <!-- User bots (dynamically populated) -->
       <div id="ai-bot-list" class="flex flex-col gap-2">
@@ -122,11 +126,11 @@ const t = useTranslations(lang);
       <label class="block text-sm font-semibold text-white/70 mb-2">{t.game.participationMode}</label>
       <div class="flex gap-3">
         <label class="flex-1 flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 cursor-pointer transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-500/10">
-          <input type="radio" name="ai-participation" value="play" class="accent-amber-500" checked />
+          <input type="radio" name="ai-participation" value="play" class="accent-amber-500" />
           <span class="text-sm text-white">{t.game.joinAsPlayer}</span>
         </label>
         <label class="flex-1 flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 cursor-pointer transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-500/10">
-          <input type="radio" name="ai-participation" value="spectate" class="accent-blue-500" />
+          <input type="radio" name="ai-participation" value="spectate" class="accent-blue-500" checked />
           <span class="text-sm text-white">{t.game.spectate}</span>
         </label>
       </div>
@@ -307,14 +311,24 @@ const t = useTranslations(lang);
     }
   }
 
+  // Rule-bot count controls
+  const ruleBotCountEl = document.getElementById('rulebot-count');
+  let ruleBotCount = 5;
+  document.getElementById('rulebot-minus')?.addEventListener('click', () => {
+    if (ruleBotCount > 0) { ruleBotCount--; ruleBotCountEl.textContent = String(ruleBotCount); }
+  });
+  document.getElementById('rulebot-plus')?.addEventListener('click', () => {
+    if (ruleBotCount < 11) { ruleBotCount++; ruleBotCountEl.textContent = String(ruleBotCount); }
+  });
+
   document.getElementById('lobby-ai-match')?.addEventListener('click', openAiMatchModal);
   document.getElementById('ai-match-cancel')?.addEventListener('click', () => closeModal(aiMatchModal));
   aiMatchModal?.addEventListener('click', (e) => { if (e.target === aiMatchModal) closeModal(aiMatchModal); });
 
   // AI Match start
   aiMatchStart?.addEventListener('click', async () => {
-    const checks = document.querySelectorAll('.ai-bot-check:checked');
-    if (checks.length === 0) {
+    const userBotChecks = document.querySelectorAll('.ai-bot-check[data-type="userbot"]:checked');
+    if (ruleBotCount === 0 && userBotChecks.length === 0) {
       aiMatchError.textContent = tSelectAtLeastOneBot;
       aiMatchError.classList.remove('hidden');
       return;
@@ -353,21 +367,21 @@ const t = useTranslations(lang);
       }).catch(() => null);
     }
 
-    // 3. Invite selected bots
-    for (const check of checks) {
-      const type = check.dataset.type;
-      if (type === 'rulebot') {
-        await fetch(`${apiUrl}/api/rooms/${room.id}/invite-rulebot`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        }).catch(() => null);
-      } else if (type === 'userbot') {
-        await fetch(`${apiUrl}/api/rooms/${room.id}/invite-bot`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ botId: check.dataset.botId }),
-        }).catch(() => null);
-      }
+    // 3. Invite rule-based bots
+    for (let i = 0; i < ruleBotCount; i++) {
+      await fetch(`${apiUrl}/api/rooms/${room.id}/invite-rulebot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      }).catch(() => null);
+    }
+
+    // 4. Invite selected user bots
+    for (const check of userBotChecks) {
+      await fetch(`${apiUrl}/api/rooms/${room.id}/invite-bot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ botId: check.dataset.botId }),
+      }).catch(() => null);
     }
 
     closeModal(aiMatchModal);
