@@ -1,12 +1,14 @@
 ---
 import { type Locale } from '../i18n/locales';
 import { useTranslations } from '../i18n';
+import character from '../assets/character.webp';
 
 interface Props {
   lang: Locale;
+  apiUrl: string;
 }
 
-const { lang } = Astro.props;
+const { lang, apiUrl } = Astro.props;
 const t = useTranslations(lang);
 ---
 
@@ -52,11 +54,202 @@ const t = useTranslations(lang);
   </div>
 </div>
 
-<script>
-  const scene = document.getElementById('scene-lobby')!;
+<!-- Custom Game Modal -->
+<div id="custom-game-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-7 w-full max-w-sm text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-5">🎮 {t.game.customGame}</h3>
+    <div class="flex flex-col gap-3 mb-4">
+      <button id="custom-create-room" class="w-full text-left bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl px-4 py-3 transition">
+        <p class="text-white font-semibold">{t.game.createRoom}</p>
+        <p class="text-gray-400 text-xs mt-0.5">{t.game.createRoomDesc}</p>
+      </button>
+      <button id="custom-join-room" class="w-full text-left bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-xl px-4 py-3 transition">
+        <p class="text-white font-semibold">{t.game.joinByCode}</p>
+        <p class="text-gray-400 text-xs mt-0.5">{t.game.joinByCodeDesc}</p>
+      </button>
+    </div>
 
+    <!-- Join by ID input (hidden by default) -->
+    <div id="join-by-id-section" class="hidden mb-4">
+      <div class="flex gap-2">
+        <input id="join-room-id-input" type="text" placeholder={t.game.roomIdPlaceholder}
+          class="flex-1 bg-gray-800 border border-gray-600 focus:border-amber-500 text-white rounded-xl px-4 py-2.5 text-sm outline-none transition" />
+        <button id="join-room-id-btn" class="bg-blue-500 hover:bg-blue-400 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition">{t.game.join}</button>
+      </div>
+      <p id="join-room-id-error" class="text-red-400 text-xs mt-1.5 hidden"></p>
+    </div>
+
+    <button id="custom-modal-close" class="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">{t.common.close}</button>
+  </div>
+</div>
+
+<!-- AI Match Modal -->
+<div id="ai-match-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-7 w-full max-w-md text-white shadow-2xl max-h-[90vh] overflow-y-auto">
+    <h3 class="text-lg font-bold text-amber-400 mb-5">🤖 {t.game.aiMatch}</h3>
+
+    <!-- Room name -->
+    <div class="mb-4">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.roomName}</label>
+      <input id="ai-room-name" type="text" maxlength="100"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        placeholder={t.rooms.roomName} />
+      <p class="text-gray-400 text-xs mt-1">{t.rooms.roomNameHint}</p>
+    </div>
+
+    <!-- Bot selection -->
+    <div class="mb-4">
+      <label class="block text-sm font-semibold text-white/70 mb-2">{t.game.selectBots}</label>
+
+      <!-- Rule-based bot with count selector -->
+      <div class="flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2.5 mb-2">
+        <span class="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center text-white text-sm font-bold shrink-0">R</span>
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-sm font-semibold">{t.rooms.ruleBotName}</p>
+          <p class="text-green-400 text-xs">{t.game.alwaysAvailable}</p>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="rulebot-minus" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">-</button>
+          <span id="rulebot-count" class="text-white text-sm font-bold w-6 text-center">5</span>
+          <button id="rulebot-plus" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">+</button>
+        </div>
+      </div>
+
+      <!-- User bots (dynamically populated) -->
+      <div id="ai-bot-list" class="flex flex-col gap-2">
+        <p id="ai-bot-empty" class="text-white/30 text-xs text-center py-2">{t.game.loadingBots}</p>
+      </div>
+    </div>
+
+    <!-- Participation mode -->
+    <div class="mb-5">
+      <label class="block text-sm font-semibold text-white/70 mb-2">{t.game.participationMode}</label>
+      <div class="flex gap-3">
+        <label class="flex-1 flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 cursor-pointer transition has-[:checked]:border-amber-500 has-[:checked]:bg-amber-500/10">
+          <input type="radio" name="ai-participation" value="play" class="accent-amber-500" />
+          <span class="text-sm text-white">{t.game.joinAsPlayer}</span>
+        </label>
+        <label class="flex-1 flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 cursor-pointer transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-500/10">
+          <input type="radio" name="ai-participation" value="spectate" class="accent-blue-500" checked />
+          <span class="text-sm text-white">{t.game.spectate}</span>
+        </label>
+      </div>
+    </div>
+
+    <p id="ai-match-error" class="text-red-400 text-xs mb-3 hidden"></p>
+
+    <div class="flex gap-3">
+      <button id="ai-match-start" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.game.startMatch}</button>
+      <button id="ai-match-cancel" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create Room Modal -->
+<div id="create-room-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-6">{t.rooms.createRoomTitle}</h3>
+    <div class="mb-6">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.roomName}</label>
+      <input
+        id="room-name-input"
+        type="text"
+        maxlength="100"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        placeholder={t.rooms.roomName}
+      />
+      <p class="text-gray-400 text-xs mt-1.5">{t.rooms.roomNameHint}</p>
+    </div>
+    <div class="flex gap-3">
+      <button id="room-create-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.rooms.create}</button>
+      <button id="room-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
+    </div>
+  </div>
+</div>
+
+<!-- Join Private Room Modal -->
+<div id="join-room-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-2"><img src="/emoji/locked.png" alt="lock" class="inline-block w-5 h-5" /> <span id="join-room-name"></span></h3>
+    <p class="text-white/50 text-sm mb-6">{t.rooms.enterPassword}</p>
+    <div class="mb-6">
+      <input
+        id="join-password-input"
+        type="password"
+        maxlength="50"
+        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
+        placeholder={t.rooms.password}
+      />
+      <p id="join-password-error" class="text-red-400 text-xs mt-1 hidden">{t.rooms.passwordRequired}</p>
+    </div>
+    <div class="flex gap-3">
+      <button id="join-confirm-btn" class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-bold py-2.5 rounded-xl transition">{t.rooms.join}</button>
+      <button id="join-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">{t.common.cancel}</button>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{
+  apiUrl,
+  characterSrc: character.src,
+  tRoomNotFound: t.game.roomNotFound,
+  tJoining: t.game.joining,
+  tJoin: t.game.join,
+  tRoomsCreating: t.rooms.creating,
+  tRoomsCreate: t.rooms.create,
+  tPasswordRequired: t.rooms.passwordRequired,
+  tInvalidPassword: t.rooms.invalidPassword,
+  tStartMatch: t.game.startMatch,
+  tStarting: t.game.starting,
+  tNoBots: t.rooms.noBots,
+  tInvite: t.rooms.invite,
+  tSelectAtLeastOneBot: t.game.selectAtLeastOneBot,
+  tOnline: t.game.online,
+  tOffline: t.game.offline,
+}} is:inline>
+  const scene = document.getElementById('scene-lobby');
+
+  // Custom game modal
+  const customModal = document.getElementById('custom-game-modal');
+  const joinByIdSection = document.getElementById('join-by-id-section');
+  const joinRoomIdInput = document.getElementById('join-room-id-input');
+  const joinRoomIdBtn = document.getElementById('join-room-id-btn');
+  const joinRoomIdError = document.getElementById('join-room-id-error');
+
+  // Create room modal
+  const createRoomModal = document.getElementById('create-room-modal');
+  const roomNameInput = document.getElementById('room-name-input');
+  const roomCreateBtn = document.getElementById('room-create-btn');
+  const roomCancelBtn = document.getElementById('room-cancel-btn');
+
+  // Join private room modal
+  const joinRoomModal = document.getElementById('join-room-modal');
+  const joinRoomName = document.getElementById('join-room-name');
+  const joinPasswordInput = document.getElementById('join-password-input');
+  const joinPasswordError = document.getElementById('join-password-error');
+  const joinConfirmBtn = document.getElementById('join-confirm-btn');
+  const joinCancelBtn = document.getElementById('join-cancel-btn');
+
+  let pendingRoom = null;
+
+  function openModal(el) { el.classList.remove('hidden'); el.classList.add('flex'); }
+  function closeModal(el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+
+  function openCustomModal() {
+    joinByIdSection.classList.add('hidden');
+    joinRoomIdInput.value = '';
+    joinRoomIdError.classList.add('hidden');
+    openModal(customModal);
+  }
+
+  function openCreateRoomModal() {
+    roomNameInput.value = '';
+    openModal(createRoomModal);
+  }
+
+  // Scene visibility
   document.addEventListener('game:scene', (e) => {
-    const detail = (e as CustomEvent).detail as string;
+    const detail = e.detail;
     if (detail === 'lobby') {
       scene.classList.remove('hidden');
       scene.classList.add('flex');
@@ -66,15 +259,275 @@ const t = useTranslations(lang);
     }
   });
 
-  document.getElementById('lobby-ai-match')?.addEventListener('click', () => {
-    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+  // AI Match modal
+  const aiMatchModal = document.getElementById('ai-match-modal');
+  const aiRoomName = document.getElementById('ai-room-name');
+  const aiBotList = document.getElementById('ai-bot-list');
+  const aiBotEmpty = document.getElementById('ai-bot-empty');
+  const aiMatchStart = document.getElementById('ai-match-start');
+  const aiMatchError = document.getElementById('ai-match-error');
+
+  async function openAiMatchModal() {
+    aiRoomName.value = '';
+    aiMatchError.classList.add('hidden');
+    aiMatchStart.disabled = false;
+    aiMatchStart.textContent = tStartMatch;
+    openModal(aiMatchModal);
+
+    // Fetch user's bots
+    const token = localStorage.getItem('token');
+    aiBotList.innerHTML = '';
+    aiBotEmpty.textContent = '...';
+    aiBotEmpty.classList.remove('hidden');
+
+    const res = await fetch(`${apiUrl}/api/bots`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+
+    if (!res?.ok) {
+      aiBotEmpty.textContent = tNoBots;
+      return;
+    }
+    const bots = await res.json();
+    if (!bots || bots.length === 0) {
+      aiBotEmpty.textContent = tNoBots;
+      return;
+    }
+
+    aiBotEmpty.classList.add('hidden');
+    for (const bot of bots) {
+      const isOnline = bot.isOnline;
+      const label = document.createElement('label');
+      label.className = `flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5 cursor-pointer hover:bg-white/10 transition ${!isOnline ? 'opacity-50' : ''}`;
+      label.innerHTML = `
+        <input type="checkbox" class="ai-bot-check w-4 h-4 accent-blue-500" data-type="userbot" data-bot-id="${bot.id}" ${!isOnline ? 'disabled' : ''} />
+        <img src="${bot.avatarUrl || '${characterSrc}'}" alt="${bot.name}" class="w-8 h-8 rounded-full object-cover bg-amber-800 shrink-0" onerror="this.src='${characterSrc}'" />
+        <div class="flex-1 min-w-0">
+          <p class="text-white text-sm font-semibold truncate">${bot.name}</p>
+          <p class="text-xs ${isOnline ? 'text-green-400' : 'text-gray-500'}">${isOnline ? tOnline : tOffline}</p>
+        </div>
+      `;
+      aiBotList.appendChild(label);
+    }
+  }
+
+  // Rule-bot count controls
+  const ruleBotCountEl = document.getElementById('rulebot-count');
+  let ruleBotCount = 5;
+  document.getElementById('rulebot-minus')?.addEventListener('click', () => {
+    if (ruleBotCount > 0) { ruleBotCount--; ruleBotCountEl.textContent = String(ruleBotCount); }
+  });
+  document.getElementById('rulebot-plus')?.addEventListener('click', () => {
+    if (ruleBotCount < 11) { ruleBotCount++; ruleBotCountEl.textContent = String(ruleBotCount); }
   });
 
+  document.getElementById('lobby-ai-match')?.addEventListener('click', openAiMatchModal);
+  document.getElementById('ai-match-cancel')?.addEventListener('click', () => closeModal(aiMatchModal));
+  aiMatchModal?.addEventListener('click', (e) => { if (e.target === aiMatchModal) closeModal(aiMatchModal); });
+
+  // AI Match start
+  aiMatchStart?.addEventListener('click', async () => {
+    const userBotChecks = document.querySelectorAll('.ai-bot-check[data-type="userbot"]:checked');
+    if (ruleBotCount === 0 && userBotChecks.length === 0) {
+      aiMatchError.textContent = tSelectAtLeastOneBot;
+      aiMatchError.classList.remove('hidden');
+      return;
+    }
+    aiMatchError.classList.add('hidden');
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    aiMatchStart.disabled = true;
+    aiMatchStart.textContent = tStarting;
+
+    const name = aiRoomName.value.trim() || `Room ${Math.floor(Math.random() * 9000) + 1000}`;
+    const participation = document.querySelector('input[name="ai-participation"]:checked')?.value || 'play';
+
+    // 1. Create room
+    const createRes = await fetch(`${apiUrl}/api/rooms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name, maxPlayers: 12 }),
+    }).catch(() => null);
+
+    if (!createRes?.ok) {
+      aiMatchStart.disabled = false;
+      aiMatchStart.textContent = tStartMatch;
+      return;
+    }
+    const room = await createRes.json();
+
+    // 2. Set spectator mode if needed
+    if (participation === 'spectate') {
+      await fetch(`${apiUrl}/api/rooms/${room.id}/spectate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ spectate: true }),
+      }).catch(() => null);
+    }
+
+    // 3. Invite rule-based bots
+    for (let i = 0; i < ruleBotCount; i++) {
+      await fetch(`${apiUrl}/api/rooms/${room.id}/invite-rulebot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      }).catch(() => null);
+    }
+
+    // 4. Invite selected user bots
+    for (const check of userBotChecks) {
+      await fetch(`${apiUrl}/api/rooms/${room.id}/invite-bot`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ botId: check.dataset.botId }),
+      }).catch(() => null);
+    }
+
+    // 5. SSE 연결 먼저 (이벤트 유실 방지)
+    closeModal(aiMatchModal);
+    document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+
+    // SSE 연결이 열릴 때까지 대기
+    await new Promise(resolve => {
+      const handler = (e) => {
+        if (e.detail === 'connected') {
+          document.removeEventListener('room:sse', handler);
+          resolve();
+        }
+      };
+      document.addEventListener('room:sse', handler);
+      // 3초 안에 연결 안 되면 타임아웃
+      setTimeout(() => { document.removeEventListener('room:sse', handler); resolve(); }, 3000);
+    });
+
+    // 6. 게임 시작 (SSE 연결 후)
+    const startRes = await fetch(`${apiUrl}/api/rooms/${room.id}/start`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+
+    aiMatchStart.disabled = false;
+    aiMatchStart.textContent = tStartMatch;
+
+    if (!startRes?.ok) {
+      return; // 이미 방에 있으므로 방 UI가 보임
+    }
+
+    const { gameId } = await startRes.json();
+    document.dispatchEvent(new CustomEvent('room:sse:game_start', { detail: { gameId } }));
+  });
+
+  // Bots
   document.getElementById('lobby-bots')?.addEventListener('click', () => {
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'bots' }));
   });
 
-  document.getElementById('lobby-custom')?.addEventListener('click', () => {
-    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+  // Custom game modal
+  document.getElementById('lobby-custom')?.addEventListener('click', openCustomModal);
+  document.getElementById('custom-modal-close')?.addEventListener('click', () => closeModal(customModal));
+  customModal?.addEventListener('click', (e) => { if (e.target === customModal) closeModal(customModal); });
+
+  // Custom > Create Room
+  document.getElementById('custom-create-room')?.addEventListener('click', () => {
+    closeModal(customModal);
+    openCreateRoomModal();
+  });
+
+  // Custom > Join by Room ID
+  document.getElementById('custom-join-room')?.addEventListener('click', () => {
+    joinByIdSection.classList.remove('hidden');
+    joinRoomIdInput.focus();
+  });
+
+  joinRoomIdBtn?.addEventListener('click', async () => {
+    const roomId = joinRoomIdInput.value.trim();
+    if (!roomId) return;
+
+    joinRoomIdError.classList.add('hidden');
+    joinRoomIdBtn.disabled = true;
+    joinRoomIdBtn.textContent = tJoining;
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${apiUrl}/api/rooms/${roomId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        joinRoomIdError.textContent = tRoomNotFound;
+        joinRoomIdError.classList.remove('hidden');
+        joinRoomIdBtn.disabled = false;
+        joinRoomIdBtn.textContent = tJoin;
+        return;
+      }
+      const room = await res.json();
+      closeModal(customModal);
+      document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+    } catch {
+      joinRoomIdError.textContent = tRoomNotFound;
+      joinRoomIdError.classList.remove('hidden');
+    }
+    joinRoomIdBtn.disabled = false;
+    joinRoomIdBtn.textContent = tJoin;
+  });
+
+  joinRoomIdInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') joinRoomIdBtn?.click();
+  });
+
+  // Create Room submit
+  roomCreateBtn?.addEventListener('click', async () => {
+    const name = roomNameInput.value.trim() || `Room ${Math.floor(Math.random() * 9000) + 1000}`;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    roomCreateBtn.disabled = true;
+    roomCreateBtn.textContent = tRoomsCreating;
+
+    const res = await fetch(`${apiUrl}/api/rooms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ name, maxPlayers: 12 }),
+    }).catch(() => null);
+
+    roomCreateBtn.disabled = false;
+    roomCreateBtn.textContent = tRoomsCreate;
+
+    if (res?.ok) {
+      const room = await res.json();
+      closeModal(createRoomModal);
+      document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+    }
+  });
+
+  roomCancelBtn?.addEventListener('click', () => closeModal(createRoomModal));
+  createRoomModal?.addEventListener('click', (e) => { if (e.target === createRoomModal) closeModal(createRoomModal); });
+
+  // Join private room
+  joinConfirmBtn?.addEventListener('click', () => {
+    const pw = joinPasswordInput.value.trim();
+    if (!pw) {
+      joinPasswordError.textContent = tPasswordRequired;
+      joinPasswordError.classList.remove('hidden');
+      return;
+    }
+    joinPasswordError.classList.add('hidden');
+    closeModal(joinRoomModal);
+    document.dispatchEvent(new CustomEvent('room:join', { detail: { ...pendingRoom, password: pw } }));
+    pendingRoom = null;
+  });
+
+  joinCancelBtn?.addEventListener('click', () => { closeModal(joinRoomModal); pendingRoom = null; });
+
+  // Handle join failure (wrong password or room became private)
+  document.addEventListener('room:join:error', (e) => {
+    const { room, hadPassword } = e.detail;
+    pendingRoom = room;
+    joinRoomName.textContent = room.name;
+    joinPasswordInput.value = '';
+    joinPasswordError.textContent = hadPassword ? tInvalidPassword : tPasswordRequired;
+    joinPasswordError.classList.remove('hidden');
+    openModal(joinRoomModal);
+    joinPasswordInput.focus();
   });
 </script>

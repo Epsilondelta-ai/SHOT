@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log"
 	"math/rand"
 	"time"
 
@@ -209,38 +210,86 @@ func pickAttackTarget(state *GameState, bot *PlayerState) *PlayerState {
 // to give clients time to render the turn_start event.
 func ScheduleRuleBotTurn(state *GameState, roomID string, delay time.Duration) {
 	gameID := state.GameID
-	go func() {
-		time.Sleep(delay)
+	go runRuleBotLoop(gameID, roomID, delay)
+}
 
-		GL.Lock(gameID)
-		defer GL.Unlock(gameID)
+// runRuleBotLoop runs rule-based bot turns in a loop with delays between actions.
+// Each action acquires the game lock independently to avoid blocking other operations.
+func runRuleBotLoop(gameID, _ string, initialDelay time.Duration) {
+	if initialDelay > 0 {
+		time.Sleep(initialDelay)
+	}
 
-		st, err := LoadState(db.RDB, gameID)
-		if err != nil || st.Status != "playing" {
-			return
-		}
+	for {
+		// 1. Load state and play one card
+		action := func() (done bool) {
+			GL.Lock(gameID)
+			defer GL.Unlock(gameID)
 
-		player := st.FindPlayer(st.CurrentPlayerID())
-		if player == nil || !player.IsRuleBot || player.IsDead {
-			return
-		}
-
-		events := RunRuleBotTurn(st)
-		for _, e := range events {
-			hub.H.BroadcastJSON(roomID, e)
-		}
-
-		ProcessPendingBotKicks(st)
-
-		// If the game is still playing and the next player is also a rule-bot,
-		// schedule another turn. Otherwise start the timer for a human player.
-		if st.Status == "playing" {
-			next := st.FindPlayer(st.CurrentPlayerID())
-			if next != nil && next.IsRuleBot && !next.IsDead {
-				ScheduleRuleBotTurn(st, roomID, 1500*time.Millisecond)
-			} else {
-				TM.StartTimer(gameID, roomID, st.TurnDeadline)
+			st, err := LoadState(db.RDB, gameID)
+			if err != nil || st.Status != "playing" {
+				return true
 			}
+
+			// 항상 state에서 roomID를 가져옴 (파라미터가 아닌 authoritative source)
+			rid := st.RoomID
+
+			player := st.FindPlayer(st.CurrentPlayerID())
+			if player == nil || !player.IsRuleBot || player.IsDead {
+				if player != nil && !player.IsRuleBot {
+					TM.StartTimer(gameID, rid, st.TurnDeadline)
+				}
+				return true
+			}
+
+			// 카드 선택
+			card, targetID := chooseBotAction(st, player)
+			if card == "" {
+				// 카드 없음 → 턴 종료
+				turnEvents, err := EndTurn(st, player.ID)
+				if err == nil {
+					for _, e := range turnEvents {
+						hub.H.BroadcastJSONToAll(rid, e)
+					}
+				}
+				ProcessPendingBotKicks(st)
+
+				if st.Status != "playing" {
+					log.Printf("[rulebot] game %s: game finished", gameID)
+					return true
+				}
+				next := st.FindPlayer(st.CurrentPlayerID())
+				if next == nil || !next.IsRuleBot || next.IsDead {
+					if next != nil {
+						TM.StartTimer(gameID, rid, st.TurnDeadline)
+					}
+					return true
+				}
+				return false
+			}
+
+			// 카드 플레이
+			events, err := PlayCard(st, player.ID, card, targetID)
+			if err != nil {
+				return true
+			}
+			for _, e := range events {
+				hub.H.BroadcastJSONToAll(rid, e)
+			}
+			ProcessPendingBotKicks(st)
+
+			if st.Status != "playing" {
+				log.Printf("[rulebot] game %s: game finished", gameID)
+				return true
+			}
+			return false // 다음 액션 계속
+		}()
+
+		if action {
+			return
 		}
-	}()
+
+		// 액션 사이 1초 딜레이 (클라이언트 렌더링 시간)
+		time.Sleep(1 * time.Second)
+	}
 }

@@ -267,10 +267,16 @@ func GetGameState(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "game not found"})
 	}
 
-	// Verify player is in the game
+	// Verify player is in the game (or spectating)
 	playerID := resolvePlayerID(state, userID)
 	if playerID == "" {
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "not in game"})
+		// Check if user is a spectator in the room
+		var spectator models.RoomMember
+		if err := db.DB.Where("room_id = ? AND user_id = ? AND bot_id = '' AND is_spectator = true", state.RoomID, userID).First(&spectator).Error; err != nil {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "not in game"})
+		}
+		// Spectator: return state with no role visibility (all unknown)
+		return c.JSON(buildClientState(state, ""))
 	}
 
 	// Return state with role visibility rules
@@ -345,8 +351,10 @@ func buildClientState(state *game.GameState, viewerID string) fiber.Map {
 			pm["isOnline"] = true
 		}
 
-		// Role visibility
-		if p.ID == viewerID {
+		// Role visibility — reveal all roles when game is finished
+		if state.Status == "finished" {
+			pm["role"] = p.Role
+		} else if p.ID == viewerID {
 			pm["role"] = p.Role
 		} else if p.IsRevealed || p.IsConfirmedAgent || p.IsDead {
 			pm["role"] = p.Role

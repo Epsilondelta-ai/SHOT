@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -115,11 +116,23 @@ func (h *Hub) routeRedisMessage(msg *redis.Message) {
 func (h *Hub) sendToLocalClients(roomID string, data []byte) {
 	h.mu.RLock()
 	defer h.mu.RUnlock()
-	for c := range h.rooms[roomID] {
+
+	clients := h.rooms[roomID]
+	if len(clients) == 0 {
+		// 디버그: rooms 맵에 어떤 키가 있는지 확인
+		keys := make([]string, 0, len(h.rooms))
+		for k := range h.rooms {
+			keys = append(keys, k)
+		}
+		log.Printf("[hub] sendToLocalClients: no clients in room %s (known rooms: %v)", roomID, keys)
+		return
+	}
+
+	for c := range clients {
 		select {
 		case c.Ch <- data:
 		default:
-			log.Printf("[hub] warn: dropped message for user %s in room %s (channel full)", c.UserID, roomID)
+			log.Printf("[hub] warn: dropped message for user %s in room %s (channel full, len=%d)", c.UserID, roomID, len(c.Ch))
 			atomic.StoreInt32(&c.NeedsResync, 1)
 		}
 	}
@@ -137,6 +150,7 @@ func (h *Hub) controlLocalClient(roomID string, ctrl ctrlMsg) {
 		}
 	}
 	if target != nil {
+		log.Printf("[hub] controlLocalClient: removing client user=%s room=%s event=%s", target.UserID, roomID, ctrl.EventType)
 		delete(h.rooms[roomID], target)
 		if len(h.rooms[roomID]) == 0 {
 			delete(h.rooms, roomID)
@@ -174,6 +188,7 @@ func (h *Hub) Register(c *Client) {
 		h.rooms[c.RoomID] = make(map[*Client]bool)
 	}
 	h.rooms[c.RoomID][c] = true
+	log.Printf("[hub] Register: added client user=%s room=%s (total=%d)", c.UserID, c.RoomID, len(h.rooms[c.RoomID]))
 	h.mu.Unlock()
 }
 
@@ -195,8 +210,10 @@ func (h *Hub) RegisterAndReplaceLocal(c *Client) bool {
 	}
 	if old != nil {
 		delete(h.rooms[c.RoomID], old)
+		log.Printf("[hub] RegisterAndReplace: removed old client user=%s room=%s", old.UserID, c.RoomID)
 	}
 	h.rooms[c.RoomID][c] = true
+	log.Printf("[hub] RegisterAndReplace: added client user=%s room=%s (total=%d)", c.UserID, c.RoomID, len(h.rooms[c.RoomID]))
 	h.mu.Unlock()
 
 	if old != nil {
@@ -216,6 +233,7 @@ func (h *Hub) RegisterAndReplaceLocal(c *Client) bool {
 
 func (h *Hub) Unregister(c *Client) {
 	h.mu.Lock()
+	log.Printf("[hub] Unregister: removing client user=%s room=%s replaced=%v", c.UserID, c.RoomID, c.Replaced)
 	delete(h.rooms[c.RoomID], c)
 	if len(h.rooms[c.RoomID]) == 0 {
 		delete(h.rooms, c.RoomID)
@@ -236,7 +254,46 @@ func (h *Hub) Broadcast(roomID string, msg Message) {
 
 func (h *Hub) BroadcastJSON(roomID string, v any) {
 	data, _ := json.Marshal(v)
+	// 호출 스택 추적
+	_, file, line, _ := runtime.Caller(1)
+	log.Printf("[hub] BroadcastJSON room=%s caller=%s:%d data=%s", roomID, file, line, string(data[:min(len(data), 80)]))
 	h.rdb.Publish(ctx, "room:msg:"+roomID, data)
+}
+
+// BroadcastJSONLocal sends to local SSE clients directly (bypassing Redis pub/sub).
+// Use this from background goroutines where Redis pub/sub delivery may be unreliable.
+func (h *Hub) BroadcastJSONLocal(roomID string, v any) {
+	data, _ := json.Marshal(v)
+	h.sendToLocalClients(roomID, data)
+}
+
+// BroadcastJSONToAll sends to ALL local SSE clients regardless of room.
+// Used for rulebot events where the room mapping is unreliable.
+func (h *Hub) BroadcastJSONToAll(roomID string, v any) {
+	data, _ := json.Marshal(v)
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	// Try exact room first
+	if clients := h.rooms[roomID]; len(clients) > 0 {
+		for c := range clients {
+			select {
+			case c.Ch <- data:
+			default:
+				atomic.StoreInt32(&c.NeedsResync, 1)
+			}
+		}
+		return
+	}
+	// Fallback: send to ALL rooms (rulebot games have unreliable room mapping)
+	for _, clients := range h.rooms {
+		for c := range clients {
+			select {
+			case c.Ch <- data:
+			default:
+				atomic.StoreInt32(&c.NeedsResync, 1)
+			}
+		}
+	}
 }
 
 func (h *Hub) BroadcastRoomClosed(roomID string) {
@@ -290,6 +347,7 @@ func (h *Hub) UnregisterBot(botID string, c *Client) {
 // 단일 Lock 내에서 atomic하게 수행한다. room 이동 중 이벤트 유실 방지.
 func (h *Hub) SwapRoom(client *Client, newRoomID string) {
 	h.mu.Lock()
+	log.Printf("[hub] SwapRoom: user=%s from=%s to=%s", client.UserID, client.RoomID, newRoomID)
 	// 기존 room에서 제거
 	if client.RoomID != "" && client.RoomID != newRoomID {
 		delete(h.rooms[client.RoomID], client)
