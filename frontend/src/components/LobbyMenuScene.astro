@@ -52,11 +52,57 @@ const t = useTranslations(lang);
   </div>
 </div>
 
-<script>
-  const scene = document.getElementById('scene-lobby')!;
+<!-- Custom Game Modal -->
+<div id="custom-game-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-7 w-full max-w-sm text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-5">🎮 {t.game.customGame}</h3>
+    <div class="flex flex-col gap-3 mb-4">
+      <button id="custom-create-room" class="w-full text-left bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl px-4 py-3 transition">
+        <p class="text-white font-semibold">{t.game.createRoom}</p>
+        <p class="text-gray-400 text-xs mt-0.5">{t.game.createRoomDesc}</p>
+      </button>
+      <button id="custom-join-room" class="w-full text-left bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 rounded-xl px-4 py-3 transition">
+        <p class="text-white font-semibold">{t.game.joinByCode}</p>
+        <p class="text-gray-400 text-xs mt-0.5">{t.game.joinByCodeDesc}</p>
+      </button>
+    </div>
+
+    <!-- Join by ID input (hidden by default) -->
+    <div id="join-by-id-section" class="hidden mb-4">
+      <div class="flex gap-2">
+        <input id="join-room-id-input" type="text" placeholder={t.game.roomIdPlaceholder}
+          class="flex-1 bg-gray-800 border border-gray-600 focus:border-amber-500 text-white rounded-xl px-4 py-2.5 text-sm outline-none transition" />
+        <button id="join-room-id-btn" class="bg-blue-500 hover:bg-blue-400 text-white font-bold px-4 py-2.5 rounded-xl text-sm transition">{t.game.join}</button>
+      </div>
+      <p id="join-room-id-error" class="text-red-400 text-xs mt-1.5 hidden"></p>
+    </div>
+
+    <button id="custom-modal-close" class="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">{t.common.close}</button>
+  </div>
+</div>
+
+<script define:vars={{ apiUrl: import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000', tRoomNotFound: t.game.roomNotFound, tJoining: t.game.joining, tJoin: t.game.join }} is:inline>
+  const scene = document.getElementById('scene-lobby');
+  const customModal = document.getElementById('custom-game-modal');
+  const joinByIdSection = document.getElementById('join-by-id-section');
+  const joinRoomIdInput = document.getElementById('join-room-id-input');
+  const joinRoomIdBtn = document.getElementById('join-room-id-btn');
+  const joinRoomIdError = document.getElementById('join-room-id-error');
+
+  function openModal() {
+    joinByIdSection.classList.add('hidden');
+    joinRoomIdInput.value = '';
+    joinRoomIdError.classList.add('hidden');
+    customModal.classList.remove('hidden');
+    customModal.classList.add('flex');
+  }
+  function closeCustomModal() {
+    customModal.classList.add('hidden');
+    customModal.classList.remove('flex');
+  }
 
   document.addEventListener('game:scene', (e) => {
-    const detail = (e as CustomEvent).detail as string;
+    const detail = e.detail;
     if (detail === 'lobby') {
       scene.classList.remove('hidden');
       scene.classList.add('flex');
@@ -74,7 +120,59 @@ const t = useTranslations(lang);
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'bots' }));
   });
 
-  document.getElementById('lobby-custom')?.addEventListener('click', () => {
+  // Custom game modal
+  document.getElementById('lobby-custom')?.addEventListener('click', openModal);
+  document.getElementById('custom-modal-close')?.addEventListener('click', closeCustomModal);
+  customModal?.addEventListener('click', (e) => { if (e.target === customModal) closeCustomModal(); });
+
+  // Create Room → go to rooms scene (which has the create room modal)
+  document.getElementById('custom-create-room')?.addEventListener('click', () => {
+    closeCustomModal();
     document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+    // Auto-open the create room modal after a tick
+    setTimeout(() => {
+      document.getElementById('create-room-btn')?.click();
+    }, 100);
+  });
+
+  // Join by Room ID
+  document.getElementById('custom-join-room')?.addEventListener('click', () => {
+    joinByIdSection.classList.remove('hidden');
+    joinRoomIdInput.focus();
+  });
+
+  joinRoomIdBtn?.addEventListener('click', async () => {
+    const roomId = joinRoomIdInput.value.trim();
+    if (!roomId) return;
+
+    joinRoomIdError.classList.add('hidden');
+    joinRoomIdBtn.disabled = true;
+    joinRoomIdBtn.textContent = tJoining;
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${apiUrl}/api/rooms/${roomId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        joinRoomIdError.textContent = tRoomNotFound;
+        joinRoomIdError.classList.remove('hidden');
+        joinRoomIdBtn.disabled = false;
+        joinRoomIdBtn.textContent = tJoin;
+        return;
+      }
+      const room = await res.json();
+      closeCustomModal();
+      document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+    } catch {
+      joinRoomIdError.textContent = tRoomNotFound;
+      joinRoomIdError.classList.remove('hidden');
+    }
+    joinRoomIdBtn.disabled = false;
+    joinRoomIdBtn.textContent = tJoin;
+  });
+
+  joinRoomIdInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') joinRoomIdBtn?.click();
   });
 </script>
