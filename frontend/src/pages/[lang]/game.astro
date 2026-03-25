@@ -5,7 +5,7 @@ import HeroBackground from '../../components/HeroBackground.astro';
 import MyPageScene from '../../components/MyPageScene.astro';
 import BotsScene from '../../components/BotsScene.astro';
 import LobbyMenuScene from '../../components/LobbyMenuScene.astro';
-import RoomListScene from '../../components/RoomListScene.astro';
+// RoomListScene removed — create/join room modals are now in LobbyMenuScene
 import GameRoomScene from '../../components/GameRoomScene.astro';
 import GamePlayScene from '../../components/GamePlayScene.astro';
 import loadingImg from '../../assets/loading.webp';
@@ -51,7 +51,7 @@ const t = useTranslations(lang);
 
   <HeroBackground class="flex-1 flex-col justify-center min-h-0">
     <LobbyMenuScene lang={lang} apiUrl={apiUrl} />
-    <RoomListScene apiUrl={apiUrl} lang={lang} />
+    <!-- RoomListScene removed -->
     <GameRoomScene apiUrl={apiUrl} lang={lang} />
     <GamePlayScene apiUrl={apiUrl} lang={lang} />
     <BotsScene apiUrl={apiUrl} lang={lang} />

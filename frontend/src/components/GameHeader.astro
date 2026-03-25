@@ -230,7 +230,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
 
   document.addEventListener('game:scene', (e: Event) => {
     const scene = (e as CustomEvent).detail as string;
-    const navScene = scene === 'gameroom' || scene === 'rooms' ? 'lobby' : scene;
+    const navScene = scene === 'gameroom' ? 'lobby' : scene;
     setActiveNav(navScene);
   });
 
