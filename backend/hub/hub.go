@@ -210,8 +210,10 @@ func (h *Hub) RegisterAndReplaceLocal(c *Client) bool {
 	}
 	if old != nil {
 		delete(h.rooms[c.RoomID], old)
+		log.Printf("[hub] RegisterAndReplace: removed old client user=%s room=%s", old.UserID, c.RoomID)
 	}
 	h.rooms[c.RoomID][c] = true
+	log.Printf("[hub] RegisterAndReplace: added client user=%s room=%s (total=%d)", c.UserID, c.RoomID, len(h.rooms[c.RoomID]))
 	h.mu.Unlock()
 
 	if old != nil {
@@ -231,6 +233,7 @@ func (h *Hub) RegisterAndReplaceLocal(c *Client) bool {
 
 func (h *Hub) Unregister(c *Client) {
 	h.mu.Lock()
+	log.Printf("[hub] Unregister: removing client user=%s room=%s replaced=%v", c.UserID, c.RoomID, c.Replaced)
 	delete(h.rooms[c.RoomID], c)
 	if len(h.rooms[c.RoomID]) == 0 {
 		delete(h.rooms, c.RoomID)
