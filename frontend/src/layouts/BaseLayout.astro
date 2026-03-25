@@ -11,9 +11,10 @@ interface Props {
   description?: string;
   canonicalUrl?: string;
   alternates?: { hreflang: string; href: string }[];
+  showFooter?: boolean;
 }
 
-const { title, bodyClass, lang = 'en', description, canonicalUrl, alternates } = Astro.props;
+const { title, bodyClass, lang = 'en', description, canonicalUrl, alternates, showFooter = true } = Astro.props;
 
 const ogLocaleMap: Record<string, string> = {
   ko: 'ko_KR',
@@ -65,7 +66,7 @@ const ogUrl = canonicalUrl ?? 'https://shot.game/';
   </head>
   <body class={bodyClass}>
     <slot />
-    <SiteFooter lang={lang as Locale} />
+    {showFooter && <SiteFooter lang={lang as Locale} />}
     <ShopModal lang={lang as Locale} />
   </body>
 </html>
