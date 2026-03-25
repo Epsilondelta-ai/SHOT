@@ -163,6 +163,15 @@ const alternates = [
       .catch(() => {});
   }
 
+  // bfcache 복원 시 로딩 화면이 남아있으면 제거
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) {
+      const screen = document.getElementById('loading-screen');
+      screen.classList.add('hidden');
+      screen.classList.remove('flex');
+    }
+  });
+
   document.getElementById('game-start-btn').addEventListener('click', function () {
     if (!localStorage.getItem('token')) {
       window.location.href = '/' + lang + '/login';
