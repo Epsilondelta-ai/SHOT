@@ -582,7 +582,9 @@ func InviteRuleBot(c *fiber.Ctx) error {
 		RuleBotName: botName,
 		JoinedAt:    time.Now(),
 	}
-	db.DB.Create(&botMember)
+	if err := db.DB.Create(&botMember).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
 
 	// 룰봇은 hub 등록 불필요 (SSE 연결 없음)
 	broadcastRoomUpdate(roomID)
