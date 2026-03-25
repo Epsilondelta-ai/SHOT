@@ -384,28 +384,37 @@ const t = useTranslations(lang);
       }).catch(() => null);
     }
 
-    // 5. Start game
+    // 5. SSE 연결 먼저 (이벤트 유실 방지)
+    closeModal(aiMatchModal);
+    document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+
+    // SSE 연결이 열릴 때까지 대기
+    await new Promise(resolve => {
+      const handler = (e) => {
+        if (e.detail === 'connected') {
+          document.removeEventListener('room:sse', handler);
+          resolve();
+        }
+      };
+      document.addEventListener('room:sse', handler);
+      // 3초 안에 연결 안 되면 타임아웃
+      setTimeout(() => { document.removeEventListener('room:sse', handler); resolve(); }, 3000);
+    });
+
+    // 6. 게임 시작 (SSE 연결 후)
     const startRes = await fetch(`${apiUrl}/api/rooms/${room.id}/start`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` },
     }).catch(() => null);
 
-    if (!startRes?.ok) {
-      // 게임 시작 실패 (인원 부족 등) — 방으로 이동
-      closeModal(aiMatchModal);
-      aiMatchStart.disabled = false;
-      aiMatchStart.textContent = tStartMatch;
-      document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
-      return;
-    }
-
-    const { gameId } = await startRes.json();
-    closeModal(aiMatchModal);
     aiMatchStart.disabled = false;
     aiMatchStart.textContent = tStartMatch;
 
-    // 방 SSE 연결 + 로딩 화면 + 게임 시작
-    document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+    if (!startRes?.ok) {
+      return; // 이미 방에 있으므로 방 UI가 보임
+    }
+
+    const { gameId } = await startRes.json();
     document.dispatchEvent(new CustomEvent('room:sse:game_start', { detail: { gameId } }));
   });
 
