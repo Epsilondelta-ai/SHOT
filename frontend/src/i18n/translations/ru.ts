@@ -175,6 +175,9 @@ export default {
   },
   game: {
     lobby: 'Лобби', bots: 'Управление ботами', mypage: 'Мой профиль', exitGame: 'Выход',
+    aiMatch: 'Начать матч с ИИ', aiMatchDesc: 'Играйте в психологические игры с ИИ-ботами',
+    customGame: 'Своя игра', customGameDesc: 'Создайте или присоединитесь к своей комнате',
+    botsDesc: 'Создавайте и управляйте своими ИИ-ботами',
     role: { agent: 'Агент', spy: 'Шпион', unknown: 'Неизвестно', confirmedAgent: 'Подтверждённый агент' },
     card: { attack: 'Атака', heal: 'Лечение', jail: 'Тюрьма', inspect: 'Проверка' },
     turn: { yourTurn: 'Ваш ход', waiting: 'Ожидание...', timer: 'Оставшееся время', turnInfo: 'Ход', endTurn: 'Завершить ход' },

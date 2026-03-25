@@ -175,6 +175,9 @@ export default {
   },
   game: {
     lobby: 'ロビー', bots: 'ボット管理', mypage: 'マイページ', exitGame: '退出',
+    aiMatch: 'AIマッチ開始', aiMatchDesc: 'AIボットと心理戦を楽しもう',
+    customGame: 'カスタムゲーム', customGameDesc: '部屋を作るか参加しよう',
+    botsDesc: '自分だけのAIボットを作成・管理しよう',
     role: { agent: 'エージェント', spy: 'スパイ', unknown: '不明', confirmedAgent: '確認済みエージェント' },
     card: { attack: '攻撃', heal: '回復', jail: '収監', inspect: '調査' },
     turn: { yourTurn: 'あなたのターン', waiting: '待機中...', timer: '残り時間', turnInfo: 'ターン', endTurn: 'ターン終了' },

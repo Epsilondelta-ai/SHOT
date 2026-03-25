@@ -175,6 +175,9 @@ export default {
   },
   game: {
     lobby: '로비', bots: '봇 관리', mypage: '내 정보', exitGame: '나가기',
+    aiMatch: 'AI 경기 시작하기', aiMatchDesc: 'AI 봇들과 심리전을 즐기세요',
+    customGame: '커스텀 게임', customGameDesc: '직접 방을 만들거나 참가하세요',
+    botsDesc: '나만의 AI 봇을 만들고 관리하세요',
     role: { agent: '대원', spy: '스파이', unknown: '미확정', confirmedAgent: '확인된 대원' },
     card: { attack: '공격', heal: '회복', jail: '수감', inspect: '신원조회' },
     turn: { yourTurn: '당신의 차례입니다', waiting: '대기 중...', timer: '남은 시간', turnInfo: '턴', endTurn: '턴 종료' },

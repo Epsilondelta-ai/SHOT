@@ -175,6 +175,9 @@ export default {
   },
   game: {
     lobby: 'Lobby', bots: 'Bot-Verwaltung', mypage: 'Mein Profil', exitGame: 'Beenden',
+    aiMatch: 'KI-Match starten', aiMatchDesc: 'Spielen Sie Gedankenspiele mit KI-Bots',
+    customGame: 'Benutzerdefiniertes Spiel', customGameDesc: 'Erstellen oder treten Sie einem Raum bei',
+    botsDesc: 'Erstellen und verwalten Sie Ihre eigenen KI-Bots',
     role: { agent: 'Agent', spy: 'Spion', unknown: 'Unbekannt', confirmedAgent: 'Bestätigter Agent' },
     card: { attack: 'Angreifen', heal: 'Heilen', jail: 'Einsperren', inspect: 'Untersuchen' },
     turn: { yourTurn: 'Dein Zug', waiting: 'Warten...', timer: 'Verbleibende Zeit', turnInfo: 'Zug', endTurn: 'Zug beenden' },

@@ -1,0 +1,80 @@
+---
+import { type Locale } from '../i18n/locales';
+import { useTranslations } from '../i18n';
+
+interface Props {
+  lang: Locale;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<div id="scene-lobby" class="relative z-10 w-full flex-1 flex items-center justify-center px-4 py-8">
+  <div class="w-full max-w-sm flex flex-col gap-4">
+
+    <!-- AI Match — primary CTA -->
+    <button
+      id="lobby-ai-match"
+      class="group w-full text-left bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black rounded-2xl px-6 py-6 shadow-lg shadow-amber-900/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+    >
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-3xl">🤖</span>
+        <span class="text-xl font-extrabold">{t.game.aiMatch}</span>
+      </div>
+      <p class="text-black/70 text-sm font-medium">{t.game.aiMatchDesc}</p>
+    </button>
+
+    <!-- Bot Management -->
+    <button
+      id="lobby-bots"
+      class="group w-full text-left bg-gray-800/80 hover:bg-gray-700/80 border border-gray-700 hover:border-gray-500 text-white rounded-2xl px-6 py-5 transition-all hover:scale-[1.02] active:scale-[0.98]"
+    >
+      <div class="flex items-center gap-3 mb-1.5">
+        <span class="text-2xl">⚙️</span>
+        <span class="text-lg font-bold">{t.game.bots}</span>
+      </div>
+      <p class="text-gray-400 text-sm">{t.game.botsDesc}</p>
+    </button>
+
+    <!-- Custom Game -->
+    <button
+      id="lobby-custom"
+      class="group w-full text-left bg-gray-800/80 hover:bg-gray-700/80 border border-gray-700 hover:border-gray-500 text-white rounded-2xl px-6 py-5 transition-all hover:scale-[1.02] active:scale-[0.98]"
+    >
+      <div class="flex items-center gap-3 mb-1.5">
+        <span class="text-2xl">🎮</span>
+        <span class="text-lg font-bold">{t.game.customGame}</span>
+      </div>
+      <p class="text-gray-400 text-sm">{t.game.customGameDesc}</p>
+    </button>
+
+  </div>
+</div>
+
+<script>
+  const scene = document.getElementById('scene-lobby')!;
+
+  document.addEventListener('game:scene', (e) => {
+    const detail = (e as CustomEvent).detail as string;
+    if (detail === 'lobby') {
+      scene.classList.remove('hidden');
+      scene.classList.add('flex');
+    } else {
+      scene.classList.add('hidden');
+      scene.classList.remove('flex');
+    }
+  });
+
+  document.getElementById('lobby-ai-match')?.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+  });
+
+  document.getElementById('lobby-bots')?.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'bots' }));
+  });
+
+  document.getElementById('lobby-custom')?.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+  });
+</script>
