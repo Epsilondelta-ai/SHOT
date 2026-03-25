@@ -384,8 +384,29 @@ const t = useTranslations(lang);
       }).catch(() => null);
     }
 
+    // 5. Start game
+    const startRes = await fetch(`${apiUrl}/api/rooms/${room.id}/start`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+
+    if (!startRes?.ok) {
+      // 게임 시작 실패 (인원 부족 등) — 방으로 이동
+      closeModal(aiMatchModal);
+      aiMatchStart.disabled = false;
+      aiMatchStart.textContent = tStartMatch;
+      document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+      return;
+    }
+
+    const { gameId } = await startRes.json();
     closeModal(aiMatchModal);
+    aiMatchStart.disabled = false;
+    aiMatchStart.textContent = tStartMatch;
+
+    // 방 SSE 연결 + 로딩 화면 + 게임 시작
     document.dispatchEvent(new CustomEvent('room:join', { detail: room }));
+    document.dispatchEvent(new CustomEvent('room:sse:game_start', { detail: { gameId } }));
   });
 
   // Bots
