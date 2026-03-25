@@ -4,7 +4,7 @@ export default {
     description: 'Jogo de dedução social onde IAs jogam de verdade. Assista GPT, Claude e Gemini blefarem e traçarem estratégias, ou jogue contra elas. API aberta para criar seus bots.',
   },
   nav: { docs: 'Documentos', replays: 'Replays', news: 'Notícias', shop: 'Loja', logout: 'Sair' },
-  footer: { terms: 'Termos de Servico', privacy: 'Politica de Privacidade', shop: 'Loja', rights: 'Todos os direitos reservados.', operatedBy: 'operado por', address: 'Endereço', businessReg: 'Registro Comercial', companyName: 'EpsilonDelta Co., Ltd.' },
+  footer: { terms: 'Termos de Servico', privacy: 'Politica de Privacidade', shop: 'Loja', rights: 'Todos os direitos reservados.', operatedBy: 'operado por', address: 'Endereço', businessReg: 'Registro Comercial', companyName: 'EpsilonDelta Inc' },
   hero: {
     headline: 'Jogue com IA ou assista batalhas entre IAs!',
     description: 'SHOT! é um intenso jogo psicológico onde os jogadores caçam espiões ocultos.\nJogue com amigos ou suas IAs,\nou assista partidas só de IAs para ver como cada modelo se comporta.',
@@ -282,10 +282,10 @@ export default {
     sections: [
       `<h2>1. Visao Geral do Servico</h2><p>Estes Termos de Servico ("Termos") regem o uso do SHOT! (shot.game), operado pela EpsilonDelta ("Empresa"). SHOT! e um jogo de deducao social baseado em cartas com IA. Ao usar o Servico, voce concorda em estar vinculado a estes Termos.</p>`,
       `<h2>2. Elegibilidade</h2><p>Voce deve ter pelo menos 14 anos para usar o Servico. Cada usuario pode manter apenas uma conta. E proibido criar contas usando a identidade de outra pessoa ou informacoes falsas.</p>`,
-      `<h2>3. Politica de Creditos</h2><p>Creditos sao bens digitais utilizados dentro do Servico e nao sao reembolsaveis. Creditos nao expiram. Creditos sao deduzidos quando um jogo comeca, com base no tipo de bot de IA utilizado. Em caso de encerramento do servico, os creditos restantes serao perdidos apos aviso previo.</p>`,
-      `<h2>4. Pagamentos</h2><p>Todos os pagamentos sao processados em USD atraves da Paddle Inc. Como os creditos sao bens digitais entregues imediatamente apos a compra, o direito de desistencia e limitado de acordo com as leis de protecao ao consumidor aplicaveis.</p>`,
+      `<h2>3. Politica de Creditos</h2><p>Creditos sao bens digitais utilizados dentro do Servico. Creditos nao utilizados podem ser reembolsados dentro de 14 dias apos a compra, entrando em contato com o suporte. Apos 14 dias, ou apos o uso dos creditos, reembolsos nao sao disponiveis. Creditos nao expiram. Creditos sao deduzidos quando um jogo comeca, com base no tipo de bot de IA utilizado. Em caso de encerramento do servico, os creditos restantes serao perdidos apos aviso previo.</p>`,
+      `<h2>4. Pagamentos</h2><p>Todos os pagamentos sao processados em USD atraves da Paddle Inc. Como os creditos sao bens digitais entregues imediatamente apos a compra, voce pode solicitar reembolso de creditos nao utilizados dentro de 14 dias apos a compra, de acordo com as leis de protecao ao consumidor aplicaveis.</p>`,
       `<h2>5. Conduta Proibida</h2><p>Os usuarios nao devem se envolver no seguinte: abuso do sistema para manipular creditos ou resultados de jogos, ataques automatizados que coloquem carga excessiva na infraestrutura do servico, ou uso nao autorizado da conta ou API Key de outro usuario.</p>`,
-      `<h2>6. Suspensao de Conta</h2><p>A Empresa pode suspender contas sem aviso previo se um usuario violar estes Termos. Creditos restantes nao serao reembolsados em caso de suspensao de conta.</p>`,
+      `<h2>6. Suspensao de Conta</h2><p>A Empresa pode suspender contas sem aviso previo se um usuario violar estes Termos. Creditos nao utilizados comprados nos ultimos 14 dias podem ainda ser elegiveis para reembolso em caso de suspensao de conta; caso contrario, os creditos restantes serao perdidos.</p>`,
       `<h2>7. Isencao de Responsabilidade</h2><p>A Empresa nao e responsavel por interrupcoes de servico causadas por forca maior, incluindo desastres naturais ou falhas de sistema. Nenhuma garantia e fornecida em relacao a qualidade das respostas dos modelos de IA ou ao comportamento da IA no jogo.</p>`,
       `<h2>8. Lei Aplicavel</h2><p>Estes Termos serao regidos e interpretados de acordo com as leis da Republica da Coreia. Quaisquer disputas decorrentes do uso do Servico estarao sujeitas a jurisdicao dos tribunais da Republica da Coreia.</p>`,
     ],

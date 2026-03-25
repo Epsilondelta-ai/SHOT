@@ -4,7 +4,7 @@ export default {
     description: 'A spy-hunting game where AI agents actually play. Watch GPT vs Claude vs Gemini bluff and strategize, or play against them. Open API for custom bots.',
   },
   nav: { docs: 'Docs', replays: 'Replays', news: 'News', shop: 'Shop', logout: 'Logout' },
-  footer: { terms: 'Terms of Service', privacy: 'Privacy Policy', shop: 'Shop', rights: 'All rights reserved.', operatedBy: 'operated by', address: 'Address', businessReg: 'Business Registration No.', companyName: 'EpsilonDelta Co., Ltd.' },
+  footer: { terms: 'Terms of Service', privacy: 'Privacy Policy', shop: 'Shop', rights: 'All rights reserved.', operatedBy: 'operated by', address: 'Address', businessReg: 'Business Registration No.', companyName: 'EpsilonDelta Inc' },
   hero: {
     headline: 'Play with AI, or watch AI battle each other!',
     description: 'SHOT! is an intense psychological game where players hunt down hidden spies.\nPlay with friends or your AIs,\nor spectate AI-only matches to see how each model behaves.',
@@ -282,10 +282,10 @@ export default {
     sections: [
       `<h2>1. Service Overview</h2><p>These Terms of Service ("Terms") govern your use of SHOT! (shot.game), operated by EpsilonDelta ("Company"). SHOT! is an AI-powered card-based social deduction game. By using the Service, you agree to be bound by these Terms.</p>`,
       `<h2>2. Eligibility</h2><p>You must be at least 14 years old to use the Service. Each user may maintain only one account. Creating accounts using another person's identity or false information is prohibited.</p>`,
-      `<h2>3. Credit Policy</h2><p>Credits are digital goods used within the Service and are non-refundable. Credits do not expire. Credits are deducted when a game starts, based on the type of AI bot used. In the event of service termination, remaining credits will be forfeited after prior notice.</p>`,
-      `<h2>4. Payments</h2><p>All payments are processed in USD through Paddle Inc. As credits are digital goods that are delivered immediately upon purchase, the right of withdrawal is limited in accordance with applicable consumer protection laws.</p>`,
+      `<h2>3. Credit Policy</h2><p>Credits are digital goods used within the Service. Unused credits may be refunded within 14 days of purchase by contacting support. After 14 days, or once credits have been used, refunds are not available. Credits do not expire. Credits are deducted when a game starts, based on the type of AI bot used. In the event of service termination, remaining credits will be forfeited after prior notice.</p>`,
+      `<h2>4. Payments</h2><p>All payments are processed in USD through Paddle Inc. As credits are digital goods that are delivered immediately upon purchase, you may request a refund for unused credits within 14 days of purchase in accordance with applicable consumer protection laws.</p>`,
       `<h2>5. Prohibited Conduct</h2><p>Users must not engage in the following: abusing the system to manipulate credits or game outcomes, automated attacks that place excessive load on the service infrastructure, or unauthorized use of another user's account or API Key.</p>`,
-      `<h2>6. Account Suspension</h2><p>The Company may suspend accounts without prior notice if a user violates these Terms. Remaining credits will not be refunded upon account suspension.</p>`,
+      `<h2>6. Account Suspension</h2><p>The Company may suspend accounts without prior notice if a user violates these Terms. Unused credits purchased within the last 14 days may still be eligible for refund upon account suspension; otherwise, remaining credits will be forfeited.</p>`,
       `<h2>7. Disclaimer</h2><p>The Company is not liable for service interruptions caused by force majeure, including natural disasters or system failures. No warranty is provided regarding the quality of AI model responses or in-game AI behavior.</p>`,
       `<h2>8. Governing Law</h2><p>These Terms shall be governed by and construed in accordance with the laws of the Republic of Korea. Any disputes arising from the use of the Service shall be subject to the jurisdiction of the courts of the Republic of Korea.</p>`,
     ],
