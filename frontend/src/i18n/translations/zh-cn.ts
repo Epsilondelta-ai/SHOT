@@ -300,6 +300,7 @@ export default {
     createRoomTitle: '创建房间',
     roomName: '房间名称',
     roomNameRequired: '请输入房间名称。',
+    roomNameHint: '不输入也会自动命名。游戏结束后将作为回放标题显示。',
     maxPlayers: '最大人数',
     create: '创建',
     creating: '创建中...',

@@ -300,6 +300,7 @@ export default {
     createRoomTitle: 'ルーム作成',
     roomName: 'ルーム名',
     roomNameRequired: 'ルーム名を入力してください。',
+    roomNameHint: '入力しなくても自動で名前が付きます。ゲーム終了後のリプレイタイトルになります。',
     maxPlayers: '最大人数',
     create: '作成',
     creating: '作成中...',

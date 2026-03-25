@@ -91,9 +91,7 @@ func CreateRoom(c *fiber.Ctx) error {
 	if body.IsPrivate && body.Password == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "password is required for private room"})
 	}
-	if body.MaxPlayers < 5 || body.MaxPlayers > 12 {
-		body.MaxPlayers = 8
-	}
+	body.MaxPlayers = 12
 
 	passwordHash := ""
 	if body.IsPrivate {

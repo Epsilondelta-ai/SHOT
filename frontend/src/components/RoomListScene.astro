@@ -42,8 +42,8 @@ const t = useTranslations(lang);
   <div class="bg-gray-900 rounded-2xl p-8 w-full max-w-md text-white shadow-2xl">
     <h3 class="text-lg font-bold text-amber-400 mb-6">{t.rooms.createRoomTitle}</h3>
 
-    <div class="mb-5">
-      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.roomName} <span class="text-red-400">*</span></label>
+    <div class="mb-6">
+      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.roomName}</label>
       <input
         id="room-name-input"
         type="text"
@@ -51,38 +51,7 @@ const t = useTranslations(lang);
         class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
         placeholder={t.rooms.roomName}
       />
-      <p id="room-name-error" class="text-red-400 text-xs mt-1 hidden">{t.rooms.roomNameRequired}</p>
-    </div>
-
-    <div class="mb-5">
-      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.maxPlayers}</label>
-      <select
-        id="room-max-players"
-        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-amber-400"
-      >
-        {[5, 6, 7, 8, 9, 10, 11, 12].map(n => (
-          <option value={n} selected={n === 8}>{n}</option>
-        ))}
-      </select>
-    </div>
-
-    <div class="mb-5">
-      <label class="flex items-center gap-2 cursor-pointer select-none">
-        <input id="room-private-check" type="checkbox" class="w-4 h-4 accent-amber-400" />
-        <span class="text-sm font-semibold text-white/70"><img src="/emoji/locked.png" alt="lock" class="inline-block w-4 h-4" /> {t.rooms.privateRoom}</span>
-      </label>
-    </div>
-
-    <div id="room-password-field" class="mb-6 hidden">
-      <label class="block text-sm font-semibold text-white/70 mb-1">{t.rooms.password} <span class="text-red-400">*</span></label>
-      <input
-        id="room-password-input"
-        type="password"
-        maxlength="50"
-        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-amber-400"
-        placeholder={t.rooms.password}
-      />
-      <p id="room-password-error" class="text-red-400 text-xs mt-1 hidden">{t.rooms.passwordRequired}</p>
+      <p class="text-gray-400 text-xs mt-1.5">{t.rooms.roomNameHint}</p>
     </div>
 
     <div class="flex gap-3">
@@ -119,17 +88,13 @@ const t = useTranslations(lang);
   const createRoomBtn = document.getElementById('create-room-btn');
   const createRoomModal = document.getElementById('create-room-modal');
   const roomNameInput = document.getElementById('room-name-input');
-  const roomNameError = document.getElementById('room-name-error');
-  const roomMaxPlayers = document.getElementById('room-max-players');
+  // roomNameError and roomMaxPlayers removed — name is optional, maxPlayers is fixed at 12
   const roomCreateBtn = document.getElementById('room-create-btn');
   const roomCancelBtn = document.getElementById('room-cancel-btn');
   const roomList = document.getElementById('room-list');
   const roomListEmpty = document.getElementById('room-list-empty');
   const refreshBtn = document.getElementById('refresh-rooms-btn');
-  const privateCheck = document.getElementById('room-private-check');
-  const passwordField = document.getElementById('room-password-field');
-  const roomPasswordInput = document.getElementById('room-password-input');
-  const roomPasswordError = document.getElementById('room-password-error');
+  // (private room UI removed — rooms are always public now)
 
   const joinRoomModal = document.getElementById('join-room-modal');
   const joinRoomName = document.getElementById('join-room-name');
@@ -151,15 +116,8 @@ const t = useTranslations(lang);
     }
   });
 
-  // Toggle password field
-  privateCheck.addEventListener('change', () => {
-    if (privateCheck.checked) {
-      passwordField.classList.remove('hidden');
-    } else {
-      passwordField.classList.add('hidden');
-      roomPasswordInput.value = '';
-      roomPasswordError.classList.add('hidden');
-    }
+  // (Toggle password field removed — rooms are always public now)
+  if (false) {
   });
 
   async function loadRooms() {
@@ -253,11 +211,6 @@ const t = useTranslations(lang);
 
   createRoomBtn.addEventListener('click', () => {
     roomNameInput.value = '';
-    roomNameError.classList.add('hidden');
-    privateCheck.checked = false;
-    passwordField.classList.add('hidden');
-    roomPasswordInput.value = '';
-    roomPasswordError.classList.add('hidden');
     createRoomModal.classList.remove('hidden');
     createRoomModal.classList.add('flex');
   });
@@ -268,20 +221,7 @@ const t = useTranslations(lang);
   });
 
   roomCreateBtn.addEventListener('click', async () => {
-    const name = roomNameInput.value.trim();
-    if (!name) {
-      roomNameError.classList.remove('hidden');
-      return;
-    }
-    roomNameError.classList.add('hidden');
-
-    const isPrivate = privateCheck.checked;
-    const password = roomPasswordInput.value.trim();
-    if (isPrivate && !password) {
-      roomPasswordError.classList.remove('hidden');
-      return;
-    }
-    roomPasswordError.classList.add('hidden');
+    const name = roomNameInput.value.trim() || `Room ${Math.floor(Math.random() * 9000) + 1000}`;
 
     const token = localStorage.getItem('token');
     if (!token) return;
@@ -295,7 +235,7 @@ const t = useTranslations(lang);
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ name, maxPlayers: parseInt(roomMaxPlayers.value), isPrivate, password }),
+      body: JSON.stringify({ name, maxPlayers: 12 }),
     }).catch(() => null);
 
     roomCreateBtn.disabled = false;

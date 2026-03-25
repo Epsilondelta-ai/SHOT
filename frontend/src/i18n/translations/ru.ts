@@ -300,6 +300,7 @@ export default {
     createRoomTitle: 'Создать комнату',
     roomName: 'Название комнаты',
     roomNameRequired: 'Введите название комнаты.',
+    roomNameHint: 'Необязательно. Название комнаты станет заголовком повтора после окончания игры.',
     maxPlayers: 'Макс. игроков',
     create: 'Создать',
     creating: 'Создание...',

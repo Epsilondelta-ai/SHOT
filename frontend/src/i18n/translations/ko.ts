@@ -300,6 +300,7 @@ export default {
     createRoomTitle: '방 만들기',
     roomName: '방 이름',
     roomNameRequired: '방 이름을 입력해주세요.',
+    roomNameHint: '입력하지 않아도 자동으로 이름이 붙습니다. 게임 종료 후 리플레이 제목으로 사용됩니다.',
     maxPlayers: '최대 인원',
     create: '만들기',
     creating: '생성 중...',

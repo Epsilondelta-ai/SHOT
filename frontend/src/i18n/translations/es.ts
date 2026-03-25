@@ -300,6 +300,7 @@ export default {
     createRoomTitle: 'Crear Sala',
     roomName: 'Nombre de la Sala',
     roomNameRequired: 'Por favor ingresa un nombre para la sala.',
+    roomNameHint: 'Opcional. El nombre de la sala aparecerá como título de la repetición al finalizar la partida.',
     maxPlayers: 'Máx. Jugadores',
     create: 'Crear',
     creating: 'Creando...',
