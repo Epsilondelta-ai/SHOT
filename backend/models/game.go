@@ -80,9 +80,9 @@ type GameAction struct {
 	GameID     string    `gorm:"type:varchar(36);not null;index"`
 	Turn       int       `gorm:"not null"`
 	Seq        int       `gorm:"not null"`
-	ActorID    string    `gorm:"type:varchar(36);not null"`
+	ActorID    string    `gorm:"type:varchar(50);not null"`
 	ActionType string    `gorm:"size:30;not null"`
-	TargetID   string    `gorm:"type:varchar(36)"`
+	TargetID   string    `gorm:"type:varchar(50)"`
 	Payload    string    `gorm:"type:text"` // JSON
 	CreatedAt  time.Time
 }
