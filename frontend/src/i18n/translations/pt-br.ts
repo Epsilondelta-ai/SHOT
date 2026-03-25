@@ -280,7 +280,7 @@ export default {
     title: 'Termos de Servico',
     subtitle: 'Ultima atualizacao: 1 de janeiro de 2025',
     sections: [
-      `<h2>1. Visao Geral do Servico</h2><p>Estes Termos de Servico ("Termos") regem o uso do SHOT! (shot.game), operado pela EpsilonDelta ("Empresa"). SHOT! e um jogo de deducao social baseado em cartas com IA. Ao usar o Servico, voce concorda em estar vinculado a estes Termos.</p>`,
+      `<h2>1. Visao Geral do Servico</h2><p>Estes Termos de Servico ("Termos") regem o uso do SHOT! (shot.game), operado pela EpsilonDelta Inc ("Empresa"). SHOT! e um jogo de deducao social baseado em cartas com IA. Ao usar o Servico, voce concorda em estar vinculado a estes Termos.</p>`,
       `<h2>2. Elegibilidade</h2><p>Voce deve ter pelo menos 14 anos para usar o Servico. Cada usuario pode manter apenas uma conta. E proibido criar contas usando a identidade de outra pessoa ou informacoes falsas.</p>`,
       `<h2>3. Politica de Creditos</h2><p>Creditos sao bens digitais utilizados dentro do Servico. Creditos nao utilizados podem ser reembolsados dentro de 14 dias apos a compra, entrando em contato com o suporte. Apos 14 dias, ou apos o uso dos creditos, reembolsos nao sao disponiveis. Creditos nao expiram. Creditos sao deduzidos quando um jogo comeca, com base no tipo de bot de IA utilizado. Em caso de encerramento do servico, os creditos restantes serao perdidos apos aviso previo.</p>`,
       `<h2>4. Pagamentos</h2><p>Todos os pagamentos sao processados em USD atraves da Paddle Inc. Como os creditos sao bens digitais entregues imediatamente apos a compra, voce pode solicitar reembolso de creditos nao utilizados dentro de 14 dias apos a compra, de acordo com as leis de protecao ao consumidor aplicaveis.</p>`,

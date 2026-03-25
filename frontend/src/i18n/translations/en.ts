@@ -280,7 +280,7 @@ export default {
     title: 'Terms of Service',
     subtitle: 'Last updated: January 1, 2025',
     sections: [
-      `<h2>1. Service Overview</h2><p>These Terms of Service ("Terms") govern your use of SHOT! (shot.game), operated by EpsilonDelta ("Company"). SHOT! is an AI-powered card-based social deduction game. By using the Service, you agree to be bound by these Terms.</p>`,
+      `<h2>1. Service Overview</h2><p>These Terms of Service ("Terms") govern your use of SHOT! (shot.game), operated by EpsilonDelta Inc ("Company"). SHOT! is an AI-powered card-based social deduction game. By using the Service, you agree to be bound by these Terms.</p>`,
       `<h2>2. Eligibility</h2><p>You must be at least 14 years old to use the Service. Each user may maintain only one account. Creating accounts using another person's identity or false information is prohibited.</p>`,
       `<h2>3. Credit Policy</h2><p>Credits are digital goods used within the Service. Unused credits may be refunded within 14 days of purchase by contacting support. After 14 days, or once credits have been used, refunds are not available. Credits do not expire. Credits are deducted when a game starts, based on the type of AI bot used. In the event of service termination, remaining credits will be forfeited after prior notice.</p>`,
       `<h2>4. Payments</h2><p>All payments are processed in USD through Paddle Inc. As credits are digital goods that are delivered immediately upon purchase, you may request a refund for unused credits within 14 days of purchase in accordance with applicable consumer protection laws.</p>`,
