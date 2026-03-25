@@ -239,6 +239,13 @@ func (h *Hub) BroadcastJSON(roomID string, v any) {
 	h.rdb.Publish(ctx, "room:msg:"+roomID, data)
 }
 
+// BroadcastJSONLocal sends to local SSE clients directly (bypassing Redis pub/sub).
+// Use this from background goroutines where Redis pub/sub delivery may be unreliable.
+func (h *Hub) BroadcastJSONLocal(roomID string, v any) {
+	data, _ := json.Marshal(v)
+	h.sendToLocalClients(roomID, data)
+}
+
 func (h *Hub) BroadcastRoomClosed(roomID string) {
 	data, _ := json.Marshal(Message{Type: "room_closed"})
 	h.rdb.Publish(ctx, "room:msg:"+roomID, data)

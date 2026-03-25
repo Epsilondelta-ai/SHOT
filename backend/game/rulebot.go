@@ -236,7 +236,7 @@ func ScheduleRuleBotTurn(state *GameState, roomID string, delay time.Duration) {
 		events := RunRuleBotTurn(st)
 		log.Printf("[rulebot] game %s: broadcasting %d events to room %s", gameID, len(events), roomID)
 		for _, e := range events {
-			hub.H.BroadcastJSON(roomID, e)
+			hub.H.BroadcastJSONLocal(roomID, e)
 		}
 
 		ProcessPendingBotKicks(st)
