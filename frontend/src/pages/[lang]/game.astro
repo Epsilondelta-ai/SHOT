@@ -4,6 +4,7 @@ import GameHeader from '../../components/GameHeader.astro';
 import HeroBackground from '../../components/HeroBackground.astro';
 import MyPageScene from '../../components/MyPageScene.astro';
 import BotsScene from '../../components/BotsScene.astro';
+import LobbyMenuScene from '../../components/LobbyMenuScene.astro';
 import RoomListScene from '../../components/RoomListScene.astro';
 import GameRoomScene from '../../components/GameRoomScene.astro';
 import GamePlayScene from '../../components/GamePlayScene.astro';
@@ -49,6 +50,7 @@ const t = useTranslations(lang);
   <GameHeader lang={lang} path="/game" />
 
   <HeroBackground class="flex-1 flex-col justify-center min-h-0">
+    <LobbyMenuScene lang={lang} />
     <RoomListScene apiUrl={apiUrl} lang={lang} />
     <GameRoomScene apiUrl={apiUrl} lang={lang} />
     <GamePlayScene apiUrl={apiUrl} lang={lang} />

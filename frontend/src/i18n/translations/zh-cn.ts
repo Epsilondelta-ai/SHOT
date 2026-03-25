@@ -175,6 +175,9 @@ export default {
   },
   game: {
     lobby: '大厅', bots: '机器人管理', mypage: '我的信息', exitGame: '退出',
+    aiMatch: '开始AI对战', aiMatchDesc: '与AI机器人玩心理战',
+    customGame: '自定义游戏', customGameDesc: '创建或加入自定义房间',
+    botsDesc: '创建和管理您的AI机器人',
     role: { agent: '特工', spy: '间谍', unknown: '未知', confirmedAgent: '确认特工' },
     card: { attack: '攻击', heal: '治愈', jail: '监禁', inspect: '检查' },
     turn: { yourTurn: '你的回合', waiting: '等待中...', timer: '剩余时间', turnInfo: '回合', endTurn: '结束回合' },

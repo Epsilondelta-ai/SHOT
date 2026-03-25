@@ -175,6 +175,9 @@ export default {
   },
   game: {
     lobby: 'Lobby', bots: 'Bot Management', mypage: 'My Info', exitGame: 'Exit',
+    aiMatch: 'Start AI Match', aiMatchDesc: 'Play mind games with AI bots',
+    customGame: 'Custom Game', customGameDesc: 'Create or join a custom room',
+    botsDesc: 'Create and manage your own AI bots',
     role: { agent: 'Agent', spy: 'Spy', unknown: 'Unknown', confirmedAgent: 'Confirmed Agent' },
     card: { attack: 'Attack', heal: 'Heal', jail: 'Jail', inspect: 'Inspect' },
     turn: { yourTurn: 'Your turn', waiting: 'Waiting...', timer: 'Time left', turnInfo: 'Turn', endTurn: 'End Turn' },

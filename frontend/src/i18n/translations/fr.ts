@@ -175,6 +175,9 @@ export default {
   },
   game: {
     lobby: 'Lobby', bots: 'Gestion des Bots', mypage: 'Mon Profil', exitGame: 'Quitter',
+    aiMatch: 'Démarrer un Match IA', aiMatchDesc: 'Jouez à des jeux d\'esprit avec des bots IA',
+    customGame: 'Jeu Personnalisé', customGameDesc: 'Créez ou rejoignez une salle personnalisée',
+    botsDesc: 'Créez et gérez vos propres bots IA',
     role: { agent: 'Agent', spy: 'Espion', unknown: 'Inconnu', confirmedAgent: 'Agent Confirmé' },
     card: { attack: 'Attaquer', heal: 'Soigner', jail: 'Emprisonner', inspect: 'Inspecter' },
     turn: { yourTurn: 'Votre tour', waiting: 'En attente...', timer: 'Temps restant', turnInfo: 'Tour', endTurn: 'Terminer le tour' },

@@ -25,7 +25,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
 
     <!-- Desktop nav -->
     <nav class="hidden sm:flex items-center gap-5 text-amber-100 font-semibold text-sm">
-      <button id="nav-lobby" class="nav-item flex items-center gap-1.5 hover:text-white transition cursor-pointer px-5 py-2 rounded-lg border border-transparent" data-scene="rooms"><img src="/emoji/door.png" alt="" class="w-5 h-5" />{t.game.lobby}</button>
+      <button id="nav-lobby" class="nav-item flex items-center gap-1.5 hover:text-white transition cursor-pointer px-5 py-2 rounded-lg border border-transparent" data-scene="lobby"><img src="/emoji/door.png" alt="" class="w-5 h-5" />{t.game.lobby}</button>
       <button id="nav-bots" class="nav-item flex items-center gap-1.5 hover:text-white transition cursor-pointer px-5 py-2 rounded-lg border border-transparent" data-scene="bots"><img src="/emoji/robot.png" alt="" class="w-5 h-5" />{t.game.bots}</button>
       <button id="nav-mypage" class="nav-item flex items-center gap-2 hover:text-white transition cursor-pointer px-5 py-2 rounded-lg border border-transparent" data-scene="mypage">
         <img
@@ -88,7 +88,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
         id="hamburger-menu"
         class="hidden absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 min-w-[160px]"
       >
-        <button id="mobile-nav-lobby" class="mobile-nav-item w-full text-left flex items-center gap-1.5 px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold" data-scene="rooms"><img src="/emoji/door.png" alt="" class="w-5 h-5" />{t.game.lobby}</button>
+        <button id="mobile-nav-lobby" class="mobile-nav-item w-full text-left flex items-center gap-1.5 px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold" data-scene="lobby"><img src="/emoji/door.png" alt="" class="w-5 h-5" />{t.game.lobby}</button>
         <button id="mobile-nav-bots" class="mobile-nav-item w-full text-left flex items-center gap-1.5 px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold" data-scene="bots"><img src="/emoji/robot.png" alt="" class="w-5 h-5" />{t.game.bots}</button>
         <button id="mobile-nav-mypage" class="mobile-nav-item w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 transition font-semibold" data-scene="mypage">
           <img
@@ -230,14 +230,16 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
 
   document.addEventListener('game:scene', (e: Event) => {
     const scene = (e as CustomEvent).detail as string;
-    setActiveNav(scene === 'gameroom' ? 'rooms' : scene);
+    const navScene = scene === 'gameroom' || scene === 'rooms' ? 'lobby' : scene;
+    setActiveNav(navScene);
   });
 
   // Scene change events
-  ['nav-rooms', 'nav-lobby'].forEach(id => {
-    document.getElementById(id)?.addEventListener('click', () => {
-      document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
-    });
+  document.getElementById('nav-rooms')?.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+  });
+  document.getElementById('nav-lobby')?.addEventListener('click', () => {
+    document.dispatchEvent(new CustomEvent('game:scene', { detail: 'lobby' }));
   });
   ['nav-bots', 'mobile-nav-bots'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', () => {
@@ -253,11 +255,11 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
   });
   ['mobile-nav-lobby'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', () => {
-      document.dispatchEvent(new CustomEvent('game:scene', { detail: 'rooms' }));
+      document.dispatchEvent(new CustomEvent('game:scene', { detail: 'lobby' }));
       hamburgerMenu?.classList.add('hidden');
     });
   });
 
   // Set initial active state
-  setActiveNav('rooms');
+  setActiveNav('lobby');
 </script>
