@@ -114,14 +114,29 @@ func (h *Hub) routeRedisMessage(msg *redis.Message) {
 
 func (h *Hub) sendToLocalClients(roomID string, data []byte) {
 	h.mu.RLock()
+	clients := h.rooms[roomID]
+	count := len(clients)
+	h.mu.RUnlock()
+
+	if count == 0 {
+		log.Printf("[hub] sendToLocalClients: no clients in room %s", roomID)
+		return
+	}
+
+	h.mu.RLock()
 	defer h.mu.RUnlock()
+	sent := 0
 	for c := range h.rooms[roomID] {
 		select {
 		case c.Ch <- data:
+			sent++
 		default:
-			log.Printf("[hub] warn: dropped message for user %s in room %s (channel full)", c.UserID, roomID)
+			log.Printf("[hub] warn: dropped message for user %s in room %s (channel full, len=%d)", c.UserID, roomID, len(c.Ch))
 			atomic.StoreInt32(&c.NeedsResync, 1)
 		}
+	}
+	if sent < count {
+		log.Printf("[hub] sendToLocalClients: sent to %d/%d clients in room %s", sent, count, roomID)
 	}
 }
 
