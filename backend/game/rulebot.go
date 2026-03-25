@@ -215,7 +215,7 @@ func ScheduleRuleBotTurn(state *GameState, roomID string, delay time.Duration) {
 
 // runRuleBotLoop runs rule-based bot turns in a loop with delays between actions.
 // Each action acquires the game lock independently to avoid blocking other operations.
-func runRuleBotLoop(gameID, roomID string, initialDelay time.Duration) {
+func runRuleBotLoop(gameID, _ string, initialDelay time.Duration) {
 	if initialDelay > 0 {
 		time.Sleep(initialDelay)
 	}
@@ -231,11 +231,13 @@ func runRuleBotLoop(gameID, roomID string, initialDelay time.Duration) {
 				return true
 			}
 
+			// 항상 state에서 roomID를 가져옴 (파라미터가 아닌 authoritative source)
+			rid := st.RoomID
+
 			player := st.FindPlayer(st.CurrentPlayerID())
 			if player == nil || !player.IsRuleBot || player.IsDead {
-				// 현재 플레이어가 룰봇이 아니면 타이머 시작
 				if player != nil && !player.IsRuleBot {
-					TM.StartTimer(gameID, roomID, st.TurnDeadline)
+					TM.StartTimer(gameID, rid, st.TurnDeadline)
 				}
 				return true
 			}
@@ -247,7 +249,7 @@ func runRuleBotLoop(gameID, roomID string, initialDelay time.Duration) {
 				turnEvents, err := EndTurn(st, player.ID)
 				if err == nil {
 					for _, e := range turnEvents {
-						hub.H.BroadcastJSON(roomID, e)
+						hub.H.BroadcastJSON(rid, e)
 					}
 				}
 				ProcessPendingBotKicks(st)
@@ -256,15 +258,14 @@ func runRuleBotLoop(gameID, roomID string, initialDelay time.Duration) {
 					log.Printf("[rulebot] game %s: game finished", gameID)
 					return true
 				}
-				// 다음 플레이어가 룰봇이면 계속, 아니면 종료
 				next := st.FindPlayer(st.CurrentPlayerID())
 				if next == nil || !next.IsRuleBot || next.IsDead {
 					if next != nil {
-						TM.StartTimer(gameID, roomID, st.TurnDeadline)
+						TM.StartTimer(gameID, rid, st.TurnDeadline)
 					}
 					return true
 				}
-				return false // 다음 룰봇 턴 계속
+				return false
 			}
 
 			// 카드 플레이
@@ -273,7 +274,7 @@ func runRuleBotLoop(gameID, roomID string, initialDelay time.Duration) {
 				return true
 			}
 			for _, e := range events {
-				hub.H.BroadcastJSON(roomID, e)
+				hub.H.BroadcastJSON(rid, e)
 			}
 			ProcessPendingBotKicks(st)
 

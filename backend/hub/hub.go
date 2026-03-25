@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -114,29 +115,26 @@ func (h *Hub) routeRedisMessage(msg *redis.Message) {
 
 func (h *Hub) sendToLocalClients(roomID string, data []byte) {
 	h.mu.RLock()
-	clients := h.rooms[roomID]
-	count := len(clients)
-	h.mu.RUnlock()
+	defer h.mu.RUnlock()
 
-	if count == 0 {
-		log.Printf("[hub] sendToLocalClients: no clients in room %s", roomID)
+	clients := h.rooms[roomID]
+	if len(clients) == 0 {
+		// 디버그: rooms 맵에 어떤 키가 있는지 확인
+		keys := make([]string, 0, len(h.rooms))
+		for k := range h.rooms {
+			keys = append(keys, k)
+		}
+		log.Printf("[hub] sendToLocalClients: no clients in room %s (known rooms: %v)", roomID, keys)
 		return
 	}
 
-	h.mu.RLock()
-	defer h.mu.RUnlock()
-	sent := 0
-	for c := range h.rooms[roomID] {
+	for c := range clients {
 		select {
 		case c.Ch <- data:
-			sent++
 		default:
 			log.Printf("[hub] warn: dropped message for user %s in room %s (channel full, len=%d)", c.UserID, roomID, len(c.Ch))
 			atomic.StoreInt32(&c.NeedsResync, 1)
 		}
-	}
-	if sent < count {
-		log.Printf("[hub] sendToLocalClients: sent to %d/%d clients in room %s", sent, count, roomID)
 	}
 }
 
@@ -152,6 +150,7 @@ func (h *Hub) controlLocalClient(roomID string, ctrl ctrlMsg) {
 		}
 	}
 	if target != nil {
+		log.Printf("[hub] controlLocalClient: removing client user=%s room=%s event=%s", target.UserID, roomID, ctrl.EventType)
 		delete(h.rooms[roomID], target)
 		if len(h.rooms[roomID]) == 0 {
 			delete(h.rooms, roomID)
@@ -189,6 +188,7 @@ func (h *Hub) Register(c *Client) {
 		h.rooms[c.RoomID] = make(map[*Client]bool)
 	}
 	h.rooms[c.RoomID][c] = true
+	log.Printf("[hub] Register: added client user=%s room=%s (total=%d)", c.UserID, c.RoomID, len(h.rooms[c.RoomID]))
 	h.mu.Unlock()
 }
 
@@ -254,6 +254,9 @@ func (h *Hub) Broadcast(roomID string, msg Message) {
 
 func (h *Hub) BroadcastJSON(roomID string, v any) {
 	data, _ := json.Marshal(v)
+	// 호출 스택 추적
+	_, file, line, _ := runtime.Caller(1)
+	log.Printf("[hub] BroadcastJSON room=%s caller=%s:%d data=%s", roomID, file, line, string(data[:min(len(data), 80)]))
 	h.rdb.Publish(ctx, "room:msg:"+roomID, data)
 }
 
