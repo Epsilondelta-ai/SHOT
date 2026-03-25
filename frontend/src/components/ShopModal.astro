@@ -209,6 +209,14 @@ const tierColors: Record<string, string> = {
     }
 
     // Configure buy buttons
+    if (import.meta.env.PROD) {
+      buttons.forEach(btn => {
+        btn.textContent = btn.dataset.comingSoonLabel!;
+        btn.disabled = true;
+      });
+      return;
+    }
+
     buttons.forEach(btn => {
       const idx = Number(btn.dataset.packIndex);
       const packId = packIds[idx];
