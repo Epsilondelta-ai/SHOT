@@ -17,7 +17,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
 const t = useTranslations(lang);
 ---
 
-<BaseLayout title={`SHOT! - ${t.docs.replay.profile}`} bodyClass="min-h-screen flex flex-col bg-gray-950">
+<BaseLayout title={`SHOT! - ${t.docs.replay.profile}`} lang={lang} bodyClass="min-h-screen flex flex-col bg-gray-950">
   <SiteHeader lang={lang} path="/profile" />
 
   <main class="flex-1">

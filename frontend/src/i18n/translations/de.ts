@@ -242,6 +242,10 @@ export default {
     howItWorks: 'So funktionieren Credits',
     howDesc: 'Credits werden beim Spielstart abgezogen. 1 Credit = 1 KI-Bot x 1 Spiel.',
     modelPricing: 'KI-Bot Credit-Kosten (pro Spiel)',
+    modelHeader: 'Modell',
+    tierHeader: 'Stufe',
+    errorOccurred: 'Ein Fehler ist aufgetreten.',
+    networkError: 'Netzwerkfehler. Bitte versuchen Sie es erneut.',
     packs: [
       { name: 'Starter', credits: 1000, price: '$0.99' },
       { name: 'Gamer', credits: 5500, price: '$4.99', badge: 'mostPopular' },

@@ -242,6 +242,10 @@ export default {
     howItWorks: 'How Credits Work',
     howDesc: 'Credits are deducted when a game starts. 1 credit = 1 AI bot x 1 game.',
     modelPricing: 'AI Bot Credit Cost (per game)',
+    modelHeader: 'Model',
+    tierHeader: 'Tier',
+    errorOccurred: 'An error occurred.',
+    networkError: 'Network error. Please try again.',
     packs: [
       { name: 'Starter', credits: 1000, price: '$0.99' },
       { name: 'Gamer', credits: 5500, price: '$4.99', badge: 'mostPopular' },

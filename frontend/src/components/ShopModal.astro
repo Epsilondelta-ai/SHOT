@@ -83,6 +83,8 @@ const tierColors: Record<string, string> = {
                   data-loading-label={t.shop.processing}
                   data-login-label={t.shop.loginToBuy}
                   data-coming-soon-label={t.shop.comingSoon}
+                  data-error-label={t.shop.errorOccurred}
+                  data-network-error-label={t.shop.networkError}
                   disabled
                 >
                   {t.shop.buyNow}
@@ -106,9 +108,9 @@ const tierColors: Record<string, string> = {
           <table class="w-full text-sm">
             <thead>
               <tr class="border-b border-gray-800">
-                <th class="text-left text-gray-400 font-semibold px-4 py-3">Model</th>
+                <th class="text-left text-gray-400 font-semibold px-4 py-3">{t.shop.modelHeader}</th>
                 <th class="text-center text-gray-400 font-semibold px-4 py-3">{t.shop.credits}</th>
-                <th class="text-center text-gray-400 font-semibold px-4 py-3">Tier</th>
+                <th class="text-center text-gray-400 font-semibold px-4 py-3">{t.shop.tierHeader}</th>
               </tr>
             </thead>
             <tbody>
@@ -249,14 +251,14 @@ const tierColors: Record<string, string> = {
           if (res.status === 401) { window.location.href = `/${lang}/login`; return; }
           if (!res.ok) {
             const err: { error?: string } = await res.json().catch(() => ({}));
-            showBanner(err.error ?? 'An error occurred.', 'error');
+            showBanner(err.error ?? (btn.dataset.errorLabel!), 'error');
             btn.disabled = false; btn.textContent = btn.dataset.buyLabel!;
             return;
           }
           const data: { checkout_url: string } = await res.json();
           window.location.href = data.checkout_url;
         } catch {
-          showBanner('Network error. Please try again.', 'error');
+          showBanner(btn.dataset.networkErrorLabel!, 'error');
           btn.disabled = false; btn.textContent = btn.dataset.buyLabel!;
         }
       });

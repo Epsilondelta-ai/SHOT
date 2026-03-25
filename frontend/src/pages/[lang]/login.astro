@@ -16,7 +16,7 @@ const t = useTranslations(lang);
 const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
 ---
 
-<BaseLayout title={`SHOT! - ${t.login.title}`} bodyClass="min-h-screen flex flex-col">
+<BaseLayout title={`SHOT! - ${t.login.title}`} lang={lang} bodyClass="min-h-screen flex flex-col">
   <SiteHeader lang={lang} path="/login" />
 
   <!-- Background -->

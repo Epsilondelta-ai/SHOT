@@ -242,6 +242,10 @@ export default {
     howItWorks: 'クレジットの仕組み',
     howDesc: 'ゲーム開始時にクレジットが差し引かれます。1クレジット = AIボット1体 x 1ゲーム。',
     modelPricing: 'AIボットクレジット費用（ゲームごと）',
+    modelHeader: 'モデル',
+    tierHeader: 'ティア',
+    errorOccurred: 'エラーが発生しました。',
+    networkError: 'ネットワークエラーです。もう一度お試しください。',
     packs: [
       { name: 'Starter', credits: 1000, price: '$0.99' },
       { name: 'Gamer', credits: 5500, price: '$4.99', badge: 'mostPopular' },

@@ -242,6 +242,10 @@ export default {
     howItWorks: '积分使用方式',
     howDesc: '游戏开始时扣除积分。1积分 = 1个AI机器人 x 1场游戏。',
     modelPricing: 'AI机器人积分费用（每场游戏）',
+    modelHeader: '模型',
+    tierHeader: '等级',
+    errorOccurred: '发生错误。',
+    networkError: '网络错误，请重试。',
     packs: [
       { name: 'Starter', credits: 1000, price: '$0.99' },
       { name: 'Gamer', credits: 5500, price: '$4.99', badge: 'mostPopular' },

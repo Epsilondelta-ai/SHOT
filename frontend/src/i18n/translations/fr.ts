@@ -242,6 +242,10 @@ export default {
     howItWorks: 'Comment Fonctionnent les Credits',
     howDesc: 'Les credits sont deduits au lancement d\'une partie. 1 credit = 1 bot IA x 1 partie.',
     modelPricing: 'Cout en Credits par Bot IA (par partie)',
+    modelHeader: 'Modèle',
+    tierHeader: 'Niveau',
+    errorOccurred: 'Une erreur est survenue.',
+    networkError: 'Erreur réseau. Veuillez réessayer.',
     packs: [
       { name: 'Starter', credits: 1000, price: '$0.99' },
       { name: 'Gamer', credits: 5500, price: '$4.99', badge: 'mostPopular' },

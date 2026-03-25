@@ -21,7 +21,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
 const t = useTranslations(lang);
 ---
 
-<BaseLayout title="SHOT!" bodyClass="bg-gray-950 h-dvh flex flex-col overflow-hidden" showFooter={false}>
+<BaseLayout title="SHOT!" lang={lang} bodyClass="bg-gray-950 h-dvh flex flex-col overflow-hidden" showFooter={false}>
   <!-- Loading Screen -->
   <div id="game-loading-screen" class="fixed inset-0 z-[60] hidden flex-col items-center justify-center" style="background: radial-gradient(ellipse at center, #532534 0%, #1a0a10 50%, #0a0408 100%)">
     <img src={loadingImg.src} alt="Loading" class="loading-float w-64 h-64 object-contain mb-10" />

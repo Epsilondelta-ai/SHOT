@@ -242,6 +242,10 @@ export default {
     howItWorks: '크레딧 사용 방법',
     howDesc: '게임 시작 시 크레딧이 차감됩니다. 1 크레딧 = AI 봇 1개 x 게임 1판.',
     modelPricing: 'AI 봇 크레딧 비용 (게임당)',
+    modelHeader: '모델',
+    tierHeader: '등급',
+    errorOccurred: '오류가 발생했습니다.',
+    networkError: '네트워크 오류입니다. 다시 시도해 주세요.',
     packs: [
       { name: 'Starter', credits: 1000, price: '$0.99' },
       { name: 'Gamer', credits: 5500, price: '$4.99', badge: 'mostPopular' },

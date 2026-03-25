@@ -242,6 +242,10 @@ export default {
     howItWorks: 'Как работают кредиты',
     howDesc: 'Кредиты списываются при старте игры. 1 кредит = 1 ИИ-бот x 1 игра.',
     modelPricing: 'Стоимость ИИ-ботов в кредитах (за игру)',
+    modelHeader: 'Модель',
+    tierHeader: 'Уровень',
+    errorOccurred: 'Произошла ошибка.',
+    networkError: 'Ошибка сети. Попробуйте ещё раз.',
     packs: [
       { name: 'Starter', credits: 1000, price: '$0.99' },
       { name: 'Gamer', credits: 5500, price: '$4.99', badge: 'mostPopular' },
