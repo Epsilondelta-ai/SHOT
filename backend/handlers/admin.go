@@ -261,26 +261,28 @@ func AdminCreateProvidedModel(c *fiber.Ctx) error {
 	}
 
 	var body struct {
-		Name        string `json:"name"`
-		ModelID     string `json:"modelId"`
-		Provider    string `json:"provider"`
-		Description string `json:"description"`
-		CreditCost  int    `json:"creditCost"`
-		Tier        string `json:"tier"`
-		IsActive    bool   `json:"isActive"`
+		Name         string `json:"name"`
+		ModelID      string `json:"modelId"`
+		Provider     string `json:"provider"`
+		Description  string `json:"description"`
+		SystemPrompt string `json:"systemPrompt"`
+		CreditCost   int    `json:"creditCost"`
+		Tier         string `json:"tier"`
+		IsActive     bool   `json:"isActive"`
 	}
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 
 	pm := models.ProvidedModel{
-		Name:        body.Name,
-		ModelID:     body.ModelID,
-		Provider:    body.Provider,
-		Description: body.Description,
-		CreditCost:  body.CreditCost,
-		Tier:        body.Tier,
-		IsActive:    body.IsActive,
+		Name:         body.Name,
+		ModelID:      body.ModelID,
+		Provider:     body.Provider,
+		Description:  body.Description,
+		SystemPrompt: body.SystemPrompt,
+		CreditCost:   body.CreditCost,
+		Tier:         body.Tier,
+		IsActive:     body.IsActive,
 	}
 	if err := db.DB.Create(&pm).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create provided model"})
