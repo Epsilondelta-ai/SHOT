@@ -16,6 +16,8 @@ type User struct {
 	AvatarURL        string `gorm:"type:text"`
 	FavoriteCount    int    `gorm:"not null;default:0"`
 	Credits          int    `gorm:"default:0"`
+	IsAdmin          bool   `gorm:"default:false"`
+	IsBanned         bool   `gorm:"default:false"`
 	PaddleCustomerID string
 	CreatedAt     time.Time
 	UpdatedAt    time.Time

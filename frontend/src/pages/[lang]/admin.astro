@@ -1,0 +1,980 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { locales, type Locale } from '../../i18n/locales';
+
+export function getStaticPaths() {
+  return locales.map(lang => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params as { lang: Locale };
+const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
+---
+
+<BaseLayout title="SHOT! Admin" lang={lang} bodyClass="bg-gray-900 min-h-dvh" showFooter={false}>
+
+<!-- Admin Container -->
+<div id="admin-app" class="hidden">
+  <!-- Mobile top tabs / Desktop sidebar -->
+  <div class="flex min-h-dvh">
+    <!-- Sidebar (desktop) -->
+    <aside id="admin-sidebar" class="hidden lg:flex flex-col w-56 bg-gray-950 border-r border-white/10 p-4 shrink-0 sticky top-0 h-dvh overflow-y-auto">
+      <h1 class="text-amber-500 font-extrabold text-xl mb-6">SHOT! Admin</h1>
+      <nav class="flex flex-col gap-1" id="sidebar-nav"></nav>
+      <div class="mt-auto pt-4 border-t border-white/10">
+        <a id="admin-back-link" class="text-gray-400 hover:text-white text-sm transition block py-2">← 게임으로 돌아가기</a>
+      </div>
+    </aside>
+
+    <!-- Main area -->
+    <div class="flex-1 flex flex-col min-w-0">
+      <!-- Mobile top bar -->
+      <header class="lg:hidden flex items-center gap-3 px-4 py-3 bg-gray-950 border-b border-white/10 overflow-x-auto sticky top-0 z-30">
+        <h1 class="text-amber-500 font-extrabold text-lg shrink-0 mr-2">Admin</h1>
+        <nav class="flex gap-1 shrink-0" id="mobile-nav"></nav>
+      </header>
+
+      <!-- Content -->
+      <main class="flex-1 p-4 lg:p-6 overflow-x-hidden">
+        <!-- Dashboard Section -->
+        <section id="section-dashboard" class="admin-section hidden">
+          <h2 class="text-white text-xl font-bold mb-4">대시보드</h2>
+          <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+            <div class="bg-gray-800 border border-white/10 rounded-xl p-4">
+              <p class="text-gray-400 text-xs mb-1">전체 유저</p>
+              <p id="stat-total-users" class="text-white text-2xl font-bold">-</p>
+            </div>
+            <div class="bg-gray-800 border border-white/10 rounded-xl p-4">
+              <p class="text-gray-400 text-xs mb-1">오늘 가입</p>
+              <p id="stat-users-today" class="text-white text-2xl font-bold">-</p>
+            </div>
+            <div class="bg-gray-800 border border-white/10 rounded-xl p-4">
+              <p class="text-gray-400 text-xs mb-1">진행 중 게임</p>
+              <p id="stat-active-games" class="text-white text-2xl font-bold">-</p>
+            </div>
+            <div class="bg-gray-800 border border-white/10 rounded-xl p-4">
+              <p class="text-gray-400 text-xs mb-1">오늘 완료 게임</p>
+              <p id="stat-games-today" class="text-white text-2xl font-bold">-</p>
+            </div>
+            <div class="bg-gray-800 border border-white/10 rounded-xl p-4 col-span-2 lg:col-span-1">
+              <p class="text-gray-400 text-xs mb-1">총 크레딧 거래</p>
+              <p id="stat-total-revenue" class="text-white text-2xl font-bold">-</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Users Section -->
+        <section id="section-users" class="admin-section hidden">
+          <h2 class="text-white text-xl font-bold mb-4">유저 관리</h2>
+          <div class="mb-4 flex gap-2">
+            <input id="users-search" type="text" placeholder="이메일 또는 유저명 검색..."
+              class="flex-1 bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500 transition" />
+            <button id="users-search-btn" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-4 py-2 rounded-xl text-sm transition">검색</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-gray-400 border-b border-white/10">
+                <tr>
+                  <th class="py-2 px-3">이메일</th>
+                  <th class="py-2 px-3">유저명</th>
+                  <th class="py-2 px-3">크레딧</th>
+                  <th class="py-2 px-3">어드민</th>
+                  <th class="py-2 px-3">정지</th>
+                  <th class="py-2 px-3">가입일</th>
+                  <th class="py-2 px-3">액션</th>
+                </tr>
+              </thead>
+              <tbody id="users-table-body" class="text-white"></tbody>
+            </table>
+          </div>
+          <div id="users-pagination" class="flex items-center justify-center gap-2 mt-4"></div>
+        </section>
+
+        <!-- Official Bots Section -->
+        <section id="section-official-bots" class="admin-section hidden">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-white text-xl font-bold">공식 봇 관리</h2>
+            <button id="official-bot-add-btn" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-4 py-2 rounded-xl text-sm transition">추가</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-gray-400 border-b border-white/10">
+                <tr>
+                  <th class="py-2 px-3">이름</th>
+                  <th class="py-2 px-3">모델 ID</th>
+                  <th class="py-2 px-3">제공자</th>
+                  <th class="py-2 px-3">티어</th>
+                  <th class="py-2 px-3">크레딧</th>
+                  <th class="py-2 px-3">활성</th>
+                  <th class="py-2 px-3">액션</th>
+                </tr>
+              </thead>
+              <tbody id="official-bots-table-body" class="text-white"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Credit Packs Section -->
+        <section id="section-credit-packs" class="admin-section hidden">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-white text-xl font-bold">크레딧 팩 관리</h2>
+            <button id="credit-pack-add-btn" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-4 py-2 rounded-xl text-sm transition">추가</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-gray-400 border-b border-white/10">
+                <tr>
+                  <th class="py-2 px-3">이름</th>
+                  <th class="py-2 px-3">크레딧</th>
+                  <th class="py-2 px-3">가격(USD)</th>
+                  <th class="py-2 px-3">Paddle Price ID</th>
+                  <th class="py-2 px-3">활성</th>
+                  <th class="py-2 px-3">액션</th>
+                </tr>
+              </thead>
+              <tbody id="credit-packs-table-body" class="text-white"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Games Section -->
+        <section id="section-games" class="admin-section hidden">
+          <h2 class="text-white text-xl font-bold mb-4">게임 관리</h2>
+          <div class="mb-4 flex gap-2">
+            <select id="games-status-filter" class="bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition">
+              <option value="">전체</option>
+              <option value="playing">진행중</option>
+              <option value="finished">완료</option>
+            </select>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-gray-400 border-b border-white/10">
+                <tr>
+                  <th class="py-2 px-3">ID</th>
+                  <th class="py-2 px-3">제목</th>
+                  <th class="py-2 px-3">플레이어</th>
+                  <th class="py-2 px-3">결과</th>
+                  <th class="py-2 px-3">시작일</th>
+                  <th class="py-2 px-3">종료일</th>
+                  <th class="py-2 px-3">액션</th>
+                </tr>
+              </thead>
+              <tbody id="games-table-body" class="text-white"></tbody>
+            </table>
+          </div>
+          <div id="games-pagination" class="flex items-center justify-center gap-2 mt-4"></div>
+        </section>
+
+        <!-- Bots Section -->
+        <section id="section-bots" class="admin-section hidden">
+          <h2 class="text-white text-xl font-bold mb-4">봇 관리</h2>
+          <div class="mb-4 flex gap-2">
+            <input id="bots-search" type="text" placeholder="봇 이름 또는 소유자 검색..."
+              class="flex-1 bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-amber-500 transition" />
+            <button id="bots-search-btn" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-4 py-2 rounded-xl text-sm transition">검색</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-gray-400 border-b border-white/10">
+                <tr>
+                  <th class="py-2 px-3">이름</th>
+                  <th class="py-2 px-3">소유자 이메일</th>
+                  <th class="py-2 px-3">생성일</th>
+                  <th class="py-2 px-3">비활성</th>
+                  <th class="py-2 px-3">액션</th>
+                </tr>
+              </thead>
+              <tbody id="bots-table-body" class="text-white"></tbody>
+            </table>
+          </div>
+          <div id="bots-pagination" class="flex items-center justify-center gap-2 mt-4"></div>
+        </section>
+
+        <!-- Transactions Section -->
+        <section id="section-transactions" class="admin-section hidden">
+          <h2 class="text-white text-xl font-bold mb-4">크레딧 거래 내역</h2>
+          <div class="mb-4 flex gap-2">
+            <select id="tx-type-filter" class="bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition">
+              <option value="">전체</option>
+              <option value="purchase">purchase</option>
+              <option value="use_bot">use_bot</option>
+              <option value="bonus">bonus</option>
+              <option value="refund">refund</option>
+            </select>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-gray-400 border-b border-white/10">
+                <tr>
+                  <th class="py-2 px-3">유저 이메일</th>
+                  <th class="py-2 px-3">금액</th>
+                  <th class="py-2 px-3">유형</th>
+                  <th class="py-2 px-3">설명</th>
+                  <th class="py-2 px-3">날짜</th>
+                </tr>
+              </thead>
+              <tbody id="tx-table-body" class="text-white"></tbody>
+            </table>
+          </div>
+          <div id="tx-pagination" class="flex items-center justify-center gap-2 mt-4"></div>
+        </section>
+
+        <!-- Replays Section -->
+        <section id="section-replays" class="admin-section hidden">
+          <h2 class="text-white text-xl font-bold mb-4">리플레이 관리</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-gray-400 border-b border-white/10">
+                <tr>
+                  <th class="py-2 px-3">ID</th>
+                  <th class="py-2 px-3">플레이어</th>
+                  <th class="py-2 px-3">결과</th>
+                  <th class="py-2 px-3">조회수</th>
+                  <th class="py-2 px-3">좋아요</th>
+                  <th class="py-2 px-3">날짜</th>
+                  <th class="py-2 px-3">액션</th>
+                </tr>
+              </thead>
+              <tbody id="replays-table-body" class="text-white"></tbody>
+            </table>
+          </div>
+          <div id="replays-pagination" class="flex items-center justify-center gap-2 mt-4"></div>
+        </section>
+
+        <!-- Loading state -->
+        <div id="admin-loading" class="hidden flex items-center justify-center py-12">
+          <div class="text-gray-400 text-sm">로딩 중...</div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>
+
+<!-- Credit Grant Modal -->
+<div id="credit-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-6 w-full max-w-sm text-white shadow-2xl">
+    <h3 class="text-lg font-bold text-amber-400 mb-4">크레딧 지급</h3>
+    <p id="credit-modal-user" class="text-gray-400 text-sm mb-4"></p>
+    <div class="mb-3">
+      <label class="block text-sm text-white/70 mb-1">금액</label>
+      <input id="credit-modal-amount" type="number" placeholder="1000"
+        class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+    </div>
+    <div class="mb-4">
+      <label class="block text-sm text-white/70 mb-1">사유</label>
+      <input id="credit-modal-reason" type="text" placeholder="보너스 지급"
+        class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+    </div>
+    <p id="credit-modal-error" class="text-red-400 text-xs mb-3 hidden"></p>
+    <div class="flex gap-3">
+      <button id="credit-modal-confirm" class="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold py-2 rounded-xl text-sm transition">지급</button>
+      <button id="credit-modal-cancel" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- Official Bot Create/Edit Modal -->
+<div id="official-bot-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-6 w-full max-w-md text-white shadow-2xl max-h-[90vh] overflow-y-auto">
+    <h3 id="official-bot-modal-title" class="text-lg font-bold text-amber-400 mb-4">공식 봇 추가</h3>
+    <input id="ob-edit-id" type="hidden" />
+    <div class="flex flex-col gap-3 mb-4">
+      <div>
+        <label class="block text-sm text-white/70 mb-1">이름</label>
+        <input id="ob-name" type="text" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+      </div>
+      <div>
+        <label class="block text-sm text-white/70 mb-1">모델 ID</label>
+        <input id="ob-modelId" type="text" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+      </div>
+      <div>
+        <label class="block text-sm text-white/70 mb-1">제공자</label>
+        <input id="ob-provider" type="text" placeholder="xai, openai, anthropic, google"
+          class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+      </div>
+      <div>
+        <label class="block text-sm text-white/70 mb-1">설명</label>
+        <input id="ob-description" type="text" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+      </div>
+      <div class="flex gap-3">
+        <div class="flex-1">
+          <label class="block text-sm text-white/70 mb-1">크레딧 비용</label>
+          <input id="ob-creditCost" type="number" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+        </div>
+        <div class="flex-1">
+          <label class="block text-sm text-white/70 mb-1">티어</label>
+          <select id="ob-tier" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition">
+            <option value="free">free</option>
+            <option value="basic">basic</option>
+            <option value="standard">standard</option>
+            <option value="advanced">advanced</option>
+            <option value="premium">premium</option>
+          </select>
+        </div>
+      </div>
+      <label class="flex items-center gap-2">
+        <input id="ob-isActive" type="checkbox" checked class="accent-amber-500" />
+        <span class="text-sm text-white/70">활성화</span>
+      </label>
+    </div>
+    <p id="ob-modal-error" class="text-red-400 text-xs mb-3 hidden"></p>
+    <div class="flex gap-3">
+      <button id="ob-modal-confirm" class="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold py-2 rounded-xl text-sm transition">저장</button>
+      <button id="ob-modal-cancel" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- Credit Pack Create/Edit Modal -->
+<div id="credit-pack-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-6 w-full max-w-md text-white shadow-2xl">
+    <h3 id="credit-pack-modal-title" class="text-lg font-bold text-amber-400 mb-4">크레딧 팩 추가</h3>
+    <input id="cp-edit-id" type="hidden" />
+    <div class="flex flex-col gap-3 mb-4">
+      <div>
+        <label class="block text-sm text-white/70 mb-1">이름</label>
+        <input id="cp-name" type="text" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+      </div>
+      <div>
+        <label class="block text-sm text-white/70 mb-1">크레딧</label>
+        <input id="cp-credits" type="number" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+      </div>
+      <div>
+        <label class="block text-sm text-white/70 mb-1">가격 (USD)</label>
+        <input id="cp-priceUSD" type="number" step="0.01" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+      </div>
+      <div>
+        <label class="block text-sm text-white/70 mb-1">Paddle Price ID</label>
+        <input id="cp-paddlePriceId" type="text" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+      </div>
+      <label class="flex items-center gap-2">
+        <input id="cp-isActive" type="checkbox" checked class="accent-amber-500" />
+        <span class="text-sm text-white/70">활성화</span>
+      </label>
+    </div>
+    <p id="cp-modal-error" class="text-red-400 text-xs mb-3 hidden"></p>
+    <div class="flex gap-3">
+      <button id="cp-modal-confirm" class="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold py-2 rounded-xl text-sm transition">저장</button>
+      <button id="cp-modal-cancel" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">취소</button>
+    </div>
+  </div>
+</div>
+
+<!-- Auth guard / redirect screen -->
+<div id="admin-unauthorized" class="hidden flex items-center justify-center min-h-dvh">
+  <div class="text-center">
+    <p class="text-white text-lg mb-4">접근 권한이 없습니다.</p>
+    <a id="admin-redirect-link" class="text-amber-500 hover:text-amber-400 transition">게임으로 돌아가기</a>
+  </div>
+</div>
+
+<script define:vars={{ apiUrl, lang }} is:inline>
+(function() {
+  const API = apiUrl;
+  const LANG = lang;
+  const token = localStorage.getItem('token');
+
+  const sections = [
+    { id: 'dashboard', label: '대시보드' },
+    { id: 'users', label: '유저' },
+    { id: 'official-bots', label: '공식 봇' },
+    { id: 'credit-packs', label: '크레딧 팩' },
+    { id: 'games', label: '게임' },
+    { id: 'bots', label: '봇' },
+    { id: 'transactions', label: '거래 내역' },
+    { id: 'replays', label: '리플레이' },
+  ];
+
+  let currentSection = 'dashboard';
+
+  // ---- Helpers ----
+  function openModal(el) { el.classList.remove('hidden'); el.classList.add('flex'); }
+  function closeModal(el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+
+  async function api(path, opts = {}) {
+    const res = await fetch(`${API}/api/admin${path}`, {
+      ...opts,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...(opts.headers || {}),
+      },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+
+  function fmtDate(d) {
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function shortId(id) {
+    return id ? id.substring(0, 8) + '...' : '-';
+  }
+
+  function renderPagination(containerId, page, total, limit, onClick) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const totalPages = Math.ceil(total / limit) || 1;
+    container.innerHTML = '';
+    if (totalPages <= 1) return;
+
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = '< 이전';
+    prevBtn.className = 'px-3 py-1 rounded-lg text-sm ' + (page <= 1 ? 'text-gray-600 cursor-not-allowed' : 'text-white bg-white/10 hover:bg-white/20 transition');
+    if (page > 1) prevBtn.addEventListener('click', () => onClick(page - 1));
+    container.appendChild(prevBtn);
+
+    const info = document.createElement('span');
+    info.textContent = `${page} / ${totalPages}`;
+    info.className = 'text-gray-400 text-sm px-2';
+    container.appendChild(info);
+
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = '다음 >';
+    nextBtn.className = 'px-3 py-1 rounded-lg text-sm ' + (page >= totalPages ? 'text-gray-600 cursor-not-allowed' : 'text-white bg-white/10 hover:bg-white/20 transition');
+    if (page < totalPages) nextBtn.addEventListener('click', () => onClick(page + 1));
+    container.appendChild(nextBtn);
+  }
+
+  // ---- Auth Guard ----
+  async function checkAdmin() {
+    if (!token) { showUnauthorized(); return; }
+    try {
+      const res = await fetch(`${API}/api/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!res.ok) { showUnauthorized(); return; }
+      const me = await res.json();
+      if (!me.isAdmin) { showUnauthorized(); return; }
+      initApp();
+    } catch { showUnauthorized(); }
+  }
+
+  function showUnauthorized() {
+    document.getElementById('admin-unauthorized').classList.remove('hidden');
+    document.getElementById('admin-redirect-link').href = `/${LANG}/`;
+  }
+
+  // ---- Navigation ----
+  function initApp() {
+    const app = document.getElementById('admin-app');
+    app.classList.remove('hidden');
+
+    document.getElementById('admin-back-link').href = `/${LANG}/game`;
+
+    const sidebarNav = document.getElementById('sidebar-nav');
+    const mobileNav = document.getElementById('mobile-nav');
+
+    sections.forEach(s => {
+      // Sidebar button
+      const btn = document.createElement('button');
+      btn.textContent = s.label;
+      btn.className = 'admin-nav-btn text-left px-3 py-2 rounded-lg text-sm transition';
+      btn.dataset.section = s.id;
+      btn.addEventListener('click', () => switchSection(s.id));
+      sidebarNav.appendChild(btn);
+
+      // Mobile button
+      const mBtn = document.createElement('button');
+      mBtn.textContent = s.label;
+      mBtn.className = 'admin-nav-btn-m whitespace-nowrap px-3 py-1.5 rounded-lg text-xs transition';
+      mBtn.dataset.section = s.id;
+      mBtn.addEventListener('click', () => switchSection(s.id));
+      mobileNav.appendChild(mBtn);
+    });
+
+    switchSection('dashboard');
+  }
+
+  function switchSection(id) {
+    currentSection = id;
+    document.querySelectorAll('.admin-section').forEach(el => el.classList.add('hidden'));
+    const target = document.getElementById(`section-${id}`);
+    if (target) target.classList.remove('hidden');
+
+    document.querySelectorAll('.admin-nav-btn').forEach(el => {
+      el.className = el.dataset.section === id
+        ? 'admin-nav-btn text-left px-3 py-2 rounded-lg text-sm transition bg-amber-500/20 text-amber-400 font-semibold'
+        : 'admin-nav-btn text-left px-3 py-2 rounded-lg text-sm transition text-gray-400 hover:text-white hover:bg-white/5';
+    });
+    document.querySelectorAll('.admin-nav-btn-m').forEach(el => {
+      el.className = el.dataset.section === id
+        ? 'admin-nav-btn-m whitespace-nowrap px-3 py-1.5 rounded-lg text-xs transition bg-amber-500/20 text-amber-400 font-semibold'
+        : 'admin-nav-btn-m whitespace-nowrap px-3 py-1.5 rounded-lg text-xs transition text-gray-400 hover:text-white hover:bg-white/5';
+    });
+
+    // Load section data
+    const loaders = {
+      'dashboard': loadDashboard,
+      'users': () => loadUsers(1),
+      'official-bots': loadOfficialBots,
+      'credit-packs': loadCreditPacks,
+      'games': () => loadGames(1),
+      'bots': () => loadBots(1),
+      'transactions': () => loadTransactions(1),
+      'replays': () => loadReplays(1),
+    };
+    if (loaders[id]) loaders[id]();
+  }
+
+  // ---- Dashboard ----
+  async function loadDashboard() {
+    try {
+      const data = await api('/stats');
+      document.getElementById('stat-total-users').textContent = data.totalUsers?.toLocaleString() ?? '-';
+      document.getElementById('stat-users-today').textContent = data.usersToday?.toLocaleString() ?? '-';
+      document.getElementById('stat-active-games').textContent = data.activeGames?.toLocaleString() ?? '-';
+      document.getElementById('stat-games-today').textContent = data.gamesToday?.toLocaleString() ?? '-';
+      document.getElementById('stat-total-revenue').textContent = data.totalRevenue?.toLocaleString() ?? '-';
+    } catch (e) {
+      console.error('Failed to load stats', e);
+    }
+  }
+
+  // ---- Users ----
+  let usersPage = 1;
+  async function loadUsers(page) {
+    usersPage = page;
+    const q = document.getElementById('users-search')?.value || '';
+    try {
+      const data = await api(`/users?page=${page}&limit=20&q=${encodeURIComponent(q)}`);
+      const tbody = document.getElementById('users-table-body');
+      tbody.innerHTML = '';
+      (data.users || []).forEach(u => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 hover:bg-white/5';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-xs">${u.email}</td>
+          <td class="py-2 px-3">${u.username}</td>
+          <td class="py-2 px-3">${u.credits?.toLocaleString()}</td>
+          <td class="py-2 px-3">${u.isAdmin ? '<span class="text-amber-400 font-bold">Y</span>' : 'N'}</td>
+          <td class="py-2 px-3">${u.isBanned ? '<span class="text-red-400 font-bold">정지</span>' : '-'}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${fmtDate(u.createdAt)}</td>
+          <td class="py-2 px-3">
+            <div class="flex gap-1">
+              <button class="user-credit-btn bg-green-600/20 hover:bg-green-600/40 text-green-400 px-2 py-1 rounded text-xs transition" data-id="${u.id}" data-name="${u.username}">크레딧</button>
+              <button class="user-admin-btn bg-amber-500/20 hover:bg-amber-500/40 text-amber-400 px-2 py-1 rounded text-xs transition" data-id="${u.id}" data-admin="${u.isAdmin}">${u.isAdmin ? '어드민 해제' : '어드민'}</button>
+              <button class="user-ban-btn ${u.isBanned ? 'bg-blue-500/20 hover:bg-blue-500/40 text-blue-400' : 'bg-red-500/20 hover:bg-red-500/40 text-red-400'} px-2 py-1 rounded text-xs transition" data-id="${u.id}" data-banned="${u.isBanned}">${u.isBanned ? '해제' : '정지'}</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Bind action buttons
+      tbody.querySelectorAll('.user-credit-btn').forEach(btn => {
+        btn.addEventListener('click', () => openCreditModal(btn.dataset.id, btn.dataset.name));
+      });
+      tbody.querySelectorAll('.user-admin-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleAdmin(btn.dataset.id, btn.dataset.admin === 'true'));
+      });
+      tbody.querySelectorAll('.user-ban-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleBan(btn.dataset.id, btn.dataset.banned === 'true'));
+      });
+
+      renderPagination('users-pagination', data.page, data.total, data.limit, loadUsers);
+    } catch (e) { console.error('Failed to load users', e); }
+  }
+
+  document.getElementById('users-search-btn')?.addEventListener('click', () => loadUsers(1));
+  document.getElementById('users-search')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') loadUsers(1); });
+
+  // Credit modal
+  let creditTargetId = '';
+  function openCreditModal(userId, username) {
+    creditTargetId = userId;
+    document.getElementById('credit-modal-user').textContent = `유저: ${username} (${userId.substring(0,8)}...)`;
+    document.getElementById('credit-modal-amount').value = '';
+    document.getElementById('credit-modal-reason').value = '';
+    document.getElementById('credit-modal-error').classList.add('hidden');
+    openModal(document.getElementById('credit-modal'));
+  }
+
+  document.getElementById('credit-modal-cancel')?.addEventListener('click', () => closeModal(document.getElementById('credit-modal')));
+  document.getElementById('credit-modal')?.addEventListener('click', (e) => { if (e.target.id === 'credit-modal') closeModal(e.target); });
+
+  document.getElementById('credit-modal-confirm')?.addEventListener('click', async () => {
+    const amount = parseInt(document.getElementById('credit-modal-amount').value);
+    const reason = document.getElementById('credit-modal-reason').value.trim();
+    if (!amount) {
+      document.getElementById('credit-modal-error').textContent = '금액을 입력하세요.';
+      document.getElementById('credit-modal-error').classList.remove('hidden');
+      return;
+    }
+    try {
+      await api(`/users/${creditTargetId}/credits`, { method: 'POST', body: { amount, reason } });
+      closeModal(document.getElementById('credit-modal'));
+      loadUsers(usersPage);
+    } catch (e) {
+      document.getElementById('credit-modal-error').textContent = e.message;
+      document.getElementById('credit-modal-error').classList.remove('hidden');
+    }
+  });
+
+  async function toggleAdmin(userId, currentlyAdmin) {
+    if (!confirm(currentlyAdmin ? '어드민 권한을 해제하시겠습니까?' : '어드민 권한을 부여하시겠습니까?')) return;
+    try {
+      await api(`/users/${userId}/admin`, { method: 'PATCH', body: { isAdmin: !currentlyAdmin } });
+      loadUsers(usersPage);
+    } catch (e) { alert(e.message); }
+  }
+
+  async function toggleBan(userId, currentlyBanned) {
+    if (!confirm(currentlyBanned ? '정지를 해제하시겠습니까?' : '이 유저를 정지하시겠습니까?')) return;
+    try {
+      await api(`/users/${userId}/ban`, { method: 'PATCH', body: { banned: !currentlyBanned } });
+      loadUsers(usersPage);
+    } catch (e) { alert(e.message); }
+  }
+
+  // ---- Official Bots ----
+  async function loadOfficialBots() {
+    try {
+      const bots = await api('/official-bots');
+      const tbody = document.getElementById('official-bots-table-body');
+      tbody.innerHTML = '';
+      (bots || []).forEach(b => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 hover:bg-white/5';
+        tr.innerHTML = `
+          <td class="py-2 px-3">${b.name}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${b.modelId}</td>
+          <td class="py-2 px-3">${b.provider}</td>
+          <td class="py-2 px-3">${b.tier}</td>
+          <td class="py-2 px-3">${b.creditCost}</td>
+          <td class="py-2 px-3">${b.isActive ? '<span class="text-green-400">Y</span>' : '<span class="text-red-400">N</span>'}</td>
+          <td class="py-2 px-3">
+            <div class="flex gap-1">
+              <button class="ob-edit-btn bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 px-2 py-1 rounded text-xs transition" data-id="${b.id}">수정</button>
+              <button class="ob-delete-btn bg-red-500/20 hover:bg-red-500/40 text-red-400 px-2 py-1 rounded text-xs transition" data-id="${b.id}" data-name="${b.name}">삭제</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.ob-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const bot = bots.find(b => b.id === btn.dataset.id);
+          if (bot) openOfficialBotModal(bot);
+        });
+      });
+      tbody.querySelectorAll('.ob-delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteOfficialBot(btn.dataset.id, btn.dataset.name));
+      });
+    } catch (e) { console.error('Failed to load official bots', e); }
+  }
+
+  function openOfficialBotModal(bot) {
+    const isEdit = !!bot;
+    document.getElementById('official-bot-modal-title').textContent = isEdit ? '공식 봇 수정' : '공식 봇 추가';
+    document.getElementById('ob-edit-id').value = isEdit ? bot.id : '';
+    document.getElementById('ob-name').value = isEdit ? bot.name : '';
+    document.getElementById('ob-modelId').value = isEdit ? bot.modelId : '';
+    document.getElementById('ob-provider').value = isEdit ? bot.provider : '';
+    document.getElementById('ob-description').value = isEdit ? bot.description : '';
+    document.getElementById('ob-creditCost').value = isEdit ? bot.creditCost : 0;
+    document.getElementById('ob-tier').value = isEdit ? bot.tier : 'basic';
+    document.getElementById('ob-isActive').checked = isEdit ? bot.isActive : true;
+    document.getElementById('ob-modal-error').classList.add('hidden');
+    openModal(document.getElementById('official-bot-modal'));
+  }
+
+  document.getElementById('official-bot-add-btn')?.addEventListener('click', () => openOfficialBotModal(null));
+  document.getElementById('ob-modal-cancel')?.addEventListener('click', () => closeModal(document.getElementById('official-bot-modal')));
+  document.getElementById('official-bot-modal')?.addEventListener('click', (e) => { if (e.target.id === 'official-bot-modal') closeModal(e.target); });
+
+  document.getElementById('ob-modal-confirm')?.addEventListener('click', async () => {
+    const editId = document.getElementById('ob-edit-id').value;
+    const body = {
+      name: document.getElementById('ob-name').value.trim(),
+      modelId: document.getElementById('ob-modelId').value.trim(),
+      provider: document.getElementById('ob-provider').value.trim(),
+      description: document.getElementById('ob-description').value.trim(),
+      creditCost: parseInt(document.getElementById('ob-creditCost').value) || 0,
+      tier: document.getElementById('ob-tier').value,
+      isActive: document.getElementById('ob-isActive').checked,
+    };
+    if (!body.name || !body.modelId) {
+      document.getElementById('ob-modal-error').textContent = '이름과 모델 ID는 필수입니다.';
+      document.getElementById('ob-modal-error').classList.remove('hidden');
+      return;
+    }
+    try {
+      if (editId) {
+        await api(`/official-bots/${editId}`, { method: 'PATCH', body });
+      } else {
+        await api('/official-bots', { method: 'POST', body });
+      }
+      closeModal(document.getElementById('official-bot-modal'));
+      loadOfficialBots();
+    } catch (e) {
+      document.getElementById('ob-modal-error').textContent = e.message;
+      document.getElementById('ob-modal-error').classList.remove('hidden');
+    }
+  });
+
+  async function deleteOfficialBot(id, name) {
+    if (!confirm(`"${name}" 봇을 삭제하시겠습니까?`)) return;
+    try {
+      await api(`/official-bots/${id}`, { method: 'DELETE' });
+      loadOfficialBots();
+    } catch (e) { alert(e.message); }
+  }
+
+  // ---- Credit Packs ----
+  async function loadCreditPacks() {
+    try {
+      const packs = await api('/credit-packs');
+      const tbody = document.getElementById('credit-packs-table-body');
+      tbody.innerHTML = '';
+      (packs || []).forEach(p => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 hover:bg-white/5';
+        tr.innerHTML = `
+          <td class="py-2 px-3">${p.name}</td>
+          <td class="py-2 px-3">${p.credits?.toLocaleString()}</td>
+          <td class="py-2 px-3">$${p.priceUSD}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${p.paddlePriceId || '-'}</td>
+          <td class="py-2 px-3">${p.isActive ? '<span class="text-green-400">Y</span>' : '<span class="text-red-400">N</span>'}</td>
+          <td class="py-2 px-3">
+            <div class="flex gap-1">
+              <button class="cp-edit-btn bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 px-2 py-1 rounded text-xs transition" data-id="${p.id}">수정</button>
+              <button class="cp-delete-btn bg-red-500/20 hover:bg-red-500/40 text-red-400 px-2 py-1 rounded text-xs transition" data-id="${p.id}" data-name="${p.name}">삭제</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.cp-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pack = packs.find(p => p.id === btn.dataset.id);
+          if (pack) openCreditPackModal(pack);
+        });
+      });
+      tbody.querySelectorAll('.cp-delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteCreditPack(btn.dataset.id, btn.dataset.name));
+      });
+    } catch (e) { console.error('Failed to load credit packs', e); }
+  }
+
+  function openCreditPackModal(pack) {
+    const isEdit = !!pack;
+    document.getElementById('credit-pack-modal-title').textContent = isEdit ? '크레딧 팩 수정' : '크레딧 팩 추가';
+    document.getElementById('cp-edit-id').value = isEdit ? pack.id : '';
+    document.getElementById('cp-name').value = isEdit ? pack.name : '';
+    document.getElementById('cp-credits').value = isEdit ? pack.credits : 0;
+    document.getElementById('cp-priceUSD').value = isEdit ? pack.priceUSD : 0;
+    document.getElementById('cp-paddlePriceId').value = isEdit ? (pack.paddlePriceId || '') : '';
+    document.getElementById('cp-isActive').checked = isEdit ? pack.isActive : true;
+    document.getElementById('cp-modal-error').classList.add('hidden');
+    openModal(document.getElementById('credit-pack-modal'));
+  }
+
+  document.getElementById('credit-pack-add-btn')?.addEventListener('click', () => openCreditPackModal(null));
+  document.getElementById('cp-modal-cancel')?.addEventListener('click', () => closeModal(document.getElementById('credit-pack-modal')));
+  document.getElementById('credit-pack-modal')?.addEventListener('click', (e) => { if (e.target.id === 'credit-pack-modal') closeModal(e.target); });
+
+  document.getElementById('cp-modal-confirm')?.addEventListener('click', async () => {
+    const editId = document.getElementById('cp-edit-id').value;
+    const body = {
+      name: document.getElementById('cp-name').value.trim(),
+      credits: parseInt(document.getElementById('cp-credits').value) || 0,
+      priceUSD: parseFloat(document.getElementById('cp-priceUSD').value) || 0,
+      paddlePriceId: document.getElementById('cp-paddlePriceId').value.trim(),
+      isActive: document.getElementById('cp-isActive').checked,
+    };
+    if (!body.name) {
+      document.getElementById('cp-modal-error').textContent = '이름은 필수입니다.';
+      document.getElementById('cp-modal-error').classList.remove('hidden');
+      return;
+    }
+    try {
+      if (editId) {
+        await api(`/credit-packs/${editId}`, { method: 'PATCH', body });
+      } else {
+        await api('/credit-packs', { method: 'POST', body });
+      }
+      closeModal(document.getElementById('credit-pack-modal'));
+      loadCreditPacks();
+    } catch (e) {
+      document.getElementById('cp-modal-error').textContent = e.message;
+      document.getElementById('cp-modal-error').classList.remove('hidden');
+    }
+  });
+
+  async function deleteCreditPack(id, name) {
+    if (!confirm(`"${name}" 팩을 삭제하시겠습니까?`)) return;
+    try {
+      await api(`/credit-packs/${id}`, { method: 'DELETE' });
+      loadCreditPacks();
+    } catch (e) { alert(e.message); }
+  }
+
+  // ---- Games ----
+  let gamesPage = 1;
+  async function loadGames(page) {
+    gamesPage = page;
+    const status = document.getElementById('games-status-filter')?.value || '';
+    try {
+      const data = await api(`/games?page=${page}&limit=20${status ? '&status=' + status : ''}`);
+      const tbody = document.getElementById('games-table-body');
+      tbody.innerHTML = '';
+      (data.games || []).forEach(g => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 hover:bg-white/5';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-xs text-gray-400">${shortId(g.id)}</td>
+          <td class="py-2 px-3">${g.title || '-'}</td>
+          <td class="py-2 px-3">${g.playerCount}</td>
+          <td class="py-2 px-3">${g.result || (g.status === 'playing' ? '<span class="text-green-400">진행중</span>' : '-')}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${fmtDate(g.createdAt)}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${fmtDate(g.finishedAt)}</td>
+          <td class="py-2 px-3">
+            ${g.status === 'playing' ? `<button class="game-force-end-btn bg-red-500/20 hover:bg-red-500/40 text-red-400 px-2 py-1 rounded text-xs transition" data-id="${g.id}">강제 종료</button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.game-force-end-btn').forEach(btn => {
+        btn.addEventListener('click', () => forceEndGame(btn.dataset.id));
+      });
+
+      renderPagination('games-pagination', data.page, data.total, data.limit, loadGames);
+    } catch (e) { console.error('Failed to load games', e); }
+  }
+
+  document.getElementById('games-status-filter')?.addEventListener('change', () => loadGames(1));
+
+  async function forceEndGame(gameId) {
+    if (!confirm('이 게임을 강제 종료하시겠습니까?')) return;
+    try {
+      await api(`/games/${gameId}/force-end`, { method: 'POST' });
+      loadGames(gamesPage);
+    } catch (e) { alert(e.message); }
+  }
+
+  // ---- Bots ----
+  let botsPage = 1;
+  async function loadBots(page) {
+    botsPage = page;
+    const q = document.getElementById('bots-search')?.value || '';
+    try {
+      const data = await api(`/bots?page=${page}&limit=20&q=${encodeURIComponent(q)}`);
+      const tbody = document.getElementById('bots-table-body');
+      tbody.innerHTML = '';
+      (data.bots || []).forEach(b => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 hover:bg-white/5';
+        tr.innerHTML = `
+          <td class="py-2 px-3">${b.name}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${b.ownerEmail || '-'}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${fmtDate(b.createdAt)}</td>
+          <td class="py-2 px-3">${b.isDisabled ? '<span class="text-red-400">비활성</span>' : '<span class="text-green-400">활성</span>'}</td>
+          <td class="py-2 px-3">
+            <button class="bot-toggle-btn ${b.isDisabled ? 'bg-green-500/20 hover:bg-green-500/40 text-green-400' : 'bg-red-500/20 hover:bg-red-500/40 text-red-400'} px-2 py-1 rounded text-xs transition" data-id="${b.id}" data-disabled="${b.isDisabled}">${b.isDisabled ? '활성화' : '비활성화'}</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.bot-toggle-btn').forEach(btn => {
+        btn.addEventListener('click', () => toggleBotDisabled(btn.dataset.id, btn.dataset.disabled === 'true'));
+      });
+
+      renderPagination('bots-pagination', data.page, data.total, data.limit, loadBots);
+    } catch (e) { console.error('Failed to load bots', e); }
+  }
+
+  document.getElementById('bots-search-btn')?.addEventListener('click', () => loadBots(1));
+  document.getElementById('bots-search')?.addEventListener('keydown', (e) => { if (e.key === 'Enter') loadBots(1); });
+
+  async function toggleBotDisabled(botId, currentlyDisabled) {
+    try {
+      await api(`/bots/${botId}/disable`, { method: 'PATCH', body: { disabled: !currentlyDisabled } });
+      loadBots(botsPage);
+    } catch (e) { alert(e.message); }
+  }
+
+  // ---- Transactions ----
+  let txPage = 1;
+  async function loadTransactions(page) {
+    txPage = page;
+    const txType = document.getElementById('tx-type-filter')?.value || '';
+    try {
+      const data = await api(`/transactions?page=${page}&limit=20${txType ? '&type=' + txType : ''}`);
+      const tbody = document.getElementById('tx-table-body');
+      tbody.innerHTML = '';
+      (data.transactions || []).forEach(t => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 hover:bg-white/5';
+        const amountClass = t.amount >= 0 ? 'text-green-400' : 'text-red-400';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-xs">${t.userEmail || '-'}</td>
+          <td class="py-2 px-3 ${amountClass} font-bold">${t.amount >= 0 ? '+' : ''}${t.amount?.toLocaleString()}</td>
+          <td class="py-2 px-3 text-xs">${t.type}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${t.description || '-'}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${fmtDate(t.createdAt)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderPagination('tx-pagination', data.page, data.total, data.limit, loadTransactions);
+    } catch (e) { console.error('Failed to load transactions', e); }
+  }
+
+  document.getElementById('tx-type-filter')?.addEventListener('change', () => loadTransactions(1));
+
+  // ---- Replays ----
+  let replaysPage = 1;
+  async function loadReplays(page) {
+    replaysPage = page;
+    try {
+      const data = await api(`/replays?page=${page}&limit=20`);
+      const tbody = document.getElementById('replays-table-body');
+      tbody.innerHTML = '';
+      (data.replays || []).forEach(r => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 hover:bg-white/5';
+        tr.innerHTML = `
+          <td class="py-2 px-3 text-xs text-gray-400">${shortId(r.id)}</td>
+          <td class="py-2 px-3">${r.playerCount}</td>
+          <td class="py-2 px-3">${r.result || '-'}</td>
+          <td class="py-2 px-3">${r.viewCount?.toLocaleString()}</td>
+          <td class="py-2 px-3">${r.likeCount?.toLocaleString()}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${fmtDate(r.createdAt)}</td>
+          <td class="py-2 px-3">
+            <button class="replay-delete-btn bg-red-500/20 hover:bg-red-500/40 text-red-400 px-2 py-1 rounded text-xs transition" data-id="${r.id}">삭제</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.replay-delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteReplay(btn.dataset.id));
+      });
+
+      renderPagination('replays-pagination', data.page, data.total, data.limit, loadReplays);
+    } catch (e) { console.error('Failed to load replays', e); }
+  }
+
+  async function deleteReplay(id) {
+    if (!confirm('이 리플레이를 삭제하시겠습니까? 관련 게임 데이터도 모두 삭제됩니다.')) return;
+    try {
+      await api(`/replays/${id}`, { method: 'DELETE' });
+      loadReplays(replaysPage);
+    } catch (e) { alert(e.message); }
+  }
+
+  // ---- Init ----
+  checkAdmin();
+})();
+</script>
+
+</BaseLayout>
