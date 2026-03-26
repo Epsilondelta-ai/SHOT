@@ -27,9 +27,11 @@ type PlayerState struct {
 	IsDead             bool     `json:"isDead"`
 	HasAttackedThisTurn bool    `json:"hasAttackedThisTurn"`
 	HasChatted         bool     `json:"hasChatted"`
-	IsRuleBot          bool     `json:"isRuleBot,omitempty"`
-	Username           string   `json:"username"`
-	AvatarURL          string   `json:"avatarUrl"`
+	IsRuleBot       bool   `json:"isRuleBot,omitempty"`
+	IsLLMPlayer     bool   `json:"isLLMPlayer,omitempty"`
+	ProvidedModelID string `json:"providedModelId,omitempty"`
+	Username        string `json:"username"`
+	AvatarURL       string `json:"avatarUrl"`
 }
 
 // GameState holds the full game state stored in Redis.

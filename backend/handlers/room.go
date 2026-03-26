@@ -591,3 +591,93 @@ func InviteRuleBot(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{"ok": true, "botId": botID, "botName": botName})
 }
+
+// InviteLLMPlayer POST /api/rooms/:id/invite-llm
+func InviteLLMPlayer(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	roomID := c.Params("id")
+
+	var body struct {
+		ProvidedModelID string `json:"providedModelId"`
+	}
+	if err := c.BodyParser(&body); err != nil || body.ProvidedModelID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "providedModelId is required"})
+	}
+
+	// 제공 모델 유효성 확인
+	var pm models.ProvidedModel
+	if err := db.DB.First(&pm, "id = ? AND is_active = true", body.ProvidedModelID).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid or inactive model"})
+	}
+
+	// 내부 룰 봇(provider=internal)은 LLM Player로 초대할 수 없음
+	if pm.Provider == "internal" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "internal models cannot be invited as LLM player"})
+	}
+
+	// 멤버 권한 확인
+	var member models.RoomMember
+	if err := db.DB.Where("room_id = ? AND user_id = ? AND bot_id = ''", roomID, userID).First(&member).Error; err != nil {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "not a member"})
+	}
+	var room models.Room
+	db.DB.First(&room, "id = ?", roomID)
+	if room.HostID != userID && !member.CanInviteBots {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "no permission"})
+	}
+
+	// 방 정원 확인
+	if room.PlayerCount >= room.MaxPlayers {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "room is full"})
+	}
+
+	botID := fmt.Sprintf("llm_%s", uuid.New().String())
+
+	llmMember := models.RoomMember{
+		RoomID:          roomID,
+		UserID:          userID,
+		BotID:           botID,
+		RuleBotName:     pm.Name,
+		ProvidedModelID: pm.ID,
+		JoinedAt:        time.Now(),
+	}
+	if err := db.DB.Create(&llmMember).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	broadcastRoomUpdate(roomID)
+
+	return c.JSON(fiber.Map{"ok": true, "botId": botID, "botName": pm.Name, "creditCost": pm.CreditCost})
+}
+
+// KickLLMPlayer DELETE /api/rooms/:id/kick-llm/:memberId
+func KickLLMPlayer(c *fiber.Ctx) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "unauthorized"})
+	}
+	roomID := c.Params("id")
+	memberID := c.Params("memberId")
+
+	var room models.Room
+	if err := db.DB.First(&room, "id = ?", roomID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "room not found"})
+	}
+	if room.HostID != userID {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "host only"})
+	}
+	if room.Status != "waiting" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "cannot kick during game"})
+	}
+
+	result := db.DB.Where("id = ? AND room_id = ? AND provided_model_id != ''", memberID, roomID).Delete(&models.RoomMember{})
+	if result.RowsAffected == 0 {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "llm player not found"})
+	}
+
+	broadcastRoomUpdate(roomID)
+	return c.JSON(fiber.Map{"ok": true})
+}

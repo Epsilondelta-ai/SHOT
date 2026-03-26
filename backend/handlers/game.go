@@ -9,6 +9,7 @@ import (
 	"github.com/epsilondelta/shot/hub"
 	"github.com/epsilondelta/shot/models"
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
 // StartGame POST /api/rooms/:id/start
@@ -40,6 +41,41 @@ func StartGame(c *fiber.Ctx) error {
 	// Update room status before starting — prevents concurrent start attempts.
 	db.DB.Model(&models.Room{}).Where("id = ?", roomID).Update("status", "playing")
 
+	// LLM Player 크레딧 차감
+	var llmMembers []models.RoomMember
+	db.DB.Where("room_id = ? AND provided_model_id != ''", roomID).Find(&llmMembers)
+	if len(llmMembers) > 0 {
+		totalCost := 0
+		for _, m := range llmMembers {
+			var pm models.ProvidedModel
+			if err := db.DB.First(&pm, "id = ?", m.ProvidedModelID).Error; err == nil {
+				totalCost += pm.CreditCost
+			}
+		}
+		if totalCost > 0 {
+			var host models.User
+			db.DB.First(&host, "id = ?", userID)
+			if host.Credits < totalCost {
+				db.DB.Model(&models.Room{}).Where("id = ?", roomID).Update("status", "waiting")
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "insufficient credits for LLM players"})
+			}
+			// 크레딧 차감
+			db.DB.Model(&models.User{}).Where("id = ?", userID).Update("credits", gorm.Expr("credits - ?", totalCost))
+			for _, m := range llmMembers {
+				var pm models.ProvidedModel
+				if err := db.DB.First(&pm, "id = ?", m.ProvidedModelID).Error; err == nil && pm.CreditCost > 0 {
+					tx := models.CreditTransaction{
+						UserID:      userID,
+						Amount:      -pm.CreditCost,
+						Type:        "use_llm",
+						Description: "LLM Player 사용: " + pm.Name,
+					}
+					db.DB.Create(&tx)
+				}
+			}
+		}
+	}
+
 	// Start game
 	state, events, err := game.StartGame(roomID)
 	if err != nil {
@@ -59,10 +95,12 @@ func StartGame(c *fiber.Ctx) error {
 		hub.H.BroadcastJSON(roomID, e)
 	}
 
-	// Start turn timer or auto-play if first player is a rule-based bot
+	// Start turn timer or auto-play if first player is a bot
 	firstPlayer := state.FindPlayer(state.CurrentPlayerID())
 	if firstPlayer != nil && firstPlayer.IsRuleBot {
 		game.ScheduleRuleBotTurn(state, roomID, 1500*time.Millisecond)
+	} else if firstPlayer != nil && firstPlayer.IsLLMPlayer {
+		game.ScheduleLLMPlayerTurn(state, roomID, 1500*time.Millisecond)
 	} else {
 		game.TM.StartTimer(state.GameID, roomID, state.TurnDeadline)
 	}

@@ -74,6 +74,15 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 			username = m.RuleBotName
 			avatarURL = ""
 			isRuleBot = true
+		} else if m.BotID != "" && IsLLMPlayerID(m.BotID) {
+			playerID = m.BotID
+			var pm models.ProvidedModel
+			if err := db.DB.First(&pm, "id = ?", m.ProvidedModelID).Error; err == nil {
+				username = pm.Name
+			} else {
+				username = "AI Player"
+			}
+			avatarURL = ""
 		} else if m.BotID != "" {
 			playerID = m.BotID
 			var bot models.Bot
@@ -90,27 +99,31 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 			}
 		}
 
+		isLLMPlayer := m.BotID != "" && IsLLMPlayerID(m.BotID)
 		players[i] = PlayerState{
-			ID:        playerID,
-			UserID:    m.UserID,
-			BotID:     m.BotID,
-			Role:      roles[i],
-			HP:        3,
-			MaxHP:     3,
-			Cards:     []string{},
-			IsRuleBot: isRuleBot,
-			Username:  username,
-			AvatarURL: avatarURL,
+			ID:              playerID,
+			UserID:          m.UserID,
+			BotID:           m.BotID,
+			Role:            roles[i],
+			HP:              3,
+			MaxHP:           3,
+			Cards:           []string{},
+			IsRuleBot:       isRuleBot,
+			IsLLMPlayer:     isLLMPlayer,
+			ProvidedModelID: m.ProvidedModelID,
+			Username:        username,
+			AvatarURL:       avatarURL,
 		}
 		turnOrder[i] = playerID
 		gamePlayers[i] = models.GamePlayer{
-			GameID:    "", // set after game created
-			UserID:    m.UserID,
-			BotID:     m.BotID,
-			Role:      roles[i],
-			StartHP:   3,
-			Username:  username,
-			AvatarURL: avatarURL,
+			GameID:          "", // set after game created
+			UserID:          m.UserID,
+			BotID:           m.BotID,
+			ProvidedModelID: m.ProvidedModelID,
+			Role:            roles[i],
+			StartHP:         3,
+			Username:        username,
+			AvatarURL:       avatarURL,
 		}
 	}
 
@@ -609,13 +622,19 @@ func endGame(state *GameState, result string) []Event {
 	state.Result = result
 	now := time.Now()
 
-	// Update DB
-	db.DB.Model(&models.Game{}).Where("id = ?", state.GameID).Updates(map[string]any{
-		"status":      "finished",
-		"result":      result,
-		"turn_count":  state.TurnCount,
-		"finished_at": now,
-	})
+	// 룰봇만 참가한 게임은 리플레이 불필요 — DB 레코드 삭제
+	if allRuleBots(state) {
+		db.DB.Where("game_id = ?", state.GameID).Delete(&models.GamePlayer{})
+		db.DB.Where("id = ?", state.GameID).Delete(&models.Game{})
+	} else {
+		// Update DB
+		db.DB.Model(&models.Game{}).Where("id = ?", state.GameID).Updates(map[string]any{
+			"status":      "finished",
+			"result":      result,
+			"turn_count":  state.TurnCount,
+			"finished_at": now,
+		})
+	}
 
 	// Reset room back to waiting so another game can start in the same room.
 	db.DB.Model(&models.Room{}).Where("id = ?", state.RoomID).Update("status", "waiting")
@@ -628,9 +647,9 @@ func endGame(state *GameState, result string) []Event {
 
 	if len(botIDs) > 0 {
 		db.DB.Where("room_id = ? AND bot_id != ''", state.RoomID).Delete(&models.RoomMember{})
-		// 룰봇은 SSE 연결이 없으므로 kick 이벤트 불필요 — 외부 봇만 수집
+		// 룰봇/LLM Player는 SSE 연결이 없으므로 kick 이벤트 불필요 — 외부 봇만 수집
 		for _, id := range botIDs {
-			if !IsRuleBotID(id) {
+			if !IsRuleBotID(id) && !IsLLMPlayerID(id) {
 				state.PendingBotKicks = append(state.PendingBotKicks, id)
 			}
 		}
@@ -791,12 +810,13 @@ func randomAttackTarget(state *GameState, attacker *PlayerState) *PlayerState {
 	return candidates[rand.Intn(len(candidates))]
 }
 
+// allRuleBots 는 모든 플레이어가 서버 봇(RuleBot 또는 LLM Player)인지 확인한다.
 func allRuleBots(state *GameState) bool {
 	if len(state.Players) == 0 {
 		return false
 	}
 	for _, p := range state.Players {
-		if !p.IsRuleBot {
+		if !p.IsRuleBot && !p.IsLLMPlayer {
 			return false
 		}
 	}

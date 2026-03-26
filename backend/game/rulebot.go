@@ -59,9 +59,6 @@ func RunRuleBotTurn(state *GameState) []Event {
 
 // chooseBotAction decides which card to play and on which target.
 func chooseBotAction(state *GameState, bot *PlayerState) (cardType, targetID string) {
-	// Must attack if not jailed and has attack cards and hasn't attacked yet
-	mustAttack := !bot.HasAttackedThisTurn && !bot.IsJailed && hasCard(bot, CardAttack)
-
 	// 1. If spy and not revealed, consider revealing when outnumbered
 	if bot.Role == "spy" && !bot.IsRevealed {
 		aliveSpies := state.AliveSpyCount()
@@ -98,8 +95,8 @@ func chooseBotAction(state *GameState, bot *PlayerState) (cardType, targetID str
 		}
 	}
 
-	// 6. Must attack — pick a smart target
-	if mustAttack {
+	// 6. Attack — pick a smart target (필수 공격 + 추가 공격 카드 모두 소진)
+	if hasCard(bot, CardAttack) && !bot.IsJailed {
 		if target := pickAttackTarget(state, bot); target != nil {
 			return CardAttack, target.ID
 		}
