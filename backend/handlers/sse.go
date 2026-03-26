@@ -47,6 +47,7 @@ type MemberInfo struct {
 	CanInviteBots bool      `json:"canInviteBots"`
 	IsOnline      bool      `json:"isOnline,omitempty"`
 	IsRuleBot     bool      `json:"isRuleBot,omitempty"`
+	IsLLMPlayer   bool      `json:"isLLMPlayer,omitempty"`
 	JoinedAt      time.Time `json:"joinedAt"`
 }
 
@@ -72,14 +73,21 @@ func buildMemberInfoList(roomID string) []MemberInfo {
 			CanInviteBots: m.CanInviteBots,
 			JoinedAt:      m.JoinedAt,
 		}
-		if m.BotID != "" && !game.IsRuleBotID(m.BotID) {
-			info.IsOnline = IsBotOnline(m.BotID)
-		}
 		if m.BotID != "" && game.IsRuleBotID(m.BotID) {
 			info.Username = m.RuleBotName
 			info.IsRuleBot = true
 			info.IsOnline = true // 서버 내장 봇이므로 항상 온라인
+		} else if m.BotID != "" && game.IsLLMPlayerID(m.BotID) {
+			var llmBot models.LLMBot
+			if err := db.DB.First(&llmBot, "id = ?", m.LLMBotID).Error; err == nil {
+				info.Username = llmBot.Name
+			} else {
+				info.Username = "AI Player"
+			}
+			info.IsLLMPlayer = true
+			info.IsOnline = true // 운영 제공 LLM이므로 항상 온라인
 		} else if m.BotID != "" {
+			info.IsOnline = IsBotOnline(m.BotID)
 			var bot models.Bot
 			if err := db.DB.First(&bot, "id = ?", m.BotID).Error; err == nil {
 				info.Username = bot.Name

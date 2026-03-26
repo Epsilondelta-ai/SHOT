@@ -66,7 +66,7 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 
 	for i, m := range members {
 		var playerID string
-		var username, avatarURL string
+		var username, avatarURL, userPrompt string
 		var isRuleBot bool
 
 		if m.BotID != "" && IsRuleBotID(m.BotID) {
@@ -76,9 +76,10 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 			isRuleBot = true
 		} else if m.BotID != "" && IsLLMPlayerID(m.BotID) {
 			playerID = m.BotID
-			var pm models.ProvidedModel
-			if err := db.DB.First(&pm, "id = ?", m.ProvidedModelID).Error; err == nil {
-				username = pm.Name
+			var llmBot models.LLMBot
+			if err := db.DB.First(&llmBot, "id = ?", m.LLMBotID).Error; err == nil {
+				username = llmBot.Name
+				userPrompt = llmBot.UserPrompt
 			} else {
 				username = "AI Player"
 			}
@@ -111,6 +112,7 @@ func StartGame(roomID string) (*GameState, []Event, error) {
 			IsRuleBot:       isRuleBot,
 			IsLLMPlayer:     isLLMPlayer,
 			ProvidedModelID: m.ProvidedModelID,
+			UserPrompt:      userPrompt,
 			Username:        username,
 			AvatarURL:       avatarURL,
 		}

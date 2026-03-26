@@ -601,21 +601,22 @@ func InviteLLMPlayer(c *fiber.Ctx) error {
 	roomID := c.Params("id")
 
 	var body struct {
-		ProvidedModelID string `json:"providedModelId"`
+		LLMBotID string `json:"llmBotId"`
 	}
-	if err := c.BodyParser(&body); err != nil || body.ProvidedModelID == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "providedModelId is required"})
+	if err := c.BodyParser(&body); err != nil || body.LLMBotID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "llmBotId is required"})
+	}
+
+	// 유저 LLM Bot 유효성 확인
+	var llmBot models.LLMBot
+	if err := db.DB.First(&llmBot, "id = ? AND user_id = ?", body.LLMBotID, userID).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "LLM bot not found"})
 	}
 
 	// 제공 모델 유효성 확인
 	var pm models.ProvidedModel
-	if err := db.DB.First(&pm, "id = ? AND is_active = true", body.ProvidedModelID).Error; err != nil {
+	if err := db.DB.First(&pm, "id = ? AND is_active = true", llmBot.ProvidedModelID).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid or inactive model"})
-	}
-
-	// 내부 룰 봇(provider=internal)은 LLM Player로 초대할 수 없음
-	if pm.Provider == "internal" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "internal models cannot be invited as LLM player"})
 	}
 
 	// 멤버 권한 확인
@@ -640,8 +641,8 @@ func InviteLLMPlayer(c *fiber.Ctx) error {
 		RoomID:          roomID,
 		UserID:          userID,
 		BotID:           botID,
-		RuleBotName:     pm.Name,
 		ProvidedModelID: pm.ID,
+		LLMBotID:        llmBot.ID,
 		JoinedAt:        time.Now(),
 	}
 	if err := db.DB.Create(&llmMember).Error; err != nil {
@@ -650,7 +651,7 @@ func InviteLLMPlayer(c *fiber.Ctx) error {
 
 	broadcastRoomUpdate(roomID)
 
-	return c.JSON(fiber.Map{"ok": true, "botId": botID, "botName": pm.Name, "creditCost": pm.CreditCost})
+	return c.JSON(fiber.Map{"ok": true, "botId": botID, "botName": llmBot.Name, "creditCost": pm.CreditCost})
 }
 
 // KickLLMPlayer DELETE /api/rooms/:id/kick-llm/:memberId

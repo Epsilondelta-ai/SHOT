@@ -135,6 +135,14 @@ const t = useTranslations(lang);
       </button>
     </div>
 
+    <!-- LLM Player bot section -->
+    <div class="mb-4">
+      <p class="text-xs text-gray-400 mb-2">{t.rooms.llmBots}</p>
+      <div id="invite-llmbot-list" class="flex flex-col gap-2 max-h-32 overflow-y-auto">
+        <p id="invite-llmbot-empty" class="text-white/40 text-sm text-center py-2">{t.rooms.noLLMBots}</p>
+      </div>
+    </div>
+
     <!-- User bots section -->
     <p class="text-xs text-gray-400 mb-2">{t.rooms.myBots}</p>
     <div id="invite-bot-list" class="flex flex-col gap-2 mb-4 max-h-48 overflow-y-auto">
@@ -167,6 +175,8 @@ const t = useTranslations(lang);
   tDuplicateConnection: t.rooms.duplicateConnection,
   tInvalidPassword: t.rooms.invalidPassword,
   tRoomFull: t.rooms.roomFull,
+  tLLMBots: t.rooms.llmBots,
+  tNoLLMBots: t.rooms.noLLMBots,
 }} is:inline>
   const scene = document.getElementById('scene-gameroom');
   const leaveBtn = document.getElementById('leave-room-btn');
@@ -206,6 +216,8 @@ const t = useTranslations(lang);
   const inviteBotModal = document.getElementById('invite-bot-modal');
   const inviteBotList = document.getElementById('invite-bot-list');
   const inviteBotEmpty = document.getElementById('invite-bot-empty');
+  const inviteLLMBotList = document.getElementById('invite-llmbot-list');
+  const inviteLLMBotEmpty = document.getElementById('invite-llmbot-empty');
   const inviteBotCancel = document.getElementById('invite-bot-cancel');
 
   let currentRoom = null;
@@ -275,6 +287,7 @@ const t = useTranslations(lang);
       if (member) {
         const isBot = !!member.botId;
         const isRuleBot = !!member.isRuleBot;
+        const isLLMPlayer = !!member.isLLMPlayer;
         const isMemberHost = member.userId === roomState.hostId && !isBot;
         const isMine = member.userId === currentUserId;
         const isClickable = (isHost() && !isMine) || (isBot && isMine);
@@ -282,10 +295,12 @@ const t = useTranslations(lang);
 
         const avatarHtml = isRuleBot
           ? `<span class="w-10 h-10 rounded-full bg-green-700 flex items-center justify-center text-white text-sm font-bold border-2 border-white/20">R</span>`
+          : isLLMPlayer
+          ? `<span class="w-10 h-10 rounded-full bg-purple-700 flex items-center justify-center text-white text-sm font-bold border-2 border-white/20">L</span>`
           : `<img src="${member.avatarUrl || characterSrc}" alt="${member.username}"
               class="w-10 h-10 rounded-full object-cover bg-amber-800 border-2 ${isMemberHost ? 'border-amber-400' : 'border-white/20'}"
               onerror="this.src='${characterSrc}'" />`;
-        const statusDot = isBot && !isRuleBot ? `<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-gray-900 ${member.isOnline ? 'bg-green-500' : 'bg-gray-500'}"></span>` : '';
+        const statusDot = isBot && !isRuleBot && !isLLMPlayer ? `<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-gray-900 ${member.isOnline ? 'bg-green-500' : 'bg-gray-500'}"></span>` : '';
 
         slot.innerHTML = `
           <div class="relative">
@@ -293,7 +308,7 @@ const t = useTranslations(lang);
             ${statusDot}
           </div>
           <p class="text-white/70 text-xs truncate w-full text-center max-w-[64px]">${isMemberHost ? '<img src="/emoji/glowing-star.png" alt="star" class="inline-block w-3 h-3" /> ' : ''}${member.username}</p>
-          ${isBot && !isRuleBot && member.ownerUsername ? `<p class="text-white/30 text-xs truncate w-full text-center max-w-[64px]">${member.ownerUsername}</p>` : ''}
+          ${isBot && !isRuleBot && !isLLMPlayer && member.ownerUsername ? `<p class="text-white/30 text-xs truncate w-full text-center max-w-[64px]">${member.ownerUsername}</p>` : ''}
           ${member.canInviteBots && !isBot ? '<p class="text-blue-300 text-xs">🔑</p>' : ''}
         `;
         if (isClickable) {
@@ -449,7 +464,54 @@ const t = useTranslations(lang);
   inviteBotBtn.addEventListener('click', async () => {
     inviteBotList.innerHTML = '';
     inviteBotList.appendChild(inviteBotEmpty);
+    inviteLLMBotList.innerHTML = '';
+    inviteLLMBotList.appendChild(inviteLLMBotEmpty);
     const token = getToken();
+
+    // LLM Bot 목록 로드
+    const llmRes = await fetch(`${apiUrl}/api/llm-bots`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
+    if (llmRes?.ok) {
+      const llmBots = await llmRes.json();
+      if (llmBots && llmBots.length > 0) {
+        inviteLLMBotEmpty.classList.add('hidden');
+        llmBots.forEach(bot => {
+          const el = document.createElement('div');
+          el.className = 'flex items-center gap-3 bg-purple-500/10 hover:bg-purple-500/20 rounded-xl px-3 py-2 transition';
+          el.innerHTML = `
+            <span class="w-8 h-8 rounded-full bg-purple-700 flex items-center justify-center text-white text-xs font-bold shrink-0">L</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-white text-sm font-semibold truncate">${bot.name}</p>
+              <p class="text-purple-300 text-xs truncate">${bot.modelName} · ${bot.creditCost}cr</p>
+            </div>
+            <button class="bg-purple-500 hover:bg-purple-400 text-white text-xs px-3 py-1 rounded-lg shrink-0">${tInvite}</button>
+          `;
+          el.querySelector('button').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            const r = await fetch(`${apiUrl}/api/rooms/${currentRoom.id}/invite-llm`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+              body: JSON.stringify({ llmBotId: bot.id }),
+            }).catch(() => null);
+            if (!r?.ok) {
+              const data = await r?.json().catch(() => ({}));
+              const orig = btn.textContent;
+              btn.textContent = data?.error || 'Error';
+              btn.disabled = true;
+              btn.className = 'bg-red-500/30 text-red-300 text-xs px-3 py-1 rounded-lg cursor-not-allowed shrink-0';
+              setTimeout(() => {
+                btn.textContent = orig;
+                btn.disabled = false;
+                btn.className = 'bg-purple-500 hover:bg-purple-400 text-white text-xs px-3 py-1 rounded-lg shrink-0';
+              }, 2500);
+            }
+          });
+          inviteLLMBotList.appendChild(el);
+        });
+      } else {
+        inviteLLMBotEmpty.classList.remove('hidden');
+      }
+    }
+
     const res = await fetch(`${apiUrl}/api/bots`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
     if (res?.ok) {
       const bots = await res.json();
