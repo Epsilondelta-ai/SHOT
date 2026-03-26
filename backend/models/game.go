@@ -61,8 +61,9 @@ type GamePlayer struct {
 	ID        string `gorm:"primaryKey;type:varchar(36)"`
 	GameID    string `gorm:"type:varchar(36);not null;index"`
 	UserID    string `gorm:"type:varchar(36);not null"`
-	BotID     string `gorm:"type:varchar(50);default:''"`
-	Role      string `gorm:"size:10;not null"` // agent | spy
+	BotID           string `gorm:"type:varchar(50);default:''"`
+	ProvidedModelID string `gorm:"type:varchar(36);default:''"` // LLM Player인 경우 제공 모델 ID
+	Role            string `gorm:"size:10;not null"`            // agent | spy
 	StartHP   int    `gorm:"not null;default:3"`
 	Username  string `gorm:"size:100;not null"`
 	AvatarURL string `gorm:"type:text"`
