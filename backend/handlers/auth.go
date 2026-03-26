@@ -149,6 +149,7 @@ func Me(c *fiber.Ctx) error {
 		"username":  user.Username,
 		"email":     user.Email,
 		"avatarUrl": user.AvatarURL,
+		"isAdmin":   user.IsAdmin,
 	})
 }
 

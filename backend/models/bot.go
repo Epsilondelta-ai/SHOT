@@ -15,6 +15,7 @@ type Bot struct {
 	APIKey        string         `gorm:"uniqueIndex;size:64;not null"`
 	Description   string         `gorm:"type:text"`
 	FavoriteCount int            `gorm:"not null;default:0"`
+	IsDisabled    bool           `gorm:"default:false"`
 	CreatedAt     time.Time
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
