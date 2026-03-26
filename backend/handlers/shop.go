@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/epsilondelta/shot/db"
@@ -142,8 +141,13 @@ func CreateCheckout(c *fiber.Ctx) error {
 	}
 
 	paddleURL := "https://api.paddle.com/transactions"
-	if os.Getenv("PADDLE_ENVIRONMENT") == "sandbox" {
+	if db.GetSetting("paddle_environment", "PADDLE_ENVIRONMENT", "sandbox") == "sandbox" {
 		paddleURL = "https://sandbox-api.paddle.com/transactions"
+	}
+
+	paddleAPIKey := db.GetSetting("paddle_api_key", "PADDLE_API_KEY", "")
+	if paddleAPIKey == "" {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(fiber.Map{"error": "Paddle API key not configured"})
 	}
 
 	req, err := http.NewRequest("POST", paddleURL, bytes.NewReader(jsonBody))
@@ -151,7 +155,7 @@ func CreateCheckout(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create request"})
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("PADDLE_API_KEY"))
+	req.Header.Set("Authorization", "Bearer "+paddleAPIKey)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -193,7 +197,7 @@ func HandleWebhook(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "missing signature"})
 	}
 
-	webhookSecret := os.Getenv("PADDLE_WEBHOOK_SECRET")
+	webhookSecret := db.GetSetting("paddle_webhook_secret", "PADDLE_WEBHOOK_SECRET", "")
 	if webhookSecret == "" {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "webhook secret not configured"})
 	}

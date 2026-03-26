@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"os"
 	"strconv"
 	"time"
 
@@ -238,15 +239,16 @@ func AdminListProvidedModels(c *fiber.Ctx) error {
 	result := make([]fiber.Map, len(models_))
 	for i, m := range models_ {
 		result[i] = fiber.Map{
-			"id":          m.ID,
-			"name":        m.Name,
-			"modelId":     m.ModelID,
-			"provider":    m.Provider,
-			"description": m.Description,
-			"creditCost":  m.CreditCost,
-			"tier":        m.Tier,
-			"isActive":    m.IsActive,
-			"createdAt":   m.CreatedAt,
+			"id":           m.ID,
+			"name":         m.Name,
+			"modelId":      m.ModelID,
+			"provider":     m.Provider,
+			"description":  m.Description,
+			"systemPrompt": m.SystemPrompt,
+			"creditCost":   m.CreditCost,
+			"tier":         m.Tier,
+			"isActive":     m.IsActive,
+			"createdAt":    m.CreatedAt,
 		}
 	}
 	return c.JSON(result)
@@ -304,8 +306,8 @@ func AdminUpdateProvidedModel(c *fiber.Ctx) error {
 
 	allowed := map[string]string{
 		"name": "name", "modelId": "model_id", "provider": "provider",
-		"description": "description", "creditCost": "credit_cost",
-		"tier": "tier", "isActive": "is_active",
+		"description": "description", "systemPrompt": "system_prompt",
+		"creditCost": "credit_cost", "tier": "tier", "isActive": "is_active",
 	}
 	updates := map[string]interface{}{}
 	for k, col := range allowed {
@@ -715,6 +717,207 @@ func AdminDeleteReplay(c *fiber.Ctx) error {
 	db.DB.Where("game_id = ?", id).Delete(&models.ReplayLike{})
 	db.DB.Where("game_id = ?", id).Delete(&models.ReplayFavorite{})
 	db.DB.Delete(&models.Game{}, "id = ?", id)
+
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// ---- LLM Provider Keys ----
+
+// AdminListProviderKeys GET /api/admin/provider-keys
+func AdminListProviderKeys(c *fiber.Ctx) error {
+	if _, err := requireAdmin(c); err != nil {
+		return err
+	}
+
+	var keys []models.LLMProviderKey
+	db.DB.Order("provider asc").Find(&keys)
+
+	result := make([]fiber.Map, len(keys))
+	for i, k := range keys {
+		// API Key 마스킹
+		masked := k.APIKey
+		if len(masked) > 8 {
+			masked = masked[:4] + "..." + masked[len(masked)-4:]
+		}
+		result[i] = fiber.Map{
+			"id":        k.ID,
+			"provider":  k.Provider,
+			"apiKey":    masked,
+			"baseUrl":   k.BaseURL,
+			"createdAt": k.CreatedAt,
+		}
+	}
+	return c.JSON(result)
+}
+
+// AdminCreateProviderKey POST /api/admin/provider-keys
+func AdminCreateProviderKey(c *fiber.Ctx) error {
+	if _, err := requireAdmin(c); err != nil {
+		return err
+	}
+
+	var body struct {
+		Provider string `json:"provider"`
+		APIKey   string `json:"apiKey"`
+		BaseURL  string `json:"baseUrl"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+	}
+	if body.Provider == "" || body.APIKey == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "provider and apiKey are required"})
+	}
+
+	key := models.LLMProviderKey{
+		Provider: body.Provider,
+		APIKey:   body.APIKey,
+		BaseURL:  body.BaseURL,
+	}
+	if err := db.DB.Create(&key).Error; err != nil {
+		return c.Status(fiber.StatusConflict).JSON(fiber.Map{"error": "provider key already exists"})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"id": key.ID, "provider": key.Provider})
+}
+
+// AdminUpdateProviderKey PATCH /api/admin/provider-keys/:id
+func AdminUpdateProviderKey(c *fiber.Ctx) error {
+	if _, err := requireAdmin(c); err != nil {
+		return err
+	}
+
+	id := c.Params("id")
+	var body struct {
+		APIKey  *string `json:"apiKey"`
+		BaseURL *string `json:"baseUrl"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+	}
+
+	updates := map[string]any{}
+	if body.APIKey != nil {
+		updates["api_key"] = *body.APIKey
+	}
+	if body.BaseURL != nil {
+		updates["base_url"] = *body.BaseURL
+	}
+	if len(updates) == 0 {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "no fields to update"})
+	}
+
+	if err := db.DB.Model(&models.LLMProviderKey{}).Where("id = ?", id).Updates(updates).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update provider key"})
+	}
+
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// ---- Paddle Settings ----
+
+// AdminGetPaddleSettings GET /api/admin/paddle-settings
+func AdminGetPaddleSettings(c *fiber.Ctx) error {
+	if _, err := requireAdmin(c); err != nil {
+		return err
+	}
+
+	keys := []string{"paddle_api_key", "paddle_webhook_secret", "paddle_environment"}
+	var settings []models.AppSetting
+	db.DB.Where("key IN ?", keys).Find(&settings)
+
+	settingMap := map[string]string{}
+	for _, s := range settings {
+		settingMap[s.Key] = s.Value
+	}
+
+	// API Key 마스킹
+	apiKey := settingMap["paddle_api_key"]
+	if apiKey == "" {
+		apiKey = os.Getenv("PADDLE_API_KEY")
+	}
+	maskedKey := apiKey
+	if len(maskedKey) > 8 {
+		maskedKey = maskedKey[:4] + "..." + maskedKey[len(maskedKey)-4:]
+	}
+
+	env := settingMap["paddle_environment"]
+	if env == "" {
+		env = os.Getenv("PADDLE_ENVIRONMENT")
+	}
+	if env == "" {
+		env = "sandbox"
+	}
+
+	// Webhook Secret 마스킹
+	secret := settingMap["paddle_webhook_secret"]
+	if secret == "" {
+		secret = os.Getenv("PADDLE_WEBHOOK_SECRET")
+	}
+	maskedSecret := secret
+	if len(maskedSecret) > 8 {
+		maskedSecret = maskedSecret[:4] + "..." + maskedSecret[len(maskedSecret)-4:]
+	}
+
+	return c.JSON(fiber.Map{
+		"apiKey":        maskedKey,
+		"webhookSecret": maskedSecret,
+		"environment":   env,
+		"hasApiKey":     apiKey != "",
+		"hasWebhookSecret": secret != "",
+	})
+}
+
+// AdminUpdatePaddleSettings PUT /api/admin/paddle-settings
+func AdminUpdatePaddleSettings(c *fiber.Ctx) error {
+	if _, err := requireAdmin(c); err != nil {
+		return err
+	}
+
+	var body struct {
+		APIKey        *string `json:"apiKey"`
+		WebhookSecret *string `json:"webhookSecret"`
+		Environment   *string `json:"environment"`
+	}
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
+	}
+
+	upsert := func(key, value string) {
+		var s models.AppSetting
+		if err := db.DB.First(&s, "key = ?", key).Error; err != nil {
+			db.DB.Create(&models.AppSetting{Key: key, Value: value})
+		} else {
+			db.DB.Model(&s).Update("value", value)
+		}
+	}
+
+	if body.APIKey != nil && *body.APIKey != "" {
+		upsert("paddle_api_key", *body.APIKey)
+	}
+	if body.WebhookSecret != nil && *body.WebhookSecret != "" {
+		upsert("paddle_webhook_secret", *body.WebhookSecret)
+	}
+	if body.Environment != nil {
+		env := *body.Environment
+		if env != "sandbox" && env != "production" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "environment must be 'sandbox' or 'production'"})
+		}
+		upsert("paddle_environment", env)
+	}
+
+	return c.JSON(fiber.Map{"ok": true})
+}
+
+// AdminDeleteProviderKey DELETE /api/admin/provider-keys/:id
+func AdminDeleteProviderKey(c *fiber.Ctx) error {
+	if _, err := requireAdmin(c); err != nil {
+		return err
+	}
+
+	id := c.Params("id")
+	if err := db.DB.Delete(&models.LLMProviderKey{}, "id = ?", id).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete provider key"})
+	}
 
 	return c.JSON(fiber.Map{"ok": true})
 }

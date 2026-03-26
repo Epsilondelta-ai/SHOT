@@ -113,6 +113,62 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
           </div>
         </section>
 
+        <!-- Provider Keys Section -->
+        <section id="section-provider-keys" class="admin-section hidden">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-white text-xl font-bold">LLM Provider Key 관리</h2>
+            <button id="provider-key-add-btn" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-4 py-2 rounded-xl text-sm transition">추가</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="text-gray-400 border-b border-white/10">
+                <tr>
+                  <th class="py-2 px-3">프로바이더</th>
+                  <th class="py-2 px-3">API Key</th>
+                  <th class="py-2 px-3">Base URL</th>
+                  <th class="py-2 px-3">액션</th>
+                </tr>
+              </thead>
+              <tbody id="provider-keys-table-body" class="text-white"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Paddle Settings Section -->
+        <section id="section-paddle" class="admin-section hidden">
+          <h2 class="text-white text-xl font-bold mb-4">Paddle 결제 설정</h2>
+          <div class="bg-gray-800 border border-white/10 rounded-xl p-6 max-w-lg">
+            <div class="flex flex-col gap-4">
+              <div>
+                <label class="block text-sm text-white/70 mb-1">Environment</label>
+                <select id="paddle-env" class="w-full bg-gray-900 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition">
+                  <option value="sandbox">sandbox</option>
+                  <option value="production">production</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-white/70 mb-1">API Key</label>
+                <div class="flex gap-2">
+                  <input id="paddle-api-key" type="text" placeholder="새 API Key 입력..."
+                    class="flex-1 bg-gray-900 border border-white/10 rounded-xl px-4 py-2 text-white text-sm font-mono focus:outline-none focus:border-amber-500 transition" />
+                </div>
+                <p id="paddle-api-key-current" class="text-gray-500 text-xs mt-1"></p>
+              </div>
+              <div>
+                <label class="block text-sm text-white/70 mb-1">Webhook Secret</label>
+                <div class="flex gap-2">
+                  <input id="paddle-webhook-secret" type="text" placeholder="새 Webhook Secret 입력..."
+                    class="flex-1 bg-gray-900 border border-white/10 rounded-xl px-4 py-2 text-white text-sm font-mono focus:outline-none focus:border-amber-500 transition" />
+                </div>
+                <p id="paddle-webhook-secret-current" class="text-gray-500 text-xs mt-1"></p>
+              </div>
+            </div>
+            <p id="paddle-save-error" class="text-red-400 text-xs mt-3 hidden"></p>
+            <p id="paddle-save-success" class="text-green-400 text-xs mt-3 hidden"></p>
+            <button id="paddle-save-btn" class="mt-4 bg-amber-500 hover:bg-amber-400 text-black font-bold px-6 py-2 rounded-xl text-sm transition">저장</button>
+          </div>
+        </section>
+
         <!-- Credit Packs Section -->
         <section id="section-credit-packs" class="admin-section hidden">
           <div class="flex items-center justify-between mb-4">
@@ -296,6 +352,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
         <label class="block text-sm text-white/70 mb-1">설명</label>
         <input id="ob-description" type="text" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
       </div>
+      <div>
+        <label class="block text-sm text-white/70 mb-1">시스템 프롬프트</label>
+        <textarea id="ob-systemPrompt" rows="4" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition font-mono" placeholder="LLM에 전달할 시스템 프롬프트 (비워두면 기본값 사용)"></textarea>
+      </div>
       <div class="flex gap-3">
         <div class="flex-1">
           <label class="block text-sm text-white/70 mb-1">크레딧 비용</label>
@@ -360,6 +420,38 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
   </div>
 </div>
 
+<!-- Provider Key Create/Edit Modal -->
+<div id="provider-key-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-6 w-full max-w-md text-white shadow-2xl">
+    <h3 id="pk-modal-title" class="text-lg font-bold text-amber-400 mb-4">Provider Key 추가</h3>
+    <input id="pk-edit-id" type="hidden" />
+    <div class="flex flex-col gap-3 mb-4">
+      <div>
+        <label class="block text-sm text-white/70 mb-1">프로바이더</label>
+        <select id="pk-provider" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition">
+          <option value="openai">openai</option>
+          <option value="anthropic">anthropic</option>
+          <option value="google">google</option>
+          <option value="xai">xai</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm text-white/70 mb-1">API Key</label>
+        <input id="pk-apiKey" type="text" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition font-mono" />
+      </div>
+      <div>
+        <label class="block text-sm text-white/70 mb-1">Base URL (선택)</label>
+        <input id="pk-baseUrl" type="text" placeholder="커스텀 엔드포인트 (비워두면 기본값)" class="w-full bg-gray-800 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-amber-500 transition" />
+      </div>
+    </div>
+    <p id="pk-modal-error" class="text-red-400 text-xs mb-3 hidden"></p>
+    <div class="flex gap-3">
+      <button id="pk-modal-confirm" class="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold py-2 rounded-xl text-sm transition">저장</button>
+      <button id="pk-modal-cancel" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">취소</button>
+    </div>
+  </div>
+</div>
+
 <!-- Auth guard / redirect screen -->
 <div id="admin-unauthorized" class="hidden flex items-center justify-center min-h-dvh">
   <div class="text-center">
@@ -378,6 +470,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
     { id: 'dashboard', label: '대시보드' },
     { id: 'users', label: '유저' },
     { id: 'provided-models', label: '제공 모델' },
+    { id: 'provider-keys', label: 'Provider Keys' },
+    { id: 'paddle', label: 'Paddle 결제' },
     { id: 'credit-packs', label: '크레딧 팩' },
     { id: 'games', label: '게임' },
     { id: 'bots', label: '봇' },
@@ -512,6 +606,8 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
       'dashboard': loadDashboard,
       'users': () => loadUsers(1),
       'provided-models': loadProvidedModels,
+      'provider-keys': loadProviderKeys,
+      'paddle': loadPaddleSettings,
       'credit-packs': loadCreditPacks,
       'games': () => loadGames(1),
       'bots': () => loadBots(1),
@@ -677,6 +773,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
     document.getElementById('ob-modelId').value = isEdit ? model.modelId : '';
     document.getElementById('ob-provider').value = isEdit ? model.provider : '';
     document.getElementById('ob-description').value = isEdit ? model.description : '';
+    document.getElementById('ob-systemPrompt').value = isEdit ? model.systemPrompt || '' : '';
     document.getElementById('ob-creditCost').value = isEdit ? model.creditCost : 0;
     document.getElementById('ob-tier').value = isEdit ? model.tier : 'basic';
     document.getElementById('ob-isActive').checked = isEdit ? model.isActive : true;
@@ -695,6 +792,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
       modelId: document.getElementById('ob-modelId').value.trim(),
       provider: document.getElementById('ob-provider').value.trim(),
       description: document.getElementById('ob-description').value.trim(),
+      systemPrompt: document.getElementById('ob-systemPrompt').value.trim(),
       creditCost: parseInt(document.getElementById('ob-creditCost').value) || 0,
       tier: document.getElementById('ob-tier').value,
       isActive: document.getElementById('ob-isActive').checked,
@@ -725,6 +823,134 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
       loadProvidedModels();
     } catch (e) { alert(e.message); }
   }
+
+  // ---- Provider Keys ----
+  async function loadProviderKeys() {
+    try {
+      const keys = await api('/provider-keys');
+      const tbody = document.getElementById('provider-keys-table-body');
+      tbody.innerHTML = '';
+      (keys || []).forEach(k => {
+        const tr = document.createElement('tr');
+        tr.className = 'border-b border-white/5 hover:bg-white/5';
+        tr.innerHTML = `
+          <td class="py-2 px-3 font-semibold">${k.provider}</td>
+          <td class="py-2 px-3 text-xs text-gray-400 font-mono">${k.apiKey}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${k.baseUrl || '-'}</td>
+          <td class="py-2 px-3">
+            <div class="flex gap-1">
+              <button class="pk-edit-btn bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 px-2 py-1 rounded text-xs transition" data-id="${k.id}">수정</button>
+              <button class="pk-delete-btn bg-red-500/20 hover:bg-red-500/40 text-red-400 px-2 py-1 rounded text-xs transition" data-id="${k.id}" data-provider="${k.provider}">삭제</button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll('.pk-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const key = keys.find(k => k.id === btn.dataset.id);
+          if (key) openProviderKeyModal(key);
+        });
+      });
+      tbody.querySelectorAll('.pk-delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteProviderKey(btn.dataset.id, btn.dataset.provider));
+      });
+    } catch (e) { console.error('Failed to load provider keys', e); }
+  }
+
+  function openProviderKeyModal(key) {
+    const isEdit = !!key;
+    document.getElementById('pk-modal-title').textContent = isEdit ? 'Provider Key 수정' : 'Provider Key 추가';
+    document.getElementById('pk-edit-id').value = isEdit ? key.id : '';
+    document.getElementById('pk-provider').value = isEdit ? key.provider : 'openai';
+    document.getElementById('pk-provider').disabled = isEdit;
+    document.getElementById('pk-apiKey').value = '';
+    document.getElementById('pk-baseUrl').value = isEdit ? (key.baseUrl || '') : '';
+    document.getElementById('pk-modal-error').classList.add('hidden');
+    openModal(document.getElementById('provider-key-modal'));
+  }
+
+  document.getElementById('provider-key-add-btn')?.addEventListener('click', () => openProviderKeyModal(null));
+  document.getElementById('pk-modal-cancel')?.addEventListener('click', () => closeModal(document.getElementById('provider-key-modal')));
+  document.getElementById('provider-key-modal')?.addEventListener('click', (e) => { if (e.target.id === 'provider-key-modal') closeModal(e.target); });
+
+  document.getElementById('pk-modal-confirm')?.addEventListener('click', async () => {
+    const editId = document.getElementById('pk-edit-id').value;
+    const provider = document.getElementById('pk-provider').value;
+    const apiKey = document.getElementById('pk-apiKey').value.trim();
+    const baseUrl = document.getElementById('pk-baseUrl').value.trim();
+
+    if (!editId && !apiKey) {
+      document.getElementById('pk-modal-error').textContent = 'API Key는 필수입니다.';
+      document.getElementById('pk-modal-error').classList.remove('hidden');
+      return;
+    }
+    try {
+      if (editId) {
+        const body = {};
+        if (apiKey) body.apiKey = apiKey;
+        body.baseUrl = baseUrl;
+        await api(`/provider-keys/${editId}`, { method: 'PATCH', body });
+      } else {
+        await api('/provider-keys', { method: 'POST', body: { provider, apiKey, baseUrl } });
+      }
+      closeModal(document.getElementById('provider-key-modal'));
+      loadProviderKeys();
+    } catch (e) {
+      document.getElementById('pk-modal-error').textContent = e.message;
+      document.getElementById('pk-modal-error').classList.remove('hidden');
+    }
+  });
+
+  async function deleteProviderKey(id, provider) {
+    if (!confirm(`"${provider}" Provider Key를 삭제하시겠습니까?`)) return;
+    try {
+      await api(`/provider-keys/${id}`, { method: 'DELETE' });
+      loadProviderKeys();
+    } catch (e) { alert(e.message); }
+  }
+
+  // ---- Paddle Settings ----
+  async function loadPaddleSettings() {
+    try {
+      const data = await api('/paddle-settings');
+      document.getElementById('paddle-env').value = data.environment || 'sandbox';
+      document.getElementById('paddle-api-key').value = '';
+      document.getElementById('paddle-api-key').placeholder = data.hasApiKey ? '새 API Key로 교체...' : 'API Key 입력...';
+      document.getElementById('paddle-api-key-current').textContent = data.hasApiKey ? '현재: ' + data.apiKey : '설정되지 않음';
+      document.getElementById('paddle-webhook-secret').value = '';
+      document.getElementById('paddle-webhook-secret').placeholder = data.hasWebhookSecret ? '새 Secret으로 교체...' : 'Webhook Secret 입력...';
+      document.getElementById('paddle-webhook-secret-current').textContent = data.hasWebhookSecret ? '현재: ' + data.webhookSecret : '설정되지 않음';
+      document.getElementById('paddle-save-error').classList.add('hidden');
+      document.getElementById('paddle-save-success').classList.add('hidden');
+    } catch (e) { console.error('Failed to load paddle settings', e); }
+  }
+
+  document.getElementById('paddle-save-btn')?.addEventListener('click', async () => {
+    const body = {};
+    const env = document.getElementById('paddle-env').value;
+    const apiKey = document.getElementById('paddle-api-key').value.trim();
+    const secret = document.getElementById('paddle-webhook-secret').value.trim();
+    body.environment = env;
+    if (apiKey) body.apiKey = apiKey;
+    if (secret) body.webhookSecret = secret;
+
+    const errEl = document.getElementById('paddle-save-error');
+    const okEl = document.getElementById('paddle-save-success');
+    errEl.classList.add('hidden');
+    okEl.classList.add('hidden');
+
+    try {
+      await api('/paddle-settings', { method: 'PUT', body });
+      okEl.textContent = '저장되었습니다.';
+      okEl.classList.remove('hidden');
+      loadPaddleSettings();
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.classList.remove('hidden');
+    }
+  });
 
   // ---- Credit Packs ----
   async function loadCreditPacks() {
