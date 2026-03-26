@@ -791,9 +791,25 @@ func randomAttackTarget(state *GameState, attacker *PlayerState) *PlayerState {
 	return candidates[rand.Intn(len(candidates))]
 }
 
+func allRuleBots(state *GameState) bool {
+	if len(state.Players) == 0 {
+		return false
+	}
+	for _, p := range state.Players {
+		if !p.IsRuleBot {
+			return false
+		}
+	}
+	return true
+}
+
 func recordAction(state *GameState, event Event) {
 	// Skip timer_sync events — not needed for replay reconstruction
 	if event.Type == "timer_sync" {
+		return
+	}
+	// 룰봇만 참가한 게임은 리플레이 저장 안 함
+	if allRuleBots(state) {
 		return
 	}
 
