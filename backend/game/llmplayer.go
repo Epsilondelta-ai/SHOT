@@ -110,13 +110,14 @@ func runLLMPlayerLoop(gameID, _ string, initialDelay time.Duration) {
 
 			// LLM 호출을 위해 lock 해제
 			providedModelID := player.ProvidedModelID
+			userPrompt := player.UserPrompt
 			ctx := buildGameContext(st, player)
 			playerID := player.ID
 
 			GL.Unlock(gameID)
 
 			// LLM API 호출 (lock 없이)
-			actions := callLLMForActions(providedModelID, ctx, gameID, playerID)
+			actions := callLLMForActions(providedModelID, userPrompt, ctx, gameID, playerID)
 
 			GL.Lock(gameID)
 
@@ -261,11 +262,15 @@ func runLLMPlayerLoop(gameID, _ string, initialDelay time.Duration) {
 
 // callLLMForActions 는 LLM을 호출하여 액션 목록을 반환한다.
 // 실패 시 기본 폴백 액션을 반환한다.
-func callLLMForActions(providedModelID string, ctx llm.GameContext, gameID, playerID string) []llm.LLMAction {
+func callLLMForActions(providedModelID, customPrompt string, ctx llm.GameContext, gameID, playerID string) []llm.LLMAction {
 	provider, modelID, apiKey, baseURL, systemPrompt, err := getLLMConfig(providedModelID)
 	if err != nil {
 		log.Printf("[llm-player] game %s player %s: 설정 로드 실패: %v", gameID, playerID, err)
 		return fallbackActions(ctx)
+	}
+
+	if customPrompt != "" {
+		systemPrompt += "\n\n## Personality\n" + customPrompt
 	}
 
 	userPrompt := llm.BuildUserPrompt(ctx)

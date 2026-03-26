@@ -30,6 +30,7 @@ type PlayerState struct {
 	IsRuleBot       bool   `json:"isRuleBot,omitempty"`
 	IsLLMPlayer     bool   `json:"isLLMPlayer,omitempty"`
 	ProvidedModelID string `json:"providedModelId,omitempty"`
+	UserPrompt      string `json:"userPrompt,omitempty"`
 	Username        string `json:"username"`
 	AvatarURL       string `json:"avatarUrl"`
 }

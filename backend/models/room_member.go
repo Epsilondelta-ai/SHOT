@@ -14,6 +14,7 @@ type RoomMember struct {
 	BotID         string    `gorm:"type:varchar(50);default:''"`   // non-empty if bot (rulebot_ prefix + UUID = 44 chars)
 	RuleBotName     string `gorm:"type:varchar(100);default:''"` // display name for rule-based bots
 	ProvidedModelID string `gorm:"type:varchar(36);default:''"` // LLM Player인 경우 제공 모델 ID
+	LLMBotID        string `gorm:"type:varchar(36);default:''"` // LLM Player인 경우 유저 LLMBot ID
 	IsSpectator     bool   `gorm:"not null;default:false"`
 	CanInviteBots bool      `gorm:"not null;default:false"`
 	JoinedAt      time.Time
