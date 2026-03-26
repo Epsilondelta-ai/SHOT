@@ -609,13 +609,19 @@ func endGame(state *GameState, result string) []Event {
 	state.Result = result
 	now := time.Now()
 
-	// Update DB
-	db.DB.Model(&models.Game{}).Where("id = ?", state.GameID).Updates(map[string]any{
-		"status":      "finished",
-		"result":      result,
-		"turn_count":  state.TurnCount,
-		"finished_at": now,
-	})
+	// 룰봇만 참가한 게임은 리플레이 불필요 — DB 레코드 삭제
+	if allRuleBots(state) {
+		db.DB.Where("game_id = ?", state.GameID).Delete(&models.GamePlayer{})
+		db.DB.Where("id = ?", state.GameID).Delete(&models.Game{})
+	} else {
+		// Update DB
+		db.DB.Model(&models.Game{}).Where("id = ?", state.GameID).Updates(map[string]any{
+			"status":      "finished",
+			"result":      result,
+			"turn_count":  state.TurnCount,
+			"finished_at": now,
+		})
+	}
 
 	// Reset room back to waiting so another game can start in the same room.
 	db.DB.Model(&models.Room{}).Where("id = ?", state.RoomID).Update("status", "waiting")
