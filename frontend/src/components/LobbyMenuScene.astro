@@ -102,18 +102,19 @@ const t = useTranslations(lang);
       <label class="block text-sm font-semibold text-white/70 mb-2">{t.game.selectBots}</label>
 
       <!-- Rule-based bot with count selector -->
-      <div class="flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2.5 mb-2">
+      <label class="flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2.5 mb-2 cursor-pointer has-[:checked]:border-green-500/40">
+        <input type="checkbox" id="rulebot-check" class="w-4 h-4 accent-green-500 shrink-0" checked />
         <span class="w-8 h-8 rounded-full bg-green-700 flex items-center justify-center text-white text-sm font-bold shrink-0">R</span>
         <div class="flex-1 min-w-0">
           <p class="text-white text-sm font-semibold">{t.rooms.ruleBotName}</p>
           <p class="text-green-400 text-xs">{t.game.alwaysAvailable}</p>
         </div>
-        <div class="flex items-center gap-1.5">
+        <div id="rulebot-count-controls" class="flex items-center gap-1.5">
           <button id="rulebot-minus" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">-</button>
           <span id="rulebot-count" class="text-white text-sm font-bold w-6 text-center">5</span>
           <button id="rulebot-plus" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">+</button>
         </div>
-      </div>
+      </label>
 
       <!-- User bots (dynamically populated) -->
       <div id="ai-bot-list" class="flex flex-col gap-2">
@@ -313,11 +314,20 @@ const t = useTranslations(lang);
 
   // Rule-bot count controls
   const ruleBotCountEl = document.getElementById('rulebot-count');
+  const ruleBotCountControls = document.getElementById('rulebot-count-controls');
+  const ruleBotCheck = document.getElementById('rulebot-check');
   let ruleBotCount = 5;
-  document.getElementById('rulebot-minus')?.addEventListener('click', () => {
-    if (ruleBotCount > 0) { ruleBotCount--; ruleBotCountEl.textContent = String(ruleBotCount); }
+
+  ruleBotCheck?.addEventListener('change', () => {
+    ruleBotCountControls.classList.toggle('hidden', !ruleBotCheck.checked);
   });
-  document.getElementById('rulebot-plus')?.addEventListener('click', () => {
+
+  document.getElementById('rulebot-minus')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (ruleBotCount > 1) { ruleBotCount--; ruleBotCountEl.textContent = String(ruleBotCount); }
+  });
+  document.getElementById('rulebot-plus')?.addEventListener('click', (e) => {
+    e.preventDefault();
     if (ruleBotCount < 11) { ruleBotCount++; ruleBotCountEl.textContent = String(ruleBotCount); }
   });
 
@@ -328,7 +338,8 @@ const t = useTranslations(lang);
   // AI Match start
   aiMatchStart?.addEventListener('click', async () => {
     const userBotChecks = document.querySelectorAll('.ai-bot-check[data-type="userbot"]:checked');
-    if (ruleBotCount === 0 && userBotChecks.length === 0) {
+    const effectiveRuleBotCount = ruleBotCheck?.checked ? ruleBotCount : 0;
+    if (effectiveRuleBotCount === 0 && userBotChecks.length === 0) {
       aiMatchError.textContent = tSelectAtLeastOneBot;
       aiMatchError.classList.remove('hidden');
       return;
@@ -368,7 +379,7 @@ const t = useTranslations(lang);
     }
 
     // 3. Invite rule-based bots
-    for (let i = 0; i < ruleBotCount; i++) {
+    for (let i = 0; i < effectiveRuleBotCount; i++) {
       await fetch(`${apiUrl}/api/rooms/${room.id}/invite-rulebot`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

@@ -852,6 +852,10 @@ const t = useTranslations(lang);
       });
     }
 
+    // 룰봇만 참가한 게임은 리플레이 버튼 숨김
+    const isAllRuleBots = gameState?.players?.length > 0 && gameState.players.every(p => p.isRuleBot);
+    resultReplay.classList.toggle('hidden', isAllRuleBots);
+
     resultModal.classList.remove('hidden');
     resultModal.classList.add('flex');
   }
