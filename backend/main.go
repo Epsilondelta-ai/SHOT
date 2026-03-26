@@ -157,7 +157,7 @@ func main() {
 
 	// Shop & Credits
 	api.Get("/shop/packs", handlers.ListCreditPacks)
-	api.Get("/official-bots", handlers.ListOfficialBots)
+	api.Get("/provided-models", handlers.ListProvidedModels)
 	api.Get("/credits", handlers.GetMyCredits)
 	api.Get("/credits/history", handlers.GetCreditHistory)
 	api.Post("/shop/checkout", handlers.CreateCheckout)
@@ -170,10 +170,10 @@ func main() {
 	admin.Post("/users/:id/credits", handlers.AdminUpdateUserCredits)
 	admin.Patch("/users/:id/ban", handlers.AdminSetBan)
 	admin.Patch("/users/:id/admin", handlers.AdminSetAdmin)
-	admin.Get("/official-bots", handlers.AdminListOfficialBots)
-	admin.Post("/official-bots", handlers.AdminCreateOfficialBot)
-	admin.Patch("/official-bots/:id", handlers.AdminUpdateOfficialBot)
-	admin.Delete("/official-bots/:id", handlers.AdminDeleteOfficialBot)
+	admin.Get("/provided-models", handlers.AdminListProvidedModels)
+	admin.Post("/provided-models", handlers.AdminCreateProvidedModel)
+	admin.Patch("/provided-models/:id", handlers.AdminUpdateProvidedModel)
+	admin.Delete("/provided-models/:id", handlers.AdminDeleteProvidedModel)
 	admin.Get("/credit-packs", handlers.AdminListCreditPacks)
 	admin.Post("/credit-packs", handlers.AdminCreateCreditPack)
 	admin.Patch("/credit-packs/:id", handlers.AdminUpdateCreditPack)

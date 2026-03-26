@@ -89,11 +89,11 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
           <div id="users-pagination" class="flex items-center justify-center gap-2 mt-4"></div>
         </section>
 
-        <!-- Official Bots Section -->
-        <section id="section-official-bots" class="admin-section hidden">
+        <!-- Provided Models Section -->
+        <section id="section-provided-models" class="admin-section hidden">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-white text-xl font-bold">공식 봇 관리</h2>
-            <button id="official-bot-add-btn" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-4 py-2 rounded-xl text-sm transition">추가</button>
+            <h2 class="text-white text-xl font-bold">제공 모델 관리</h2>
+            <button id="provided-model-add-btn" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-4 py-2 rounded-xl text-sm transition">추가</button>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
@@ -108,7 +108,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
                   <th class="py-2 px-3">액션</th>
                 </tr>
               </thead>
-              <tbody id="official-bots-table-body" class="text-white"></tbody>
+              <tbody id="provided-models-table-body" class="text-white"></tbody>
             </table>
           </div>
         </section>
@@ -273,10 +273,10 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
   </div>
 </div>
 
-<!-- Official Bot Create/Edit Modal -->
-<div id="official-bot-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+<!-- Provided Model Create/Edit Modal -->
+<div id="provided-model-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
   <div class="bg-gray-900 rounded-2xl p-6 w-full max-w-md text-white shadow-2xl max-h-[90vh] overflow-y-auto">
-    <h3 id="official-bot-modal-title" class="text-lg font-bold text-amber-400 mb-4">공식 봇 추가</h3>
+    <h3 id="provided-model-modal-title" class="text-lg font-bold text-amber-400 mb-4">제공 모델 추가</h3>
     <input id="ob-edit-id" type="hidden" />
     <div class="flex flex-col gap-3 mb-4">
       <div>
@@ -377,7 +377,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
   const sections = [
     { id: 'dashboard', label: '대시보드' },
     { id: 'users', label: '유저' },
-    { id: 'official-bots', label: '공식 봇' },
+    { id: 'provided-models', label: '제공 모델' },
     { id: 'credit-packs', label: '크레딧 팩' },
     { id: 'games', label: '게임' },
     { id: 'bots', label: '봇' },
@@ -511,7 +511,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
     const loaders = {
       'dashboard': loadDashboard,
       'users': () => loadUsers(1),
-      'official-bots': loadOfficialBots,
+      'provided-models': loadProvidedModels,
       'credit-packs': loadCreditPacks,
       'games': () => loadGames(1),
       'bots': () => loadBots(1),
@@ -631,62 +631,62 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
     } catch (e) { alert(e.message); }
   }
 
-  // ---- Official Bots ----
-  async function loadOfficialBots() {
+  // ---- Provided Models ----
+  async function loadProvidedModels() {
     try {
-      const bots = await api('/official-bots');
-      const tbody = document.getElementById('official-bots-table-body');
+      const models = await api('/provided-models');
+      const tbody = document.getElementById('provided-models-table-body');
       tbody.innerHTML = '';
-      (bots || []).forEach(b => {
+      (models || []).forEach(m => {
         const tr = document.createElement('tr');
         tr.className = 'border-b border-white/5 hover:bg-white/5';
         tr.innerHTML = `
-          <td class="py-2 px-3">${b.name}</td>
-          <td class="py-2 px-3 text-xs text-gray-400">${b.modelId}</td>
-          <td class="py-2 px-3">${b.provider}</td>
-          <td class="py-2 px-3">${b.tier}</td>
-          <td class="py-2 px-3">${b.creditCost}</td>
-          <td class="py-2 px-3">${b.isActive ? '<span class="text-green-400">Y</span>' : '<span class="text-red-400">N</span>'}</td>
+          <td class="py-2 px-3">${m.name}</td>
+          <td class="py-2 px-3 text-xs text-gray-400">${m.modelId}</td>
+          <td class="py-2 px-3">${m.provider}</td>
+          <td class="py-2 px-3">${m.tier}</td>
+          <td class="py-2 px-3">${m.creditCost}</td>
+          <td class="py-2 px-3">${m.isActive ? '<span class="text-green-400">Y</span>' : '<span class="text-red-400">N</span>'}</td>
           <td class="py-2 px-3">
             <div class="flex gap-1">
-              <button class="ob-edit-btn bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 px-2 py-1 rounded text-xs transition" data-id="${b.id}">수정</button>
-              <button class="ob-delete-btn bg-red-500/20 hover:bg-red-500/40 text-red-400 px-2 py-1 rounded text-xs transition" data-id="${b.id}" data-name="${b.name}">삭제</button>
+              <button class="pm-edit-btn bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 px-2 py-1 rounded text-xs transition" data-id="${m.id}">수정</button>
+              <button class="pm-delete-btn bg-red-500/20 hover:bg-red-500/40 text-red-400 px-2 py-1 rounded text-xs transition" data-id="${m.id}" data-name="${m.name}">삭제</button>
             </div>
           </td>
         `;
         tbody.appendChild(tr);
       });
 
-      tbody.querySelectorAll('.ob-edit-btn').forEach(btn => {
+      tbody.querySelectorAll('.pm-edit-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          const bot = bots.find(b => b.id === btn.dataset.id);
-          if (bot) openOfficialBotModal(bot);
+          const model = models.find(m => m.id === btn.dataset.id);
+          if (model) openProvidedModelModal(model);
         });
       });
-      tbody.querySelectorAll('.ob-delete-btn').forEach(btn => {
-        btn.addEventListener('click', () => deleteOfficialBot(btn.dataset.id, btn.dataset.name));
+      tbody.querySelectorAll('.pm-delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteProvidedModel(btn.dataset.id, btn.dataset.name));
       });
-    } catch (e) { console.error('Failed to load official bots', e); }
+    } catch (e) { console.error('Failed to load provided models', e); }
   }
 
-  function openOfficialBotModal(bot) {
-    const isEdit = !!bot;
-    document.getElementById('official-bot-modal-title').textContent = isEdit ? '공식 봇 수정' : '공식 봇 추가';
-    document.getElementById('ob-edit-id').value = isEdit ? bot.id : '';
-    document.getElementById('ob-name').value = isEdit ? bot.name : '';
-    document.getElementById('ob-modelId').value = isEdit ? bot.modelId : '';
-    document.getElementById('ob-provider').value = isEdit ? bot.provider : '';
-    document.getElementById('ob-description').value = isEdit ? bot.description : '';
-    document.getElementById('ob-creditCost').value = isEdit ? bot.creditCost : 0;
-    document.getElementById('ob-tier').value = isEdit ? bot.tier : 'basic';
-    document.getElementById('ob-isActive').checked = isEdit ? bot.isActive : true;
+  function openProvidedModelModal(model) {
+    const isEdit = !!model;
+    document.getElementById('provided-model-modal-title').textContent = isEdit ? '제공 모델 수정' : '제공 모델 추가';
+    document.getElementById('ob-edit-id').value = isEdit ? model.id : '';
+    document.getElementById('ob-name').value = isEdit ? model.name : '';
+    document.getElementById('ob-modelId').value = isEdit ? model.modelId : '';
+    document.getElementById('ob-provider').value = isEdit ? model.provider : '';
+    document.getElementById('ob-description').value = isEdit ? model.description : '';
+    document.getElementById('ob-creditCost').value = isEdit ? model.creditCost : 0;
+    document.getElementById('ob-tier').value = isEdit ? model.tier : 'basic';
+    document.getElementById('ob-isActive').checked = isEdit ? model.isActive : true;
     document.getElementById('ob-modal-error').classList.add('hidden');
-    openModal(document.getElementById('official-bot-modal'));
+    openModal(document.getElementById('provided-model-modal'));
   }
 
-  document.getElementById('official-bot-add-btn')?.addEventListener('click', () => openOfficialBotModal(null));
-  document.getElementById('ob-modal-cancel')?.addEventListener('click', () => closeModal(document.getElementById('official-bot-modal')));
-  document.getElementById('official-bot-modal')?.addEventListener('click', (e) => { if (e.target.id === 'official-bot-modal') closeModal(e.target); });
+  document.getElementById('provided-model-add-btn')?.addEventListener('click', () => openProvidedModelModal(null));
+  document.getElementById('ob-modal-cancel')?.addEventListener('click', () => closeModal(document.getElementById('provided-model-modal')));
+  document.getElementById('provided-model-modal')?.addEventListener('click', (e) => { if (e.target.id === 'provided-model-modal') closeModal(e.target); });
 
   document.getElementById('ob-modal-confirm')?.addEventListener('click', async () => {
     const editId = document.getElementById('ob-edit-id').value;
@@ -706,23 +706,23 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
     }
     try {
       if (editId) {
-        await api(`/official-bots/${editId}`, { method: 'PATCH', body });
+        await api(`/provided-models/${editId}`, { method: 'PATCH', body });
       } else {
-        await api('/official-bots', { method: 'POST', body });
+        await api('/provided-models', { method: 'POST', body });
       }
-      closeModal(document.getElementById('official-bot-modal'));
-      loadOfficialBots();
+      closeModal(document.getElementById('provided-model-modal'));
+      loadProvidedModels();
     } catch (e) {
       document.getElementById('ob-modal-error').textContent = e.message;
       document.getElementById('ob-modal-error').classList.remove('hidden');
     }
   });
 
-  async function deleteOfficialBot(id, name) {
-    if (!confirm(`"${name}" 봇을 삭제하시겠습니까?`)) return;
+  async function deleteProvidedModel(id, name) {
+    if (!confirm(`"${name}" 모델을 삭제하시겠습니까?`)) return;
     try {
-      await api(`/official-bots/${id}`, { method: 'DELETE' });
-      loadOfficialBots();
+      await api(`/provided-models/${id}`, { method: 'DELETE' });
+      loadProvidedModels();
     } catch (e) { alert(e.message); }
   }
 

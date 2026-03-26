@@ -40,7 +40,10 @@ func Connect() error {
 		return err
 	}
 
-	return DB.AutoMigrate(&models.User{}, &models.Bot{}, &models.Room{}, &models.RoomMember{}, &models.Game{}, &models.GamePlayer{}, &models.GameAction{}, &models.ReplayLike{}, &models.ReplayFavorite{}, &models.UserFavorite{}, &models.CreditPack{}, &models.OfficialBot{}, &models.CreditTransaction{})
+	// 기존 official_bots 테이블을 provided_models로 이름 변경
+	DB.Exec("ALTER TABLE IF EXISTS official_bots RENAME TO provided_models")
+
+	return DB.AutoMigrate(&models.User{}, &models.Bot{}, &models.Room{}, &models.RoomMember{}, &models.Game{}, &models.GamePlayer{}, &models.GameAction{}, &models.ReplayLike{}, &models.ReplayFavorite{}, &models.UserFavorite{}, &models.CreditPack{}, &models.ProvidedModel{}, &models.CreditTransaction{})
 }
 
 func getEnv(key, fallback string) string {

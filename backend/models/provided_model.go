@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type OfficialBot struct {
+type ProvidedModel struct {
 	ID          string `gorm:"primarykey"`
 	Name        string // 표시 이름, 예: "Grok 4.1 Fast"
 	ModelID     string // API 모델 ID, 예: "grok-4.1-fast"
@@ -20,9 +20,9 @@ type OfficialBot struct {
 	UpdatedAt   time.Time
 }
 
-func (o *OfficialBot) BeforeCreate(tx *gorm.DB) error {
-	if o.ID == "" {
-		o.ID = uuid.New().String()
+func (p *ProvidedModel) BeforeCreate(tx *gorm.DB) error {
+	if p.ID == "" {
+		p.ID = uuid.New().String()
 	}
 	return nil
 }

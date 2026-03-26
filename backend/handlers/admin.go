@@ -226,34 +226,34 @@ func AdminSetAdmin(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"ok": true})
 }
 
-// AdminListOfficialBots GET /api/admin/official-bots
-func AdminListOfficialBots(c *fiber.Ctx) error {
+// AdminListProvidedModels GET /api/admin/provided-models
+func AdminListProvidedModels(c *fiber.Ctx) error {
 	if _, err := requireAdmin(c); err != nil {
 		return err
 	}
 
-	var bots []models.OfficialBot
-	db.DB.Order("created_at desc").Find(&bots)
+	var models_ []models.ProvidedModel
+	db.DB.Order("created_at desc").Find(&models_)
 
-	result := make([]fiber.Map, len(bots))
-	for i, b := range bots {
+	result := make([]fiber.Map, len(models_))
+	for i, m := range models_ {
 		result[i] = fiber.Map{
-			"id":          b.ID,
-			"name":        b.Name,
-			"modelId":     b.ModelID,
-			"provider":    b.Provider,
-			"description": b.Description,
-			"creditCost":  b.CreditCost,
-			"tier":        b.Tier,
-			"isActive":    b.IsActive,
-			"createdAt":   b.CreatedAt,
+			"id":          m.ID,
+			"name":        m.Name,
+			"modelId":     m.ModelID,
+			"provider":    m.Provider,
+			"description": m.Description,
+			"creditCost":  m.CreditCost,
+			"tier":        m.Tier,
+			"isActive":    m.IsActive,
+			"createdAt":   m.CreatedAt,
 		}
 	}
 	return c.JSON(result)
 }
 
-// AdminCreateOfficialBot POST /api/admin/official-bots
-func AdminCreateOfficialBot(c *fiber.Ctx) error {
+// AdminCreateProvidedModel POST /api/admin/provided-models
+func AdminCreateProvidedModel(c *fiber.Ctx) error {
 	if _, err := requireAdmin(c); err != nil {
 		return err
 	}
@@ -271,7 +271,7 @@ func AdminCreateOfficialBot(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "invalid request body"})
 	}
 
-	bot := models.OfficialBot{
+	pm := models.ProvidedModel{
 		Name:        body.Name,
 		ModelID:     body.ModelID,
 		Provider:    body.Provider,
@@ -280,18 +280,18 @@ func AdminCreateOfficialBot(c *fiber.Ctx) error {
 		Tier:        body.Tier,
 		IsActive:    body.IsActive,
 	}
-	if err := db.DB.Create(&bot).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create official bot"})
+	if err := db.DB.Create(&pm).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to create provided model"})
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
-		"id":   bot.ID,
-		"name": bot.Name,
+		"id":   pm.ID,
+		"name": pm.Name,
 	})
 }
 
-// AdminUpdateOfficialBot PATCH /api/admin/official-bots/:id
-func AdminUpdateOfficialBot(c *fiber.Ctx) error {
+// AdminUpdateProvidedModel PATCH /api/admin/provided-models/:id
+func AdminUpdateProvidedModel(c *fiber.Ctx) error {
 	if _, err := requireAdmin(c); err != nil {
 		return err
 	}
@@ -317,22 +317,22 @@ func AdminUpdateOfficialBot(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "no fields to update"})
 	}
 
-	if err := db.DB.Model(&models.OfficialBot{}).Where("id = ?", id).Updates(updates).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update official bot"})
+	if err := db.DB.Model(&models.ProvidedModel{}).Where("id = ?", id).Updates(updates).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to update provided model"})
 	}
 
 	return c.JSON(fiber.Map{"ok": true})
 }
 
-// AdminDeleteOfficialBot DELETE /api/admin/official-bots/:id
-func AdminDeleteOfficialBot(c *fiber.Ctx) error {
+// AdminDeleteProvidedModel DELETE /api/admin/provided-models/:id
+func AdminDeleteProvidedModel(c *fiber.Ctx) error {
 	if _, err := requireAdmin(c); err != nil {
 		return err
 	}
 
 	id := c.Params("id")
-	if err := db.DB.Unscoped().Delete(&models.OfficialBot{}, "id = ?", id).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete official bot"})
+	if err := db.DB.Unscoped().Delete(&models.ProvidedModel{}, "id = ?", id).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "failed to delete provided model"})
 	}
 
 	return c.JSON(fiber.Map{"ok": true})

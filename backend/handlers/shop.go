@@ -74,21 +74,21 @@ func GetCreditHistory(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-// ListOfficialBots GET /api/official-bots
-func ListOfficialBots(c *fiber.Ctx) error {
-	var bots []models.OfficialBot
-	db.DB.Where("is_active = ?", true).Find(&bots)
+// ListProvidedModels GET /api/provided-models
+func ListProvidedModels(c *fiber.Ctx) error {
+	var pms []models.ProvidedModel
+	db.DB.Where("is_active = ?", true).Find(&pms)
 
-	result := make([]fiber.Map, len(bots))
-	for i, b := range bots {
+	result := make([]fiber.Map, len(pms))
+	for i, m := range pms {
 		result[i] = fiber.Map{
-			"id":          b.ID,
-			"name":        b.Name,
-			"modelId":     b.ModelID,
-			"provider":    b.Provider,
-			"description": b.Description,
-			"creditCost":  b.CreditCost,
-			"tier":        b.Tier,
+			"id":          m.ID,
+			"name":        m.Name,
+			"modelId":     m.ModelID,
+			"provider":    m.Provider,
+			"description": m.Description,
+			"creditCost":  m.CreditCost,
+			"tier":        m.Tier,
 		}
 	}
 	return c.JSON(result)
