@@ -3,6 +3,8 @@ package hub
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"strings"
 	"sync"
 	"time"
 
@@ -29,10 +31,22 @@ func NewSessionHub(rdb *redis.Client) *SessionHub {
 }
 
 func (h *SessionHub) Start() {
-	pubsub := h.rdb.PSubscribe(ctx, "session:replace:*")
 	go func() {
-		for msg := range pubsub.Channel() {
-			// Ignore messages published by this server instance
+		for {
+			h.runPubSub()
+			log.Println("[session_hub] Redis pub/sub channel closed, reconnecting in 1s...")
+			time.Sleep(time.Second)
+		}
+	}()
+}
+
+func (h *SessionHub) runPubSub() {
+	pubsub := h.rdb.PSubscribe(ctx, "session:replace:*", "matchmaking:events:*")
+	defer pubsub.Close()
+
+	for msg := range pubsub.Channel() {
+		if strings.HasPrefix(msg.Channel, "session:replace:") {
+			// 세션 교체 이벤트 - 자기 자신의 publish는 무시
 			if msg.Payload == instanceID {
 				continue
 			}
@@ -40,8 +54,14 @@ func (h *SessionHub) Start() {
 				userID := msg.Channel[16:] // "session:replace:" = 16 chars
 				h.closeLocalSession(userID)
 			}
+		} else if strings.HasPrefix(msg.Channel, "matchmaking:events:") {
+			// 매칭 이벤트 - 해당 유저에게 전달
+			if len(msg.Channel) > 19 {
+				userID := msg.Channel[19:] // "matchmaking:events:" = 19 chars
+				h.SendToUser(userID, []byte(msg.Payload))
+			}
 		}
-	}()
+	}
 }
 
 func (h *SessionHub) closeLocalSession(userID string) {
@@ -59,6 +79,29 @@ func (h *SessionHub) closeLocalSession(userID string) {
 		}
 		close(ch)
 	}
+}
+
+// SendToUser sends data to a specific user's SSE channel (non-blocking)
+func (h *SessionHub) SendToUser(userID string, data []byte) {
+	h.mu.RLock()
+	ch, ok := h.users[userID]
+	h.mu.RUnlock()
+	if ok {
+		select {
+		case ch <- data:
+		default:
+			// 채널 버퍼 초과 시 드롭
+		}
+	}
+}
+
+// SendMatchmakingEvent publishes a matchmaking event to a user via Redis Pub/Sub
+func (h *SessionHub) SendMatchmakingEvent(userID string, event any) {
+	data, err := json.Marshal(event)
+	if err != nil {
+		return
+	}
+	h.rdb.Publish(ctx, "matchmaking:events:"+userID, string(data))
 }
 
 func (h *SessionHub) Register(userID string, ch chan []byte) {

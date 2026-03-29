@@ -20,7 +20,7 @@ func SessionSSE(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusUnauthorized).SendString("unauthorized")
 	}
 
-	ch := make(chan []byte, 8)
+	ch := make(chan []byte, 16)
 	hub.SH.Register(userID, ch)
 
 	c.Set("Content-Type", "text/event-stream")
