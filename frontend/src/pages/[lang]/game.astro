@@ -73,6 +73,8 @@ const t = useTranslations(lang);
             document.dispatchEvent(new CustomEvent('game:session:replaced'));
             alert(tSessionReplaced);
             window.location.replace('/' + lang);
+          } else if (msg.type === 'queue_update' || msg.type === 'match_found' || msg.type === 'queue_timeout') {
+            document.dispatchEvent(new CustomEvent('session:matchmaking', { detail: msg }));
           }
         } catch {}
       });

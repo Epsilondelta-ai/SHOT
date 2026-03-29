@@ -15,7 +15,19 @@ const t = useTranslations(lang);
 <div id="scene-lobby" class="relative z-10 w-full flex-1 flex items-center justify-center px-4 py-8">
   <div class="w-full max-w-sm flex flex-col gap-4">
 
-    <!-- AI Match — primary CTA -->
+    <!-- Quick Match — top CTA -->
+    <button
+      id="lobby-quick-match"
+      class="group w-full text-left bg-gradient-to-br from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white rounded-2xl px-6 py-6 shadow-lg shadow-purple-900/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
+    >
+      <div class="flex items-center gap-3 mb-2">
+        <span class="text-3xl"><img src="/emoji/high-voltage.png" alt="quick" class="inline-block w-8 h-8" /></span>
+        <span class="text-xl font-extrabold">{t.game.quickMatch}</span>
+      </div>
+      <p class="text-white/70 text-sm font-medium">{t.game.quickMatchDesc}</p>
+    </button>
+
+    <!-- AI Match -->
     <button
       id="lobby-ai-match"
       class="group w-full text-left bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black rounded-2xl px-6 py-6 shadow-lg shadow-amber-900/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
@@ -80,6 +92,40 @@ const t = useTranslations(lang);
     </div>
 
     <button id="custom-modal-close" class="w-full bg-white/10 hover:bg-white/20 text-white py-2 rounded-xl text-sm transition">{t.common.close}</button>
+  </div>
+</div>
+
+<!-- Quick Match Modal -->
+<div id="quick-match-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
+  <div class="bg-gray-900 rounded-2xl p-7 w-full max-w-sm text-white shadow-2xl text-center">
+    <h3 class="text-lg font-bold text-purple-400 mb-5">{t.game.quickMatch}</h3>
+
+    <!-- 검색 애니메이션 -->
+    <div class="flex flex-col items-center gap-4 mb-6">
+      <div class="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+      <p id="qm-status-text" class="text-white/70 text-sm">{t.game.searching}</p>
+    </div>
+
+    <!-- 큐 정보 -->
+    <div class="bg-white/5 rounded-xl px-4 py-3 mb-4">
+      <div class="flex justify-between text-sm mb-1">
+        <span class="text-white/50">{t.game.playersInQueue}</span>
+        <span id="qm-queue-size" class="text-purple-300 font-bold">0</span>
+      </div>
+      <div class="flex justify-between text-sm">
+        <span class="text-white/50">{t.game.estimatedWait}</span>
+        <span id="qm-wait-time" class="text-white/70">~0s</span>
+      </div>
+    </div>
+
+    <!-- 타임아웃 프로그레스 바 -->
+    <div class="w-full bg-gray-700 rounded-full h-1.5 mb-5">
+      <div id="qm-progress" class="bg-purple-500 h-1.5 rounded-full transition-all duration-1000" style="width: 0%"></div>
+    </div>
+
+    <button id="qm-cancel" class="w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-2.5 rounded-xl transition">
+      {t.game.cancelQueue}
+    </button>
   </div>
 </div>
 
@@ -216,6 +262,9 @@ const t = useTranslations(lang);
   tOnline: t.game.online,
   tOffline: t.game.offline,
   tNoLLMBots: t.bots.noLLMBots,
+  tSearching: t.game.searching,
+  tMatchFound: t.game.matchFound,
+  tQueueTimeout: t.game.queueTimeout,
 }} is:inline>
   const scene = document.getElementById('scene-lobby');
 
@@ -476,6 +525,82 @@ const t = useTranslations(lang);
 
     const { gameId } = await startRes.json();
     document.dispatchEvent(new CustomEvent('room:sse:game_start', { detail: { gameId } }));
+  });
+
+  // Quick Match
+  const quickMatchModal = document.getElementById('quick-match-modal');
+  const qmQueueSize = document.getElementById('qm-queue-size');
+  const qmWaitTime = document.getElementById('qm-wait-time');
+  const qmProgress = document.getElementById('qm-progress');
+  const qmStatusText = document.getElementById('qm-status-text');
+  let qmTimerInterval = null;
+  let qmStartTime = null;
+
+  document.getElementById('lobby-quick-match')?.addEventListener('click', async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const res = await fetch(`${apiUrl}/api/matchmaking/join`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    if (!res?.ok) {
+      const data = await res?.json().catch(() => ({}));
+      alert(data?.error || 'Failed to join queue');
+      return;
+    }
+    const data = await res.json();
+    qmQueueSize.textContent = String(data.queueSize || 0);
+    openModal(quickMatchModal);
+    qmStartTime = Date.now();
+    // 120초 프로그레스 바 타이머
+    if (qmTimerInterval) clearInterval(qmTimerInterval);
+    qmTimerInterval = setInterval(() => {
+      const elapsed = (Date.now() - qmStartTime) / 1000;
+      const pct = Math.min((elapsed / 120) * 100, 100);
+      qmProgress.style.width = pct + '%';
+      qmWaitTime.textContent = '~' + Math.max(0, Math.round(120 - elapsed)) + 's';
+    }, 1000);
+  });
+
+  document.getElementById('qm-cancel')?.addEventListener('click', async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    await fetch(`${apiUrl}/api/matchmaking/leave`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    }).catch(() => null);
+    closeModal(quickMatchModal);
+    if (qmTimerInterval) { clearInterval(qmTimerInterval); qmTimerInterval = null; }
+  });
+
+  quickMatchModal?.addEventListener('click', (e) => {
+    // 모달 배경 클릭은 무시 (큐를 유지하기 위해)
+  });
+
+  // Session SSE에서 매칭 이벤트 수신
+  document.addEventListener('session:matchmaking', (e) => {
+    const data = e.detail;
+    if (data.type === 'queue_update') {
+      qmQueueSize.textContent = String(data.queueSize || 0);
+    } else if (data.type === 'match_found') {
+      closeModal(quickMatchModal);
+      if (qmTimerInterval) { clearInterval(qmTimerInterval); qmTimerInterval = null; }
+      qmStatusText.textContent = tMatchFound;
+      // 방 입장
+      document.dispatchEvent(new CustomEvent('room:join', { detail: { id: data.roomId } }));
+    } else if (data.type === 'queue_timeout') {
+      qmStatusText.textContent = tQueueTimeout;
+    }
+  });
+
+  // 브라우저 닫기 시 큐 이탈
+  window.addEventListener('beforeunload', () => {
+    if (quickMatchModal && !quickMatchModal.classList.contains('hidden')) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        navigator.sendBeacon(`${apiUrl}/api/matchmaking/leave?token=${token}`);
+      }
+    }
   });
 
   // Bots
