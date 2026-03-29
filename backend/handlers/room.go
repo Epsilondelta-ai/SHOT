@@ -22,7 +22,7 @@ func ListRooms(c *fiber.Ctx) error {
 	}
 
 	var rooms []models.Room
-	db.DB.Where("status != ?", "finished").Order("created_at desc").Find(&rooms)
+	db.DB.Where("status != ? AND is_quick_match = ?", "finished", false).Order("created_at desc").Find(&rooms)
 
 	result := make([]fiber.Map, len(rooms))
 	for i, r := range rooms {
@@ -36,6 +36,7 @@ func ListRooms(c *fiber.Ctx) error {
 			"botCount":       r.BotCount,
 			"spectatorCount": r.SpectatorCount,
 			"isPrivate":      r.IsPrivate,
+			"isQuickMatch":   r.IsQuickMatch,
 			"createdAt":      r.CreatedAt,
 		}
 	}
@@ -65,6 +66,7 @@ func GetRoom(c *fiber.Ctx) error {
 		"botCount":       room.BotCount,
 		"spectatorCount": room.SpectatorCount,
 		"isPrivate":      room.IsPrivate,
+		"isQuickMatch":   room.IsQuickMatch,
 		"createdAt":      room.CreatedAt,
 	})
 }
@@ -127,6 +129,7 @@ func CreateRoom(c *fiber.Ctx) error {
 		"botCount":       room.BotCount,
 		"spectatorCount": room.SpectatorCount,
 		"isPrivate":      room.IsPrivate,
+		"isQuickMatch":   room.IsQuickMatch,
 		"createdAt":      room.CreatedAt,
 	})
 }
