@@ -83,53 +83,6 @@ const t = useTranslations(lang);
     </div>
 
     <p id="mypage-msg" class="text-center text-sm mt-4 hidden"></p>
-
-    <!-- LLM Bot Management -->
-    <div class="mt-8 border-t border-white/10 pt-6">
-      <div class="flex items-center justify-between mb-3">
-        <p class="text-sm font-semibold text-purple-300">{t.mypage.llmBots}</p>
-        <button id="llmbot-create-btn" class="bg-purple-600 hover:bg-purple-500 text-white text-xs px-3 py-1.5 rounded-lg transition">
-          + {t.mypage.llmBotCreate}
-        </button>
-      </div>
-      <div id="llmbot-list" class="flex flex-col gap-2">
-        <p id="llmbot-empty" class="text-white/30 text-sm text-center py-3">{t.mypage.noLLMBots}</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- LLM Bot Create/Edit Modal -->
-<div id="llmbot-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-black/70 px-4">
-  <div class="bg-gray-900 rounded-2xl p-7 w-full max-w-sm text-white shadow-2xl">
-    <h3 id="llmbot-modal-title" class="text-lg font-bold text-purple-400 mb-5">{t.mypage.llmBotCreate}</h3>
-
-    <div class="mb-4">
-      <label class="block text-sm font-semibold text-white/70 mb-1">{t.mypage.llmBotName}</label>
-      <input id="llmbot-name" type="text" maxlength="100"
-        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
-        placeholder={t.mypage.llmBotName} />
-    </div>
-
-    <div class="mb-4">
-      <label class="block text-sm font-semibold text-white/70 mb-1">{t.mypage.llmBotModel}</label>
-      <select id="llmbot-model" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-400">
-        <option value="">— 선택 —</option>
-      </select>
-    </div>
-
-    <div class="mb-5">
-      <label class="block text-sm font-semibold text-white/70 mb-1">{t.mypage.llmBotPrompt}</label>
-      <textarea id="llmbot-prompt" maxlength="2000" rows="4"
-        class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none text-sm"
-        placeholder={t.mypage.llmBotPromptPlaceholder}></textarea>
-    </div>
-
-    <div class="flex gap-3">
-      <button id="llmbot-save-btn" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl transition">{t.common.save}</button>
-      <button id="llmbot-cancel-btn" class="flex-1 bg-white/10 hover:bg-white/20 text-white py-2.5 rounded-xl transition">{t.common.cancel}</button>
-    </div>
-    <p id="llmbot-modal-msg" class="text-center text-sm mt-3 hidden"></p>
   </div>
 </div>
 
@@ -139,10 +92,6 @@ const t = useTranslations(lang);
   tSaving: t.mypage.saving,
   tSaved: t.mypage.saved,
   tSaveFailed: t.mypage.saveFailed,
-  tEdit: t.common.edit,
-  tDelete: t.common.delete ?? '삭제',
-  tLLMBotCreate: t.mypage.llmBotCreate,
-  tNoLLMBots: t.mypage.noLLMBots,
 }} is:inline>
   const scene = document.getElementById('scene-mypage');
   const avatarImg = document.getElementById('mypage-avatar');
@@ -153,22 +102,7 @@ const t = useTranslations(lang);
   const cancelBtn = document.getElementById('mypage-cancel-btn');
   const msg = document.getElementById('mypage-msg');
 
-  // LLM Bot elements
-  const llmBotList = document.getElementById('llmbot-list');
-  const llmBotEmpty = document.getElementById('llmbot-empty');
-  const llmBotCreateBtn = document.getElementById('llmbot-create-btn');
-  const llmBotModal = document.getElementById('llmbot-modal');
-  const llmBotModalTitle = document.getElementById('llmbot-modal-title');
-  const llmBotName = document.getElementById('llmbot-name');
-  const llmBotModel = document.getElementById('llmbot-model');
-  const llmBotPrompt = document.getElementById('llmbot-prompt');
-  const llmBotSaveBtn = document.getElementById('llmbot-save-btn');
-  const llmBotCancelBtn = document.getElementById('llmbot-cancel-btn');
-  const llmBotModalMsg = document.getElementById('llmbot-modal-msg');
-
   let pendingAvatarBase64 = null;
-  let editingBotId = null;
-  let providedModels = [];
 
   async function loadUser() {
     const token = localStorage.getItem('token');
@@ -195,133 +129,12 @@ const t = useTranslations(lang);
     } catch { /* ignore */ }
   }
 
-  async function loadLLMBots() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const res = await fetch(`${apiUrl}/api/llm-bots`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }).catch(() => null);
-    if (!res?.ok) return;
-    const bots = await res.json();
-
-    // clear keeping empty marker
-    llmBotList.innerHTML = '';
-    llmBotList.appendChild(llmBotEmpty);
-
-    if (bots && bots.length > 0) {
-      llmBotEmpty.classList.add('hidden');
-      bots.forEach(bot => {
-        const el = document.createElement('div');
-        el.className = 'flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2';
-        el.innerHTML = `
-          <span class="w-8 h-8 rounded-full bg-purple-700 flex items-center justify-center text-white text-xs font-bold shrink-0">L</span>
-          <div class="flex-1 min-w-0">
-            <p class="text-white text-sm font-semibold truncate">${bot.name}</p>
-            <p class="text-purple-300 text-xs truncate">${bot.modelName} · ${bot.creditCost}cr</p>
-          </div>
-          <button class="llmbot-edit text-white/50 hover:text-white text-xs px-2 py-1 rounded-lg hover:bg-white/10 transition">${tEdit}</button>
-          <button class="llmbot-del text-red-400/60 hover:text-red-400 text-xs px-2 py-1 rounded-lg hover:bg-red-500/10 transition">${tDelete}</button>
-        `;
-        el.querySelector('.llmbot-edit').addEventListener('click', () => openEditModal(bot));
-        el.querySelector('.llmbot-del').addEventListener('click', () => deleteBot(bot.id));
-        llmBotList.appendChild(el);
-      });
-    } else {
-      llmBotEmpty.classList.remove('hidden');
-    }
-  }
-
-  async function loadProvidedModels() {
-    const res = await fetch(`${apiUrl}/api/provided-models`).catch(() => null);
-    if (!res?.ok) return;
-    providedModels = await res.json();
-    llmBotModel.innerHTML = '<option value="">— 선택 —</option>';
-    providedModels.forEach(pm => {
-      const opt = document.createElement('option');
-      opt.value = pm.id;
-      opt.textContent = `${pm.name} (${pm.creditCost}cr)`;
-      llmBotModel.appendChild(opt);
-    });
-  }
-
-  function openCreateModal() {
-    editingBotId = null;
-    llmBotModalTitle.textContent = tLLMBotCreate;
-    llmBotName.value = '';
-    llmBotModel.value = '';
-    llmBotPrompt.value = '';
-    llmBotModalMsg.className = 'text-center text-sm mt-3 hidden';
-    llmBotModal.classList.remove('hidden');
-    llmBotModal.classList.add('flex');
-  }
-
-  function openEditModal(bot) {
-    editingBotId = bot.id;
-    llmBotModalTitle.textContent = tEdit;
-    llmBotName.value = bot.name;
-    llmBotModel.value = bot.providedModelId;
-    llmBotPrompt.value = bot.userPrompt || '';
-    llmBotModalMsg.className = 'text-center text-sm mt-3 hidden';
-    llmBotModal.classList.remove('hidden');
-    llmBotModal.classList.add('flex');
-  }
-
-  function closeModal() {
-    llmBotModal.classList.add('hidden');
-    llmBotModal.classList.remove('flex');
-  }
-
-  async function deleteBot(id) {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    await fetch(`${apiUrl}/api/llm-bots/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
-    }).catch(() => null);
-    loadLLMBots();
-  }
-
-  llmBotCreateBtn.addEventListener('click', openCreateModal);
-  llmBotCancelBtn.addEventListener('click', closeModal);
-
-  llmBotSaveBtn.addEventListener('click', async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    const name = llmBotName.value.trim();
-    const providedModelId = llmBotModel.value;
-    const userPrompt = llmBotPrompt.value.trim();
-    if (!name || !providedModelId) {
-      llmBotModalMsg.textContent = '이름과 모델을 선택해주세요.';
-      llmBotModalMsg.className = 'text-center text-sm mt-3 text-red-400';
-      return;
-    }
-
-    const method = editingBotId ? 'PATCH' : 'POST';
-    const url = editingBotId ? `${apiUrl}/api/llm-bots/${editingBotId}` : `${apiUrl}/api/llm-bots`;
-    const res = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ name, providedModelId, userPrompt }),
-    }).catch(() => null);
-
-    if (res?.ok) {
-      closeModal();
-      loadLLMBots();
-    } else {
-      const data = await res?.json().catch(() => ({}));
-      llmBotModalMsg.textContent = data?.error || tSaveFailed;
-      llmBotModalMsg.className = 'text-center text-sm mt-3 text-red-400';
-    }
-  });
-
   document.addEventListener('game:scene', (e) => {
     if (e.detail === 'mypage') {
       scene.classList.remove('hidden');
       scene.classList.add('flex');
       pendingAvatarBase64 = null;
       loadUser();
-      loadProvidedModels();
-      loadLLMBots();
     } else {
       scene.classList.add('hidden');
       scene.classList.remove('flex');

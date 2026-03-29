@@ -297,6 +297,25 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
           <div id="replays-pagination" class="flex items-center justify-center gap-2 mt-4"></div>
         </section>
 
+        <!-- System Prompts Section -->
+        <section id="section-system-prompts" class="admin-section hidden">
+          <h2 class="text-white text-xl font-bold mb-2">시스템 프롬프트 관리</h2>
+          <p class="text-gray-400 text-sm mb-4">LLM 봇에게 전달되는 시스템 프롬프트를 모델별로 관리합니다. 비어있는 경우 기본 프롬프트가 사용됩니다.</p>
+
+          <!-- Default Prompt Reference -->
+          <div class="mb-6">
+            <button id="toggle-default-prompt" class="flex items-center gap-2 text-sm text-purple-300 hover:text-purple-200 transition mb-2">
+              <span id="default-prompt-arrow">▶</span> 기본 시스템 프롬프트 보기
+            </button>
+            <div id="default-prompt-box" class="hidden bg-gray-800 border border-purple-500/30 rounded-xl p-4">
+              <pre id="default-prompt-content" class="text-white/80 text-xs font-mono whitespace-pre-wrap leading-relaxed"></pre>
+            </div>
+          </div>
+
+          <!-- Model Prompt Cards -->
+          <div id="system-prompts-list" class="flex flex-col gap-4"></div>
+        </section>
+
         <!-- Loading state -->
         <div id="admin-loading" class="hidden flex items-center justify-center py-12">
           <div class="text-gray-400 text-sm">로딩 중...</div>
@@ -477,6 +496,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
     { id: 'bots', label: '봇' },
     { id: 'transactions', label: '거래 내역' },
     { id: 'replays', label: '리플레이' },
+    { id: 'system-prompts', label: '시스템 프롬프트' },
   ];
 
   let currentSection = 'dashboard';
@@ -613,6 +633,7 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
       'bots': () => loadBots(1),
       'transactions': () => loadTransactions(1),
       'replays': () => loadReplays(1),
+      'system-prompts': loadSystemPrompts,
     };
     if (loaders[id]) loaders[id]();
   }
@@ -1196,6 +1217,140 @@ const apiUrl = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:3000';
       await api(`/replays/${id}`, { method: 'DELETE' });
       loadReplays(replaysPage);
     } catch (e) { alert(e.message); }
+  }
+
+  // ---- System Prompts ----
+  const DEFAULT_SYSTEM_PROMPT = `You are an AI player in a social deduction card game called SHOT!
+
+## Game Rules
+- Players are divided into Agents and Spies. Agents try to eliminate Spies, Spies try to eliminate Agents.
+- Each turn you draw 2 cards and must play at least 1 attack card (unless jailed or no attack cards).
+- Card types: attack (deal 1 damage), heal (restore 1 HP), jail (prevent target from attacking for 1 turn), inspect (reveal target's role).
+- HP: 3 max. Death at 0 HP.
+- Killing an agent as agent = friendly fire (jailed for 2 turns).
+- Spies can reveal their identity to draw 2 extra cards and get 1 additional chat.
+- 1 chat message per turn (max 100 characters).
+- Game ends when all spies or all agents are eliminated, or after max turns (draw).
+
+## Win Conditions
+- Agents win: all spies eliminated
+- Spies win: all agents eliminated
+- Draw: max turns reached
+
+## Your Task
+Analyze the game state and decide your action. Respond with a JSON array of actions to take in order.
+Each action: {"type": "play_card"|"end_turn"|"reveal"|"chat", "card": "attack"|"heal"|"jail"|"inspect", "targetId": "player_id", "message": "chat text"}
+
+## Strategy Tips
+- As Agent: inspect unknown players, attack revealed spies, heal wounded allies
+- As Spy: blend in, attack agents strategically, reveal when advantageous
+- Use chat to communicate, deceive, or coordinate
+
+IMPORTANT: Respond ONLY with a valid JSON array. No markdown, no explanation.`;
+
+  // Toggle default prompt visibility
+  document.getElementById('toggle-default-prompt')?.addEventListener('click', () => {
+    const box = document.getElementById('default-prompt-box');
+    const arrow = document.getElementById('default-prompt-arrow');
+    const content = document.getElementById('default-prompt-content');
+    if (box.classList.contains('hidden')) {
+      box.classList.remove('hidden');
+      arrow.textContent = '▼';
+      content.textContent = DEFAULT_SYSTEM_PROMPT;
+    } else {
+      box.classList.add('hidden');
+      arrow.textContent = '▶';
+    }
+  });
+
+  async function loadSystemPrompts() {
+    const list = document.getElementById('system-prompts-list');
+    if (!list) return;
+    list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">로딩 중...</p>';
+    try {
+      const models = await api('/provided-models');
+      // rule-based 제외
+      const llmModels = models.filter(m => m.provider !== 'internal');
+      if (llmModels.length === 0) {
+        list.innerHTML = '<p class="text-gray-400 text-sm text-center py-4">등록된 LLM 모델이 없습니다.</p>';
+        return;
+      }
+      list.innerHTML = '';
+      llmModels.forEach(m => {
+        const hasCustom = m.systemPrompt && m.systemPrompt.trim().length > 0;
+        const card = document.createElement('div');
+        card.className = 'bg-gray-800 border border-white/10 rounded-xl p-4';
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <span class="text-white font-semibold text-sm">${m.name}</span>
+              <span class="text-gray-500 text-xs">${m.provider} · ${m.modelId}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              ${hasCustom
+                ? '<span class="text-xs text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded-full">커스텀</span>'
+                : '<span class="text-xs text-gray-400 bg-gray-700 px-2 py-0.5 rounded-full">기본값</span>'}
+              <button class="sp-edit-btn text-amber-400 hover:text-amber-300 text-xs font-semibold transition" data-id="${m.id}">수정</button>
+            </div>
+          </div>
+          <div class="sp-view" data-id="${m.id}">
+            <pre class="text-white/60 text-xs font-mono whitespace-pre-wrap leading-relaxed max-h-32 overflow-y-auto bg-black/30 rounded-lg p-3">${hasCustom ? escapeHtml(m.systemPrompt) : escapeHtml(DEFAULT_SYSTEM_PROMPT)}</pre>
+          </div>
+          <div class="sp-edit hidden" data-id="${m.id}">
+            <textarea class="sp-textarea w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-amber-500 transition resize-y" rows="10" data-id="${m.id}">${hasCustom ? escapeHtml(m.systemPrompt) : ''}</textarea>
+            <p class="text-gray-500 text-xs mt-1 mb-2">비워두면 기본 시스템 프롬프트가 사용됩니다.</p>
+            <div class="flex gap-2">
+              <button class="sp-save-btn bg-amber-500 hover:bg-amber-400 text-black font-bold px-3 py-1.5 rounded-lg text-xs transition" data-id="${m.id}">저장</button>
+              <button class="sp-cancel-btn bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs transition" data-id="${m.id}">취소</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+
+      // Edit button handlers
+      list.querySelectorAll('.sp-edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          list.querySelector(`.sp-view[data-id="${id}"]`).classList.add('hidden');
+          list.querySelector(`.sp-edit[data-id="${id}"]`).classList.remove('hidden');
+        });
+      });
+      // Cancel button handlers
+      list.querySelectorAll('.sp-cancel-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.dataset.id;
+          list.querySelector(`.sp-view[data-id="${id}"]`).classList.remove('hidden');
+          list.querySelector(`.sp-edit[data-id="${id}"]`).classList.add('hidden');
+        });
+      });
+      // Save button handlers
+      list.querySelectorAll('.sp-save-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.id;
+          const textarea = list.querySelector(`.sp-textarea[data-id="${id}"]`);
+          const newPrompt = textarea.value;
+          btn.disabled = true;
+          btn.textContent = '저장 중...';
+          try {
+            await api(`/provided-models/${id}`, { method: 'PATCH', body: { systemPrompt: newPrompt } });
+            loadSystemPrompts();
+          } catch (e) {
+            alert('저장 실패: ' + e.message);
+            btn.disabled = false;
+            btn.textContent = '저장';
+          }
+        });
+      });
+    } catch (e) {
+      list.innerHTML = '<p class="text-red-400 text-sm text-center py-4">로딩 실패</p>';
+      console.error('Failed to load system prompts', e);
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   // ---- Init ----

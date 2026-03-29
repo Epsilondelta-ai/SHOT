@@ -1,21 +1,23 @@
 ---
-import background from '../assets/background.webp';
+import defaultBg from '../assets/background.webp';
 
 interface Props {
   class?: string;
   gradient?: string;
+  backgroundSrc?: string;
 }
 
 const {
   class: className = 'flex-col justify-center',
   gradient = 'from-black/80 via-black/30 to-transparent',
+  backgroundSrc = defaultBg.src,
 } = Astro.props;
 ---
 
 <div class={`relative flex-1 flex bg-amber-400 ${className}`}>
   <div
     class="absolute inset-0 opacity-80"
-    style={`background-image: url(${background.src}); background-size: cover; background-position: center;`}
+    style={`background-image: url(${backgroundSrc}); background-size: cover; background-position: center;`}
   ></div>
   <div class={`absolute inset-0 bg-gradient-to-t ${gradient}`}></div>
   <slot />

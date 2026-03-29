@@ -35,6 +35,10 @@ const t = useTranslations(lang);
         <div class="flex items-center gap-2 flex-wrap">
           <span id="gameroom-status-badge" class="text-xs font-semibold px-2 py-0.5 rounded-full"></span>
           <span id="gameroom-private-badge" class="hidden text-xs text-amber-300"><img src="/emoji/locked.png" alt="Locked" class="inline-block w-4 h-4" /> {t.rooms.privateRoom}</span>
+          <button id="copy-room-id-btn" class="ml-auto text-white/40 hover:text-white text-xs px-2 py-0.5 rounded-lg hover:bg-white/10 transition flex items-center gap-1" title={t.bots.copyRoomId}>
+            <img src="/emoji/clipboard.png" alt="copy" class="w-3.5 h-3.5" />
+            <span id="copy-room-id-text">{t.bots.copyRoomId}</span>
+          </button>
         </div>
       </div>
 
@@ -177,6 +181,8 @@ const t = useTranslations(lang);
   tRoomFull: t.rooms.roomFull,
   tLLMBots: t.rooms.llmBots,
   tNoLLMBots: t.rooms.noLLMBots,
+  tCopyRoomId: t.bots.copyRoomId,
+  tRoomIdCopied: t.bots.roomIdCopied,
 }} is:inline>
   const scene = document.getElementById('scene-gameroom');
   const leaveBtn = document.getElementById('leave-room-btn');
@@ -191,6 +197,8 @@ const t = useTranslations(lang);
   const slotsEl = document.getElementById('gameroom-slots');
   const spectatorSection = document.getElementById('gameroom-spectator-section');
   const spectatorSlotsEl = document.getElementById('gameroom-spectator-slots');
+  const copyRoomIdBtn = document.getElementById('copy-room-id-btn');
+  const copyRoomIdText = document.getElementById('copy-room-id-text');
   const chatMessages = document.getElementById('chat-messages');
   const chatInput = document.getElementById('chat-input');
   const chatSendBtn = document.getElementById('chat-send-btn');
@@ -225,6 +233,14 @@ const t = useTranslations(lang);
   let currentMembers = [];
   let es = null;
   let sseConnected = false;
+
+  copyRoomIdBtn.addEventListener('click', () => {
+    if (!currentRoom) return;
+    navigator.clipboard.writeText(currentRoom.id).then(() => {
+      copyRoomIdText.textContent = tRoomIdCopied;
+      setTimeout(() => { copyRoomIdText.textContent = tCopyRoomId; }, 2000);
+    });
+  });
 
   async function getMyId() {
     if (currentUserId) return currentUserId;
