@@ -7,6 +7,7 @@ import (
 
 	"github.com/epsilondelta/shot/db"
 	"github.com/epsilondelta/shot/game"
+	"github.com/epsilondelta/shot/matchmaking"
 	"github.com/epsilondelta/shot/handlers"
 	"github.com/epsilondelta/shot/hub"
 	"github.com/epsilondelta/shot/models"
@@ -78,6 +79,11 @@ func main() {
 	game.TM = game.NewTimerManager(db.RDB)
 	game.TM.RecoverTimers()
 
+	// 매칭 큐 초기화: 서버 재시작 시 stale 큐 정리
+	matchmaking.CleanupQueue(db.RDB)
+	matchmaking.MM = matchmaking.NewManager(db.RDB)
+	matchmaking.MM.Start()
+
 	app := fiber.New()
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
@@ -143,6 +149,9 @@ func main() {
 	bot.Post("/game/end-turn", handlers.BotEndTurn)
 	bot.Post("/game/reveal", handlers.BotReveal)
 	bot.Post("/game/chat", handlers.BotChat)
+	api.Post("/matchmaking/join", handlers.JoinMatchmaking)
+	api.Post("/matchmaking/leave", handlers.LeaveMatchmaking)
+	api.Get("/matchmaking/status", handlers.MatchmakingStatus)
 	api.Get("/llm-bots", handlers.ListLLMBots)
 	api.Post("/llm-bots", handlers.CreateLLMBot)
 	api.Patch("/llm-bots/:id", handlers.UpdateLLMBot)

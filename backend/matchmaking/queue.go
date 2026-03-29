@@ -210,3 +210,27 @@ func GetStatus(rdb *redis.Client, userID string) (string, error) {
 
 	return status, nil
 }
+
+// CleanupQueue 는 서버 재시작 시 stale 큐와 상태 키를 정리한다.
+func CleanupQueue(rdb *redis.Client) {
+	ctx := context.Background()
+
+	// 큐 삭제
+	rdb.Del(ctx, QueueKey)
+
+	// matchmaking:status:* 키 SCAN + DEL
+	var cursor uint64
+	for {
+		keys, next, err := rdb.Scan(ctx, cursor, StatusKeyPrefix+"*", 100).Result()
+		if err != nil {
+			break
+		}
+		if len(keys) > 0 {
+			rdb.Del(ctx, keys...)
+		}
+		cursor = next
+		if cursor == 0 {
+			break
+		}
+	}
+}
